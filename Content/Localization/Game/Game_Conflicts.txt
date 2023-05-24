@@ -1,0 +1,7 @@
+MetasoundStandardNodes_RandomNode - RandomNodeOutputNextTT 
+	/Game/Audio/Sounds/UI/ButtonHover.ButtonHover.RootMetasoundDocument.Dependencies(8).Dependencies.Interface.Outputs(1).Outputs.Metadata.Description - "Triggers when reset is triggered." 
+	/Engine/Content/Localization/Engine/Engine.manifest - "Triggers when next is triggered." 
+	/Game/Audio/Sounds/UI/ButtonHover.ButtonHover.RootMetasoundDocument.Dependencies(17).Dependencies.Interface.Outputs(1).Outputs.Metadata.Description - "Triggers when reset is triggered." 
+	/Game/Audio/Sounds/UI/ButtonClick.ButtonClick.RootMetasoundDocument.Dependencies(8).Dependencies.Interface.Outputs(1).Outputs.Metadata.Description - "Triggers when reset is triggered." 
+	/Game/Audio/Sounds/UI/ButtonClick.ButtonClick.RootMetasoundDocument.Dependencies(17).Dependencies.Interface.Outputs(1).Outputs.Metadata.Description - "Triggers when reset is triggered." 
+
