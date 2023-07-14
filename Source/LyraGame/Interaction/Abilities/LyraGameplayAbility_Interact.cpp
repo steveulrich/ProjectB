@@ -76,7 +76,7 @@ void ULyraGameplayAbility_Interact::UpdateInteractions(const TArray<FInteraction
 }
 
 void ULyraGameplayAbility_Interact::TriggerInteraction()
-{
+	{
 	if (CurrentOptions.Num() == 0)
 	{
 		return;

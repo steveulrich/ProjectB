@@ -2,7 +2,7 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "BreakawayCore",
+	"FriendlyName": "BreakawaySlide",
 	"Description": "",
 	"Category": "Game Features",
 	"CreatedBy": "",
@@ -17,29 +17,11 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "BreakawayCoreRuntime",
+			"Name": "BreakawaySlideRuntime",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
 	],
 	"ExplicitlyLoaded": true,
-	"BuiltInInitialFeatureState": "Active",
-	"Plugins": [
-		{
-			"Name": "ShooterCore",
-			"Enabled": true
-		},
-		{
-			"Name": "BreakawayBall",
-			"Enabled": true
-		},
-		{
-			"Name": "BreakawayAI",
-			"Enabled": true
-		},
-		{
-			"Name": "BreakawaySlide",
-			"Enabled": true
-		}
-	]
+	"BuiltInInitialFeatureState": "Active"
 }

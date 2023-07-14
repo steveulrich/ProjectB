@@ -23,5 +23,11 @@
 		}
 	],
 	"ExplicitlyLoaded": true,
-	"BuiltInInitialFeatureState": "Active"
+	"BuiltInInitialFeatureState": "Active",
+	"Plugins": [
+		{
+			"Name": "ShooterExplorer",
+			"Enabled": true
+		}
+	]
 }
