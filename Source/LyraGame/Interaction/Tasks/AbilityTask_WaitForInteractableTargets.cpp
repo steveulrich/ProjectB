@@ -4,6 +4,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "Engine/World.h"
+#include "AIController.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/IInteractableTarget.h"
 
@@ -39,14 +40,44 @@ void UAbilityTask_WaitForInteractableTargets::AimWithPlayerController(const AAct
 	{
 		return;
 	}
-
-	//@TODO: Bots?
-	APlayerController* PC = Ability->GetCurrentActorInfo()->PlayerController.Get();
-	check(PC);
-
+	
 	FVector ViewStart;
 	FRotator ViewRot;
-	PC->GetPlayerViewPoint(ViewStart, ViewRot);
+	
+	AActor* currentActor = Ability->GetCurrentActorInfo()->AvatarActor.Get();
+	if (currentActor)
+	{
+		AController* controller = currentActor->GetInstigatorController();
+		
+
+		if (APlayerController* PC = Cast<APlayerController>(controller))
+		{
+			// This is a player controlled actor
+			PC->GetPlayerViewPoint(ViewStart, ViewRot); 
+		}
+		else if (AAIController* AI = Cast<AAIController>(controller))
+		{
+			// This is an AI controlled actor.
+			// AI Controllers do not have a "GetPlayerViewPoint" method.
+			// So we will use the Pawn's Eye View, which should be appropriate for most AI.
+			APawn* AIPawn = AI->GetPawn();
+			if (AIPawn)
+			{
+				ViewStart = AIPawn->GetPawnViewLocation();
+				ViewRot = AIPawn->GetViewRotation();
+			}
+		}
+		else
+		{
+			// No valid controller found.
+			check(false);
+		}
+	}
+	else
+	{
+		// No valid AvatarActor found.
+		check(false);
+	}
 
 	const FVector ViewDir = ViewRot.Vector();
 	FVector ViewEnd = ViewStart + (ViewDir * MaxRange);

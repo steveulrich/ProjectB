@@ -30,15 +30,15 @@
 			"Enabled": true
 		},
 		{
-			"Name": "BreakawayBall",
-			"Enabled": true
-		},
-		{
 			"Name": "BreakawayAI",
 			"Enabled": true
 		},
 		{
 			"Name": "BreakawaySlide",
+			"Enabled": true
+		},
+		{
+			"Name": "ShooterExplorer",
 			"Enabled": true
 		}
 	]
