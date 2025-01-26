@@ -26,6 +26,14 @@ public class BreakawayCoreRuntime : ModuleRules
 			new string[]
 			{
 				"Core",
+				"LyraGame",
+				"ModularGameplay",   //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+				"CommonGame",		 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+				"GameplayAbilities", //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+				"GameplayTags",		 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+				"AIModule",			 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+				"GameplayTasks",	 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
+
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,6 +46,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"LyraGame",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

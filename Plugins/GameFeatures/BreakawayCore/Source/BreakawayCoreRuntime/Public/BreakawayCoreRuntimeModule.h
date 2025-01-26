@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "GameFramework/GameModeBase.h"
+#include "GameFramework/Actor.h"
 
-class FBreakawayCoreRuntimeModule : public IModuleInterface
+class BREAKAWAYCORERUNTIME_API FBreakawayCoreRuntimeModule : public IModuleInterface
 {
 public:
 	//~IModuleInterface
