@@ -55,6 +55,9 @@ namespace LyraGameplayTags
 	// When extending Lyra, you can create your own movement modes but you need to update GetCustomMovementModeTagMap()
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Movement_Mode_Custom, "Movement.Mode.Custom", "This is invalid and should be replaced with custom tags.  See LyraGameplayTags::CustomMovementModeTagMap.");
 
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Holding_InteractiveObject, "State.Holding.InteractiveObject", "Player is currently holding an interactive object");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(Ability_Type_Override_When_Holding, "Ability.Type.OverrideWhenHolding", "This ability will be overridden when holding an interactive object");
+
 	// Unreal Movement Modes
 	const TMap<uint8, FGameplayTag> MovementModeTagMap =
 	{

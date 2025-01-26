@@ -57,4 +57,10 @@ namespace LyraGameplayTags
 	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Flying);
 
 	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Movement_Mode_Custom);
+	
+	// State tag to indicate a player is holding an interactive object
+	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Holding_InteractiveObject);
+    
+	// Tag to identify abilities that should be removed when holding objects
+	LYRAGAME_API	UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Type_Override_When_Holding);
 };

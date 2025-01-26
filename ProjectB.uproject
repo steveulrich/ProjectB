@@ -341,10 +341,6 @@
 		{
 			"Name": "GameplayBehaviors",
 			"Enabled": true
-		},
-		{
-			"Name": "BreakawayBall",
-			"Enabled": false
 		}
 	]
 }
