@@ -17,7 +17,4 @@ public:
 
 	UFUNCTION(BlueprintPure) FORCEINLINE UBwayCharacterMovementComponent* GetBwayCharacterMovement() const { return BwayCharacterMovementComponent; }
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
-
-	void PickUpObject();
-	void ThrowHeldObject();
 };
