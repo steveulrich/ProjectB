@@ -341,6 +341,18 @@
 		{
 			"Name": "GameplayBehaviors",
 			"Enabled": true
+		},
+		{
+			"Name": "InteractiveComponent",
+			"Enabled": true
+		},
+		{
+			"Name": "InteractiveObject",
+			"Enabled": true
+		},
+		{
+			"Name": "Interactive",
+			"Enabled": true
 		}
 	]
 }
