@@ -343,15 +343,11 @@
 			"Enabled": true
 		},
 		{
-			"Name": "InteractiveComponent",
+			"Name": "ShooterCTF",
 			"Enabled": true
 		},
 		{
-			"Name": "InteractiveObject",
-			"Enabled": true
-		},
-		{
-			"Name": "Interactive",
+			"Name": "Hero_Spartacus",
 			"Enabled": true
 		}
 	]

@@ -30,14 +30,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "BreakawayAI",
-			"Enabled": true
-		},
-		{
-			"Name": "BreakawaySlide",
-			"Enabled": true
-		},
-		{
 			"Name": "ShooterExplorer",
 			"Enabled": true
 		},
@@ -51,6 +43,10 @@
 		},
 		{
 			"Name": "GameplayAbilities",
+			"Enabled": true
+		},
+		{
+			"Name": "ShooterCTF",
 			"Enabled": true
 		}
 	]
