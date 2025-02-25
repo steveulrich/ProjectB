@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{A9367F94-430F-554F-8376-B6843DA48377}",
+	"EngineAssociation": "",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -195,11 +195,13 @@
 			"Enabled": true,
 			"PlatformAllowList": [
 				"XB1",
-				"XSX"
+				"XSX",
+				"WinGDK"
 			],
 			"SupportedTargetPlatforms": [
 				"XB1",
-				"XSX"
+				"XSX",
+				"WinGDK"
 			]
 		},
 		{
@@ -303,15 +305,15 @@
 			"Enabled": true
 		},
 		{
+			"Name": "TopDownArena",
+			"Enabled": true
+		},
+		{
 			"Name": "FunctionalTestingEditor",
 			"Enabled": true
 		},
 		{
 			"Name": "ShooterExplorer",
-			"Enabled": true
-		},
-		{
-			"Name": "TopDownArena",
 			"Enabled": true
 		},
 		{
@@ -343,11 +345,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ShooterCTF",
-			"Enabled": true
-		},
-		{
-			"Name": "Hero_Spartacus",
+			"Name": "RuntimeTests",
 			"Enabled": true
 		}
 	]
