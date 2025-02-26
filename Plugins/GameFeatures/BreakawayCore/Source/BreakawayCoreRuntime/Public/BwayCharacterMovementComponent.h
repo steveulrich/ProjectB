@@ -74,13 +74,13 @@ public:
 	UPROPERTY(EditDefaultsOnly) float SlideGravityForce=4000.f;
 	UPROPERTY(EditDefaultsOnly) float SlideFrictionFactor=.06f;
 	UPROPERTY(EditDefaultsOnly) float BrakingDecelerationSliding=1000.f;
-	UPROPERTY(EditDefaultsOnly) UAnimMontage* SlideMontage;
+	UPROPERTY(EditDefaultsOnly) TObjectPtr<UAnimMontage> SlideMontage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Slide) float SlideDirectionalControlStrength = 100.0f;
 
 	// Dash
 	UPROPERTY(EditDefaultsOnly) float DashCooldownDuration=1.f;
 	UPROPERTY(EditDefaultsOnly) float AuthDashCooldownDuration=.9f;
-	UPROPERTY(EditDefaultsOnly) UAnimMontage* DashMontage;
+	UPROPERTY(EditDefaultsOnly) TObjectPtr<UAnimMontage> DashMontage;
 
 	// Wall Run
 	UPROPERTY(EditDefaultsOnly) bool bCanWallRun=false;
@@ -90,11 +90,11 @@ public:
 	UPROPERTY(EditDefaultsOnly) float WallRunPullAwayAngle=75;
 	UPROPERTY(EditDefaultsOnly) float WallAttractionForce = 200.f;
 	UPROPERTY(EditDefaultsOnly) float MinWallRunHeight=50.f;
-	UPROPERTY(EditDefaultsOnly) UCurveFloat* WallRunGravityScaleCurve;
+	UPROPERTY(EditDefaultsOnly) TObjectPtr<UCurveFloat> WallRunGravityScaleCurve;
 	UPROPERTY(EditDefaultsOnly) float WallJumpOffForce = 300.f;
 
 	// Transient
-	UPROPERTY(Transient) ABwayCharacterWithAbilities* BwayCharacterOwner;
+	UPROPERTY(Transient) TObjectPtr<ABwayCharacterWithAbilities> BwayCharacterOwner;
 
 	// Flags
 	bool Safe_bWantsToSprint;
@@ -111,7 +111,7 @@ public:
 	bool Safe_bTransitionFinished;
 	TSharedPtr<FRootMotionSource_MoveToForce> TransitionRMS;
 	FString TransitionName;
-	UPROPERTY(Transient) UAnimMontage* TransitionQueuedMontage;
+	UPROPERTY(Transient) TObjectPtr<UAnimMontage> TransitionQueuedMontage;
 	float TransitionQueuedMontageSpeed;
 	int TransitionRMS_ID;
 

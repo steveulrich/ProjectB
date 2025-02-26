@@ -11,7 +11,7 @@ class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharact
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement) UBwayCharacterMovementComponent* BwayCharacterMovementComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement) TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;
 public:
 	explicit ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer);
 

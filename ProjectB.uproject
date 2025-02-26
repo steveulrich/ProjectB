@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "",
+	"EngineAssociation": "{A9367F94-430F-554F-8376-B6843DA48377}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -346,6 +346,14 @@
 		},
 		{
 			"Name": "RuntimeTests",
+			"Enabled": true
+		},
+		{
+			"Name": "ShooterCTF",
+			"Enabled": true
+		},
+		{
+			"Name": "Hero_Spartacus",
 			"Enabled": true
 		}
 	]

@@ -16,7 +16,7 @@ public:
 		FText DisplayName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityData")
-		UTexture2D* Icon;
+		TObjectPtr<UTexture2D> Icon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AbilityData")
 		FText DescriptionText;
@@ -25,7 +25,7 @@ public:
 		int32 Cooldown;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "AbilityData")
-		TArray<class UHeroAbilityData*> AbilityDataSet;
+		TArray<TObjectPtr<UHeroAbilityData>> AbilityDataSet;
 };
 
 UCLASS(EditInlineNew, DefaultToInstanced)

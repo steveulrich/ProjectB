@@ -12,11 +12,11 @@ struct FLyraFlagStatusMessage
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
-	APawn* Instigator = nullptr;
+	TObjectPtr<APawn> Instigator = nullptr;
 
 	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
 	int32 FlagTeamId = 0;
 	
 	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
-	AActor* Pad = nullptr;
+	TObjectPtr<AActor> Pad = nullptr;
 };

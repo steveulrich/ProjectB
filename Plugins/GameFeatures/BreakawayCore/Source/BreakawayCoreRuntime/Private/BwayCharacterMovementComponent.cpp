@@ -560,7 +560,7 @@ void UBwayCharacterMovementComponent::PhysSlide(float deltaTime, int32 Iteration
 		{
 			// calculate possible alternate movement
 			const FVector GravDir = FVector(0.f,0.f,-1.f);
-			const FVector NewDelta = bTriedLedgeMove ? FVector::ZeroVector : GetLedgeMove(OldLocation, Delta, GravDir);
+			const FVector NewDelta = bTriedLedgeMove ? FVector::ZeroVector : GetLedgeMove(OldLocation, Delta, CurrentFloor);
 			if ( !NewDelta.IsZero() )
 			{
 				// first revert this move
