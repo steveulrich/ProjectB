@@ -23,33 +23,30 @@ public class BreakawayCoreRuntime : ModuleRules
 			
 		
 		PublicDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Core",
+			new string[] { 
+				"Core", 
+				"CoreUObject", 
+				"Engine", 
+				"InputCore",
+				"Niagara",
+				"GameplayAbilities",
+				"GameplayTags",
+				"GameplayTasks",
 				"LyraGame",
-				"ModularGameplay",   //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-				"CommonGame",		 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-				"GameplayAbilities", //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-				"GameplayTags",		 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-				"AIModule",			 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-				"GameplayTasks",	 //REQUIRED BY LYRA TO EXTEND LyraGameplayAbility_RangedComponent
-
-				// ... add other public dependencies that you statically link with here ...
+				"EnhancedInput",
+				"AIModule"
 			}
-			);
-			
-		
+		);
+        
 		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"CoreUObject",
-				"Engine",
+			new string[] {
 				"Slate",
 				"SlateCore",
-				"LyraGame",
-				// ... add private dependencies that you statically link with here ...	
+				"NetCore",
+				"PhysicsCore",
+				"CommonUI"
 			}
-			);
+		);
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(
