@@ -11,7 +11,8 @@ class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharact
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement) TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
+	TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;
 public:
 	explicit ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer);
 
@@ -36,5 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	void UpdateAppearanceForTeam();
 
-	
+	// For example, this is set TRUE in the RequestRelic Gameplay Ability
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Relic")
+	bool IsRequestingRelic = false;
 };

@@ -32,9 +32,9 @@ public class BreakawayCoreRuntime : ModuleRules
 				"GameplayAbilities",
 				"GameplayTags",
 				"GameplayTasks",
-				"LyraGame",
 				"EnhancedInput",
-				"AIModule"
+				"AIModule",
+				"LyraGame"
 			}
 		);
         

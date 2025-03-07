@@ -13,6 +13,7 @@
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
+	"ExplicitlyLoaded": true,
 	"Modules": [
 		{
 			"Name": "Hero_Spartacus",

@@ -6,7 +6,6 @@
 #include "GoalZone.generated.h"
 
 class UBoxComponent;
-class ABwayCharacterWithAbilities;
 class ARelicActor;
 
 /**
@@ -41,8 +40,8 @@ public:
     
 	// Helper methods
 	UFUNCTION(BlueprintPure, Category = "Goal")
-	bool IsOpposingTeam(ABwayCharacterWithAbilities* Character) const;
+	bool IsOpposingTeam(ARelicActor* RelicActor) const;
     
 	UFUNCTION(BlueprintCallable, Category = "Goal")
-	void ProcessRelicScoringAttempt(ABwayCharacterWithAbilities* Character, ARelicActor* Relic);
+	void ProcessRelicScoringAttempt(ARelicActor* Relic);
 };

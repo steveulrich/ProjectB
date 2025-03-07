@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "Relic/RelicSettings.h"
 #include "Relic/RelicStateMachine.h"
+#include "AbilitySystem/LyraAbilitySet.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "GameplayTagContainer.h"
@@ -109,7 +111,7 @@ public:
     
     // Try to score with the Relic
     UFUNCTION(BlueprintCallable, Category = "Relic")
-    bool TryScore(ABwayCharacterWithAbilities* Character, int32 ScoringTeam);
+    bool TryScore(int32 ScoringTeam);
     
     // Reset the Relic to a spawn location
     UFUNCTION(BlueprintCallable, Category = "Relic")
@@ -149,9 +151,9 @@ public:
     
     // Server RPC for scoring
     UFUNCTION(Server, Reliable, WithValidation)
-    void ServerTryScore(ABwayCharacterWithAbilities* Character, int32 ScoringTeam);
-    bool ServerTryScore_Validate(ABwayCharacterWithAbilities* Character, int32 ScoringTeam);
-    void ServerTryScore_Implementation(ABwayCharacterWithAbilities* Character, int32 ScoringTeam);
+    void ServerTryScore(int32 ScoringTeam);
+    bool ServerTryScore_Validate(int32 ScoringTeam);
+    void ServerTryScore_Implementation(int32 ScoringTeam);
     
     // Multicast RPCs for visual feedback
     UFUNCTION(NetMulticast, Reliable)
@@ -170,15 +172,8 @@ public:
     UFUNCTION()
     void HandleStateChanged(ERelicState NewState, ERelicState PreviousState, ABwayCharacterWithAbilities* Carrier);
     
-    // Timer handlers
-    UFUNCTION()
-    void HandleDroppedTimeout();
-    
     UFUNCTION()
     void HandleScoringComplete();
-    
-    UFUNCTION()
-    void HandleResetComplete();
     
     // --------------------------------------------------------------
     // Accessors
@@ -230,9 +225,7 @@ protected:
     TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
     
     // Timer handles
-    FTimerHandle DroppedTimeoutHandle;
     FTimerHandle ScoringCompleteHandle;
-    FTimerHandle ResetCompleteHandle;
     
     // Client prediction
     UPROPERTY()
@@ -242,4 +235,8 @@ protected:
     TObjectPtr<ABwayCharacterWithAbilities> PredictedCarrier;
     
     void ReconcileAfterPrediction(bool bSuccess);
+
+    // Handle to track granted abilities
+    UPROPERTY()
+    FLyraAbilitySet_GrantedHandles RelicAbilityHandles;
 };

@@ -33,46 +33,35 @@ void AGoalZone::OnTriggerBeginOverlap(
     const FHitResult& SweepResult)
 {
     // Check if the overlapping actor is a character
-    ABwayCharacterWithAbilities* Character = Cast<ABwayCharacterWithAbilities>(OtherActor);
-    if (!Character)
+    ARelicActor* Relic = Cast<ARelicActor>(OtherActor);
+    if (!Relic)
     {
         return;
     }
     
     // Check if character is from opposing team
-    if (!IsOpposingTeam(Character))
+    if (Relic->GetLastPossessingTeam() == TeamId)
     {
         return;
     }
-    
-    // Check if character is carrying the Relic
-    ARelicActor* Relic = nullptr;
-    // Process scoring attempt if character has the Relic
-    if (Relic && Relic->IsCarried() && Relic->GetCarrier() == Character)
-    {
-        ProcessRelicScoringAttempt(Character, Relic);
-    }
+
+    ProcessRelicScoringAttempt(Relic);
 }
 
-bool AGoalZone::IsOpposingTeam(ABwayCharacterWithAbilities* Character) const
+bool AGoalZone::IsOpposingTeam(ARelicActor* Relic) const
 {
-    if (!Character)
+    if (!Relic)
     {
         return false;
     }
     
     // Check if character is on a different team
-    int32 CharacterTeamId = Character->GetTeamId();
-    return CharacterTeamId != TeamId && CharacterTeamId != -1 && TeamId != -1;
+    int32 RelicCarrierTeamId = Relic->GetLastPossessingTeam();
+    return RelicCarrierTeamId != TeamId && RelicCarrierTeamId != -1 && TeamId != -1;
 }
 
-void AGoalZone::ProcessRelicScoringAttempt(ABwayCharacterWithAbilities* Character, ARelicActor* Relic)
+void AGoalZone::ProcessRelicScoringAttempt(ARelicActor* Relic)
 {
-    if (!Character || !Relic)
-    {
-        return;
-    }
-    
     // Attempt to score
-    Relic->TryScore(Character, TeamId);
+    Relic->TryScore(TeamId);
 }

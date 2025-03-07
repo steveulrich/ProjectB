@@ -1,5 +1,4 @@
 #include "Relic/RelicActor.h"
-#include "Relic/RelicGameplayEffects.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -7,31 +6,28 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Components/AudioComponent.h"
 #include "AbilitySystemComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-#include "Engine/AssetManager.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "BreakawayGameMode.h"
+#include "Player/LyraPlayerState.h"
 
 ARelicActor::ARelicActor()
 {
     // Enable ticking and replication
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
-    SetReplicateMovement(true);
+    AActor::SetReplicateMovement(true);
 
     // Create components
     InteractionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionSphere"));
-    SetRootComponent(InteractionSphere);
+    InteractionSphere->SetupAttachment(RootComponent);
     InteractionSphere->SetCollisionProfileName(TEXT("Trigger"));
     InteractionSphere->SetSphereRadius(150.0f);
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ARelicActor::OnInteractionSphereBeginOverlap);
 
     RelicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RelicMesh"));
-    RelicMesh->SetupAttachment(RootComponent);
+    SetRootComponent(RelicMesh);
     RelicMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
     RelicMesh->SetSimulatePhysics(false);
-    RelicMesh->SetGenerateOverlapEvents(true);
 
     ActiveEffectComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ActiveEffectComponent"));
     ActiveEffectComponent->SetupAttachment(RelicMesh);
@@ -141,11 +137,97 @@ void ARelicActor::Tick(float DeltaTime)
     if (!HasAuthority() && StateMachine.CurrentState == ERelicState::Carried && 
         StateMachine.CurrentCarrier && !StateMachine.CurrentCarrier->IsLocallyControlled())
     {
-        // Implement smooth following of the carrier for remote clients
-        // This would be more complex in a real implementation
+        // Get the target socket transform on the carrier
+        FName SocketName = FName(RelicSettings->RelicSocket);
+        FTransform TargetTransform = StateMachine.CurrentCarrier->GetMesh()->GetSocketTransform(SocketName, RTS_World);
+        
+        // Get current transform and calculate distance to target
+        FTransform CurrentTransform = RelicMesh->GetComponentTransform();
+        float DistanceToTarget = FVector::Distance(CurrentTransform.GetLocation(), TargetTransform.GetLocation());
+        
+        // Cache the carrier's current velocity for prediction
+        FVector CarrierVelocity = StateMachine.CurrentCarrier->GetVelocity();
+        
+        // Calculate prediction based on carrier velocity and estimated network latency
+        // Use a fixed estimated value since GetAverageRTT() might not be available
+        float EstimatedNetworkLatency = 0.1f; // 100ms as a reasonable default
+        FVector PredictedOffset = CarrierVelocity * EstimatedNetworkLatency * 0.5f; // 50% compensation for latency
+        
+        // Apply prediction cap to prevent extreme offsets during lag spikes
+        const float MaxPredictionDistance = 200.0f;
+        if (PredictedOffset.SizeSquared() > FMath::Square(MaxPredictionDistance))
+        {
+            PredictedOffset = PredictedOffset.GetSafeNormal() * MaxPredictionDistance;
+        }
+        
+        // Apply prediction to target position
+        TargetTransform.SetLocation(TargetTransform.GetLocation() + PredictedOffset);
+        
+        // Dynamic smoothing factor based on distance and jitter
+        float BaseSmoothingFactor = FMath::Clamp(RelicSettings->NetworkSmoothing, 0.1f, 0.9f);
+        
+        // Increase smoothing for small movements (reduces jitter)
+        float DistanceBasedSmoothingFactor = BaseSmoothingFactor;
+        if (DistanceToTarget < 10.0f)
+        {
+            // More smoothing for small distances to reduce jitter
+            DistanceBasedSmoothingFactor = FMath::Lerp(BaseSmoothingFactor, 0.95f, 1.0f - (DistanceToTarget / 10.0f));
+        }
+        else if (DistanceToTarget > 50.0f)
+        {
+            // Less smoothing for large distances to catch up faster
+            DistanceBasedSmoothingFactor = FMath::Lerp(BaseSmoothingFactor, 0.1f, FMath::Min(1.0f, (DistanceToTarget - 50.0f) / 200.0f));
+        }
+        
+        // Calculate smoothed transform - interpolate both position and rotation
+        FVector SmoothedLocation = FMath::Lerp(
+            CurrentTransform.GetLocation(), 
+            TargetTransform.GetLocation(), 
+            DeltaTime / DistanceBasedSmoothingFactor
+        );
+        
+        FQuat SmoothedRotation = FMath::Lerp(
+            CurrentTransform.GetRotation(), 
+            TargetTransform.GetRotation(), 
+            DeltaTime / DistanceBasedSmoothingFactor
+        );
+        
+        // If we're very far from the target, perform a teleport instead of smooth movement
+        // This prevents the Relic from lagging too far behind during network hiccups
+        const float TeleportThreshold = 300.0f;
+        if (DistanceToTarget > TeleportThreshold)
+        {
+            SmoothedLocation = TargetTransform.GetLocation();
+            SmoothedRotation = TargetTransform.GetRotation();
+            
+            UE_LOG(LogTemp, Verbose, TEXT("Relic teleported due to large position discrepancy: %f"), DistanceToTarget);
+        }
+        
+        // Apply the smoothed transform to the Relic mesh
+        RelicMesh->SetWorldLocationAndRotation(SmoothedLocation, SmoothedRotation);
+        
+        // Apply attachment constraints to ensure proper visual alignment with the carrier
+        // Check attachment status by comparing parent component
+        USceneComponent* RelicParentComponent = RelicMesh->GetAttachParent();
+        bool bIsAttached = (RelicParentComponent != nullptr && RelicParentComponent == StateMachine.CurrentCarrier->GetMesh());
+        
+        if (!bIsAttached)
+        {
+            // Reapply attachment rules to ensure proper transformation hierarchy
+            RelicMesh->AttachToComponent(
+                StateMachine.CurrentCarrier->GetMesh(),
+                FAttachmentTransformRules::KeepWorldTransform,
+                SocketName
+            );
+        }
+        
+        // Update root component position to match mesh (important for collision)
+        if (RootComponent != RelicMesh)
+        {
+            RootComponent->SetWorldLocation(SmoothedLocation);
+        }
     }
 }
-
 
 void ARelicActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -234,17 +316,6 @@ bool ARelicActor::DropRelic(bool bIsIntentional)
             // Apply physics impulse
             ApplyDropImpulse(PreviousCarrier);
             
-            // Start dropped timeout timer
-            if (RelicSettings)
-            {
-                GetWorldTimerManager().SetTimer(
-                    DroppedTimeoutHandle,
-                    this,
-                    &ARelicActor::HandleDroppedTimeout,
-                    RelicSettings->DroppedStateDuration
-                );
-            }
-            
             return true;
         }
         return false;
@@ -277,11 +348,10 @@ bool ARelicActor::DropRelic(bool bIsIntentional)
     }
 }
 
-bool ARelicActor::TryScore(ABwayCharacterWithAbilities* Character, int32 ScoringTeam)
+bool ARelicActor::TryScore(int32 ScoringTeam)
 {
     // Validate the scoring attempt
     if (StateMachine.CurrentState != ERelicState::Carried || 
-        StateMachine.CurrentCarrier != Character || 
         StateMachine.LastPossessingTeam == ScoringTeam)
     {
         return false;
@@ -318,7 +388,7 @@ bool ARelicActor::TryScore(ABwayCharacterWithAbilities* Character, int32 Scoring
     else
     {
         // Client-side request
-        ServerTryScore(Character, ScoringTeam);
+        ServerTryScore(ScoringTeam);
         
         // No client-side prediction for scoring as it's a critical game state change
         return false;
@@ -332,6 +402,12 @@ void ARelicActor::ResetRelic()
         return;
     }
     
+    // If there's still a carrier, remove effects
+    if (StateMachine.CurrentCarrier)
+    {
+        RemoveCarrierEffects(StateMachine.CurrentCarrier);
+    }
+    
     // Transition to resetting state
     if (StateMachine.RequestStateChange(ERelicState::Resetting))
     {
@@ -342,18 +418,7 @@ void ARelicActor::ResetRelic()
         SetActorLocation(GetNextSpawnLocation());
         
         // Configure physics
-        ConfigurePhysics(false);
-        
-        // Start reset timer
-        if (RelicSettings)
-        {
-            GetWorldTimerManager().SetTimer(
-                ResetCompleteHandle,
-                this,
-                &ARelicActor::HandleResetComplete,
-                RelicSettings->ResetDuration
-            );
-        }
+        ConfigurePhysics(true);
     }
 }
 
@@ -363,15 +428,19 @@ void ARelicActor::AttachToCharacter(ABwayCharacterWithAbilities* Character)
     {
         return;
     }
+    RelicMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+    RelicMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
     
     // Disable physics
     ConfigurePhysics(false);
-    
+
+    RelicMesh->SetCollisionProfileName(RelicSettings->CarriedCollisionProfileName);
+
     // Attach to socket on character
     RelicMesh->AttachToComponent(
         Character->GetMesh(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-        FName("RelicSocket")  // This socket would need to be created on the character mesh
+        FName(RelicSettings->RelicSocket)  // This socket would need to be created on the character mesh, lets put this on RelicSettings
     );
     
     // Apply gameplay effects to carrier
@@ -399,13 +468,26 @@ void ARelicActor::ApplyCarrierEffects(ABwayCharacterWithAbilities* Character)
     {
         return;
     }
-    
-    // Get the ability system component from the character
-    UAbilitySystemComponent* CharacterASC = Character->GetAbilitySystemComponent();
-    if (!CharacterASC)
-    {
+    ALyraPlayerState* LyraPS = Character->GetLyraPlayerState();
+
+    // Get the Pawn and Controller
+    APawn* Pawn = Cast<APawn>(Character);
+    if (!Pawn)
         return;
-    }
+        
+    AController* Controller = Pawn->GetController();
+    if (!Controller)
+        return;
+    
+    // Get the PlayerState
+    ALyraPlayerState* PlayerState = Cast<ALyraPlayerState>(Controller->PlayerState);
+    if (!PlayerState)
+        return;
+
+    ULyraAbilitySystemComponent* LyraASC = PlayerState->GetLyraAbilitySystemComponent();
+    if (!LyraASC)
+        return;
+    
     
     // Clear any previous effect handles
     ActiveEffectHandles.Empty();
@@ -413,10 +495,10 @@ void ARelicActor::ApplyCarrierEffects(ABwayCharacterWithAbilities* Character)
     // Apply gameplay effect for movement speed modification
     if (RelicSettings->CarrierEffect)
     {
-        FGameplayEffectContextHandle EffectContext = CharacterASC->MakeEffectContext();
+        FGameplayEffectContextHandle EffectContext = LyraASC->MakeEffectContext();
         EffectContext.AddSourceObject(this);
         
-        FGameplayEffectSpecHandle EffectSpec = CharacterASC->MakeOutgoingSpec(
+        FGameplayEffectSpecHandle EffectSpec = LyraASC->MakeOutgoingSpec(
             RelicSettings->CarrierEffect,
             1.0f,
             EffectContext
@@ -429,18 +511,24 @@ void ARelicActor::ApplyCarrierEffects(ABwayCharacterWithAbilities* Character)
             EffectSpec.Data->SetSetByCallerMagnitude(SpeedMagnitudeParam, RelicSettings->CarrierSpeedModifier);
             
             // Apply the effect
-            FActiveGameplayEffectHandle EffectHandle = CharacterASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data);
+            FActiveGameplayEffectHandle EffectHandle = LyraASC->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data);
             if (EffectHandle.IsValid())
             {
                 ActiveEffectHandles.Add(EffectHandle);
             }
         }
     }
+
+    // Grant ability set if configured
+    if (RelicSettings->RelicAbilitySet != nullptr)
+    {
+        RelicSettings->RelicAbilitySet->GiveToAbilitySystem(LyraASC, &RelicAbilityHandles);
+    }
     
     // Apply carrier tag
     if (RelicSettings->CarrierTag.IsValid())
     {
-        CharacterASC->AddLooseGameplayTag(RelicSettings->CarrierTag);
+        LyraASC->AddLooseGameplayTag(RelicSettings->CarrierTag);
     }
     
     // Apply ability restriction tags
@@ -448,7 +536,7 @@ void ARelicActor::ApplyCarrierEffects(ABwayCharacterWithAbilities* Character)
     {
         for (const FGameplayTag& Tag : RelicSettings->RestrictedAbilityTags)
         {
-            CharacterASC->AddLooseGameplayTag(Tag);
+            LyraASC->AddLooseGameplayTag(Tag);
         }
     }
 }
@@ -461,8 +549,8 @@ void ARelicActor::RemoveCarrierEffects(ABwayCharacterWithAbilities* Character)
     }
     
     // Get the ability system component from the character
-    UAbilitySystemComponent* CharacterASC = Character->GetAbilitySystemComponent();
-    if (!CharacterASC)
+    ULyraAbilitySystemComponent* LyraASC = Character->GetLyraAbilitySystemComponent();
+    if (!LyraASC)
     {
         return;
     }
@@ -472,7 +560,7 @@ void ARelicActor::RemoveCarrierEffects(ABwayCharacterWithAbilities* Character)
     {
         if (EffectHandle.IsValid())
         {
-            CharacterASC->RemoveActiveGameplayEffect(EffectHandle);
+            LyraASC->RemoveActiveGameplayEffect(EffectHandle);
         }
     }
     
@@ -482,7 +570,7 @@ void ARelicActor::RemoveCarrierEffects(ABwayCharacterWithAbilities* Character)
     // Remove carrier tag
     if (RelicSettings && RelicSettings->CarrierTag.IsValid())
     {
-        CharacterASC->RemoveLooseGameplayTag(RelicSettings->CarrierTag);
+        LyraASC->RemoveLooseGameplayTag(RelicSettings->CarrierTag);
     }
     
     // Remove restricted ability tags
@@ -490,9 +578,12 @@ void ARelicActor::RemoveCarrierEffects(ABwayCharacterWithAbilities* Character)
     {
         for (const FGameplayTag& Tag : RelicSettings->RestrictedAbilityTags)
         {
-            CharacterASC->RemoveLooseGameplayTag(Tag);
+            LyraASC->RemoveLooseGameplayTag(Tag);
         }
     }
+    
+    // Remove granted ability set
+    RelicAbilityHandles.TakeFromAbilitySystem(LyraASC);
 }
 
 void ARelicActor::ServerTryPickup_Implementation(ABwayCharacterWithAbilities* Character)
@@ -517,15 +608,15 @@ bool ARelicActor::ServerDropRelic_Validate(bool bIsIntentional)
     return true;
 }
 
-void ARelicActor::ServerTryScore_Implementation(ABwayCharacterWithAbilities* Character, int32 ScoringTeam)
+void ARelicActor::ServerTryScore_Implementation(int32 ScoringTeam)
 {
-    TryScore(Character, ScoringTeam);
+    TryScore(ScoringTeam);
 }
 
-bool ARelicActor::ServerTryScore_Validate(ABwayCharacterWithAbilities* Character, int32 ScoringTeam)
+bool ARelicActor::ServerTryScore_Validate(int32 ScoringTeam)
 {
     // Basic validation
-    return Character != nullptr && ScoringTeam >= 0;
+    return ScoringTeam >= 0;
 }
 
 void ARelicActor::MulticastOnStateChanged_Implementation(ERelicState NewState, ERelicState PreviousState)
@@ -559,7 +650,7 @@ void ARelicActor::MulticastOnStateChanged_Implementation(ERelicState NewState, E
     else if (NewState == ERelicState::Neutral || NewState == ERelicState::Resetting)
     {
         DetachFromCharacter();
-        ConfigurePhysics(false);
+        ConfigurePhysics(true);
     }
 }
 
@@ -583,9 +674,11 @@ void ARelicActor::OnInteractionSphereBeginOverlap(
     {
         return;
     }
-    
-    // Auto-pickup for simplicity (in a real game, you might require a button press)
-    TryPickup(Character);
+
+    if (Character->IsRequestingRelic)
+    {
+        TryPickup(Character);
+    }
 }
 
 void ARelicActor::HandleStateChanged(ERelicState NewState, ERelicState PreviousState, ABwayCharacterWithAbilities* Carrier)
@@ -594,31 +687,21 @@ void ARelicActor::HandleStateChanged(ERelicState NewState, ERelicState PreviousS
     switch (NewState)
     {
         case ERelicState::Neutral:
-            ConfigurePhysics(false);
+            ConfigurePhysics(true);
             break;
             
         case ERelicState::Carried:
+            // ConfigurePhysics() is called within AttachToCharacter()
             if (Carrier)
             {
                 AttachToCharacter(Carrier);
             }
-            ConfigurePhysics(false);
             break;
             
         case ERelicState::Dropped:
             DetachFromCharacter();
             ConfigurePhysics(true);
             
-            // Start dropped timeout timer
-            if (HasAuthority() && RelicSettings)
-            {
-                GetWorldTimerManager().SetTimer(
-                    DroppedTimeoutHandle,
-                    this,
-                    &ARelicActor::HandleDroppedTimeout,
-                    RelicSettings->DroppedStateDuration
-                );
-            }
             break;
             
         case ERelicState::Scoring:
@@ -627,7 +710,7 @@ void ARelicActor::HandleStateChanged(ERelicState NewState, ERelicState PreviousS
             
         case ERelicState::Resetting:
             DetachFromCharacter();
-            ConfigurePhysics(false);
+            ConfigurePhysics(false); // TODO: Check if this needs to be true?
             break;
             
         case ERelicState::Inactive:
@@ -649,33 +732,12 @@ void ARelicActor::HandleStateChanged(ERelicState NewState, ERelicState PreviousS
     }
 }
 
-void ARelicActor::HandleDroppedTimeout()
-{
-    if (HasAuthority() && StateMachine.CurrentState == ERelicState::Dropped)
-    {
-        // Reset to neutral state
-        StateMachine.RequestStateChange(ERelicState::Neutral);
-        
-        // Move to spawn location
-        SetActorLocation(GetNextSpawnLocation());
-    }
-}
-
 void ARelicActor::HandleScoringComplete()
 {
     if (HasAuthority() && StateMachine.CurrentState == ERelicState::Scoring)
     {
         // Begin the reset process
         ResetRelic();
-    }
-}
-
-void ARelicActor::HandleResetComplete()
-{
-    if (HasAuthority() && StateMachine.CurrentState == ERelicState::Resetting)
-    {
-        // Return to neutral state
-        StateMachine.RequestStateChange(ERelicState::Neutral);
     }
 }
 
@@ -715,11 +777,47 @@ FVector ARelicActor::GetNextSpawnLocation()
 
 void ARelicActor::ConfigurePhysics(bool bEnablePhysics)
 {
-    if (RelicMesh)
+    if (!RelicMesh || !RelicSettings)
     {
-        RelicMesh->SetSimulatePhysics(bEnablePhysics);
-        RelicMesh->SetCollisionEnabled(bEnablePhysics ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
+        return;
     }
+    
+    RelicMesh->SetSimulatePhysics(bEnablePhysics);
+    RelicMesh->SetCollisionEnabled(bEnablePhysics ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
+
+    // Apply collision profile based on current state
+    FName CollisionProfileName;
+    
+    switch (StateMachine.CurrentState)
+    {
+        case ERelicState::Neutral:
+            CollisionProfileName = RelicSettings->NeutralCollisionProfileName;
+            break;
+            
+        case ERelicState::Carried:
+            CollisionProfileName = RelicSettings->CarriedCollisionProfileName;
+            break;
+            
+        case ERelicState::Dropped:
+            CollisionProfileName = RelicSettings->DroppedCollisionProfileName;
+            break;
+            
+        case ERelicState::Scoring:
+            CollisionProfileName = RelicSettings->ScoringCollisionProfileName;
+            break;
+            
+        case ERelicState::Resetting:
+            CollisionProfileName = RelicSettings->ResettingCollisionProfileName;
+            break;
+            
+        case ERelicState::Inactive:
+        default:
+            CollisionProfileName = RelicSettings->InactiveCollisionProfileName;
+            break;
+    }
+    
+    RelicMesh->SetCollisionProfileName(CollisionProfileName);
+
 }
 
 void ARelicActor::UpdateVisualEffects(ERelicState NewState)
@@ -804,18 +902,13 @@ void ARelicActor::ApplyDropImpulse(ABwayCharacterWithAbilities* PreviousCarrier)
     {
         return;
     }
+    // TODO: Apply Knockout/ForcedDrop impulse in the direction of the relic spawn, with increased magnitude based on distance
     
-    // Get carrier movement velocity
-    FVector CarrierVelocity = PreviousCarrier->GetVelocity();
+    // Toss straight up!
+    FVector ImpulseDirection = FVector::UpVector;
+    float ImpulseMagnitude = RelicSettings->DropImpulseMultiplier;
     
-    // Apply impulse in the direction the carrier was moving
-    if (!CarrierVelocity.IsNearlyZero())
-    {
-        FVector ImpulseDirection = CarrierVelocity.GetSafeNormal();
-        float ImpulseMagnitude = CarrierVelocity.Size() * RelicSettings->DropImpulseMultiplier;
-        
-        RelicMesh->AddImpulse(ImpulseDirection * ImpulseMagnitude, NAME_None, true);
-    }
+    RelicMesh->AddImpulse(ImpulseDirection * ImpulseMagnitude, NAME_None, true);
 }
 
 void ARelicActor::ReconcileAfterPrediction(bool bSuccess)
@@ -834,7 +927,7 @@ void ARelicActor::ReconcileAfterPrediction(bool bSuccess)
         {
             DetachFromCharacter();
             
-            if (StateMachine.CurrentState == ERelicState::Dropped)
+            if (StateMachine.CurrentState != ERelicState::Carried)
             {
                 ConfigurePhysics(true);
             }
