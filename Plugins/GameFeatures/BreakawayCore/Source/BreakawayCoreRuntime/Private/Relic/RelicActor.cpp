@@ -101,6 +101,12 @@ void ARelicActor::BeginPlay()
             SetActorLocation(GetNextSpawnLocation());
         });
     }
+
+    // Attach other components to the main relic mesh
+    InteractionSphere->AttachToComponent(RelicMesh, FAttachmentTransformRules::KeepRelativeTransform);
+    ActiveEffectComponent->AttachToComponent(RelicMesh, FAttachmentTransformRules::KeepRelativeTransform);
+    AudioComponent->AttachToComponent(RelicMesh, FAttachmentTransformRules::KeepRelativeTransform);
+
 }
 
 void ARelicActor::PostInitializeComponents()
@@ -262,10 +268,12 @@ bool ARelicActor::TryPickup(ABwayCharacterWithAbilities* Character)
     {
         return false;
     }
-    
+
     // Check if we're on server or client
     if (HasAuthority())
     {
+        Character->IsRequestingRelic = false;
+
         // Server-side pickup
         return StateMachine.RequestStateChange(ERelicState::Carried, Character);
     }
