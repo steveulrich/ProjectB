@@ -6,6 +6,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/LyraPlayerState.h"
 
 
 ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
@@ -20,6 +21,13 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 
 }
 
+void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    
+	DOREPLIFETIME(ABwayCharacterWithAbilities, IsRequestingRelic);
+}
+
 FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() const
 {
 	FCollisionQueryParams Params;
@@ -32,43 +40,15 @@ FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() co
 	return Params;
 }
 
-void ABwayCharacterWithAbilities::SetTeamId(int32 NewTeamId)
-{
-	// Only the server can set the team ID
-	if (HasAuthority())
-	{
-		TeamId = NewTeamId;
-        
-		// Update team tag based on ID
-		switch (TeamId)
-		{
-		case 0:
-			TeamTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.Team.1"));
-			break;
-		case 1:
-			TeamTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.Team.2"));
-			break;
-		default:
-			TeamTag = FGameplayTag();
-			break;
-		}
-        
-		// Optional: Update character appearance based on team
-		UpdateAppearanceForTeam();
-	}
-}
-
-void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    
-	// Replicate team ID to all clients
-	DOREPLIFETIME(ABwayCharacterWithAbilities, TeamId);
-}
-
 // Optional method to update character appearance based on team
 void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 {
 	// This would be implemented to change mesh colors, effects, etc.
 	// based on the current TeamId
+}
+
+// This function is called when IsRequestingRelic is replicated
+void ABwayCharacterWithAbilities::OnRep_IsRequestingRelic()
+{
+	HandleRelicRequestVisibilityChange(IsRequestingRelic);
 }

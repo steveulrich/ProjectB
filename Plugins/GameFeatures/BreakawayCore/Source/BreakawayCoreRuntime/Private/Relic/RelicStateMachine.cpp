@@ -1,6 +1,7 @@
 #include "Relic/RelicStateMachine.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/LyraPlayerState.h"
 
 FRelicStateMachine::FRelicStateMachine()
 {
@@ -49,7 +50,7 @@ bool FRelicStateMachine::RequestStateChange(ERelicState NewState, ABwayCharacter
         // Update last possessing team if carrier is valid
         if (CurrentCarrier)
         {
-            LastPossessingTeam = CurrentCarrier->GetTeamId();
+            LastPossessingTeam = CurrentCarrier->GetLyraPlayerState()->GetTeamId();
         }
     }
     else if (NewState != ERelicState::Carried)

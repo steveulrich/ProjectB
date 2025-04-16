@@ -108,6 +108,10 @@ public:
     // Drop the Relic
     UFUNCTION(BlueprintCallable, Category = "Relic")
     bool DropRelic(bool bIsIntentional = false);
+
+    // Throw the Relic
+    UFUNCTION(BlueprintCallable, Category = "Relic")
+    void ThrowRelic(const FVector& ThrowVelocity);
     
     // Try to score with the Relic
     UFUNCTION(BlueprintCallable, Category = "Relic")
@@ -202,10 +206,6 @@ public:
         return StateMachine.CurrentState == ERelicState::Neutral || 
                StateMachine.CurrentState == ERelicState::Dropped; 
     }
-    
-    // Get next spawn location
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    FVector GetNextSpawnLocation();
     
 protected:
     // Handle physics simulation during different states

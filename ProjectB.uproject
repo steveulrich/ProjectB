@@ -363,6 +363,10 @@
 			"SupportedTargetPlatforms": [
 				"Win64"
 			]
+		},
+		{
+			"Name": "BreakawayRelicCore",
+			"Enabled": true
 		}
 	]
 }

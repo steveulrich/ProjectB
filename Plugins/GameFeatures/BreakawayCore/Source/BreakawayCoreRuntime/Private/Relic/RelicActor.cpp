@@ -15,7 +15,9 @@ ARelicActor::ARelicActor()
     // Enable ticking and replication
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
-    AActor::SetReplicateMovement(true);
+    SetReplicatingMovement(true); // Important for physics objects
+    SetNetUpdateFrequency(66.0f);
+    SetMinNetUpdateFrequency(33.0f);
 
     // Create components
     InteractionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionSphere"));
@@ -52,13 +54,8 @@ void ARelicActor::BeginPlay()
     Super::BeginPlay();
     
     // Initialize state machine
+    StateMachine = FRelicStateMachine();
     StateMachine.OnStateChanged.AddUObject(this, &ARelicActor::HandleStateChanged);
-    
-    // Set initial state to Inactive
-    if (HasAuthority())
-    {
-        StateMachine.RequestStateChange(ERelicState::Inactive);
-    }
     
     // Set interaction sphere radius from settings
     if (RelicSettings)
@@ -93,13 +90,7 @@ void ARelicActor::BeginPlay()
     // If we're the authority, start the game with the Relic in Neutral state
     if (HasAuthority())
     {
-        GetWorldTimerManager().SetTimerForNextTick([this]()
-        {
-            StateMachine.RequestStateChange(ERelicState::Neutral);
-            
-            // Move to spawn location
-            SetActorLocation(GetNextSpawnLocation());
-        });
+        StateMachine.RequestStateChange(ERelicState::Neutral);
     }
 
     // Attach other components to the main relic mesh
@@ -121,7 +112,7 @@ void ARelicActor::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
     
     // Update state machine
-    StateMachine.UpdateState(DeltaTime);
+    //StateMachine.UpdateState(DeltaTime);
     
     // Client prediction reconciliation
     if (bIsPredictingPickup && StateMachine.CurrentState == ERelicState::Carried && 
@@ -137,101 +128,6 @@ void ARelicActor::Tick(float DeltaTime)
     {
         // Failed prediction
         ReconcileAfterPrediction(false);
-    }
-    
-    // Networking smoothing for remote clients when the Relic is being carried
-    if (!HasAuthority() && StateMachine.CurrentState == ERelicState::Carried && 
-        StateMachine.CurrentCarrier && !StateMachine.CurrentCarrier->IsLocallyControlled())
-    {
-        // Get the target socket transform on the carrier
-        FName SocketName = FName(RelicSettings->RelicSocket);
-        FTransform TargetTransform = StateMachine.CurrentCarrier->GetMesh()->GetSocketTransform(SocketName, RTS_World);
-        
-        // Get current transform and calculate distance to target
-        FTransform CurrentTransform = RelicMesh->GetComponentTransform();
-        float DistanceToTarget = FVector::Distance(CurrentTransform.GetLocation(), TargetTransform.GetLocation());
-        
-        // Cache the carrier's current velocity for prediction
-        FVector CarrierVelocity = StateMachine.CurrentCarrier->GetVelocity();
-        
-        // Calculate prediction based on carrier velocity and estimated network latency
-        // Use a fixed estimated value since GetAverageRTT() might not be available
-        float EstimatedNetworkLatency = 0.1f; // 100ms as a reasonable default
-        FVector PredictedOffset = CarrierVelocity * EstimatedNetworkLatency * 0.5f; // 50% compensation for latency
-        
-        // Apply prediction cap to prevent extreme offsets during lag spikes
-        const float MaxPredictionDistance = 200.0f;
-        if (PredictedOffset.SizeSquared() > FMath::Square(MaxPredictionDistance))
-        {
-            PredictedOffset = PredictedOffset.GetSafeNormal() * MaxPredictionDistance;
-        }
-        
-        // Apply prediction to target position
-        TargetTransform.SetLocation(TargetTransform.GetLocation() + PredictedOffset);
-        
-        // Dynamic smoothing factor based on distance and jitter
-        float BaseSmoothingFactor = FMath::Clamp(RelicSettings->NetworkSmoothing, 0.1f, 0.9f);
-        
-        // Increase smoothing for small movements (reduces jitter)
-        float DistanceBasedSmoothingFactor = BaseSmoothingFactor;
-        if (DistanceToTarget < 10.0f)
-        {
-            // More smoothing for small distances to reduce jitter
-            DistanceBasedSmoothingFactor = FMath::Lerp(BaseSmoothingFactor, 0.95f, 1.0f - (DistanceToTarget / 10.0f));
-        }
-        else if (DistanceToTarget > 50.0f)
-        {
-            // Less smoothing for large distances to catch up faster
-            DistanceBasedSmoothingFactor = FMath::Lerp(BaseSmoothingFactor, 0.1f, FMath::Min(1.0f, (DistanceToTarget - 50.0f) / 200.0f));
-        }
-        
-        // Calculate smoothed transform - interpolate both position and rotation
-        FVector SmoothedLocation = FMath::Lerp(
-            CurrentTransform.GetLocation(), 
-            TargetTransform.GetLocation(), 
-            DeltaTime / DistanceBasedSmoothingFactor
-        );
-        
-        FQuat SmoothedRotation = FMath::Lerp(
-            CurrentTransform.GetRotation(), 
-            TargetTransform.GetRotation(), 
-            DeltaTime / DistanceBasedSmoothingFactor
-        );
-        
-        // If we're very far from the target, perform a teleport instead of smooth movement
-        // This prevents the Relic from lagging too far behind during network hiccups
-        const float TeleportThreshold = 300.0f;
-        if (DistanceToTarget > TeleportThreshold)
-        {
-            SmoothedLocation = TargetTransform.GetLocation();
-            SmoothedRotation = TargetTransform.GetRotation();
-            
-            UE_LOG(LogTemp, Verbose, TEXT("Relic teleported due to large position discrepancy: %f"), DistanceToTarget);
-        }
-        
-        // Apply the smoothed transform to the Relic mesh
-        RelicMesh->SetWorldLocationAndRotation(SmoothedLocation, SmoothedRotation);
-        
-        // Apply attachment constraints to ensure proper visual alignment with the carrier
-        // Check attachment status by comparing parent component
-        USceneComponent* RelicParentComponent = RelicMesh->GetAttachParent();
-        bool bIsAttached = (RelicParentComponent != nullptr && RelicParentComponent == StateMachine.CurrentCarrier->GetMesh());
-        
-        if (!bIsAttached)
-        {
-            // Reapply attachment rules to ensure proper transformation hierarchy
-            RelicMesh->AttachToComponent(
-                StateMachine.CurrentCarrier->GetMesh(),
-                FAttachmentTransformRules::KeepWorldTransform,
-                SocketName
-            );
-        }
-        
-        // Update root component position to match mesh (important for collision)
-        if (RootComponent != RelicMesh)
-        {
-            RootComponent->SetWorldLocation(SmoothedLocation);
-        }
     }
 }
 
@@ -356,6 +252,27 @@ bool ARelicActor::DropRelic(bool bIsIntentional)
     }
 }
 
+void ARelicActor::ThrowRelic(const FVector& ThrowVelocity)
+{
+    if (HasAuthority() && IsCarried())
+    {
+        // Detach the relic from the current carrier
+        DetachFromCharacter();
+
+        // Enable physics simulation
+        ConfigurePhysics(true);
+
+        // Apply the throw velocity as an impulse
+        if (RelicMesh && RelicMesh->IsSimulatingPhysics())
+        {
+            RelicMesh->AddImpulse(ThrowVelocity, NAME_None, true); // true for velocity change
+        }
+        
+        StateMachine.RequestStateChange(ERelicState::Dropped);
+
+    }
+}
+
 bool ARelicActor::TryScore(int32 ScoringTeam)
 {
     // Validate the scoring attempt
@@ -422,9 +339,6 @@ void ARelicActor::ResetRelic()
         // Detach from any carrier
         DetachFromCharacter();
         
-        // Move to spawn location
-        SetActorLocation(GetNextSpawnLocation());
-        
         // Configure physics
         ConfigurePhysics(true);
     }
@@ -441,8 +355,6 @@ void ARelicActor::AttachToCharacter(ABwayCharacterWithAbilities* Character)
     
     // Disable physics
     ConfigurePhysics(false);
-
-    RelicMesh->SetCollisionProfileName(RelicSettings->CarriedCollisionProfileName);
 
     // Attach to socket on character
     RelicMesh->AttachToComponent(
@@ -476,7 +388,6 @@ void ARelicActor::ApplyCarrierEffects(ABwayCharacterWithAbilities* Character)
     {
         return;
     }
-    ALyraPlayerState* LyraPS = Character->GetLyraPlayerState();
 
     // Get the Pawn and Controller
     APawn* Pawn = Cast<APawn>(Character);
@@ -736,6 +647,7 @@ void ARelicActor::HandleStateChanged(ERelicState NewState, ERelicState PreviousS
     // Notify clients about state change
     if (HasAuthority())
     {
+        ForceNetUpdate();
         MulticastOnStateChanged(NewState, PreviousState);
     }
 }
@@ -747,40 +659,6 @@ void ARelicActor::HandleScoringComplete()
         // Begin the reset process
         ResetRelic();
     }
-}
-
-FVector ARelicActor::GetNextSpawnLocation()
-{
-    if (!RelicSettings)
-    {
-        return FVector::ZeroVector;
-    }
-    
-    // Check if we have any spawn locations defined
-    if (RelicSettings->SpawnLocations.Num() > 0)
-    {
-        if (RelicSettings->bUseRandomSpawnLocation)
-        {
-            // Random spawn location
-            int32 RandomIndex = FMath::RandRange(0, RelicSettings->SpawnLocations.Num() - 1);
-            return RelicSettings->SpawnLocations[RandomIndex];
-        }
-        else
-        {
-            // Round-robin spawn location
-            if (CurrentSpawnLocationIndex >= RelicSettings->SpawnLocations.Num())
-            {
-                CurrentSpawnLocationIndex = 0;
-            }
-            
-            FVector Location = RelicSettings->SpawnLocations[CurrentSpawnLocationIndex];
-            CurrentSpawnLocationIndex++;
-            return Location;
-        }
-    }
-    
-    // Fallback to default spawn location
-    return RelicSettings->DefaultSpawnLocation;
 }
 
 void ARelicActor::ConfigurePhysics(bool bEnablePhysics)
