@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BwayPlayerState.h"
 #include "Character/LyraCharacterWithAbilities.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
@@ -15,7 +16,7 @@ protected:
 	TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;
 public:
 	explicit ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer);
-
+	
 	UFUNCTION(BlueprintPure) FORCEINLINE UBwayCharacterMovementComponent* GetBwayCharacterMovement() const { return BwayCharacterMovementComponent; }
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 	
@@ -24,14 +25,7 @@ public:
     
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	void UpdateAppearanceForTeam();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	void HandleRelicRequestVisibilityChange(bool bIsRequestingRelic);
 
-	UFUNCTION() // UFUNCTION() is needed for RepNotify functions
-	void OnRep_IsRequestingRelic(); // Make sure this name matches the one in ReplicatedUsing
-
-	// For example, this is set TRUE in the RequestRelic Gameplay Ability
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing = OnRep_IsRequestingRelic, Category = "Relic")
-	bool IsRequestingRelic = false;
+	UFUNCTION(BlueprintCallable)
+	ABwayPlayerState* GetBwayPlayerState() const;
 };

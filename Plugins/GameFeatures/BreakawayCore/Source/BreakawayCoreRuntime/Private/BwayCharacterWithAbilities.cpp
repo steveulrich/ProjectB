@@ -3,6 +3,7 @@
 
 #include "BwayCharacterWithAbilities.h"
 #include "BwayCharacterMovementComponent.h"
+#include "BwayPlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
@@ -19,13 +20,6 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 
 	bUseControllerRotationPitch = bUseControllerRotationYaw = bUseControllerRotationRoll = false;
 
-}
-
-void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    
-	DOREPLIFETIME(ABwayCharacterWithAbilities, IsRequestingRelic);
 }
 
 FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() const
@@ -47,8 +41,7 @@ void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 	// based on the current TeamId
 }
 
-// This function is called when IsRequestingRelic is replicated
-void ABwayCharacterWithAbilities::OnRep_IsRequestingRelic()
+ABwayPlayerState* ABwayCharacterWithAbilities::GetBwayPlayerState() const
 {
-	HandleRelicRequestVisibilityChange(IsRequestingRelic);
+	return Cast<ABwayPlayerState>(GetPlayerState());
 }

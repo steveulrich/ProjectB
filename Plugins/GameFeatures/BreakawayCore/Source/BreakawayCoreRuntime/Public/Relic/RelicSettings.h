@@ -72,6 +72,12 @@ public:
     //-----------------------------------------------------------
     // Gameplay Settings
     //-----------------------------------------------------------
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "0.0", ClampMax = "2000.0"))
+    float ThrowVelocity = 1000.0f;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "0.0", ClampMax = "90.0"))
+    float ThrowAngle = 30.0f;
     
     // How much to modify carrier's movement speed (multiplicative)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "0.0", ClampMax = "1.0"))
@@ -180,7 +186,10 @@ public:
     // Tag applied when the relic is being scored
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")
     FGameplayTag ScoringTag;
-    
+
+    // Tag to listen for pickup of relic
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickup", meta=(GameplayTagFilter="GameplayEventTagsCategory"))
+    FGameplayTag PickupEventTag;
     //-----------------------------------------------------------
     // Team Identification
     //-----------------------------------------------------------

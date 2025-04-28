@@ -3,28 +3,34 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Relic/RelicSettings.h"
-#include "Relic/RelicStateMachine.h"
-#include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
-#include "ActiveGameplayEffectHandle.h"
-#include "GameplayTagContainer.h"
 #include "RelicActor.generated.h"
 
-class USphereComponent;
-class UStaticMeshComponent;
-class UNiagaraComponent;
-class UAudioComponent;
 class UAbilitySystemComponent;
-class ABwayCharacterWithAbilities;
+class UStaticMeshComponent;
+class USphereComponent;
 class URelicSettings;
-class URelicCarrierEffectData;
-class URelicAbilityRestrictionData;
+class ABwayCharacterWithAbilities; // Forward declaration
+
+// Enum defining the possible states of the Relic
+UENUM(BlueprintType)
+enum class ERelicState : uint8
+{
+    Neutral			UMETA(DisplayName = "Neutral"), // On the ground, available
+    Carried			UMETA(DisplayName = "Carried"), // Attached to a player
+    Dropped			UMETA(DisplayName = "Dropped"), // Recently dropped, maybe temporary cooldown
+    Thrown			UMETA(DisplayName = "Thrown"), // Moving via physics after a throw
+    BeingPassed		UMETA(DisplayName = "BeingPassed"), // Moving via physics after a pass
+    PendingRequest	UMETA(DisplayName = "PendingRequest"), // Optional: Waiting for a specific requester
+    Scoring			UMETA(DisplayName = "Scoring"), // In a score zone
+    Resetting		UMETA(DisplayName = "Resetting") // After scoring, before respawn
+};
 
 /**
  * The main actor class for the Relic object
  */
-UCLASS()
+UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API ARelicActor : public AActor, public IAbilitySystemInterface
 {
     GENERATED_BODY()
@@ -32,211 +38,83 @@ class BREAKAWAYCORERUNTIME_API ARelicActor : public AActor, public IAbilitySyste
 public:    
     ARelicActor();
     
-protected:
-    virtual void BeginPlay() override;
-    
-public:    
-    virtual void Tick(float DeltaTime) override;
-    
-    // Called when the game starts or when spawned
-    virtual void PostInitializeComponents() override;
-    
-    // Network setup
+    //~ AActor Interface
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-    // Network replication handlers
+    virtual void BeginPlay() override;
+
     UFUNCTION()
-    void OnRep_StateMachine();
+    virtual void OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+    //~ End AActor Interface
+
+    //~ IAbilitySystemInterface
+    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+    //~ End IAbilitySystemInterface
     
-    UPROPERTY(ReplicatedUsing = OnRep_StateMachine)
-    FRelicStateMachine StateMachine;
+    // --- Replication ---
+
+    // Replicated state variable with notification function
+    UPROPERTY(ReplicatedUsing = OnRep_CurrentState, BlueprintReadOnly, Category = "Relic|State")
+    ERelicState CurrentState = ERelicState::Neutral;
+    UFUNCTION()
+    virtual void OnRep_CurrentState();
+
+    // Replicated reference to the character currently carrying the relic
+    UPROPERTY(ReplicatedUsing = OnRep_CurrentCarrier, BlueprintReadOnly, Category = "Relic|State")
+    TObjectPtr<ABwayCharacterWithAbilities> CurrentCarrier = nullptr;
+    UFUNCTION()
+    virtual void OnRep_CurrentCarrier();
     
-    UPROPERTY(Replicated)
-    TObjectPtr<ABwayCharacterWithAbilities> CurrentCarrier;
-    
-    UPROPERTY(Replicated)
+    UPROPERTY(BlueprintReadOnly)
     int32 LastPossessingTeam;
-    // --------------------------------------------------------------
-    // Components
-    // --------------------------------------------------------------
+
+    // --- Core Logic ---
+
+    // Called by GA_PickupRelic on the server to attach the relic
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    virtual void OnPickedUp(ABwayCharacterWithAbilities* NewCarrier);
+
+    // Called by GA_DropRelic, GA_ThrowRelic, GA_PassRelic on the server to detach
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    virtual void OnDropped();
+
+    // Server RPC called by GA_ThrowRelic
+    UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+    void Server_ThrowRelic(const FVector& ThrowVelocity);
+
+    // Server RPC called by GA_PassRelic
+    UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+    void Server_PassRelic(const FVector& PassVelocity);
+
+    // Multicast RPC for cosmetic effects (e.g., throw/pass VFX/SFX)
+    UFUNCTION(NetMulticast, Unreliable)
+    void Multicast_PlayThrowPassFX();
     
-    // Collision sphere for pickup detection
+protected:
+    // --- Components ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USphereComponent> InteractionSphere;
-    
-    // Static mesh representation
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    TObjectPtr<UStaticMeshComponent> RelicMesh;
-    
-    // Effects components
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    TObjectPtr<UNiagaraComponent> ActiveEffectComponent;
-    
-    // Audio component
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    TObjectPtr<UAudioComponent> AudioComponent;
-    
-    // Ability system component
+    TObjectPtr<UStaticMeshComponent> RelicMesh; // Ensure this is the RootComponent for physics replication [1]
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
-    
-    // IAbilitySystemInterface
-    virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
-    {
-        return AbilitySystemComponent;
-    }
-    
-    // --------------------------------------------------------------
-    // Settings and State
-    // --------------------------------------------------------------
-    
-    // Settings data asset
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Settings")
-    TObjectPtr<URelicSettings> RelicSettings;
-    
-    // Current spawn location index
-    UPROPERTY(BlueprintReadOnly, Category = "State")
-    int32 CurrentSpawnLocationIndex;
-    
-    // --------------------------------------------------------------
-    // Interaction Methods
-    // --------------------------------------------------------------
-    
-    // Try to pick up the Relic
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    bool TryPickup(ABwayCharacterWithAbilities* Character);
-    
-    // Drop the Relic
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    bool DropRelic(bool bIsIntentional = false);
 
-    // Throw the Relic
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void ThrowRelic(const FVector& ThrowVelocity);
-    
-    // Try to score with the Relic
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    bool TryScore(int32 ScoringTeam);
-    
-    // Reset the Relic to a spawn location
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void ResetRelic();
-    
-    // Attach the Relic to a character
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void AttachToCharacter(ABwayCharacterWithAbilities* Character);
-    
-    // Detach the Relic from a character
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void DetachFromCharacter();
-    
-    // Apply carrier effects to a character
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void ApplyCarrierEffects(ABwayCharacterWithAbilities* Character);
-    
-    // Remove carrier effects from a character
-    UFUNCTION(BlueprintCallable, Category = "Relic")
-    void RemoveCarrierEffects(ABwayCharacterWithAbilities* Character);
-    
-    // --------------------------------------------------------------
-    // Networking
-    // --------------------------------------------------------------
-    
-    // Server RPC for pickup
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerTryPickup(ABwayCharacterWithAbilities* Character);
-    bool ServerTryPickup_Validate(ABwayCharacterWithAbilities* Character);
-    void ServerTryPickup_Implementation(ABwayCharacterWithAbilities* Character);
-    
-    // Server RPC for drop
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerDropRelic(bool bIsIntentional);
-    bool ServerDropRelic_Validate(bool bIsIntentional);
-    void ServerDropRelic_Implementation(bool bIsIntentional);
-    
-    // Server RPC for scoring
-    UFUNCTION(Server, Reliable, WithValidation)
-    void ServerTryScore(int32 ScoringTeam);
-    bool ServerTryScore_Validate(int32 ScoringTeam);
-    void ServerTryScore_Implementation(int32 ScoringTeam);
-    
-    // Multicast RPCs for visual feedback
-    UFUNCTION(NetMulticast, Reliable)
-    void MulticastOnStateChanged(ERelicState NewState, ERelicState PreviousState);
-    void MulticastOnStateChanged_Implementation(ERelicState NewState, ERelicState PreviousState);
-    
-    // --------------------------------------------------------------
-    // Events
-    // --------------------------------------------------------------
-    
-    // Overlap detection
-    UFUNCTION()
-    void OnInteractionSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-    
-    // State machine events
-    UFUNCTION()
-    void HandleStateChanged(ERelicState NewState, ERelicState PreviousState, ABwayCharacterWithAbilities* Carrier);
-    
-    UFUNCTION()
-    void HandleScoringComplete();
-    
-    // --------------------------------------------------------------
-    // Accessors
-    // --------------------------------------------------------------
-    
-    // Get current state
-    UFUNCTION(BlueprintPure, Category = "Relic")
-    ERelicState GetState() const { return StateMachine.CurrentState; }
-    
-    // Get current carrier
-    UFUNCTION(BlueprintPure, Category = "Relic")
-    ABwayCharacterWithAbilities* GetCarrier() const { return StateMachine.CurrentCarrier; }
-    
-    // Get last possessing team
-    UFUNCTION(BlueprintPure, Category = "Relic")
-    int32 GetLastPossessingTeam() const { return StateMachine.LastPossessingTeam; }
-    
-    // Is the Relic being carried?
-    UFUNCTION(BlueprintPure, Category = "Relic")
-    bool IsCarried() const { return StateMachine.CurrentState == ERelicState::Carried; }
-    
-    // Is the Relic available for pickup?
-    UFUNCTION(BlueprintPure, Category = "Relic")
-    bool IsAvailableForPickup() const 
-    { 
-        return StateMachine.CurrentState == ERelicState::Neutral || 
-               StateMachine.CurrentState == ERelicState::Dropped; 
-    }
-    
-protected:
-    // Handle physics simulation during different states
-    void ConfigurePhysics(bool bEnablePhysics);
-    
-    // Update visual effects based on state
-    void UpdateVisualEffects(ERelicState NewState);
-    
-    // Play appropriate sounds based on state changes
-    void PlayStateChangeSound(ERelicState NewState, ERelicState PreviousState);
-    
-    // Apply an impulse when dropped
-    void ApplyDropImpulse(ABwayCharacterWithAbilities* PreviousCarrier);
-    
-    // Cached active gameplay effect handles for carrier effects
-    UPROPERTY()
-    TArray<FActiveGameplayEffectHandle> ActiveEffectHandles;
-    
-    // Timer handles
-    FTimerHandle ScoringCompleteHandle;
-    
-    // Client prediction
-    UPROPERTY()
-    bool bIsPredictingPickup;
-    
-    UPROPERTY()
-    TObjectPtr<ABwayCharacterWithAbilities> PredictedCarrier;
-    
-    void ReconcileAfterPrediction(bool bSuccess);
+    // --- Configuration ---
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Relic|Config")
+    TObjectPtr<URelicSettings> RelicSettings; // Assume this contains ThrowForce, PassForce, SocketName etc.
 
-    // Handle to track granted abilities
-    UPROPERTY()
-    FLyraAbilitySet_GrantedHandles RelicAbilityHandles;
+    // --- Internal State Management ---
+    UFUNCTION(BlueprintCallable, Category = "Relic|State")
+    void SetRelicState(ERelicState NewState);
+
+    // Internal helper to handle attachment
+    void AttachToCarrier(ABwayCharacterWithAbilities* Carrier);
+
+    // Internal helper to handle detachment and physics setup
+    void DetachFromCarrier(const FVector* InitialVelocity = nullptr);
+private:
+    // Helper to check if pickup is allowed based on state and character request
+    bool CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const;
 };
