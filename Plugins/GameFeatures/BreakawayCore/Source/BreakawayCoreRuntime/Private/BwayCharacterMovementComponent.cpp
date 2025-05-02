@@ -38,6 +38,7 @@ void UBwayCharacterMovementComponent::InitializeComponent()
 // --- Movement Mode Change Handling ---
 void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
+	UE_LOG(LogTemp, Warning, TEXT("MovementMode Changed: %s"), *UEnum::GetDisplayValueAsText(MovementMode).ToString());
 	// Check if entering the slide mode
 	if (IsSliding()) // Use helper function for clarity
 	{
@@ -52,7 +53,6 @@ void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previo
 		RotationRate = FRotator(0.f, SlideCharacterRotationSpeed, 0.f); // Set high rotation rate
 
 		StartSlide(); // Handle capsule resize, etc.
-		bDidSlideFall = false; // Reset fall flag
 	}
 	// Check if exiting the slide mode
 	else if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Slide)
@@ -82,31 +82,10 @@ void UBwayCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float D
 	{
 		if (CheckShouldEndSlide())
 		{
-			// Determine if jump input caused the end
-			bool bJumpPressed = false;
-			APlayerController* PC = CharacterOwner? Cast<APlayerController>(CharacterOwner->GetController()) : nullptr;
-			UEnhancedInputComponent* EIC = PC? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
-			if (EIC && JumpInputAction && CharacterOwner && CharacterOwner->CanJump()) // Check CanJump here
-			{
-				// Check bool value, assumes Jump IA uses Pressed/Released [11]
-				bJumpPressed = EIC->GetBoundActionValue(JumpInputAction).Get<bool>();
-			}
-
 			// Transition out of slide mode
 			// Determine new mode based on current state (e.g., Falling if airborne)
 			const EMovementMode NewMode = IsFalling()? MOVE_Falling : MOVE_Walking;
 			SetMovementMode(NewMode); // This will call OnMovementModeChanged to handle cleanup
-
-			// If jump caused the exit, initiate the jump process
-			if (bJumpPressed && CharacterOwner)
-			{
-				// Set flag for ProcessLanded check
-				LastSlideJumpTime = GetWorld()->GetTimeSeconds();
-
-				// Trigger the standard Jump action.
-				// The modified Jump GA should handle applying the slide cooldown effect.
-				CharacterOwner->Jump();
-			}
 
 			// Important: Return early as movement mode has changed, physics for the *new* mode will run.
 			// Avoid calling Super::UpdateCharacterStateBeforeMovement for the old (sliding) mode.
@@ -129,32 +108,13 @@ bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 	// 1. Check Speed: End if speed drops below minimum threshold
 	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: TRUE Velocity too low!"));
 		return true;
 	}
 
-	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
-	UEnhancedInputComponent* EIC = PC? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
-	if (!EIC) return true; // Cannot check inputs, safer to end
-
-	// 2. Check Input Hold State: End if slide input is released [11, 15]
-	if (SlideInputAction &&!EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
-	{
-		return true;
-	}
-
-	// 3. Check Jump Input Press: End if jump is pressed AND character can currently jump [11]
-	if (JumpInputAction && EIC->GetBoundActionValue(JumpInputAction).Get<bool>())
-	{
-		// Check CanJump to ensure jump is valid (e.g., grounded, not blocked by other abilities)
-		if (Owner->CanJump())
-		{
-			return true;
-		}
-	}
-
-	// 4. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
+	// 2. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
 	// No explicit check needed here as PhysSliding runs after this check.
-
+	UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: FALSE - CONTINUE SLIDE"));
 	return false; // Conditions met to continue sliding
 }
 
@@ -186,10 +146,12 @@ void UBwayCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteratio
 {
 	if (CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Slide)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Execute PhysSliding!"));
 		PhysSliding(deltaTime, Iterations);
 	}
 	else
 	{
+		UE_LOG(LogTemp, Warning, TEXT("In Different mode: %u"), CustomMovementMode);
 		Super::PhysCustom(deltaTime, Iterations); // Handle other custom modes if any
 	}
 }
@@ -201,20 +163,26 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	RestorePreAdditiveRootMotionVelocity();
 
-	if (!HasValidData() || deltaTime < MIN_TICK_TIME || Iterations >= MaxSimulationIterations) return;
+	if (!HasValidData() || deltaTime < MIN_TICK_TIME || Iterations >= MaxSimulationIterations)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not valid data or time < tickTime or iterations exceeded!"));
+		return;
+	}
 
 	// --- Ground Check ---
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
+	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not on walkable floor!"));
 		// Became airborne - Transition to Falling
-		bDidSlideFall = true; // Mark that this fall originated from a slide
 		SetMovementMode(MOVE_Falling);
 		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
 		return;
 	}
 
 	// --- Calculate Physics Inputs ---
+	UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
+
 	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
 	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
 
@@ -262,12 +230,10 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		HandleImpact(Hit, deltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
-
-	// Re-check ground state after movement, might have slid off an edge
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
+	// Re-check ground state after movement, might have slid off an edge
+	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
 	{
-		bDidSlideFall = true; // Mark fall origin
 		SetMovementMode(MOVE_Falling);
 		// No need for StartNewPhysics here, will happen next tick
 	}
@@ -297,7 +263,7 @@ void UBwayCharacterMovementComponent::ApplySlideSlopeAcceleration(float DeltaTim
 		// Calculate direction down the slope (perpendicular to floor normal and horizontal plane)
 		const FVector FloorNormal = CurrentFloor.HitResult.ImpactNormal;
 		const FVector RightVector = FVector::CrossProduct(FloorNormal, FVector::UpVector);
-		const FVector DownSlopeDirection = FVector::CrossProduct(RightVector, FloorNormal).GetSafeNormal();
+		const FVector DownSlopeDirection = FVector::CrossProduct(FloorNormal, RightVector).GetSafeNormal();
 
 		if (!DownSlopeDirection.IsNearlyZero())
 		{
@@ -376,29 +342,7 @@ void UBwayCharacterMovementComponent::ApplySlideFriction(float DeltaTime, float 
 // --- Falling Physics Override ---
 void UBwayCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
 {
-	// Check if slide input is still held AND if the fall started during a slide attempt
-	bool bApplySlideGravity = false;
-	if (bDidSlideFall) // Check flag set when transitioning from Slide->Fall
-	{
-		APlayerController* PC = CharacterOwner? Cast<APlayerController>(CharacterOwner->GetController()) : nullptr;
-		UEnhancedInputComponent* EIC = PC? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
-		if (EIC && SlideInputAction && EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
-		{
-			bApplySlideGravity = true;
-		}
-	}
-
-	// Apply custom gravity scale if conditions met
-	if (bApplySlideGravity)
-	{
-		GravityScale = SlideGravityScale;
-	}
-	else
-	{
-		// Ensure default gravity scale is used otherwise
-		GravityScale = DefaultGravityScale;
-		bDidSlideFall = false; // Reset flag if input released or fall didn't start from slide
-	}
+	GravityScale = SlideGravityScale;
 
 	// Execute standard falling physics with potentially modified gravity scale
 	Super::PhysFalling(deltaTime, Iterations);
@@ -422,9 +366,6 @@ void UBwayCharacterMovementComponent::ProcessLanded(const FHitResult& Hit, float
 
 		LastSlideJumpTime = -1.0f; // Consume the timer
 	}
-
-	// Reset slide fall flag on landing
-	bDidSlideFall = false;
 }
 
 // --- Modifier Calculation ---

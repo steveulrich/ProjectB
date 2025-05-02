@@ -2,14 +2,11 @@
 
 
 #include "BwayGameplayAbility_Slide.h"
-#include "Character/LyraCharacter.h"
 #include "BwayCharacterMovementComponent.h" // Include custom CMC header
 #include "AbilitySystemComponent.h"
 #include "GameFramework/PlayerController.h"
-#include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
-#include "LyraGameplayTags.h" // Assuming tags are defined here or globally
 #include "NativeGameplayTags.h" // For standard tags if needed
+#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_State_Movement_Sliding, "State.Movement.Sliding");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_InputTag_Ability_Slide, "InputTag.Ability.Slide");
@@ -33,52 +30,38 @@ bool UBwayGameplayAbility_Slide::CanActivateAbility(const FGameplayAbilitySpecHa
 {
 	if (!ActorInfo ||!ActorInfo->AvatarActor.IsValid())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide : FALSE (ActorInfo Not Valid") );
 		return false;
 	}
 
 	const ABwayCharacterWithAbilities* BwayCharacter = Cast<ABwayCharacterWithAbilities>(ActorInfo->AvatarActor.Get());
 	if (!BwayCharacter)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide : FALSE (BwayCharacter Failed Cast") );
 		return false;
 	}
 
-	const UBwayCharacterMovementComponent* MoveComp = Cast<UBwayCharacterMovementComponent>(BwayCharacter->GetBwayCharacterMovement());
-	if (!MoveComp)
+	if (!CachedBwayMoveComp)
 	{
-		return false; // Requires the custom CMC
-	}
-
-	// Check if character is on the ground
-	if (!MoveComp->IsMovingOnGround())
-	{
-		// Optional: Failure tag Ability.ActivationFailure.NotGrounded
-		return false;
-	}
-
-	// Check if character is already sliding
-	if (MoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide) || MoveComp->MovementMode == MOVE_Custom)
-	{
-		// Check the specific custom mode if MOVE_Custom is active
-		if (MoveComp->MovementMode == MOVE_Custom && MoveComp->CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Slide)
+		CachedBwayMoveComp = BwayCharacter ? Cast<UBwayCharacterMovementComponent>(BwayCharacter->GetBwayCharacterMovement()) : nullptr;
+		if (!CachedBwayMoveComp)
 		{
-			return false; // Already sliding
+			UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide : FALSE (MovementComponent Failed Cast") );
+			return false; // Requires the custom CMC
 		}
-		// Allow if in a *different* custom mode? Depends on design. Assuming not for now.
-		// return false;
 	}
 
-
-	// Check for required prerequisite tag (e.g., Sprinting)
-	const UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-	if (!ASC || (RequiredStateTag.IsValid() &&!ASC->HasMatchingGameplayTag(RequiredStateTag)))
+	// --- Check if Already Sliding ---
+	if (CachedBwayMoveComp->IsSliding())
 	{
-		// Optional: Failure tag Ability.ActivationFailure.MissingRequiredTag
+		UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide: Condition Failed (Already Sliding)"));
 		return false;
 	}
 
 	// Standard checks (Super includes cooldown check if CooldownGameplayEffectClass is set)
 	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide : FALSE (Super Fail)") );
 		return false;
 	}
 
@@ -92,7 +75,7 @@ bool UBwayGameplayAbility_Slide::CanActivateAbility(const FGameplayAbilitySpecHa
 	//     return false;
 	// }
 
-
+	UE_LOG(LogTemp, Warning, TEXT("CanUseAbility - Slide : TRUE") );
 	return true; // All conditions met
 }
 
@@ -104,8 +87,11 @@ void UBwayGameplayAbility_Slide::ActivateAbility(const FGameplayAbilitySpecHandl
 	CachedBwayMoveComp = BwayCharacter? Cast<UBwayCharacterMovementComponent>(BwayCharacter->GetBwayCharacterMovement()) : nullptr;
 	UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
 
+	UE_LOG(LogTemp, Warning, TEXT("ActivateAbility - Slide Start") );
+
 	if (!CachedBwayMoveComp ||!ASC)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("ActivateAbility - Failed: No MoveComp/ASC") );
 		bool bReplicateEndAbility = true;
 		bool bWasCancelled = true;
 		EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
@@ -119,35 +105,105 @@ void UBwayGameplayAbility_Slide::ActivateAbility(const FGameplayAbilitySpecHandl
 		CommitAbilityCooldown(Handle, ActorInfo, ActivationInfo, true);
 	}
 
+	// --- Force Downward if Falling ---
+	// Optional: Apply a downward impulse if activating while airborne
+	if (CachedBwayMoveComp->IsFalling())
+	{
+		// Example: Add a strong downward impulse. Adjust Z value as needed.
+		// This is a simple way; more complex physics might be desired.
+		// Consider potential issues with replication and prediction if doing direct velocity changes.
+		CachedBwayMoveComp->AddImpulse(FVector(0.f, 0.f, -1000.f), true);
+		// Alternatively, just setting the mode might be sufficient, letting gravity do the work.
+		UE_LOG(LogTemp, Warning, TEXT("ActivateAbility - Slide: Activating while falling."));
+	}
+
 	// --- Trigger Custom Movement Mode ---
 	// This is the primary action of this ability.
 	CachedBwayMoveComp->SetMovementMode(MOVE_Custom, (uint8)ECustomMovementMode::CMOVE_Slide);
+	UE_LOG(LogTemp, Warning, TEXT("ActivateAbility - Slide: Movement Mode Set") );
 
+	// --- Wait for Input Release ---
+	// Create and configure the task to wait for the input release
+	UAbilityTask_WaitInputRelease* WaitInputReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this);
+	if (WaitInputReleaseTask)
+	{
+		// Bind the EndAbility function (or a custom function that calls EndAbility) to the OnRelease delegate
+		WaitInputReleaseTask->OnRelease.AddDynamic(this, &UBwayGameplayAbility_Slide::OnInputRelease);
+		WaitInputReleaseTask->ReadyForActivation(); // Start the task
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Slide Ability: Failed to create WaitInputRelease task. Ending ability."));
+		bool bReplicateEndAbility = true;
+		bool bWasCancelled = true; // Treat failure to create task as cancellation
+		EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+		return;
+	}
+	
 	// --- Apply State Tag ---
 	// The SlidingStateTag (e.g., State.Movement.Sliding) is automatically applied
 	// because it's listed in ActivationOwnedTags in the constructor.
 
 	// Ability remains active while the CMC is in CMOVE_Slide.
-	// The CMC is responsible for checking exit conditions (input release, speed drop, jump)
+	// The CMC is responsible for checking exit conditions (speed drop)
 	// and calling SetMovementMode to exit the custom mode.
 	// When the CMC exits CMOVE_Slide, OnMovementModeChanged will fire.
 	// We don't strictly need a delegate here; the ability can end when the State.Movement.Sliding tag is removed
 	// (which happens automatically when the ability ends) or be ended manually if needed.
 	// For simplicity, let the ability stay active. It will be implicitly ended if another
 	// ability cancels abilities with its tag, or explicitly ended if necessary.
+
+}
+
+// Add this new function to handle the release event
+void UBwayGameplayAbility_Slide::OnInputRelease(float TimeHeld)
+{
+	// Input was released, end the ability
+	bool bReplicateEndAbility = true;
+	bool bWasCancelled = false; // Input release is not a cancellation
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 void UBwayGameplayAbility_Slide::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// Ensure the CMC is no longer in slide mode if the ability ends unexpectedly.
-	// Normally, the CMC controls its own exit, but this is a safeguard.
-	if (CachedBwayMoveComp && CachedBwayMoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide))
+	// Check if the pointer is still valid before using it
+	if (CachedBwayMoveComp)
 	{
-		// If still sliding, force exit back to a default state (e.g., Walking or Falling)
-		CachedBwayMoveComp->SetMovementMode(CachedBwayMoveComp->IsFalling()? MOVE_Falling : MOVE_Walking);
+		// Only change mode if we are *still* in slide mode when the ability ends.
+		// This prevents overriding a mode change initiated by the CMC itself (e.g., due to low speed).
+		if (CachedBwayMoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("EndAbility - Slide: Forcing exit from CMOVE_Slide"));
+			// Determine appropriate default state (Falling or Walking)
+			CachedBwayMoveComp->SetMovementMode(CachedBwayMoveComp->IsFalling() ? MOVE_Falling : MOVE_Walking);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("EndAbility - Slide: CMC already exited CMOVE_Slide."));
+		}
+	}
+	else
+	{
+		// Attempt to get the component again if CachedBwayMoveComp was nullified somehow
+		// (though ideally it shouldn't be null here if ActivateAbility succeeded)
+		if (ActorInfo && ActorInfo->AvatarActor.IsValid())
+		{
+			ABwayCharacterWithAbilities* BwayCharacter = Cast<ABwayCharacterWithAbilities>(ActorInfo->AvatarActor.Get());
+			UBwayCharacterMovementComponent* MoveComp = BwayCharacter ? Cast<UBwayCharacterMovementComponent>(BwayCharacter->GetBwayCharacterMovement()) : nullptr;
+			if (MoveComp && MoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide))
+			{
+				UE_LOG(LogTemp, Warning, TEXT("EndAbility - Slide (Fallback): Forcing exit from CMOVE_Slide"));
+				MoveComp->SetMovementMode(MoveComp->IsFalling() ? MOVE_Falling : MOVE_Walking);
+			}
+		}
 	}
 
+	UE_LOG(LogTemp, Warning, TEXT("EndAbility - Slide: Cleaning up. Cancelled: %s"), bWasCancelled ? TEXT("True") : TEXT("False"));
+
+	// Nullify the cached pointer *before* calling Super::EndAbility,
+	// as Super::EndAbility might destroy the ability instance.
 	CachedBwayMoveComp = nullptr;
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 	// ActivationOwnedTags (State.Movement.Sliding) are automatically removed by Super::EndAbility.
 }

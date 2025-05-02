@@ -117,15 +117,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Modifiers", meta = (ClampMin = "0.0"))
 	float LootFrictionMultiplier = 1.5f;
 
-	// --- Input Action References (For internal checks) ---
-	/** Input Action asset for the slide input. */
-	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sliding|Input")
-	TObjectPtr<UInputAction> SlideInputAction; // Assign IA_Slide in BP
-
-	/** Input Action asset for the jump input. */
-	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Sliding|Input")
-	TObjectPtr<UInputAction> JumpInputAction; // Assign Lyra's Jump IA in BP
-
 	// --- Public Functions ---
 	/** Checks conditions to determine if the slide should end. */
 	UFUNCTION(BlueprintCallable, Category = "Character Movement: Sliding")
@@ -169,9 +160,6 @@ protected:
 	float DefaultWalkableFloorAngle;
 	FRotator DefaultRotationRate;
 	float DefaultGravityScale;
-
-	// State tracking
-	bool bDidSlideFall = false; // Flag set when transitioning from Slide to Fall
 
 	// State for slide-jump landing penalty
 	float LastSlideJumpTime = -1.0f;

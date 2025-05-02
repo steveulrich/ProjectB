@@ -43,5 +43,10 @@ void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 
 ABwayPlayerState* ABwayCharacterWithAbilities::GetBwayPlayerState() const
 {
+	if ( !GetPlayerState() )
+	{
+		return nullptr;
+	}
+	// Ensure the player state is of the correct type
 	return Cast<ABwayPlayerState>(GetPlayerState());
 }

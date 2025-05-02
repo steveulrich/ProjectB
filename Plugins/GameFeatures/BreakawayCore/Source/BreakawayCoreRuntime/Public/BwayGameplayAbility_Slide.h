@@ -28,19 +28,14 @@ protected:
 	                     FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	/** Tag required on the character to initiate the slide (e.g., State.Movement.Sprinting). */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Slide Trigger")
-	FGameplayTag RequiredStateTag; // Assign State.Movement.Sprinting in BP
+	UFUNCTION()
+	void OnInputRelease(float TimeHeld);
 
 	/** Tag representing the sliding state, applied by this ability via ActivationOwnedTags. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Slide Trigger")
 	FGameplayTag SlidingStateTag; // Assign State.Movement.Sliding in BP
 
-	/** Input Action for Slide (needed for Hold check if IA configured for Press/Release) */
-	UPROPERTY(EditDefaultsOnly, Category = "Lyra|Slide Trigger")
-	TObjectPtr<const UInputAction> SlideInputAction; // Assign IA_Slide in BP
-
 private:
 	UPROPERTY(Transient)
-	TObjectPtr<UBwayCharacterMovementComponent> CachedBwayMoveComp;
+	mutable TObjectPtr<UBwayCharacterMovementComponent> CachedBwayMoveComp;
 };
