@@ -3,11 +3,15 @@
 
 #include "BwayCharacterWithAbilities.h"
 #include "BwayCharacterMovementComponent.h"
-#include "BwayPlayerState.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Net/UnrealNetwork.h"
-#include "Player/LyraPlayerState.h"
+#include "Relic/RelicActor.h"
+#include "Relic/RelicSettings.h"
+#include "AbilitySystemGlobals.h"
+#include "GameFramework/PlayerState.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
+
 
 
 ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
@@ -41,12 +45,42 @@ void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 	// based on the current TeamId
 }
 
-ABwayPlayerState* ABwayCharacterWithAbilities::GetBwayPlayerState() const
+void ABwayCharacterWithAbilities::TryPickupOverlappingRelic()
 {
-	if ( !GetPlayerState() )
+	if (!HasAuthority())
 	{
-		return nullptr;
+		return;
 	}
-	// Ensure the player state is of the correct type
-	return Cast<ABwayPlayerState>(GetPlayerState());
+
+	TArray<AActor*> OverlappingActors;
+	// Use the character's capsule or another relevant component for overlap checks
+	GetCapsuleComponent()->GetOverlappingActors(OverlappingActors, ARelicActor::StaticClass());
+
+	for (AActor* OverlappingActor : OverlappingActors)
+	{
+		ARelicActor* Relic = Cast<ARelicActor>(OverlappingActor);
+		if (Relic && Relic->CanBePickedUpBy(this))
+		{
+			APlayerState* MyPlayerState = GetPlayerState();
+			if (MyPlayerState)
+			{
+				ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(MyPlayerState));
+				const URelicSettings* Settings = Relic->GetRelicSettings(); // Assuming a getter for RelicSettings
+
+				if (PlayerStateASC && Settings && Settings->PickupEventTag.IsValid())
+				{
+					FGameplayEventData Payload;
+					Payload.EventTag = Settings->PickupEventTag;
+					Payload.Instigator = this;
+					Payload.Target = Relic; // Target is the relic
+
+					PlayerStateASC->HandleGameplayEvent(Payload.EventTag, &Payload);
+					UE_LOG(LogTemp, Log, TEXT("Server: Sent PickupRelic event from Character overlap check to PlayerState ASC of %s for Relic %s"), *GetNameSafe(MyPlayerState), *GetNameSafe(Relic));
+
+					// Found a valid relic and sent the event, stop checking
+					return;
+				}
+			}
+		}
+	}
 }

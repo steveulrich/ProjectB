@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BwayPlayerState.h"
 #include "Character/LyraCharacterWithAbilities.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
@@ -26,6 +25,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Team")
 	void UpdateAppearanceForTeam();
 
-	UFUNCTION(BlueprintCallable)
-	ABwayPlayerState* GetBwayPlayerState() const;
+	// Method to try and pickup an overlapping relic
+	UFUNCTION(BlueprintCallable, Category = "Relic")
+	void TryPickupOverlappingRelic();
 };

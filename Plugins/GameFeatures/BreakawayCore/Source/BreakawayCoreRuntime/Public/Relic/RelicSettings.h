@@ -174,6 +174,10 @@ public:
     // Tag that identifies this object as a relic
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")
     FGameplayTag RelicTag;
+
+    // Tag applied to characters carrying the relic
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")
+    FGameplayTag RequestingTag;
     
     // Tag applied to characters carrying the relic
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")

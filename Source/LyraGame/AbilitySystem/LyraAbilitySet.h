@@ -23,7 +23,7 @@ class UObject;
  *	Data used by the ability set to grant gameplay abilities.
  */
 USTRUCT(BlueprintType)
-struct FLyraAbilitySet_GameplayAbility
+struct LYRAGAME_API FLyraAbilitySet_GameplayAbility
 {
 	GENERATED_BODY()
 
@@ -49,7 +49,7 @@ public:
  *	Data used by the ability set to grant gameplay effects.
  */
 USTRUCT(BlueprintType)
-struct FLyraAbilitySet_GameplayEffect
+struct LYRAGAME_API FLyraAbilitySet_GameplayEffect
 {
 	GENERATED_BODY()
 
@@ -70,7 +70,7 @@ public:
  *	Data used by the ability set to grant attribute sets.
  */
 USTRUCT(BlueprintType)
-struct FLyraAbilitySet_AttributeSet
+struct LYRAGAME_API FLyraAbilitySet_AttributeSet
 {
 	GENERATED_BODY()
 
@@ -87,7 +87,7 @@ public:
  *	Data used to store handles to what has been granted by the ability set.
  */
 USTRUCT(BlueprintType)
-struct FLyraAbilitySet_GrantedHandles
+struct LYRAGAME_API FLyraAbilitySet_GrantedHandles
 {
 	GENERATED_BODY()
 
@@ -97,7 +97,7 @@ public:
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
 	void AddAttributeSet(UAttributeSet* Set);
 
-	LYRAGAME_API void TakeFromAbilitySystem(ULyraAbilitySystemComponent* LyraASC);
+	void TakeFromAbilitySystem(ULyraAbilitySystemComponent* LyraASC);
 
 protected:
 

@@ -3,8 +3,11 @@
 #include "Relic/RelicSettings.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "AbilitySystemComponent.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h" // Make sure this is included
+#include "AbilitySystem/LyraAbilitySet.h"         // Make sure this is included
+#include "AbilitySystemGlobals.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/PlayerState.h" // Include necessary header for APlayerState
 #include "Kismet/GameplayStatics.h" // For FinishSpawningActor if needed later
 
 ARelicActor::ARelicActor()
@@ -69,7 +72,33 @@ void ARelicActor::BeginPlay()
                 RelicMesh->SetMaterial(0, LoadedMaterial);
             }
         }
+
+        // --- Preload Ability Set (Server Only) ---
+        if (HasAuthority())
+        {
+            if (!RelicSettings->RelicAbilitySet.IsNull())
+            {
+                // Load the ability set specified in settings
+                LoadedRelicAbilitySet = RelicSettings->RelicAbilitySet.LoadSynchronous();
+                if (!LoadedRelicAbilitySet)
+                {
+                    UE_LOG(LogTemp, Error, TEXT("ARelicActor %s failed to load RelicAbilitySet: %s"),
+                        *GetNameSafe(this), *RelicSettings->RelicAbilitySet.ToString());
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Log, TEXT("ARelicActor %s preloaded RelicAbilitySet: %s"),
+                       *GetNameSafe(this), *GetNameSafe(LoadedRelicAbilitySet));
+                }
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("ARelicActor %s has no RelicAbilitySet specified in RelicSettings."), *GetNameSafe(this));
+            }
+        }
+        // --- End Preload ---
     }
+    
    
     // Attach other components to the main relic mesh
     InteractionSphere->AttachToComponent(RelicMesh, FAttachmentTransformRules::KeepRelativeTransform);
@@ -86,7 +115,7 @@ void ARelicActor::BeginPlay()
 
 void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    // Server-side check only for initiating pickup logic
+     // Server-side check only for initiating pickup logic
     if (!HasAuthority())
     {
         return;
@@ -95,19 +124,36 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
     ABwayCharacterWithAbilities* OverlappingCharacter = Cast<ABwayCharacterWithAbilities>(OtherActor);
     if (OverlappingCharacter && CanBePickedUpBy(OverlappingCharacter))
     {
-        // Option 2: Try to activate a pickup ability on the character (Recommended GAS approach)
-        UAbilitySystemComponent* CharASC = OverlappingCharacter->GetAbilitySystemComponent();
-        if (CharASC && RelicSettings && RelicSettings->PickupEventTag.IsValid()) // Assume PickupEventTag is defined in URelicSettings
+        // Get the PlayerState associated with the character
+        APlayerState* PlayerState = OverlappingCharacter->GetPlayerState();
+        if (PlayerState)
         {
-            FGameplayEventData Payload;
-            Payload.EventTag = RelicSettings->PickupEventTag; // e.g., "Event.Interaction.PickupRelic"
-            Payload.Instigator = OverlappingCharacter; // Who triggered the pickup
-            Payload.Target = this; // The Relic itself is the target of the event
+            // Get the Ability System Component from the PlayerState
+            UAbilitySystemComponent* PlayerStateASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
 
-            // Send the event to the character's ASC.
-            // The GA_PickupRelic_BP should have an "Event Received" trigger matching this tag.
-            CharASC->HandleGameplayEvent(Payload.EventTag, &Payload);
-            UE_LOG(LogTemp, Log, TEXT("Server: Sent PickupRelic event to %s"), *GetNameSafe(OverlappingCharacter));
+            if (PlayerStateASC && RelicSettings && RelicSettings->PickupEventTag.IsValid())
+            {
+                FGameplayEventData Payload;
+                Payload.EventTag = RelicSettings->PickupEventTag;
+                Payload.Instigator = OverlappingCharacter; // Character still initiated it
+                Payload.Target = this; // The Relic itself is the target of the event
+
+                // Send the event to the PLAYER STATE's ASC.
+                // The GA_PickupRelic_BP (granted to the PlayerState) should listen for this.
+                PlayerStateASC->HandleGameplayEvent(Payload.EventTag, &Payload);
+                UE_LOG(LogTemp, Log, TEXT("Server: Sent PickupRelic event to PlayerState ASC of %s (Owner: %s)"), *GetNameSafe(PlayerState), *GetNameSafe(OverlappingCharacter));
+            }
+            else
+            {
+                 UE_LOG(LogTemp, Warning, TEXT("Server: Could not send PickupRelic event. PlayerState ASC: %s, RelicSettings: %s, PickupEventTag Valid: %d"),
+                    PlayerStateASC ? TEXT("Valid") : TEXT("INVALID"),
+                    RelicSettings ? TEXT("Valid") : TEXT("INVALID"),
+                    RelicSettings ? RelicSettings->PickupEventTag.IsValid() : 0);
+            }
+        }
+        else
+        {
+             UE_LOG(LogTemp, Warning, TEXT("Server: Overlapping character %s has no PlayerState."), *GetNameSafe(OverlappingCharacter));
         }
     }
 }
@@ -115,8 +161,8 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
 bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
 {
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return (CurrentState == ERelicState::Neutral || CurrentState == ERelicState::Dropped) &&
-           Character && Character->GetBwayPlayerState() && Character->GetBwayPlayerState()->IsRequestingRelic();
+    return CurrentState != ERelicState::Carried &&
+    (Character && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag));
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
@@ -228,13 +274,10 @@ void ARelicActor::OnDropped()
     if (HasAuthority())
     {
         DetachFromCarrier(); // Detaches and sets physics state
-        CurrentCarrier = nullptr; // Clear replicated property
+        CurrentCarrier = nullptr; // Clear replicated property AFTER potentially using it above
         OnRep_CurrentCarrier(); // Call RepNotify manually on server
 
-        // Transition to Dropped state (or Neutral depending on rules)
         SetRelicState(ERelicState::Dropped);
-        
-        //TODO: Potentially start a timer before changing to Neutral
     }
 }
 
@@ -283,17 +326,48 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
     if (!Carrier) return;
 
     // Use settings for socket name
-    FName AttachSocketName = FName( RelicSettings->RelicSocket ); // Default socket name if not set
+    FName AttachSocketName = RelicSettings ? FName(RelicSettings->RelicSocket) : NAME_None;
 
     // Ensure physics is off before attaching
     RelicMesh->SetSimulatePhysics(false);
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // Attach to the carrier's mesh
-    USkeletalMeshComponent* CarrierMesh = Carrier->GetMesh(); // Assuming standard character mesh setup
+    USkeletalMeshComponent* CarrierMesh = Carrier->GetMesh();
     if (CarrierMesh)
     {
         AttachToComponent(CarrierMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocketName);
+    }
+
+    if (HasAuthority())
+    {
+        // --- Grant Ability Set ---
+        APlayerState* CarrierPlayerState = Carrier->GetPlayerState();
+        if (CarrierPlayerState)
+        {
+            // Get the ASC from the PlayerState and cast it to the expected Lyra type
+            ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState));
+            // Use the preloaded AbilitySet
+            ULyraAbilitySet* AbilitySetToGrant = LoadedRelicAbilitySet; // Use the member variable
+
+            if (PlayerStateASC && AbilitySetToGrant)
+            {
+                // Grant the ability set and store the handle
+                AbilitySetToGrant->GiveToAbilitySystem(PlayerStateASC, &GrantedCarrierSetHandle, this); // GrantedCarrierSetHandle should be FLyraAbilitySet_GrantedHandles
+                UE_LOG(LogTemp, Log, TEXT("Server: Granted RelicAbilitySet '%s' to PlayerState ASC of %s"), *GetNameSafe(AbilitySetToGrant), *GetNameSafe(CarrierPlayerState));
+            }
+            else
+            {
+                // Use IsValid() for UObject pointers in the log check
+                UE_LOG(LogTemp, Warning, TEXT("Server: Failed to grant RelicAbilitySet. PlayerStateASC Valid: %d, AbilitySetToGrant Valid: %d"),
+                    IsValid(PlayerStateASC), IsValid(AbilitySetToGrant));
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Server: Carrier %s has no PlayerState, cannot grant AbilitySet."), *GetNameSafe(Carrier));
+        }
+        // --- End Grant Ability Set ---
     }
 
     // If called on client via OnRep_CurrentCarrier, this visually attaches the relic.
@@ -302,22 +376,49 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
 
 void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
 {
-    // Detach from parent
+    // Detach from parent FIRST visually
     DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-    // Re-enable collision and server-side physics
+    // Re-enable collision
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
     if (HasAuthority())
     {
+        // --- Clear Ability Set (Server Only) ---
+        if (CurrentCarrier) // Check if there was a carrier before clearing CurrentCarrier
+        {
+            APlayerState* PreviousCarrierPlayerState = CurrentCarrier->GetPlayerState();
+            if (PreviousCarrierPlayerState)
+            {
+                // Get the ASC from the PlayerState and cast it to the expected Lyra type
+                ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PreviousCarrierPlayerState));
+
+                // Check the cast result AND if the stored handle struct indicates something was actually granted
+                if (PlayerStateASC)
+                {
+                    GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
+                    // Log success
+                    UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s"), *GetNameSafe(PreviousCarrierPlayerState));
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Server: Failed to clear Ability Set. PlayerStateASC Valid: %d"),
+                       IsValid(PlayerStateASC));
+                }
+            }
+        }
+        // --- End Clear Ability Set ---
+
+        // Enable server-side physics AFTER clearing abilities/detaching
         RelicMesh->SetSimulatePhysics(true);
         if (InitialVelocity)
         {
-            RelicMesh->AddImpulse(*InitialVelocity, NAME_None, true); // true for velocity change [4]
+            RelicMesh->AddImpulse(*InitialVelocity, NAME_None, true); // true for velocity change
         }
     }
     else
     {
-        // Clients DO NOT simulate physics for thrown/passed objects [4]
+        // Clients DO NOT simulate physics for thrown/passed objects
         RelicMesh->SetSimulatePhysics(false);
     }
 }

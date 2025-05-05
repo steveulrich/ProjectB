@@ -4,7 +4,9 @@
 #include "GameFramework/Actor.h"
 #include "Relic/RelicSettings.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayAbilitySet.h"
 #include "RelicActor.generated.h"
 
 class UAbilitySystemComponent;
@@ -89,6 +91,15 @@ public:
     // Multicast RPC for cosmetic effects (e.g., throw/pass VFX/SFX)
     UFUNCTION(NetMulticast, Unreliable)
     void Multicast_PlayThrowPassFX();
+
+    // Helper to check if pickup is allowed based on state and character request
+    bool CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const;
+
+    // Inline function for getting the relic settings
+    FORCEINLINE const URelicSettings* GetRelicSettings() const
+    {
+        return RelicSettings;
+    }
     
 protected:
     // --- Components ---
@@ -105,6 +116,13 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Relic|Config")
     TObjectPtr<URelicSettings> RelicSettings; // Assume this contains ThrowForce, PassForce, SocketName etc.
 
+    /** Handle to the ability set granted to the carrier's PlayerState ASC */
+    FLyraAbilitySet_GrantedHandles GrantedCarrierSetHandle; // Use the correct Lyra type
+
+    /** Preloaded pointer to the Relic Ability Set (Server-side) */
+    UPROPERTY(Transient) // Transient as it's loaded at runtime from RelicSettings
+    TObjectPtr<ULyraAbilitySet> LoadedRelicAbilitySet;
+    
     // --- Internal State Management ---
     UFUNCTION(BlueprintCallable, Category = "Relic|State")
     void SetRelicState(ERelicState NewState);
@@ -114,7 +132,4 @@ protected:
 
     // Internal helper to handle detachment and physics setup
     void DetachFromCarrier(const FVector* InitialVelocity = nullptr);
-private:
-    // Helper to check if pickup is allowed based on state and character request
-    bool CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const;
 };
