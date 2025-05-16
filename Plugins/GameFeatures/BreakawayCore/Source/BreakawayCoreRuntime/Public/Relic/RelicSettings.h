@@ -106,6 +106,10 @@ public:
     // Gameplay effect to apply to carriers
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
     TSubclassOf<UGameplayEffect> CarrierEffect;
+
+    // Gameplay effect to apply AFTER the relic is dropped
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
+    TSubclassOf<UGameplayEffect> RecentCarrierEffect;
     
     // Points awarded for scoring
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "1", UIMin = "1"))

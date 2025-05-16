@@ -345,27 +345,23 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
         APlayerState* CarrierPlayerState = Carrier->GetPlayerState();
         if (CarrierPlayerState)
         {
-            // Get the ASC from the PlayerState and cast it to the expected Lyra type
             ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState));
-            // Use the preloaded AbilitySet
-            ULyraAbilitySet* AbilitySetToGrant = LoadedRelicAbilitySet; // Use the member variable
+            ULyraAbilitySet* AbilitySetToGrant = LoadedRelicAbilitySet;
 
             if (PlayerStateASC && AbilitySetToGrant)
             {
-                // Grant the ability set and store the handle
-                AbilitySetToGrant->GiveToAbilitySystem(PlayerStateASC, &GrantedCarrierSetHandle, this); // GrantedCarrierSetHandle should be FLyraAbilitySet_GrantedHandles
-                UE_LOG(LogTemp, Log, TEXT("Server: Granted RelicAbilitySet '%s' to PlayerState ASC of %s"), *GetNameSafe(AbilitySetToGrant), *GetNameSafe(CarrierPlayerState));
+                AbilitySetToGrant->GiveToAbilitySystem(PlayerStateASC, &GrantedCarrierSetHandle, this);
+                UE_LOG(LogTemp, Log, TEXT("Server: Granted RelicAbilitySet '%s' to PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(AbilitySetToGrant), *GetNameSafe(CarrierPlayerState), *GetNameSafe(Carrier));
             }
             else
             {
-                // Use IsValid() for UObject pointers in the log check
-                UE_LOG(LogTemp, Warning, TEXT("Server: Failed to grant RelicAbilitySet. PlayerStateASC Valid: %d, AbilitySetToGrant Valid: %d"),
+                UE_LOG(LogTemp, Warning, TEXT("Server: Failed to grant RelicAbilitySet to PlayerState. PlayerStateASC Valid: %d, AbilitySetToGrant Valid: %d"),
                     IsValid(PlayerStateASC), IsValid(AbilitySetToGrant));
             }
         }
         else
         {
-            UE_LOG(LogTemp, Warning, TEXT("Server: Carrier %s has no PlayerState, cannot grant AbilitySet."), *GetNameSafe(Carrier));
+            UE_LOG(LogTemp, Warning, TEXT("Server: Carrier %s has no PlayerState, cannot grant RelicAbilitySet."), *GetNameSafe(Carrier));
         }
         // --- End Grant Ability Set ---
     }
@@ -387,28 +383,21 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
         // --- Clear Ability Set (Server Only) ---
         if (CurrentCarrier) // Check if there was a carrier before clearing CurrentCarrier
         {
-            APlayerState* PreviousCarrierPlayerState = CurrentCarrier->GetPlayerState();
-            if (PreviousCarrierPlayerState)
+            APlayerState* CarrierPlayerState = CurrentCarrier->GetPlayerState();
+            if (CarrierPlayerState)
             {
-                // Get the ASC from the PlayerState and cast it to the expected Lyra type
-                ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PreviousCarrierPlayerState));
+                ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState));
 
-                // Check the cast result AND if the stored handle struct indicates something was actually granted
-                if (PlayerStateASC)
+                if (PlayerStateASC) // Ensure the handle is valid before taking
                 {
                     GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
-                    // Log success
-                    UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s"), *GetNameSafe(PreviousCarrierPlayerState));
-                }
-                else
-                {
-                    UE_LOG(LogTemp, Warning, TEXT("Server: Failed to clear Ability Set. PlayerStateASC Valid: %d"),
-                       IsValid(PlayerStateASC));
+                    UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(CarrierPlayerState), *GetNameSafe(CurrentCarrier));
                 }
             }
         }
         // --- End Clear Ability Set ---
 
+        
         // Enable server-side physics AFTER clearing abilities/detaching
         RelicMesh->SetSimulatePhysics(true);
         if (InitialVelocity)
