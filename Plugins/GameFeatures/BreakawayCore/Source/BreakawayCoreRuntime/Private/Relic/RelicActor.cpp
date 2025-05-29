@@ -16,6 +16,8 @@ ARelicActor::ARelicActor()
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
 
+    // Enable movement replication for smooth physics sync
+    SetReplicatingMovement(true); // Important for physics objects
 
     // Set the root component to replicate movement for physics [1, 2]
     // Note: RelicMesh MUST be the root component for bReplicateMovement to work correctly with physics simulation.
@@ -32,7 +34,6 @@ ARelicActor::ARelicActor()
     AbilitySystemComponent->SetIsReplicated(true);
     AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-    //SetReplicatingMovement(true); // Important for physics objects
     SetNetUpdateFrequency(66.0f);
     SetMinNetUpdateFrequency(33.0f);
 }
@@ -411,3 +412,4 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
         RelicMesh->SetSimulatePhysics(false);
     }
 }
+

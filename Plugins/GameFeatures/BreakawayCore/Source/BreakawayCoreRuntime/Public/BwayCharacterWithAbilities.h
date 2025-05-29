@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Character/LyraCharacterWithAbilities.h"
+#include "BwayHeroDataAsset.h"
+#include "Character/LyraCharacter.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
 UCLASS(config=Game)
-class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharacterWithAbilities
+class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharacter
 {
 	GENERATED_BODY()
 protected:
@@ -28,4 +29,10 @@ public:
 	// Method to try and pickup an overlapping relic
 	UFUNCTION(BlueprintCallable, Category = "Relic")
 	void TryPickupOverlappingRelic();
+
+	UFUNCTION(BlueprintCallable)
+	void InitializeHeroData(const UBwayHeroDataAsset* HeroData);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Data")
+	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsset;
 };
