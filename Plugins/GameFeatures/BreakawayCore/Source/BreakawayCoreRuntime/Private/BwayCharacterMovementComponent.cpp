@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 // Source: LyraCharacterMovementComponent_Slide.cpp
 #include "BwayCharacterMovementComponent.h"
-
-#include "BwayCharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
 #include "AbilitySystemComponent.h"

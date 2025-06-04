@@ -6,7 +6,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "InputAction.h" // Add this include
-#include "Gameplaytagcontainer.h"
+#include "GameplayTagContainer.h"
 #include "BwayCharacterMovementComponent.generated.h"
 
 class UAbilitySystemComponent;
