@@ -139,15 +139,15 @@ void UBwayGameplayAbility_Slide::ActivateAbility(const FGameplayAbilitySpecHandl
 
 void UBwayGameplayAbility_Slide::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// Ensure the CMC is no longer in slide mode if the ability ends unexpectedly.
-	// Normally, the CMC controls its own exit, but this is a safeguard.
-	if (CachedBwayMoveComp && CachedBwayMoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide))
-	{
-		// If still sliding, force exit back to a default state (e.g., Walking or Falling)
-		CachedBwayMoveComp->SetMovementMode(CachedBwayMoveComp->IsFalling()? MOVE_Falling : MOVE_Walking);
-	}
+        // Ensure the CMC exits slide mode if the ability ends unexpectedly. Normally the
+        // movement component handles leaving slide when the input is released, but this is
+        // a safeguard for cancellation or other interruptions.
+        if (CachedBwayMoveComp && CachedBwayMoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide))
+        {
+                CachedBwayMoveComp->SetMovementMode(CachedBwayMoveComp->IsFalling() ? MOVE_Falling : MOVE_Walking);
+        }
 
-	CachedBwayMoveComp = nullptr;
-	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
-	// ActivationOwnedTags (State.Movement.Sliding) are automatically removed by Super::EndAbility.
+        CachedBwayMoveComp = nullptr;
+        Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+        // ActivationOwnedTags (State.Movement.Sliding) are automatically removed by Super::EndAbility.
 }

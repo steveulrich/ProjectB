@@ -119,41 +119,24 @@ void UBwayCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float D
 // --- Slide End Condition Check ---
 bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 {
-	// Already checked IsSliding() before calling this in UpdateCharacterStateBeforeMovement
+        // Already checked IsSliding() before calling this in UpdateCharacterStateBeforeMovement
 
-	ACharacter* Owner = GetCharacterOwner();
-	if (!Owner) return true;
+        ACharacter* Owner = GetCharacterOwner();
+        if (!Owner) return true;
 
-	// 1. Check Speed: End if speed drops below minimum threshold
-	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
-	{
-		return true;
-	}
+        APlayerController* PC = Cast<APlayerController>(Owner->GetController());
+        UEnhancedInputComponent* EIC = PC ? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
 
-	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
-	UEnhancedInputComponent* EIC = PC? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
-	if (!EIC) return true; // Cannot check inputs, safer to end
+        // Only end the slide if we can verify the input has been released
+        if (EIC && SlideInputAction)
+        {
+                if (!EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
+                {
+                        return true;
+                }
+        }
 
-	// 2. Check Input Hold State: End if slide input is released [11, 15]
-	if (SlideInputAction &&!EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
-	{
-		return true;
-	}
-
-	// 3. Check Jump Input Press: End if jump is pressed AND character can currently jump [11]
-	if (JumpInputAction && EIC->GetBoundActionValue(JumpInputAction).Get<bool>())
-	{
-		// Check CanJump to ensure jump is valid (e.g., grounded, not blocked by other abilities)
-		if (Owner->CanJump())
-		{
-			return true;
-		}
-	}
-
-	// 4. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
-	// No explicit check needed here as PhysSliding runs after this check.
-
-	return false; // Conditions met to continue sliding
+        return false; // Remain sliding in all other cases
 }
 
 // --- Speed and Braking Overrides ---
@@ -201,34 +184,33 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	if (!HasValidData() || deltaTime < MIN_TICK_TIME || Iterations >= MaxSimulationIterations) return;
 
-	// --- Ground Check ---
-	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
-	{
-		// Became airborne - Transition to Falling
-		bDidSlideFall = true; // Mark that this fall originated from a slide
-		SetMovementMode(MOVE_Falling);
-		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
-		return;
-	}
+        // --- Ground Check ---
+        FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+        const bool bHasFloor = CurrentFloor.IsWalkableFloor();
 
-	// --- Calculate Physics Inputs ---
-	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
-	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
+        // --- Calculate Physics Inputs ---
+        const float SlopeAngleDegrees = bHasFloor ? FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z)) : 0.f;
+        const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
 
 	// --- Apply Forces and Steering ---
 	// Reset acceleration for this frame's calculations
 	Acceleration = FVector::ZeroVector;
 
-	// Order matters: Apply driving forces first, then resistance (friction)
-	ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees); // Adds to Acceleration
-	Acceleration.Z += GetGravityZ() * deltaTime; // Adds standard gravity force to Acceleration
+        // Order matters: Apply driving forces first, then resistance (friction)
+        if (bHasFloor)
+        {
+                ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees); // Adds to Acceleration
+        }
+        Acceleration.Z += GetGravityZ() * deltaTime; // Adds standard gravity force to Acceleration
 
 	// Apply accumulated acceleration (slope + gravity) to velocity
 	Velocity += Acceleration * deltaTime;
 
-	// Apply friction *after* acceleration forces
-	ApplySlideFriction(deltaTime, SlopeAngleDegrees); // Modifies Velocity directly or via opposing accel
+        // Apply friction *after* acceleration forces
+        if (bHasFloor)
+        {
+                ApplySlideFriction(deltaTime, SlopeAngleDegrees); // Modifies Velocity directly or via opposing accel
+        }
 
 	// Apply steering *after* forces and friction (directly rotates Velocity)
 	ApplySlideSteering(deltaTime, InputAccelDir);
@@ -261,21 +243,14 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
 
-	// Re-check ground state after movement, might have slid off an edge
-	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
-	{
-		bDidSlideFall = true; // Mark fall origin
-		SetMovementMode(MOVE_Falling);
-		// No need for StartNewPhysics here, will happen next tick
-	}
-	else if (Velocity.SizeSquared() < KINDA_SMALL_NUMBER && Acceleration.IsNearlyZero())
-	{
-		// Came to a stop naturally
-		Velocity = FVector::ZeroVector;
-		Acceleration = FVector::ZeroVector;
-		// CheckShouldEndSlide will likely catch this via MinSlideSpeed next frame, but zeroing here is cleaner.
-	}
+        // Re-check ground state after movement
+        FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+        if (Velocity.SizeSquared() < KINDA_SMALL_NUMBER && Acceleration.IsNearlyZero())
+        {
+                // Came to a stop naturally
+                Velocity = FVector::ZeroVector;
+                Acceleration = FVector::ZeroVector;
+        }
 
 	// Store root motion if applicable
 	if (HasAnimRootMotion())
