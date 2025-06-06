@@ -7,6 +7,21 @@ class UAbilitySet;
 class UAttributeSet;
 class ABuildableBase;
 
+USTRUCT(BlueprintType)
+struct FHeroStats
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+    float MaxHealth = 200.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+    float BaseDamage = 25.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+    float MoveSpeed = 600.f;
+};
+
 UCLASS(BlueprintType)
 class BREAKAWAYCORERUNTIME_API UBwayHeroDataAsset : public UPrimaryDataAsset
 {
@@ -26,16 +41,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<UAnimBlueprint> AnimationBP;
 
-    /* -------- Gameplay Stats (Attribute defaults) -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float MaxHealth = 200.f;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float BaseDamage = 25.f;
-
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float MoveSpeed  = 600.f;
-
+    FHeroStats HeroStats;
+    
     /* -------- GAS References -------- */
     // Attribute-set class the character uses
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")

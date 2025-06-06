@@ -34,7 +34,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"GameplayTasks",
 				"EnhancedInput",
 				"AIModule",
-				"LyraGame"
+				"LyraGame",
 			}
 		);
         
@@ -44,7 +44,8 @@ public class BreakawayCoreRuntime : ModuleRules
 				"SlateCore",
 				"NetCore",
 				"PhysicsCore",
-				"CommonUI"
+				"CommonUI",
+				"GameFeatures"
 			}
 		);
 		

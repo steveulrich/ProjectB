@@ -19,6 +19,7 @@ class BREAKAWAYCORERUNTIME_API ABreakawayGameMode : public AGameModeBase
 public:
 	ABreakawayGameMode();
 	virtual void BeginPlay() override;
-	
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	
 };

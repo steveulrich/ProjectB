@@ -19,7 +19,7 @@ ABwayActorWithAbilities::ABwayActorWithAbilities(const FObjectInitializer& Objec
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	// AbilitySystemComponent needs to be updated at a high frequency.
-	NetUpdateFrequency = 100.0f;
+	SetNetUpdateFrequency(100.0f);
 }
 
 

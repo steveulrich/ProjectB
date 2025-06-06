@@ -154,6 +154,11 @@ void ALyraPlayerState::SetReplicatedViewRotation(const FRotator& NewRotation)
 	}
 }
 
+void ALyraPlayerState::OnRep_SelectedHeroData()
+{
+	
+}
+
 ALyraPlayerController* ALyraPlayerState::GetLyraPlayerController() const
 {
 	return Cast<ALyraPlayerController>(GetOwner());

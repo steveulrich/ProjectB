@@ -42,7 +42,8 @@ public class LyraGame : ModuleRules
 				"Niagara",
 				"AsyncMixin",
 				"ControlFlows",
-				"PropertyPath"
+				"PropertyPath",
+				"BreakawayCoreRuntime"  // moved here
 			}
 		);
 
@@ -73,7 +74,7 @@ public class LyraGame : ModuleRules
 				"AudioModulation",
 				"EngineSettings",
 				"DTLSHandlerComponent",
-				"Json",
+				"Json"
 			}
 		);
 

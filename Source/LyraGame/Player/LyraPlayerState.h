@@ -6,6 +6,7 @@
 #include "ModularPlayerState.h"
 #include "System/GameplayTagStack.h"
 #include "Teams/LyraTeamAgentInterface.h"
+#include "BwayHeroDataAsset.h"
 
 #include "LyraPlayerState.generated.h"
 
@@ -52,6 +53,12 @@ class LYRAGAME_API ALyraPlayerState : public AModularPlayerState, public IAbilit
 
 public:
 	ALyraPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	UPROPERTY(ReplicatedUsing=OnRep_SelectedHeroData)
+	const TObjectPtr<UBwayHeroDataAsset> SelectedHeroData;
+
+	UFUNCTION()
+	void OnRep_SelectedHeroData();
 
 	UFUNCTION(BlueprintCallable, Category = "Lyra|PlayerState")
 	ALyraPlayerController* GetLyraPlayerController() const;
