@@ -1,8 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 // Source: LyraCharacterMovementComponent_Slide.cpp
 #include "BwayCharacterMovementComponent.h"
-
-#include "BwayCharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
 #include "AbilitySystemComponent.h"
@@ -100,22 +98,24 @@ void UBwayCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float D
 // --- Slide End Condition Check ---
 bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 {
-	// Already checked IsSliding() before calling this in UpdateCharacterStateBeforeMovement
+        // Already checked IsSliding() before calling this in UpdateCharacterStateBeforeMovement
 
-	ACharacter* Owner = GetCharacterOwner();
-	if (!Owner) return true;
+        ACharacter* Owner = GetCharacterOwner();
+        if (!Owner) return true;
 
-	// 1. Check Speed: End if speed drops below minimum threshold
-	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: TRUE Velocity too low!"));
-		return true;
-	}
+        APlayerController* PC = Cast<APlayerController>(Owner->GetController());
+        UEnhancedInputComponent* EIC = PC ? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
 
-	// 2. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
-	// No explicit check needed here as PhysSliding runs after this check.
-	UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: FALSE - CONTINUE SLIDE"));
-	return false; // Conditions met to continue sliding
+        // Only end the slide if we can verify the input has been released
+        if (EIC && SlideInputAction)
+        {
+                if (!EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
+                {
+                        return true;
+                }
+        }
+
+        return false; // Remain sliding in all other cases
 }
 
 // --- Speed and Braking Overrides ---
@@ -169,36 +169,33 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		return;
 	}
 
-	// --- Ground Check ---
-	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not on walkable floor!"));
-		// Became airborne - Transition to Falling
-		SetMovementMode(MOVE_Falling);
-		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
-		return;
-	}
+        // --- Ground Check ---
+        FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+        const bool bHasFloor = CurrentFloor.IsWalkableFloor();
 
-	// --- Calculate Physics Inputs ---
-	UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
-
-	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
-	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
+        // --- Calculate Physics Inputs ---
+        const float SlopeAngleDegrees = bHasFloor ? FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z)) : 0.f;
+        const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
 
 	// --- Apply Forces and Steering ---
 	// Reset acceleration for this frame's calculations
 	Acceleration = FVector::ZeroVector;
 
-	// Order matters: Apply driving forces first, then resistance (friction)
-	ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees); // Adds to Acceleration
-	Acceleration.Z += GetGravityZ() * deltaTime; // Adds standard gravity force to Acceleration
+        // Order matters: Apply driving forces first, then resistance (friction)
+        if (bHasFloor)
+        {
+                ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees); // Adds to Acceleration
+        }
+        Acceleration.Z += GetGravityZ() * deltaTime; // Adds standard gravity force to Acceleration
 
 	// Apply accumulated acceleration (slope + gravity) to velocity
 	Velocity += Acceleration * deltaTime;
 
-	// Apply friction *after* acceleration forces
-	ApplySlideFriction(deltaTime, SlopeAngleDegrees); // Modifies Velocity directly or via opposing accel
+        // Apply friction *after* acceleration forces
+        if (bHasFloor)
+        {
+                ApplySlideFriction(deltaTime, SlopeAngleDegrees); // Modifies Velocity directly or via opposing accel
+        }
 
 	// Apply steering *after* forces and friction (directly rotates Velocity)
 	ApplySlideSteering(deltaTime, InputAccelDir);
@@ -230,20 +227,15 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		HandleImpact(Hit, deltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
-	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	// Re-check ground state after movement, might have slid off an edge
-	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
-	{
-		SetMovementMode(MOVE_Falling);
-		// No need for StartNewPhysics here, will happen next tick
-	}
-	else if (Velocity.SizeSquared() < KINDA_SMALL_NUMBER && Acceleration.IsNearlyZero())
-	{
-		// Came to a stop naturally
-		Velocity = FVector::ZeroVector;
-		Acceleration = FVector::ZeroVector;
-		// CheckShouldEndSlide will likely catch this via MinSlideSpeed next frame, but zeroing here is cleaner.
-	}
+
+        // Re-check ground state after movement
+        FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+        if (Velocity.SizeSquared() < KINDA_SMALL_NUMBER && Acceleration.IsNearlyZero())
+        {
+                // Came to a stop naturally
+                Velocity = FVector::ZeroVector;
+                Acceleration = FVector::ZeroVector;
+        }
 
 	// Store root motion if applicable
 	if (HasAnimRootMotion())
