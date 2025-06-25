@@ -4,6 +4,7 @@
 #include "BreakawayGameMode.h"
 
 #include "BwayCharacterWithAbilities.h"
+#include "BreakawayCoreRuntime/HeroSystems/BwayHeroRegistry.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/GameStateBase.h"
 #include "Player/LyraPlayerState.h"
@@ -27,18 +28,30 @@ void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerControlle
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 
 	ALyraPlayerState* PS = Cast<ALyraPlayerState>(NewPlayer->PlayerState);
-	if (PS && PS->SelectedHeroData)
+	if (PS && PS->GetSelectedHeroId().IsValid())
 	{
-		// Spawn the hero pawn with the selected hero data
-		UE_LOG(LogBreakawayGame, Log, TEXT("Spawning hero pawn for player %s with hero data %s"), *NewPlayer->GetName(), *PS->SelectedHeroData->GetName());
+		if (const UBwayHeroDataAsset* HeroData = GetGameInstance()->GetSubsystem<UBwayHeroRegistry>()->GetHeroDataById(PS->GetSelectedHeroId()))
+		{
+			UE_LOG(LogBreakawayGame, Log, TEXT("Spawning hero pawn for player %s with hero data %s"), *NewPlayer->GetName(), *HeroData->GetName());
 
-		// Temporarily just get a spawn location at origin
-		FVector SpawnLocation = FVector::ZeroVector; // Replace with your desired spawn location logic
-		FRotator SpawnRotation = FRotator::ZeroRotator; // Replace with your desired spawn rotation logic
-		// Spawn the hero pawn
-		ABwayCharacterWithAbilities* HeroPawn = GetWorld()->SpawnActorDeferred<ABwayCharacterWithAbilities>(ABwayCharacterWithAbilities::StaticClass(), FTransform(SpawnRotation, SpawnLocation), NewPlayer, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-		HeroPawn->InitializeHeroData(PS->SelectedHeroData);
-		NewPlayer->Possess(HeroPawn);
+			FVector SpawnLocation = FVector::ZeroVector;
+			FRotator SpawnRotation = FRotator::ZeroRotator;
+
+			ABwayCharacterWithAbilities* HeroPawn = GetWorld()->SpawnActorDeferred<ABwayCharacterWithAbilities>(
+				ABwayCharacterWithAbilities::StaticClass(), 
+				FTransform(SpawnRotation, SpawnLocation), 
+				NewPlayer, 
+				nullptr, 
+				ESpawnActorCollisionHandlingMethod::AlwaysSpawn
+			);
+
+			HeroPawn->InitializeHeroData(HeroData);
+			NewPlayer->Possess(HeroPawn);
+		}
+		else
+		{
+			UE_LOG(LogBreakawayGame, Warning, TEXT("Failed to resolve HeroData for %s"), *PS->GetSelectedHeroId().ToString());
+		}
 	}
 }
 

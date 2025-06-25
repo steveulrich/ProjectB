@@ -2,11 +2,9 @@
 
 
 #include "BwayHeroRegistry.h"
-
 #include "BwayHeroDataAsset.h"
-#include "GameFeatures/LyraGameFeaturePolicy.h"
-#include "AssetRegistry/AssetRegistryModule.h"
 #include "Engine/AssetManager.h"
+#include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"   // for FModuleManager
 
 TObjectPtr<UBwayHeroRegistry> UBwayHeroRegistry::Get(const UObject* WorldContext)
@@ -18,65 +16,82 @@ TObjectPtr<UBwayHeroRegistry> UBwayHeroRegistry::Get(const UObject* WorldContext
 	return nullptr;
 }
 
+TArray<TSoftObjectPtr<UBwayHeroDataAsset>> UBwayHeroRegistry::GetAllHeroSoftObjects() const
+{
+	//--------------------------------------------------------------------//
+	// 1) Build the list of package roots by iterating every discovered
+	//    plugin and keeping the ones whose mount path contains "/Heroes/".
+	//--------------------------------------------------------------------//
+	TArray<FString> HeroRoots;
+
+	for (const TSharedRef<IPlugin>& Plugin :
+		 IPluginManager::Get().GetDiscoveredPlugins())                    // finds *all* plugins
+	{
+		const FString Mount = Plugin->GetMountedAssetPath();              // virtual root, e.g. "/Hero_Alona/"
+		if (Mount.Contains(TEXT("/Hero_")))
+		{
+			HeroRoots.Add(Mount);
+		}
+	}
+
+	//--------------------------------------------------------------------//
+	// 2) Build a FARFilter that lists every root we found.
+	//--------------------------------------------------------------------//
+	FARFilter Filter;
+	Filter.bRecursivePaths = true;
+
+	for (const FString& Root : HeroRoots)
+	{
+		Filter.PackagePaths.Add(*Root);                                   // add as FName
+	}
+
+	Filter.ClassPaths.Add(
+		UBwayHeroDataAsset::StaticClass()->GetClassPathName());           // new API, no deprecation warning
+
+	//--------------------------------------------------------------------//
+	// 3) Query the Asset Registry once, convert to soft pointers.
+	//--------------------------------------------------------------------//
+	TArray<FAssetData> Found;
+	Registry->GetAssets(Filter, Found);                                   // fast, metadata-only
+
+	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> Out;
+	Out.Reserve(Found.Num());
+	for (const FAssetData& Data : Found)
+	{
+		Out.Emplace(Data.ToSoftObjectPath());
+	}
+	return Out;     // typically <1 ms even with 100+ heroes
+}
+
+UBwayHeroDataAsset* UBwayHeroRegistry::LoadHeroSync(const TSoftObjectPtr<UBwayHeroDataAsset>& SoftPtr) const
+{
+	return Cast<UBwayHeroDataAsset>(SoftPtr.IsValid() ?
+			SoftPtr.Get() :
+			SoftPtr.LoadSynchronous());
+}
+
+UBwayHeroDataAsset* UBwayHeroRegistry::GetHeroDataById(const FPrimaryAssetId& HeroId)
+{
+	if (!HeroId.IsValid())
+	{
+		return nullptr;
+	}
+
+	UObject* Asset = UAssetManager::Get().GetPrimaryAssetObject(HeroId);
+	if (!Asset)
+	{
+		// Force-load synchronously if needed
+		FSoftObjectPath AssetPath = UAssetManager::Get().GetPrimaryAssetPath(HeroId);
+		Asset = AssetPath.TryLoad();
+	}
+
+	return Cast<UBwayHeroDataAsset>(Asset);
+}
+
 void UBwayHeroRegistry::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-
-	// 1. Get all loaded GameFeatureData assets that have a HeroData reference
-	TArray<FAssetIdentifier> HeroAssets;
-	UGameFeaturesSubsystem::Get().FilterInactivePluginAssets(HeroAssets);
-
-	// 2. Use Asset Registry to find UHeroDataAsset in each GFP’s Data
-	FAssetRegistryModule& AR = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-	for (const FAssetIdentifier& ID : HeroAssets)
-	{
-		if (ID.PrimaryAssetType == TEXT("HeroDataAsset"))
-		{
-			UObject* Obj = UAssetManager::Get().GetPrimaryAssetObject(ID.GetPrimaryAssetId());
-			if (UBwayHeroDataAsset* HeroData = Cast<UBwayHeroDataAsset>(Obj))
-			{
-				RegisteredHeroes.Add(HeroData);
-			}
-		}
-	}
-
-	// 3. Also bind to future HigGameFeatureActivating events (see Step 4)
-}
-
-TArray<UBwayHeroDataAsset*> UBwayHeroRegistry::GetAllHeroes() const
-{
-	TArray<UBwayHeroDataAsset*> Heroes;
-	Heroes.Reserve(RegisteredHeroes.Num()); // Good practice: preallocate memory
-
-	for (const TObjectPtr<const UBwayHeroDataAsset>& HeroDataPtr : RegisteredHeroes)
-	{
-		if (HeroDataPtr) // TObjectPtr can be checked for null directly
-		{
-			// HeroDataPtr.Get() returns 'const UBwayHeroDataAsset*'
-			// We need to cast away the const for the TArray<UBwayHeroDataAsset*>
-			// that Blueprints expect. This is generally safe for DataAssets passed to BP.
-			Heroes.Add(const_cast<UBwayHeroDataAsset*>(HeroDataPtr.Get()));
-		}
-	}
-	return Heroes;
-}
-
-void UBwayHeroRegistry::RegisterHero(const UBwayHeroDataAsset* HeroData)
-{
-	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsTObjectPtr = HeroData;
-
-	if (HeroData && !RegisteredHeroes.Contains(HeroDataAsTObjectPtr))
-	{
-		RegisteredHeroes.Add(HeroDataAsTObjectPtr);
-	}
-}
-
-void UBwayHeroRegistry::UnregisterHero(const UBwayHeroDataAsset* HeroData)
-{
-	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsTObjectPtr = HeroData;
 	
-	if (HeroData && RegisteredHeroes.Contains(HeroDataAsTObjectPtr))
-	{
-		RegisteredHeroes.Remove(HeroDataAsTObjectPtr);
-	}
+	Registry = &FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry").Get();
+	
 }

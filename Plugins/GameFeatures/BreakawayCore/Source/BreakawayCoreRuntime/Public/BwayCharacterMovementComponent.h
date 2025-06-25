@@ -44,6 +44,9 @@ public:
 
 	// --- Slide Parameters (Derived from Lua, exposed for tuning) ---
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding")
+	TObjectPtr<UInputAction> SlideInputAction; // Input action to trigger slide, set in BP
+
 	/** Base speed value used for slide calculations (cm/s). Corresponds to Lua's eS_slideSpeed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="cm/s"))
 	float BaseSlideSpeed = 600.0f;

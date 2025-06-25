@@ -2,13 +2,9 @@
 
 
 #include "BwayGameplayAbility_Slide.h"
-#include "Character/LyraCharacter.h"
 #include "BwayCharacterMovementComponent.h" // Include custom CMC header
 #include "AbilitySystemComponent.h"
 #include "GameFramework/PlayerController.h"
-#include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
-#include "LyraGameplayTags.h" // Assuming tags are defined here or globally
 #include "NativeGameplayTags.h" // For standard tags if needed
 
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_State_Movement_Sliding, "State.Movement.Sliding");
@@ -48,13 +44,6 @@ bool UBwayGameplayAbility_Slide::CanActivateAbility(const FGameplayAbilitySpecHa
 		return false; // Requires the custom CMC
 	}
 
-	// Check if character is on the ground
-	if (!MoveComp->IsMovingOnGround())
-	{
-		// Optional: Failure tag Ability.ActivationFailure.NotGrounded
-		return false;
-	}
-
 	// Check if character is already sliding
 	if (MoveComp->IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide) || MoveComp->MovementMode == MOVE_Custom)
 	{
@@ -67,31 +56,11 @@ bool UBwayGameplayAbility_Slide::CanActivateAbility(const FGameplayAbilitySpecHa
 		// return false;
 	}
 
-
-	// Check for required prerequisite tag (e.g., Sprinting)
-	const UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
-	if (!ASC || (RequiredStateTag.IsValid() &&!ASC->HasMatchingGameplayTag(RequiredStateTag)))
-	{
-		// Optional: Failure tag Ability.ActivationFailure.MissingRequiredTag
-		return false;
-	}
-
 	// Standard checks (Super includes cooldown check if CooldownGameplayEffectClass is set)
 	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
 		return false;
 	}
-
-	// Check explicit cooldown tag (Cooldown.Skill.Slide) if Jump applies it
-	// This check might be redundant if Super::CheckCooldown handles it via CooldownGameplayEffectClass,
-	// but necessary if cooldown is applied externally by Jump GA.
-	// UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Skill_Slide, "Cooldown.Skill.Slide");
-	// if (ASC && ASC->HasMatchingGameplayTag(TAG_Cooldown_Skill_Slide))
-	// {
-	//     if (OptionalRelevantTags) OptionalRelevantTags->AddTag(TAG_Cooldown_Skill_Slide);
-	//     return false;
-	// }
-
 
 	return true; // All conditions met
 }

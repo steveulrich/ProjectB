@@ -23,15 +23,7 @@
 			"Enabled": true
 		},
 		{
-			"Name": "Alona",
-			"Enabled": true
-		},
-		{
-			"Name": "Thorgrim",
-			"Enabled": true
-		},
-		{
-			"Name": "Spartacus",
+			"Name": "Hero_Alona",
 			"Enabled": true
 		},
 		{

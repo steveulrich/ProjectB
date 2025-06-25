@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "BwayHeroDataAsset.h"
 #include "Camera/LyraCameraAssistInterface.h"
 #include "CommonPlayerController.h"
 #include "Teams/LyraTeamAgentInterface.h"
@@ -70,6 +71,7 @@ public:
 	//~AController interface
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
+	
 	virtual void InitPlayerState() override;
 	virtual void CleanupPlayerState() override;
 	virtual void OnRep_PlayerState() override;

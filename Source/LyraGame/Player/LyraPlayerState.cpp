@@ -136,7 +136,10 @@ void ALyraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	SharedParams.Condition = ELifetimeCondition::COND_SkipOwner;
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ReplicatedViewRotation, SharedParams);
 
-	DOREPLIFETIME(ThisClass, StatTags);	
+	DOREPLIFETIME(ThisClass, StatTags);
+	
+	DOREPLIFETIME(ThisClass, SelectedHeroId);
+	DOREPLIFETIME(ThisClass, PlayerNum);
 }
 
 FRotator ALyraPlayerState::GetReplicatedViewRotation() const
@@ -152,11 +155,6 @@ void ALyraPlayerState::SetReplicatedViewRotation(const FRotator& NewRotation)
 		MARK_PROPERTY_DIRTY_FROM_NAME(ThisClass, ReplicatedViewRotation, this);
 		ReplicatedViewRotation = NewRotation;
 	}
-}
-
-void ALyraPlayerState::OnRep_SelectedHeroData()
-{
-	
 }
 
 ALyraPlayerController* ALyraPlayerState::GetLyraPlayerController() const
@@ -303,3 +301,30 @@ void ALyraPlayerState::ClientBroadcastMessage_Implementation(const FLyraVerbMess
 	}
 }
 
+void ALyraPlayerState::ServerSetSelectedHeroId(FPrimaryAssetId NewHeroId)
+{
+	if (HasAuthority())
+	{
+		SelectedHeroId = NewHeroId;
+		OnRep_SelectedHeroId();
+	}
+}
+
+void ALyraPlayerState::OnRep_SelectedHeroId()
+{
+    OnSelectedHeroChanged.Broadcast(SelectedHeroId);
+}
+
+void ALyraPlayerState::SetPlayerNum(int32 NewPlayerNum)
+{
+	if (HasAuthority())
+	{
+		PlayerNum = NewPlayerNum;
+		OnRep_PlayerNum();
+	}
+}
+
+void ALyraPlayerState::OnRep_PlayerNum()
+{
+    OnPlayerNumAssigned.Broadcast(PlayerNum);
+}

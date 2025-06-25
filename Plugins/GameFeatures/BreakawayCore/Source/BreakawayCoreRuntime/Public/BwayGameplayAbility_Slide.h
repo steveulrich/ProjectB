@@ -28,9 +28,6 @@ protected:
 	                     FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
-	UFUNCTION()
-	void OnInputRelease(float TimeHeld);
-
 	/** Tag representing the sliding state, applied by this ability via ActivationOwnedTags. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Slide Trigger")
 	FGameplayTag SlidingStateTag; // Assign State.Movement.Sliding in BP

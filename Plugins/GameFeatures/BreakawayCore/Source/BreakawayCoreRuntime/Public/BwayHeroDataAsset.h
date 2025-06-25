@@ -28,6 +28,12 @@ class BREAKAWAYCORERUNTIME_API UBwayHeroDataAsset : public UPrimaryDataAsset
     GENERATED_BODY()
 
 public:
+    // Must override this to return a valid type
+    virtual FPrimaryAssetId GetPrimaryAssetId() const override
+    {
+        return FPrimaryAssetId("HeroDataAsset", GetFName());
+    }
+    
     /* -------- Presentation -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
     FText DisplayName;
