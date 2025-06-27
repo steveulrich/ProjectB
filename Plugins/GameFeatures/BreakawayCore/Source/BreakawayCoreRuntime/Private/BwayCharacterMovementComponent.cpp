@@ -1,16 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 // Source: LyraCharacterMovementComponent_Slide.cpp
 #include "BwayCharacterMovementComponent.h"
+
 #include "GameFramework/Character.h"
-#include "Components/CapsuleComponent.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
-#include "LyraGameplayTags.h" // Or wherever tags are defined
 #include "GameFramework/PlayerController.h"
-#include "EnhancedInputComponent.h"
-#include "InputActionValue.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Character/LyraCharacter.h" // For CharacterOwner->Jump()
 
 // --- Constructor ---
 UBwayCharacterMovementComponent::UBwayCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
@@ -106,32 +101,13 @@ bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 	// 1. Check Speed: End if speed drops below minimum threshold
 	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: TRUE Velocity too low!"));
 		return true;
 	}
 
-	APlayerController* PC = Cast<APlayerController>(Owner->GetController());
-	UEnhancedInputComponent* EIC = PC? Cast<UEnhancedInputComponent>(PC->InputComponent) : nullptr;
-	if (!EIC) return true; // Cannot check inputs, safer to end
-
-	// 2. Check Input Hold State: End if slide input is released [11, 15]
-	if (SlideInputAction &&!EIC->GetBoundActionValue(SlideInputAction).Get<bool>())
-	{
-		return true;
-	}
-
-	// 3. Check Jump Input Press: End if jump is pressed AND character can currently jump [11]
-	if (JumpInputAction && EIC->GetBoundActionValue(JumpInputAction).Get<bool>())
-	{
-		// Check CanJump to ensure jump is valid (e.g., grounded, not blocked by other abilities)
-		if (Owner->CanJump())
-		{
-			return true;
-		}
-	}
-
-	// 4. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
+	// 2. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
 	// No explicit check needed here as PhysSliding runs after this check.
-
+	UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: FALSE - CONTINUE SLIDE"));
 	return false; // Conditions met to continue sliding
 }
 
@@ -188,16 +164,18 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	// --- Ground Check ---
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
+	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
 	{
+		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not on walkable floor!"));
 		// Became airborne - Transition to Falling
-		bDidSlideFall = true; // Mark that this fall originated from a slide
 		SetMovementMode(MOVE_Falling);
 		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
 		return;
 	}
 
 	// --- Calculate Physics Inputs ---
+	UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
+
 	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
 	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
 
@@ -222,9 +200,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	Velocity = Velocity.GetClampedToMaxSize(GetMaxSpeed());
 
 	// --- Perform Movement Update ---
-	Iterations++;
 	bJustTeleported = false;
-	FVector OldLocation = UpdatedComponent->GetComponentLocation();
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
@@ -245,12 +221,10 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		HandleImpact(Hit, deltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
-
-	// Re-check ground state after movement, might have slid off an edge
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.IsWalkableFloor())
+	// Re-check ground state after movement, might have slid off an edge
+	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
 	{
-		bDidSlideFall = true; // Mark fall origin
 		SetMovementMode(MOVE_Falling);
 		// No need for StartNewPhysics here, will happen next tick
 	}
@@ -339,14 +313,13 @@ void UBwayCharacterMovementComponent::ApplySlideFriction(float DeltaTime, float 
 	GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
 
 	// Use the base friction factor defined in properties, scaled by the Lua power curve
-	float FrictionToApply = 0.f;
 	const float ClampedSlopeFactor = FMath::Clamp(SlopeAngleDegrees / 90.0f, 0.0f, 1.0f);
 	// Lua: math.pow(1.0 - clamp(slopeAngle / 90.0, 0.0, 1.0), 15.0)
 	// This factor approaches 1 on flat ground and 0 on 90-degree slopes.
 	const float SlopePowerFactor = FMath::Pow(1.0f - ClampedSlopeFactor, SlideFrictionPower);
 
 	// Combine base friction, slope factor, and loot modifier
-	FrictionToApply = SlideBaseFrictionFactor * SlopePowerFactor * CurrentFrictionMultiplier;
+	float FrictionToApply = SlideBaseFrictionFactor * SlopePowerFactor * CurrentFrictionMultiplier;
 
 	// Apply friction using VInterpTo (approximates exponential decay like Lua's VariableInterpolate)
 	if (FrictionToApply > KINDA_SMALL_NUMBER && Velocity.SizeSquared() > KINDA_SMALL_NUMBER)

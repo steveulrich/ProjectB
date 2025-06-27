@@ -6,7 +6,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "InputAction.h" // Add this include
-#include "GameplayTagContainer.h"
+#include "Gameplaytagcontainer.h"
 #include "BwayCharacterMovementComponent.generated.h"
 
 class UAbilitySystemComponent;
@@ -43,9 +43,6 @@ public:
 	//~ End UCharacterMovementComponent Interface
 
 	// --- Slide Parameters (Derived from Lua, exposed for tuning) ---
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding")
-	TObjectPtr<UInputAction> SlideInputAction; // Input action to trigger slide, set in BP
 
 	/** Base speed value used for slide calculations (cm/s). Corresponds to Lua's eS_slideSpeed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="cm/s"))
