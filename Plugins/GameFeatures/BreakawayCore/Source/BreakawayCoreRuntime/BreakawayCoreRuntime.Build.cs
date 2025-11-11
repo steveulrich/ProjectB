@@ -36,6 +36,8 @@ public class BreakawayCoreRuntime : ModuleRules
 				"AIModule",
 				"LyraGame",
 				"Projects",
+				"NavigationSystem",
+				"ModularGameplayActors",
 			}
 		);
         

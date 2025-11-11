@@ -138,7 +138,6 @@ void ALyraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(ThisClass, StatTags);
 	
-	DOREPLIFETIME(ThisClass, SelectedHeroId);
 	DOREPLIFETIME(ThisClass, PlayerNum);
 }
 
@@ -299,20 +298,6 @@ void ALyraPlayerState::ClientBroadcastMessage_Implementation(const FLyraVerbMess
 	{
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
 	}
-}
-
-void ALyraPlayerState::ServerSetSelectedHeroId(FPrimaryAssetId NewHeroId)
-{
-	if (HasAuthority())
-	{
-		SelectedHeroId = NewHeroId;
-		OnRep_SelectedHeroId();
-	}
-}
-
-void ALyraPlayerState::OnRep_SelectedHeroId()
-{
-    OnSelectedHeroChanged.Broadcast(SelectedHeroId);
 }
 
 void ALyraPlayerState::SetPlayerNum(int32 NewPlayerNum)

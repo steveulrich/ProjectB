@@ -1,11 +1,15 @@
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
+#include "Relic/RelicDataAsset.h"
 #include "Relic/RelicSettings.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Make sure this is included
 #include "AbilitySystem/LyraAbilitySet.h"         // Make sure this is included
 #include "AbilitySystemGlobals.h"
+#include "BreakawayGameMode.h"
+#include "Engine/AssetManager.h"
+#include "Engine/StreamableManager.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerState.h" // Include necessary header for APlayerState
 #include "Kismet/GameplayStatics.h" // For FinishSpawningActor if needed later
@@ -45,6 +49,7 @@ void ARelicActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     // Replicate state machine and its components
     DOREPLIFETIME(ARelicActor, CurrentCarrier);
     DOREPLIFETIME(ARelicActor, CurrentState);
+    DOREPLIFETIME(ARelicActor, LastPossessingTeam);
 }
 
 void ARelicActor::BeginPlay()
@@ -114,6 +119,67 @@ void ARelicActor::BeginPlay()
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ARelicActor::OnInteractionSphereOverlap);
 }
 
+
+void ARelicActor::InitializeRelicData(const URelicDataAsset* InRelicData)
+{
+    if (!InRelicData)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ARelicActor::InitializeRelicData - InRelicData is null!"));
+        return;
+    }
+
+    // Store the settings from the data asset
+    RelicSettings = InRelicData->RelicSettings;
+    
+    if (!RelicSettings)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ARelicActor::InitializeRelicData - RelicSettings is null in data asset %s!"), 
+            *InRelicData->GetName());
+        return;
+    }
+
+    // Apply configuration immediately
+    ApplyRelicConfiguration();
+}
+
+void ARelicActor::ApplyRelicConfiguration()
+{
+    if (!RelicSettings || !RelicMesh)
+    {
+        return;
+    }
+
+    // Apply mesh if specified
+    if (!RelicSettings->RelicMesh.IsNull())
+    {
+        if (UStaticMesh* LoadedMesh = RelicSettings->RelicMesh.LoadSynchronous())
+        {
+            RelicMesh->SetStaticMesh(LoadedMesh);
+        }
+    }
+
+    // Apply material if specified
+    if (!RelicSettings->RelicMaterial.IsNull())
+    {
+        if (UMaterialInterface* LoadedMaterial = RelicSettings->RelicMaterial.LoadSynchronous())
+        {
+            RelicMesh->SetMaterial(0, LoadedMaterial);
+        }
+    }
+
+    // Apply physics settings
+    RelicMesh->SetMassOverrideInKg(NAME_None, RelicSettings->RelicMass, true);
+    RelicMesh->SetLinearDamping(RelicSettings->LinearDamping);
+    RelicMesh->SetAngularDamping(RelicSettings->AngularDamping);
+
+    // Apply interaction radius
+    if (InteractionSphere)
+    {
+        InteractionSphere->SetSphereRadius(RelicSettings->PickupRadius);
+    }
+}
+
+
 void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
      // Server-side check only for initiating pickup logic
@@ -161,9 +227,10 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
 
 bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
 {
+    UE_LOG(LogTemp, Log, TEXT("Relic current state is %d"), CurrentState);
+    
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return CurrentState != ERelicState::Carried &&
-    (Character && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag));
+    return CurrentState != ERelicState::Carried && (Character && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag));
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
@@ -189,6 +256,7 @@ void ARelicActor::OnRep_CurrentState()
         RelicMesh->SetSimulatePhysics(false); // Ensure physics is off on clients when carried
         break;
     }
+    
     UE_LOG(LogTemp, Log, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), CurrentState);
 }
 
@@ -208,7 +276,6 @@ void ARelicActor::OnRep_CurrentCarrier()
         DetachFromCarrier();
     }
 }
-
 
 void ARelicActor::SetRelicState(ERelicState NewState)
 {
@@ -258,28 +325,61 @@ void ARelicActor::SetRelicState(ERelicState NewState)
 
 void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 {
-    if (HasAuthority() && NewCarrier)
+    if (!HasAuthority() || !NewCarrier)
     {
-        LastPossessingTeam = NewCarrier->GetGenericTeamId(); // Store the team ID of the new carrier
-        CurrentCarrier = NewCarrier; // Set replicated property
-        OnRep_CurrentCarrier(); // Call RepNotify manually on server
-
-        AttachToCarrier(NewCarrier);
-        SetRelicState(ERelicState::Carried);
+        return;
     }
+
+    CurrentCarrier = NewCarrier;
+    CurrentState = ERelicState::Carried;
+    
+    // NEW: Track which team picked up the relic
+    if (NewCarrier->GetPlayerState())
+    {
+        ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>();
+        if (GameState)
+        {
+            LastPossessingTeam = GameState->GetPlayerTeam(NewCarrier->GetPlayerState());
+        }
+    }
+    
+    // Notify game mode of carrier change
+    if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+    {
+        GameMode->OnRelicCarrierChanged(NewCarrier);
+    }
+    
+    LastPossessingTeam = NewCarrier->GetGenericTeamId(); // Store the team ID of the new carrier
+    CurrentCarrier = NewCarrier; // Set replicated property
+    OnRep_CurrentCarrier(); // Call RepNotify manually on server
+
+    AttachToCarrier(NewCarrier);
+    SetRelicState(ERelicState::Carried);
 }
 
 
 void ARelicActor::OnDropped()
 {
-    if (HasAuthority())
+    if (!HasAuthority())
     {
-        DetachFromCarrier(); // Detaches and sets physics state
-        CurrentCarrier = nullptr; // Clear replicated property AFTER potentially using it above
-        OnRep_CurrentCarrier(); // Call RepNotify manually on server
-
-        SetRelicState(ERelicState::Dropped);
+        return;
     }
+    
+    // LastPossessingTeam is maintained - don't reset it
+    CurrentCarrier = nullptr;
+    CurrentState = ERelicState::Dropped;
+    
+    // Notify game mode carrier is gone
+    if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+    {
+        GameMode->OnRelicCarrierChanged(nullptr);
+    }
+    
+    DetachFromCarrier(); // Detaches and sets physics state
+    CurrentCarrier = nullptr; // Clear replicated property AFTER potentially using it above
+    OnRep_CurrentCarrier(); // Call RepNotify manually on server
+
+    SetRelicState(ERelicState::Dropped);
 }
 
 // --- Throw/Pass RPCs ---

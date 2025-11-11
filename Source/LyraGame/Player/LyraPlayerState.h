@@ -188,33 +188,16 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "Hero")
-	void ServerSetSelectedHeroId(FPrimaryAssetId NewHeroId);
-
-	UFUNCTION(BlueprintCallable, Category = "Hero")
-	FPrimaryAssetId GetSelectedHeroId() const { return SelectedHeroId; }
-
-	UFUNCTION(BlueprintCallable, Category = "Hero")
 	int32 GetPlayerNum() const { return PlayerNum; }
 
 	void SetPlayerNum(int32 NewPlayerNum);
-
-	// Delegates for external UI listeners
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnSelectedHeroChanged OnSelectedHeroChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnPlayerNumAssigned OnPlayerNumAssigned;
 
 protected:
-
-	UPROPERTY(ReplicatedUsing=OnRep_SelectedHeroId)
-	FPrimaryAssetId SelectedHeroId;
-
 	UPROPERTY(ReplicatedUsing=OnRep_PlayerNum)
 	int32 PlayerNum;
-
-	UFUNCTION()
-	void OnRep_SelectedHeroId();
 
 	UFUNCTION()
 	void OnRep_PlayerNum();

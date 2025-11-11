@@ -35,4 +35,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Data")
 	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsset;
+
+	virtual void OnDeathStarted(AActor* OwningActor) override;
 };

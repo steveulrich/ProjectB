@@ -6,7 +6,6 @@
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystemInterface.h"
-#include "GameplayAbilitySet.h"
 #include "RelicActor.generated.h"
 
 class UAbilitySystemComponent;
@@ -52,12 +51,16 @@ public:
     //~ IAbilitySystemInterface
     virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
     //~ End IAbilitySystemInterface
+
+    UFUNCTION(BlueprintCallable, Category = "Relic")
+    void InitializeRelicData(const URelicDataAsset* InRelicData);
     
     // --- Replication ---
 
     // Replicated state variable with notification function
     UPROPERTY(ReplicatedUsing = OnRep_CurrentState, BlueprintReadOnly, Category = "Relic|State")
     ERelicState CurrentState = ERelicState::Neutral;
+    
     UFUNCTION()
     virtual void OnRep_CurrentState();
 
@@ -67,8 +70,8 @@ public:
     UFUNCTION()
     virtual void OnRep_CurrentCarrier();
     
-    UPROPERTY(BlueprintReadOnly)
-    int32 LastPossessingTeam;
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    int32 LastPossessingTeam = -1;
 
     // --- Core Logic ---
 
@@ -113,7 +116,7 @@ protected:
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
     // --- Configuration ---
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Relic|Config")
+    UPROPERTY(BlueprintReadOnly, Category = "Relic|Config")
     TObjectPtr<URelicSettings> RelicSettings; // Assume this contains ThrowForce, PassForce, SocketName etc.
 
     /** Handle to the ability set granted to the carrier's PlayerState ASC */
@@ -132,4 +135,7 @@ protected:
 
     // Internal helper to handle detachment and physics setup
     void DetachFromCarrier(const FVector* InitialVelocity = nullptr);
+
+    //Helper to apply visual/audio configuration from settings
+    void ApplyRelicConfiguration();
 };

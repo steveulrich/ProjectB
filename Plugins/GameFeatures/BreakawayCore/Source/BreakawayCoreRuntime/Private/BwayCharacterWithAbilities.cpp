@@ -8,6 +8,7 @@
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "AbilitySystemGlobals.h"
+#include "BreakawayGameMode.h"
 #include "GameFramework/PlayerState.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
@@ -25,6 +26,19 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 
 	bUseControllerRotationPitch = bUseControllerRotationYaw = bUseControllerRotationRoll = false;
 
+}
+
+void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
+{
+	if (HasAuthority())
+	{
+		if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+		{
+			AController* VictimController = GetController();
+			AController* KillerController = nullptr; // Set if you track killer
+			GameMode->OnPlayerDied(VictimController, KillerController);
+		}
+	}
 }
 
 FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() const
