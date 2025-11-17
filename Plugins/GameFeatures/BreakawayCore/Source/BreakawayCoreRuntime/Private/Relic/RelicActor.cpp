@@ -1,6 +1,5 @@
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
-#include "Relic/RelicDataAsset.h"
 #include "Relic/RelicSettings.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -119,38 +118,33 @@ void ARelicActor::BeginPlay()
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ARelicActor::OnInteractionSphereOverlap);
 }
 
-
-void ARelicActor::InitializeRelicData(const URelicDataAsset* InRelicData)
+void ARelicActor::InitializeRelicData(const URelicSettings* InRelicSettings)
 {
-    if (!InRelicData)
+    if (!InRelicSettings)
     {
         UE_LOG(LogTemp, Error, TEXT("ARelicActor::InitializeRelicData - InRelicData is null!"));
         return;
     }
 
     // Store the settings from the data asset
-    RelicSettings = InRelicData->RelicSettings;
+    RelicSettings = const_cast<URelicSettings*>(InRelicSettings);
     
-    if (!RelicSettings)
-    {
-        UE_LOG(LogTemp, Error, TEXT("ARelicActor::InitializeRelicData - RelicSettings is null in data asset %s!"), 
-            *InRelicData->GetName());
-        return;
-    }
-
-    // Apply configuration immediately
+    // Apply configuration immediately (before BeginPlay)
     ApplyRelicConfiguration();
+    
+    UE_LOG(LogTemp, Log, TEXT("Relic initialized with data asset: %s"), *InRelicSettings->GetName());
 }
 
 void ARelicActor::ApplyRelicConfiguration()
 {
-    if (!RelicSettings || !RelicMesh)
+    if (!RelicSettings)
     {
+        UE_LOG(LogTemp, Warning, TEXT("ApplyRelicConfiguration called but RelicSettings is null"));
         return;
     }
 
     // Apply mesh if specified
-    if (!RelicSettings->RelicMesh.IsNull())
+    if (RelicMesh && !RelicSettings->RelicMesh.IsNull())
     {
         if (UStaticMesh* LoadedMesh = RelicSettings->RelicMesh.LoadSynchronous())
         {
@@ -159,7 +153,7 @@ void ARelicActor::ApplyRelicConfiguration()
     }
 
     // Apply material if specified
-    if (!RelicSettings->RelicMaterial.IsNull())
+    if (RelicMesh && !RelicSettings->RelicMaterial.IsNull())
     {
         if (UMaterialInterface* LoadedMaterial = RelicSettings->RelicMaterial.LoadSynchronous())
         {
@@ -168,17 +162,39 @@ void ARelicActor::ApplyRelicConfiguration()
     }
 
     // Apply physics settings
-    RelicMesh->SetMassOverrideInKg(NAME_None, RelicSettings->RelicMass, true);
-    RelicMesh->SetLinearDamping(RelicSettings->LinearDamping);
-    RelicMesh->SetAngularDamping(RelicSettings->AngularDamping);
+    if (RelicMesh)
+    {
+        RelicMesh->SetMassOverrideInKg(NAME_None, RelicSettings->RelicMass, true);
+        RelicMesh->SetLinearDamping(RelicSettings->LinearDamping);
+        RelicMesh->SetAngularDamping(RelicSettings->AngularDamping);
+    }
 
     // Apply interaction radius
     if (InteractionSphere)
     {
         InteractionSphere->SetSphereRadius(RelicSettings->PickupRadius);
     }
-}
 
+    // Load ability set asynchronously if specified
+    if (!RelicSettings->RelicAbilitySet.IsNull())
+    {
+        FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+        StreamableManager.RequestAsyncLoad(
+            RelicSettings->RelicAbilitySet.ToSoftObjectPath(),
+            FStreamableDelegate::CreateLambda([this]()
+            {
+                if (RelicSettings && !RelicSettings->RelicAbilitySet.IsNull())
+                {
+                    LoadedRelicAbilitySet = RelicSettings->RelicAbilitySet.Get();
+                    UE_LOG(LogTemp, Log, TEXT("Relic ability set loaded: %s"), 
+                        *GetNameSafe(LoadedRelicAbilitySet));
+                }
+            })
+        );
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Relic configuration applied successfully"));
+}
 
 void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

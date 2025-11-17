@@ -5,12 +5,14 @@
 #include "BwayPlayerState.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Relic/RelicActor.h"
-#include "Relic/RelicDataAsset.h"
+#include "SpawnSystem/BwaySpawnPoint.h"
+#include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/PlayerController.h"
 #include "EngineUtils.h"
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameplayTagsManager.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
 
@@ -38,6 +40,16 @@ void ABreakawayGameMode::InitGameState()
 	ABwayGameState* BwayGS = GetBreakawayGameState();
 	if (BwayGS)
 	{
+		// Add spawn point manager component to game state
+		SpawnPointManager = Cast<UBwaySpawnPointManagerComponent>(
+			BwayGS->AddComponentByClass(UBwaySpawnPointManagerComponent::StaticClass(), false, FTransform::Identity, false));
+
+		if (SpawnPointManager)
+		{
+			SpawnPointManager->RegisterComponent();
+			UE_LOG(LogBreakawayGame, Log, TEXT("Spawn Point Manager added to Game State"));
+		}
+
 		UE_LOG(LogBreakawayGame, Log, TEXT("Breakaway Game State initialized"));
 	}
 }
@@ -48,10 +60,11 @@ void ABreakawayGameMode::BeginPlay()
 
 	UE_LOG(LogBreakawayGame, Warning, TEXT("Breakaway GameMode Loaded"));
 
-	if (bSpawnDefaultRelicsAtStart)
-	{
-		SpawnDefaultRelics();
-	}
+	// Initialize spawn point tags
+	InitializeSpawnPointTags();
+
+	// Spawn initial game objects
+	SpawnInitialGameObjects();
 
 	// Start first round after delay if configured
 	if (bAutoStartFirstRound)
@@ -139,7 +152,29 @@ AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player
 	// Determine which team the player is on
 	const int32 TeamIndex = BwayGS->GetPlayerTeam(Player->PlayerState);
 	
-	// Get appropriate spawn points based on team
+	// Use spawn point manager if available
+	if (SpawnPointManager)
+	{
+		// Get spawn points for the player's team
+		TArray<ABwaySpawnPoint*> TeamSpawnPoints = SpawnPointManager->GetSpawnPointsByTeam(TeamIndex);
+		
+		if (TeamSpawnPoints.Num() > 0)
+		{
+			// Choose random spawn point
+			const int32 RandomIndex = FMath::RandRange(0, TeamSpawnPoints.Num() - 1);
+			ABwaySpawnPoint* ChosenSpawnPoint = TeamSpawnPoints[RandomIndex];
+			
+			// Return a dummy player start actor at the spawn point location
+			// Note: In a full implementation, you might want to create actual PlayerStart actors
+			// or return the spawn point itself if it inherits from PlayerStart
+			UE_LOG(LogBreakawayGame, Log, TEXT("Using spawn point manager for player spawn"));
+			
+			// For now, we'll still fall back to traditional PlayerStarts
+			// but you could extend ABwaySpawnPoint to inherit from APlayerStart
+		}
+	}
+
+	// Fallback to tag-based player start search
 	FName SpawnTag = (TeamIndex == 0) ? Team1SpawnPointTag : Team2SpawnPointTag;
 	TArray<AActor*> TeamSpawns = GetPlayerStartsWithTag(SpawnTag);
 
@@ -231,8 +266,16 @@ void ABreakawayGameMode::EndRound(int32 WinningTeam, EWinCondition WinCondition)
 
 void ABreakawayGameMode::ResetRoundState()
 {
-	// Reset relic
-	ResetRelic();
+	// Reset relic using spawn point manager
+	if (SpawnPointManager)
+	{
+		SpawnPointManager->ResetAllSpawnPoints(RelicSpawnTag);
+	}
+	else
+	{
+		// Fallback to old method
+		ResetRelic();
+	}
 
 	// Respawn all players
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -384,73 +427,50 @@ int32 ABreakawayGameMode::GetTeamWithFewerPlayers() const
 // Relic Management
 // ========================================
 
-
-ARelicActor* ABreakawayGameMode::SpawnRelic(const URelicDataAsset* RelicData, const FTransform& SpawnTransform)
-{
-	if (!RelicData)
-	{
-		UE_LOG(LogBreakawayGame, Error, TEXT("SpawnRelic called with null RelicData!"));
-		return nullptr;
-	}
-
-	if (!RelicData->RelicSettings)
-	{
-		UE_LOG(LogBreakawayGame, Error, TEXT("RelicData %s has null RelicSettings!"), *RelicData->GetName());
-		return nullptr;
-	}
-
-	// Determine which actor class to spawn
-	TSubclassOf<ARelicActor> ActorClass = RelicData->RelicActorClass;
-	if (!ActorClass)
-	{
-		ActorClass = ARelicActor::StaticClass();
-	}
-
-	// Use deferred spawning to inject data before BeginPlay
-	ARelicActor* NewRelic = GetWorld()->SpawnActorDeferred<ARelicActor>(
-		ActorClass,
-		SpawnTransform,
-		nullptr,
-		nullptr,
-		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn
-	);
-
-	if (NewRelic)
-	{
-		// Initialize with the data asset
-		NewRelic->InitializeRelicData(RelicData);
-        
-		// Finish spawning
-		NewRelic->FinishSpawning(SpawnTransform);
-
-		UE_LOG(LogBreakawayGame, Log, TEXT("Successfully spawned relic: %s at %s"), 
-			*RelicData->RelicDisplayName.ToString(), *SpawnTransform.GetLocation().ToString());
-	}
-
-	return NewRelic;
-}
-
 void ABreakawayGameMode::ResetRelic()
 {
-	if (!ActiveRelic)
+	ABwayGameState* BwayGS = GetBreakawayGameState();
+	if (!BwayGS)
 	{
-		SpawnDefaultRelics();
 		return;
 	}
 
-	// Find relic spawn point
-	TArray<AActor*> RelicSpawns = GetPlayerStartsWithTag(RelicSpawnPointTag);
+	ARelicActor* Relic = BwayGS->GetRelicActor();
+	if (!Relic)
+	{
+		UE_LOG(LogBreakawayGame, Error, TEXT("Cannot reset relic - no relic actor found"));
+		return;
+	}
 
+	// Use spawn point manager if available
+	if (SpawnPointManager)
+	{
+		ABwaySpawnPoint* RelicSpawn = SpawnPointManager->GetRandomSpawnPoint(RelicSpawnTag);
+		if (RelicSpawn)
+		{
+			Relic->SetActorLocation(RelicSpawn->GetActorLocation());
+			Relic->SetActorRotation(RelicSpawn->GetActorRotation());
+			Relic->OnDropped();
+			
+			UE_LOG(LogBreakawayGame, Log, TEXT("Relic reset to spawn point: %s"), *RelicSpawn->GetName());
+			return;
+		}
+	}
+
+	// Fallback to tag-based spawn search
+	TArray<AActor*> RelicSpawns = GetPlayerStartsWithTag(RelicSpawnPointTag);
 	if (RelicSpawns.Num() > 0)
 	{
 		AActor* SpawnPoint = RelicSpawns[0];
-		ActiveRelic->SetActorLocation(SpawnPoint->GetActorLocation());
-		ActiveRelic->SetActorRotation(SpawnPoint->GetActorRotation());
-		
-		// Reset relic state
-		ActiveRelic->OnDropped();
+		Relic->SetActorLocation(SpawnPoint->GetActorLocation());
+		Relic->SetActorRotation(SpawnPoint->GetActorRotation());
+		Relic->OnDropped();
 		
 		UE_LOG(LogBreakawayGame, Log, TEXT("Relic reset to spawn location"));
+	}
+	else
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("No relic spawn points found"));
 	}
 }
 
@@ -476,15 +496,21 @@ void ABreakawayGameMode::OnRelicCarrierChanged(ABwayCharacterWithAbilities* NewC
 int32 ABreakawayGameMode::DetermineRelicPossessionTeam() const
 {
 	ABwayGameState* BwayGS = GetBreakawayGameState();
-	if (!BwayGS || !ActiveRelic)
+	if (!BwayGS)
+	{
+		return -1;
+	}
+
+	ARelicActor* Relic = BwayGS->GetRelicActor();
+	if (!Relic)
 	{
 		return -1;
 	}
 
 	// If relic has a carrier, use their team
-	if (ActiveRelic->CurrentCarrier && ActiveRelic->CurrentCarrier->GetPlayerState())
+	if (Relic->CurrentCarrier && Relic->CurrentCarrier->GetPlayerState())
 	{
-		return BwayGS->GetPlayerTeam(ActiveRelic->CurrentCarrier->GetPlayerState());
+		return BwayGS->GetPlayerTeam(Relic->CurrentCarrier->GetPlayerState());
 	}
 
 	// Otherwise use last possessing team from game state
@@ -560,6 +586,56 @@ void ABreakawayGameMode::RespawnPlayer(AController* Controller)
 }
 
 // ========================================
+// Spawn System Integration
+// ========================================
+
+void ABreakawayGameMode::InitializeSpawnPointTags()
+{
+	// Initialize gameplay tags for spawn points
+	RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"));
+	Goal1SpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Goal.Team1"));
+	Goal2SpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Goal.Team2"));
+	
+	UE_LOG(LogBreakawayGame, Log, TEXT("Initialized spawn point tags"));
+}
+
+void ABreakawayGameMode::SpawnInitialGameObjects()
+{
+	if (!SpawnPointManager)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("No spawn point manager - cannot spawn initial objects"));
+		return;
+	}
+
+	ABwayGameState* BwayGS = GetBreakawayGameState();
+	if (!BwayGS)
+	{
+		return;
+	}
+
+	// Spawn relic
+	TArray<AActor*> SpawnedRelics = SpawnPointManager->SpawnObjectsAtPoints(RelicSpawnTag);
+	if (SpawnedRelics.Num() > 0)
+	{
+		if (ARelicActor* Relic = Cast<ARelicActor>(SpawnedRelics[0]))
+		{
+			BwayGS->SetRelicActor(Relic);
+			UE_LOG(LogBreakawayGame, Log, TEXT("Spawned relic at spawn point"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("No relic spawned - check spawn points and spawn data"));
+	}
+
+	// Spawn goals
+	SpawnPointManager->SpawnObjectsAtPoints(Goal1SpawnTag);
+	SpawnPointManager->SpawnObjectsAtPoints(Goal2SpawnTag);
+	
+	UE_LOG(LogBreakawayGame, Log, TEXT("Spawned initial game objects"));
+}
+
+// ========================================
 // Helper Functions
 // ========================================
 
@@ -588,44 +664,4 @@ TArray<AActor*> ABreakawayGameMode::GetPlayerStartsWithTag(const FName& Tag) con
 	}
 
 	return TaggedStarts;
-}
-
-
-void ABreakawayGameMode::SpawnDefaultRelics()
-{
-	if (DefaultRelicTypes.Num() == 0)
-	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("No default relic types configured in GameMode!"));
-		return;
-	}
-
-	for (const URelicDataAsset* RelicData : DefaultRelicTypes)
-	{
-		if (!RelicData)
-		{
-			continue;
-		}
-
-		// Use spawn location from settings if available
-		FVector SpawnLocation = FVector::ZeroVector;
-		if (RelicData->RelicSettings && RelicData->RelicSettings->SpawnLocations.Num() > 0)
-		{
-			if (RelicData->RelicSettings->bUseRandomSpawnLocation)
-			{
-				int32 RandomIndex = FMath::RandRange(0, RelicData->RelicSettings->SpawnLocations.Num() - 1);
-				SpawnLocation = RelicData->RelicSettings->SpawnLocations[RandomIndex];
-			}
-			else
-			{
-				SpawnLocation = RelicData->RelicSettings->SpawnLocations[0];
-			}
-		}
-		else if (RelicData->RelicSettings)
-		{
-			SpawnLocation = RelicData->RelicSettings->DefaultSpawnLocation;
-		}
-
-		FTransform SpawnTransform(FRotator::ZeroRotator, SpawnLocation);
-		SpawnRelic(RelicData, SpawnTransform);
-	}
 }

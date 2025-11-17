@@ -16,7 +16,7 @@
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"ExplicitlyLoaded": true,
-	"BuiltInInitialFeatureState": "Active",
+	"BuiltInInitialFeatureState": "Installed",
 	"Plugins": [
 		{
 			"Name": "BreakawayCore",

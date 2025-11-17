@@ -53,7 +53,7 @@ public:
     //~ End IAbilitySystemInterface
 
     UFUNCTION(BlueprintCallable, Category = "Relic")
-    void InitializeRelicData(const URelicDataAsset* InRelicData);
+    void InitializeRelicData(const URelicSettings* InRelicSettings);
     
     // --- Replication ---
 
@@ -67,6 +67,7 @@ public:
     // Replicated reference to the character currently carrying the relic
     UPROPERTY(ReplicatedUsing = OnRep_CurrentCarrier, BlueprintReadOnly, Category = "Relic|State")
     TObjectPtr<ABwayCharacterWithAbilities> CurrentCarrier = nullptr;
+    
     UFUNCTION()
     virtual void OnRep_CurrentCarrier();
     

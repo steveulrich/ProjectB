@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "BwayGameState.h"
 #include "GameModes/LyraGameMode.h"
-#include "Relic/RelicDataAsset.h"
+#include "GameplayTagContainer.h"
 #include "BreakawayGameMode.generated.h"
 
 class ARelicActor;
 class ABwayCharacterWithAbilities;
 class ABwayPlayerState;
+class UBwaySpawnPointManagerComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBreakawayGame, Log, All);
 
@@ -32,7 +33,7 @@ enum class EWinCondition : uint8
  * - Round lifecycle management
  * - All three win conditions (Goal scoring, Team elimination, Timer possession)
  * - Team assignment and balancing
- * - Relic spawning and respawning
+ * - Relic spawning and respawning via new spawn point system
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABreakawayGameMode : public ALyraGameMode
@@ -104,11 +105,6 @@ public:
 	// Relic Management
 	// ========================================
 
-	// Spawn a relic with specific data
-	UFUNCTION(BlueprintCallable, Category = "Relic")
-	ARelicActor* SpawnRelic(const URelicDataAsset* RelicData, const FTransform& SpawnTransform);
-
-
 	/** Reset the relic to its spawn location */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic")
 	void ResetRelic();
@@ -162,14 +158,7 @@ public:
 	bool bAutoStartFirstRound = true;
 
 protected:
-	// Default relic data assets to spawn at match start
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Relic")
-	TArray<TObjectPtr<URelicDataAsset>> DefaultRelicTypes;
 
-	// Optional - spawn default relics at start
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Relic")
-	bool bSpawnDefaultRelicsAtStart = true;
-	
 	/** Get the Breakaway game state (casted for convenience) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway")
 	ABwayGameState* GetBreakawayGameState() const;
@@ -193,9 +182,21 @@ protected:
 	/** Track if we've initialized the game properly */
 	bool bGameInitialized = false;
 
+	/** Spawn point manager component reference */
+	UPROPERTY()
+	TObjectPtr<UBwaySpawnPointManagerComponent> SpawnPointManager;
+
+	/** Gameplay tags for spawn points */
+	FGameplayTag RelicSpawnTag;
+	FGameplayTag Goal1SpawnTag;
+	FGameplayTag Goal2SpawnTag;
+
+	/** Initialize spawn point tags */
+	void InitializeSpawnPointTags();
+
+	/** Spawn initial game objects (relic, goals) using spawn point system */
+	void SpawnInitialGameObjects();
+
 	/** Internal helper to determine which team has relic possession based on location */
 	int32 DetermineRelicPossessionTeam() const;
-
-	// Called from BeginPlay to spawn initial relics
-	virtual void SpawnDefaultRelics();
 };
