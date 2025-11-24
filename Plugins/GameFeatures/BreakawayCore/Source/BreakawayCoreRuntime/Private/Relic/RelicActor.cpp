@@ -1,6 +1,7 @@
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Relic/RelicSettings.h"
+#include "Relic/RelicMovementReplicationComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Make sure this is included
@@ -11,7 +12,6 @@
 #include "Engine/StreamableManager.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerState.h" // Include necessary header for APlayerState
-#include "Kismet/GameplayStatics.h" // For FinishSpawningActor if needed later
 
 ARelicActor::ARelicActor()
 {
@@ -36,6 +36,9 @@ ARelicActor::ARelicActor()
     AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
     AbilitySystemComponent->SetIsReplicated(true);
     AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+    // Create the smooth movement replication component
+    MovementReplicationComponent = CreateDefaultSubobject<URelicMovementReplicationComponent>(TEXT("MovementReplicationComponent"));
 
     SetNetUpdateFrequency(66.0f);
     SetMinNetUpdateFrequency(33.0f);
@@ -65,14 +68,12 @@ void ARelicActor::BeginPlay()
         
         if(!RelicSettings->RelicMesh.IsNull())
         {
-            UStaticMesh* LoadedMesh = RelicSettings->RelicMesh.LoadSynchronous();
-            if (LoadedMesh)
+            if (UStaticMesh* LoadedMesh = RelicSettings->RelicMesh.LoadSynchronous())
             {
                 RelicMesh->SetStaticMesh(LoadedMesh);
             }
         
-            UMaterialInterface* LoadedMaterial = RelicSettings->RelicMaterial.LoadSynchronous();
-            if (LoadedMaterial)
+            if (UMaterialInterface* LoadedMaterial = RelicSettings->RelicMaterial.LoadSynchronous())
             {
                 RelicMesh->SetMaterial(0, LoadedMaterial);
             }
@@ -208,8 +209,7 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
     if (OverlappingCharacter && CanBePickedUpBy(OverlappingCharacter))
     {
         // Get the PlayerState associated with the character
-        APlayerState* PlayerState = OverlappingCharacter->GetPlayerState();
-        if (PlayerState)
+        if (APlayerState* PlayerState = OverlappingCharacter->GetPlayerState())
         {
             // Get the Ability System Component from the PlayerState
             UAbilitySystemComponent* PlayerStateASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
@@ -311,19 +311,40 @@ void ARelicActor::SetRelicState(ERelicState NewState)
             case ERelicState::Carried:
                 RelicMesh->SetSimulatePhysics(false);
                 RelicMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Prevent physics collision while carried
+                // Disable smooth replication when carried (no physics)
+                if (MovementReplicationComponent)
+                {
+                    MovementReplicationComponent->EnableSmoothReplication(false);
+                }
                 break;
             case ERelicState::Neutral:
             case ERelicState::Dropped:
                 RelicMesh->SetSimulatePhysics(true); // Enable physics simulation on server
                 RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+                // Enable smooth replication for physics-based movement
+                if (MovementReplicationComponent)
+                {
+                    MovementReplicationComponent->EnableSmoothReplication(true);
+                }
                 break;
             case ERelicState::Thrown:
             case ERelicState::BeingPassed:
                 RelicMesh->SetSimulatePhysics(true); // Enable physics simulation on server
                 RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+                // Enable smooth replication for physics-based movement
+                if (MovementReplicationComponent)
+                {
+                    MovementReplicationComponent->EnableSmoothReplication(true);
+                }
                 break;
             case ERelicState::Resetting:
             case ERelicState::Scoring:
+                // Disable smooth replication during reset/scoring
+                if (MovementReplicationComponent)
+                {
+                    MovementReplicationComponent->EnableSmoothReplication(false);
+                }
+                break;
             case ERelicState::PendingRequest:
             default:
                 break;
@@ -352,8 +373,7 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
     // NEW: Track which team picked up the relic
     if (NewCarrier->GetPlayerState())
     {
-        ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>();
-        if (GameState)
+        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
         {
             LastPossessingTeam = GameState->GetPlayerTeam(NewCarrier->GetPlayerState());
         }
@@ -450,8 +470,7 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // Attach to the carrier's mesh
-    USkeletalMeshComponent* CarrierMesh = Carrier->GetMesh();
-    if (CarrierMesh)
+    if (USkeletalMeshComponent* CarrierMesh = Carrier->GetMesh())
     {
         AttachToComponent(CarrierMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocketName);
     }
@@ -459,8 +478,7 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
     if (HasAuthority())
     {
         // --- Grant Ability Set ---
-        APlayerState* CarrierPlayerState = Carrier->GetPlayerState();
-        if (CarrierPlayerState)
+        if (APlayerState* CarrierPlayerState = Carrier->GetPlayerState())
         {
             ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState));
             ULyraAbilitySet* AbilitySetToGrant = LoadedRelicAbilitySet;
@@ -500,12 +518,9 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
         // --- Clear Ability Set (Server Only) ---
         if (CurrentCarrier) // Check if there was a carrier before clearing CurrentCarrier
         {
-            APlayerState* CarrierPlayerState = CurrentCarrier->GetPlayerState();
-            if (CarrierPlayerState)
+            if (APlayerState* CarrierPlayerState = CurrentCarrier->GetPlayerState())
             {
-                ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState));
-
-                if (PlayerStateASC) // Ensure the handle is valid before taking
+                if (ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState))) // Ensure the handle is valid before taking
                 {
                     GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
                     UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(CarrierPlayerState), *GetNameSafe(CurrentCarrier));
@@ -528,4 +543,3 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
         RelicMesh->SetSimulatePhysics(false);
     }
 }
-

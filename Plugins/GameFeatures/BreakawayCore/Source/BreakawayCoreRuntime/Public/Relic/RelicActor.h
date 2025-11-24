@@ -12,6 +12,7 @@ class UAbilitySystemComponent;
 class UStaticMeshComponent;
 class USphereComponent;
 class URelicSettings;
+class URelicMovementReplicationComponent;
 class ABwayCharacterWithAbilities; // Forward declaration
 
 // Enum defining the possible states of the Relic
@@ -104,6 +105,12 @@ public:
     {
         return RelicSettings;
     }
+
+    // Accessor for current state (needed by goal volume)
+    FORCEINLINE ERelicState GetCurrentState() const
+    {
+        return CurrentState;
+    }
     
 protected:
     // --- Components ---
@@ -115,6 +122,10 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+    /** Component for smooth network replication of physics movement */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<URelicMovementReplicationComponent> MovementReplicationComponent;
 
     // --- Configuration ---
     UPROPERTY(BlueprintReadOnly, Category = "Relic|Config")
