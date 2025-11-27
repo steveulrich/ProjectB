@@ -1,0 +1,213 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "BwayHeroSelectWidget.generated.h"
+
+class UBwayHeroRegistry;
+class UBwayHeroSelectionManager;
+class ABwayPlayerState;
+
+/**
+ * Struct containing all display info for a hero in the UI
+ */
+USTRUCT(BlueprintType)
+struct FHeroDisplayInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FPrimaryAssetId HeroId;
+
+	UPROPERTY(BlueprintReadOnly)
+	FText DisplayName;
+
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UTexture2D> Portrait;
+
+	UPROPERTY(BlueprintReadOnly)
+	FHeroStats Stats;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAvailable = true;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsSelected = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsLocked = false;
+};
+
+/**
+ * UBwayHeroSelectWidget
+ * 
+ * Base class for hero selection UI
+ * Handles communication with PlayerState and HeroSelectionManager
+ * Designed to be extended in Blueprint for visual implementation
+ */
+UCLASS(Abstract, Blueprintable)
+class BREAKAWAYCORERUNTIME_API UBwayHeroSelectWidget : public UCommonActivatableWidget
+{
+	GENERATED_BODY()
+
+public:
+	UBwayHeroSelectWidget(const FObjectInitializer& ObjectInitializer);
+
+protected:
+	//~UUserWidget interface
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+	//~End of UUserWidget interface
+
+	//~UCommonActivatableWidget interface
+	virtual void NativeOnActivated() override;
+	virtual void NativeOnDeactivated() override;
+	//~End of UCommonActivatableWidget interface
+
+public:
+	// ========== BLUEPRINT CALLABLE FUNCTIONS ==========
+
+	/**
+	 * Get all available heroes for display
+	 * Call this to populate your hero grid/list
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	TArray<FHeroDisplayInfo> GetAvailableHeroes();
+
+	/**
+	 * Get the currently selected hero for the local player
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	FPrimaryAssetId GetSelectedHeroId() const;
+
+	/**
+	 * Check if the local player's selection is locked
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	bool IsSelectionLocked() const;
+
+	/**
+	 * Select a hero (sends request to server)
+	 * Returns false if the hero is unavailable
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	bool SelectHero(FPrimaryAssetId HeroId);
+
+	/**
+	 * Lock the current hero selection
+	 * Returns false if no hero is selected
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	bool LockSelection();
+
+	/**
+	 * Get the local player's team index
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	int32 GetLocalPlayerTeam() const;
+
+	/**
+	 * Check if a specific hero is available for selection
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	bool IsHeroAvailable(FPrimaryAssetId HeroId) const;
+
+	/**
+	 * Get remaining selection time (in seconds)
+	 * Returns -1 if no time limit
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	float GetRemainingSelectionTime() const;
+
+	/**
+	 * Get number of players ready vs total
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	void GetReadyPlayerCount(int32& OutReady, int32& OutTotal) const;
+
+	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
+
+	/**
+	 * Called when the hero list should be refreshed
+	 * Implement this to update your UI with GetAvailableHeroes()
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnHeroListChanged();
+
+	/**
+	 * Called when the local player selects a different hero
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnLocalSelectionChanged(FPrimaryAssetId NewHeroId);
+
+	/**
+	 * Called when the local player locks their selection
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnLocalSelectionLocked(FPrimaryAssetId LockedHeroId);
+
+	/**
+	 * Called when another player selects a hero
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnOtherPlayerSelectionChanged(APlayerState* PlayerState, FPrimaryAssetId HeroId, int32 TeamIndex);
+
+	/**
+	 * Called when the selection timer updates
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnSelectionTimerUpdated(float RemainingTime);
+
+	/**
+	 * Called when all players are ready
+	 */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnAllPlayersReady();
+
+protected:
+	// ========== INTERNAL STATE ==========
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<ABwayPlayerState> LocalPlayerState;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<UBwayHeroSelectionManager> SelectionManager;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<UBwayHeroRegistry> HeroRegistry;
+
+private:
+	// Timer for updating selection countdown
+	FTimerHandle SelectionTimerHandle;
+
+	// Bind to player state and selection manager
+	void BindToPlayerState();
+	void UnbindFromPlayerState();
+	void BindToSelectionManager();
+	void UnbindFromSelectionManager();
+
+	// Delegate callbacks
+	UFUNCTION()
+	void HandlePlayerSelectionChanged(const FPrimaryAssetId& NewHeroId);
+
+	UFUNCTION()
+	void HandlePlayerHeroLocked(FPrimaryAssetId LockedHeroId);
+
+	UFUNCTION()
+	void HandleOtherPlayerSelectionChanged(APlayerState* PlayerState, FPrimaryAssetId HeroId, int32 TeamIndex);
+
+	UFUNCTION()
+	void HandleAllPlayersReady();
+
+	// Update timer display
+	void UpdateSelectionTimer();
+
+	// Cache of hero data for quick access
+	UPROPERTY()
+	TArray<TObjectPtr<UBwayHeroDataAsset>> CachedHeroData;
+
+	bool bIsInitialized = false;
+};

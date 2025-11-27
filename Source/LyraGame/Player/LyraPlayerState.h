@@ -6,7 +6,6 @@
 #include "ModularPlayerState.h"
 #include "System/GameplayTagStack.h"
 #include "Teams/LyraTeamAgentInterface.h"
-#include "BwayHeroDataAsset.h"
 
 #include "LyraPlayerState.generated.h"
 

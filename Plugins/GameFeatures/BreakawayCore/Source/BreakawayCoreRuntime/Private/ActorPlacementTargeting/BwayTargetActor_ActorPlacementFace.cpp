@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BwayTargetActor_ActorPlacementFace.h"
-#include "BwayWorldReticle_ActorVisualization.h"
+#include "ActorPlacementTargeting/BwayTargetActor_ActorPlacementFace.h"
+#include "ActorPlacementTargeting/BwayWorldReticle_ActorVisualization.h"
 #include "Engine/World.h"
 #include "Abilities/GameplayAbilityTargetActor.h"   // For IsTargetValid()
 #include "Engine/EngineTypes.h"     // For FOverlapResult, ECollisionChannel

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "BwayHeroDataAsset.h"
 #include "Camera/LyraCameraAssistInterface.h"
 #include "CommonPlayerController.h"
 #include "Teams/LyraTeamAgentInterface.h"

@@ -12,7 +12,7 @@
 #include "GameFramework/PlayerState.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
-#include "BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
 #include "Animation/AnimBlueprint.h" // For UAnimBlueprint
 
 

@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BwayHeroRegistry.h"
-#include "BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
 #include "Engine/AssetManager.h"
 #include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"   // for FModuleManager

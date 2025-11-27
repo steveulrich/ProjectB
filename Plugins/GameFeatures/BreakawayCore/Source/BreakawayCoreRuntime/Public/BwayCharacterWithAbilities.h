@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
 #include "Character/LyraCharacter.h"
 #include "BwayCharacterWithAbilities.generated.h"
 

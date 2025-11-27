@@ -1,6 +1,5 @@
 
 #include "BwayActorWithAbilities.h"
-
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"

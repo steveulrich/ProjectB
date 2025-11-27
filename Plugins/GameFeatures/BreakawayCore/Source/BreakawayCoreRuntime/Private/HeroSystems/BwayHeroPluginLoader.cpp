@@ -1,5 +1,5 @@
 // BwayHeroPluginLoader.cpp
-#include "BwayHeroPluginLoader.h"
+#include "HeroSystems/BwayHeroPluginLoader.h"
 #include "Interfaces/IPluginManager.h"
 #include "GameFeaturesSubsystem.h"
 #include "GameFeaturePluginOperationResult.h"

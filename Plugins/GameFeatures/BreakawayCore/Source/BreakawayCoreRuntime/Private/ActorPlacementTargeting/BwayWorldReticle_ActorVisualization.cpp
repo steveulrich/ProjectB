@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BwayWorldReticle_ActorVisualization.h"
+#include "ActorPlacementTargeting/BwayWorldReticle_ActorVisualization.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/MeshComponent.h"

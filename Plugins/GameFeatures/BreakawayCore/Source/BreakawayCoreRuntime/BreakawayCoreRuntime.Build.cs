@@ -24,31 +24,33 @@ public class BreakawayCoreRuntime : ModuleRules
 		
 		PublicDependencyModuleNames.AddRange(
 			new string[] { 
+				"AIModule",
 				"Core", 
 				"CoreUObject", 
+				"EnhancedInput",
 				"Engine", 
-				"InputCore",
-				"Niagara",
 				"GameplayAbilities",
 				"GameplayTags",
 				"GameplayTasks",
-				"EnhancedInput",
-				"AIModule",
+				"InputCore",
 				"LyraGame",
-				"Projects",
-				"NavigationSystem",
+				"ModularGameplay",        // For UGameStateComponent
 				"ModularGameplayActors",
+				"NavigationSystem",
+				"Niagara",
+				"Projects",
+				"UMG"
 			}
 		);
         
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
-				"Slate",
-				"SlateCore",
+				"CommonUI",
+				"GameFeatures",
 				"NetCore",
 				"PhysicsCore",
-				"CommonUI",
-				"GameFeatures"
+				"Slate",
+				"SlateCore"
 			}
 		);
 		

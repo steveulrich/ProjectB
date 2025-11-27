@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFeatureData.h"
-#include "BwayHeroDataAsset.h" // Forward declare or include
+#include "HeroSystems/BwayHeroDataAsset.h" // Forward declare or include
 #include "BwayGameFeatureData.generated.h"
 
 UCLASS()

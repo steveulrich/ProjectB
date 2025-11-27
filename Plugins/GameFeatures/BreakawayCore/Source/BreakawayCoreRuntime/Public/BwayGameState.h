@@ -3,10 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameState.h"
-#include "GameplayTagContainer.h"
 #include "GameModes/LyraGameState.h"
-#include "Net/UnrealNetwork.h"
 #include "BwayGameState.generated.h"
 
 class ARelicActor;
