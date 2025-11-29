@@ -8,6 +8,8 @@
 
 class ARelicActor;
 class ABwayCharacterWithAbilities;
+class UBwayHeroSelectionManager;
+class UBwayHeroSelectionPhaseComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnScoreChanged, int32, Team1Score, int32, Team2Score);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
@@ -67,6 +69,12 @@ public:
 	virtual void PostInitializeComponents() override;
 	virtual void Tick(float DeltaSeconds) override;
 	//~End of AGameState interface
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<UBwayHeroSelectionManager> HeroSelectionManager;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<UBwayHeroSelectionPhaseComponent> HeroSelectionPhaseComponent;
 
 	// ========================================
 	// Team Management
