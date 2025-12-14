@@ -14,6 +14,8 @@ class USphereComponent;
 class URelicSettings;
 class URelicMovementReplicationComponent;
 class ABwayCharacterWithAbilities; // Forward declaration
+class UNiagaraComponent;
+class UMaterialInstanceDynamic;
 
 // Enum defining the possible states of the Relic
 UENUM(BlueprintType)
@@ -75,6 +77,9 @@ public:
     UPROPERTY(BlueprintReadOnly, Replicated)
     int32 LastPossessingTeam = -1;
 
+    UPROPERTY(BlueprintReadOnly, Replicated)
+    bool bHasScoredThisRound = false;
+
     // --- Core Logic ---
 
     // Called by GA_PickupRelic on the server to attach the relic
@@ -84,6 +89,14 @@ public:
     // Called by GA_DropRelic, GA_ThrowRelic, GA_PassRelic on the server to detach
     UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
     virtual void OnDropped();
+
+    // Called when relic enters a goal volume (server only)
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    void OnEnteredGoal(int32 ScoringTeam);
+
+    // Clear the scoring flag (called on round reset)
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    void ClearScoringFlag();
 
     // Server RPC called by GA_ThrowRelic
     UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
@@ -96,6 +109,10 @@ public:
     // Multicast RPC for cosmetic effects (e.g., throw/pass VFX/SFX)
     UFUNCTION(NetMulticast, Unreliable)
     void Multicast_PlayThrowPassFX();
+
+    // Client RPC for immediate throw prediction
+    UFUNCTION(Client, Unreliable)
+    void ClientPredictThrow(const FVector& ThrowVelocity);
 
     // Helper to check if pickup is allowed based on state and character request
     bool CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const;
@@ -150,4 +167,34 @@ protected:
 
     //Helper to apply visual/audio configuration from settings
     void ApplyRelicConfiguration();
+
+    // --- Visual/Audio Feedback ---
+    
+    // VFX components for different states
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic|VFX")
+    TObjectPtr<UNiagaraComponent> IdleEffectComponent;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic|VFX")
+    TObjectPtr<UNiagaraComponent> CarriedEffectComponent;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic|VFX")
+    TObjectPtr<UNiagaraComponent> DroppedEffectComponent;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic|VFX")
+    TObjectPtr<UNiagaraComponent> ScoringEffectComponent;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic|VFX")
+    TObjectPtr<UNiagaraComponent> TrailEffectComponent;
+    
+    // Dynamic material instance for team color tinting
+    UPROPERTY()
+    TObjectPtr<UMaterialInstanceDynamic> TeamColorMaterialInstance;
+    
+    // Helper functions for VFX/Audio
+    void UpdateStateVFX(ERelicState NewState);
+    void CleanupStateVFX(ERelicState OldState);
+    void SpawnTrailEffect();
+    void DestroyTrailEffect();
+    void UpdateTeamColorTinting();
+    void PlayStateAudio(ERelicState State);
 };

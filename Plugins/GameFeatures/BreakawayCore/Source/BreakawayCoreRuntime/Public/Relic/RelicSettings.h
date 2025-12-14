@@ -147,6 +147,10 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Timing", meta = (ClampMin = "0.0"))
     float ScoringConfirmationDuration = 1.0f;
     
+    // Cooldown period after scoring to prevent double-scoring (in seconds)
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Timing", meta = (ClampMin = "0.0"))
+    float ScoringCooldown = 3.0f;
+    
     //-----------------------------------------------------------
     // Network Settings
     //-----------------------------------------------------------

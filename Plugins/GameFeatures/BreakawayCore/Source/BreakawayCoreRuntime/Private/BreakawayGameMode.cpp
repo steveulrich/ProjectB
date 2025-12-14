@@ -450,6 +450,9 @@ void ABreakawayGameMode::ResetRelic()
 		return;
 	}
 
+	// Clear scoring flag for new round
+	Relic->ClearScoringFlag();
+
 	// Use spawn point manager if available
 	if (SpawnPointManager)
 	{

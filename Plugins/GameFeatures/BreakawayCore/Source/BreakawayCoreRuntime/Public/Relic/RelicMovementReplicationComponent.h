@@ -112,7 +112,7 @@ protected:
 	 * Lower = smoother but more lag
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Replication", meta = (ClampMin = "1.0", ClampMax = "50.0"))
-	float InterpolationSpeed = 10.0f;
+	float InterpolationSpeed = 15.0f; // Increased from 10.0f for better responsiveness
 
 	/**
 	 * Maximum allowed position error before snapping

@@ -238,29 +238,56 @@ void URelicMovementReplicationComponent::ClientInterpolateMovement(float DeltaTi
 	);
 
 	// Apply the interpolated transform
-	// NOTE: We disable physics during this to prevent conflicts
-	bool bWasSimulatingPhysics = TrackedMesh->IsSimulatingPhysics();
-	if (bWasSimulatingPhysics)
+	// Instead of disabling physics, guide it with velocity for smoother movement
+	if (TrackedMesh->IsSimulatingPhysics())
 	{
-		TrackedMesh->SetSimulatePhysics(false);
+		// Calculate desired velocity to reach target position
+		FVector ToTarget = InterpolatedLocation - CurrentLocation;
+		float DistanceToTarget = ToTarget.Size();
+		
+		// Only apply correction if we're significantly off target
+		// Otherwise let physics run naturally
+		if (DistanceToTarget > 5.0f)
+		{
+			// Calculate correction velocity (blended with server velocity)
+			FVector CorrectionVelocity = ToTarget / FMath::Max(DeltaTime, 0.001f);
+			FVector InterpolatedVelocity = FMath::Lerp(
+				ClientStartState.LinearVelocity,
+				ClientTargetState.LinearVelocity,
+				InterpolationAlpha
+			);
+			
+			// Blend correction with server velocity (70% correction, 30% server)
+			FVector FinalVelocity = FMath::Lerp(InterpolatedVelocity, CorrectionVelocity, 0.7f);
+			
+			// Clamp velocity to prevent excessive corrections
+			float MaxCorrectionSpeed = 2000.0f;
+			if (FinalVelocity.SizeSquared() > MaxCorrectionSpeed * MaxCorrectionSpeed)
+			{
+				FinalVelocity = FinalVelocity.GetSafeNormal() * MaxCorrectionSpeed;
+			}
+			
+			TrackedMesh->SetPhysicsLinearVelocity(FinalVelocity);
+		}
+		else
+		{
+			// Close enough - just use server velocity
+			FVector InterpolatedVelocity = FMath::Lerp(
+				ClientStartState.LinearVelocity,
+				ClientTargetState.LinearVelocity,
+				InterpolationAlpha
+			);
+			TrackedMesh->SetPhysicsLinearVelocity(InterpolatedVelocity);
+		}
+		
+		// Apply rotation smoothly
+		TrackedMesh->SetWorldRotation(InterpolatedRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
-
-	TrackedMesh->SetWorldLocation(InterpolatedLocation, false, nullptr, ETeleportType::TeleportPhysics);
-	TrackedMesh->SetWorldRotation(InterpolatedRotation, false, nullptr, ETeleportType::TeleportPhysics);
-
-	// Re-enable physics if it was on
-	if (bWasSimulatingPhysics)
+	else
 	{
-		TrackedMesh->SetSimulatePhysics(true);
-		
-		// Apply velocity interpolation for more natural physics feel
-		FVector InterpolatedVelocity = FMath::Lerp(
-			ClientStartState.LinearVelocity,
-			ClientTargetState.LinearVelocity,
-			InterpolationAlpha
-		);
-		
-		TrackedMesh->SetPhysicsLinearVelocity(InterpolatedVelocity);
+		// Physics not enabled - use direct position setting (shouldn't happen for thrown relics)
+		TrackedMesh->SetWorldLocation(InterpolatedLocation, false, nullptr, ETeleportType::TeleportPhysics);
+		TrackedMesh->SetWorldRotation(InterpolatedRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
 
 	UE_LOG(LogRelicReplication, VeryVerbose, TEXT("Client interpolated: Pos=%s, Alpha=%.2f, Error=%.2f"),

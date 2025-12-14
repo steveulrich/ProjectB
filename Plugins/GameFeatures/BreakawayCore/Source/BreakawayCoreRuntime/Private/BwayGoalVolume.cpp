@@ -80,6 +80,14 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 		return;
 	}
 
+	// Validate relic state - cannot score if already scored, resetting, or scoring
+	if (Relic->bHasScoredThisRound || Relic->GetCurrentState() == ERelicState::Resetting || Relic->GetCurrentState() == ERelicState::Scoring)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("GoalVolume: Relic in invalid state for scoring (State: %d, HasScored: %d)"), 
+			(int32)Relic->GetCurrentState(), Relic->bHasScoredThisRound);
+		return;
+	}
+
 	// Get the game mode
 	ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>();
 	if (!GameMode)
@@ -106,6 +114,13 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 		ScoringTeam = Relic->LastPossessingTeam;
 	}
 
+	// Validate that we have a valid scoring team
+	if (ScoringTeam < 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GoalVolume: Cannot determine scoring team - LastPossessingTeam is %d"), Relic->LastPossessingTeam);
+		return;
+	}
+
 	// Verify scoring team is the attacking team (not scoring in own goal)
 	// In Breakaway, teams score in the OPPONENT's goal
 	// So if this is Team 0's goal, Team 1 should score
@@ -125,15 +140,34 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 	UE_LOG(LogTemp, Log, TEXT("GOAL! Team %d scored in Team %d's goal"), 
 		ScoringTeam + 1, OwningTeam + 1);
 
-	// Play effects
-	PlayScoringEffects();
+	// Add small delay to allow state to settle (handles edge case of simultaneous pickup)
+	FTimerHandle DelayHandle;
+	GetWorldTimerManager().SetTimer(DelayHandle, [this, Relic, ScoringTeam, GameMode]()
+	{
+		// Double-check state after delay
+		if (Relic && !Relic->bHasScoredThisRound && Relic->GetCurrentState() != ERelicState::Resetting && Relic->GetCurrentState() != ERelicState::Scoring)
+		{
+			// Notify relic that it entered the goal (handles state and scoring flag)
+			Relic->OnEnteredGoal(ScoringTeam);
 
-	// Notify game mode
-	GameMode->OnRelicScored(ScoringTeam);
+			// Play effects
+			PlayScoringEffects();
 
-	// Reset processing flag after a delay
+			// Notify game mode
+			GameMode->OnRelicScored(ScoringTeam);
+		}
+	}, 0.1f, false);
+
+	// Get scoring cooldown from RelicSettings
+	float CooldownDuration = 3.0f; // Default fallback
+	if (Relic->GetRelicSettings())
+	{
+		CooldownDuration = Relic->GetRelicSettings()->ScoringCooldown;
+	}
+
+	// Reset processing flag after cooldown
 	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ABwayGoalVolume::ResetScoreProcessing, 2.0f, false);
+	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ABwayGoalVolume::ResetScoreProcessing, CooldownDuration, false);
 }
 
 void ABwayGoalVolume::PlayScoringEffects_Implementation()
