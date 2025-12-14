@@ -92,12 +92,30 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Phase")
 	FOnHeroSelectionPhaseEndedEvent OnHeroSelectionPhaseEnded;
 
-private:
-	// Show UI to all players
+protected:
+	// Show UI to all players - implement in Blueprint
+	UFUNCTION(BlueprintNativeEvent, Category = "Hero Selection Phase")
 	void ShowHeroSelectionUI();
+	virtual void ShowHeroSelectionUI_Implementation();
 
-	// Hide UI from all players
+	// Hide UI from all players - implement in Blueprint
+	UFUNCTION(BlueprintNativeEvent, Category = "Hero Selection Phase")
 	void HideHeroSelectionUI();
+	virtual void HideHeroSelectionUI_Implementation();
+
+	// Spawn a hero for a specific player - implement in Blueprint
+	UFUNCTION(BlueprintNativeEvent, Category = "Hero Selection Phase")
+	void SpawnHeroForPlayer(ABwayPlayerState* PlayerState);
+	virtual void SpawnHeroForPlayer_Implementation(ABwayPlayerState* PlayerState);
+
+	/** Internal callback when Lyra's Game Phase system activates the HeroSelection phase */
+	UFUNCTION()
+	void HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag);
+	
+	/** Tell Lyra phase system that hero selection is complete and ready to progress */
+	void EndPhaseAndProgressToNext();
+
+private:
 
 	// Called when all players are ready
 	UFUNCTION()
@@ -105,9 +123,6 @@ private:
 
 	// Spawn heroes for all players based on their selections
 	void SpawnHeroesForAllPlayers();
-
-	// Spawn a hero for a specific player
-	void SpawnHeroForPlayer(ABwayPlayerState* PlayerState);
 
 	// Assign a default hero to players who didn't select
 	void AssignDefaultHeroes();

@@ -5,6 +5,7 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "GameFramework/PlayerController.h"
+#include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 
 UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -13,7 +14,7 @@ UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObject
 	SetIsReplicatedByDefault(true);
 
 	// Set default phase tag
-	PhaseTag = FGameplayTag::RequestGameplayTag(FName("GamePhase.HeroSelection"));
+	PhaseTag = FGameplayTag::RequestGameplayTag(FName("ShooterGame.GamePhase.HeroSelection"));
 }
 
 void UBwayHeroSelectionPhaseComponent::BeginPlay()
@@ -24,6 +25,33 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 	if (!GetOwner()->HasAuthority())
 	{
 		return;
+	}
+
+	// Listen for when Lyra's phase system starts the HeroSelection phase
+	if (UWorld* World = GetWorld())
+	{
+		if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+		{
+			// Get the phase tag (either from property or use default)
+			FGameplayTag HeroSelectionTag = PhaseTag;
+			if (!HeroSelectionTag.IsValid())
+			{
+				HeroSelectionTag = FGameplayTag::RequestGameplayTag(FName("GamePhase.HeroSelection"));
+			}
+
+			// Bind to phase start/active callback
+			PhaseSubsystem->WhenPhaseStartsOrIsActive(
+				HeroSelectionTag,
+				EPhaseTagMatchType::ExactMatch,
+				FLyraGamePhaseTagDelegate::CreateUObject(this, &UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated)
+			);
+			
+			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Listening for Lyra phase: %s"), *HeroSelectionTag.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: Could not find LyraGamePhaseSubsystem - phase integration disabled"));
+		}
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Initialized"));
@@ -56,15 +84,6 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 	bPhaseActive = true;
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting hero selection phase"));
-
-	// Add phase tag to game state
-	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
-	{
-		if (PhaseTag.IsValid())
-		{
-			// GameState->AddGameplayTag(PhaseTag); // If you have tag support
-		}
-	}
 
 	// Get selection manager
 	UBwayHeroSelectionManager* Manager = GetSelectionManager();
@@ -135,15 +154,6 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 	// Spawn heroes for all players
 	SpawnHeroesForAllPlayers();
 
-	// Remove phase tag
-	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
-	{
-		if (PhaseTag.IsValid())
-		{
-			// GameState->RemoveGameplayTag(PhaseTag); // If you have tag support
-		}
-	}
-
 	// Broadcast event
 	OnHeroSelectionPhaseEnded.Broadcast();
 
@@ -166,29 +176,57 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 	SpawnHeroesForAllPlayers();
 }
 
-void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI()
+void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 {
-	if (!HeroSelectionWidgetClass.IsNull())
-	{
-		// TODO: Push widget to all players
-		// This requires integration with Lyra's UI system
-		// For now, log and handle in Blueprint
-		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Should show UI (implement in Blueprint)"));
-	}
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Should show UI (implement in Blueprint)"));
 }
 
-void UBwayHeroSelectionPhaseComponent::HideHeroSelectionUI()
+void UBwayHeroSelectionPhaseComponent::HideHeroSelectionUI_Implementation()
 {
 	// TODO: Remove widget from all players
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Should hide UI (implement in Blueprint)"));
+}
+
+void UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag)
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: HeroSelection phase activated by Lyra phase system! (Tag: %s)"), *InPhaseTag.ToString());
+	
+	// Now start our hero selection logic
+	StartHeroSelectionPhase();
+}
+
+void UBwayHeroSelectionPhaseComponent::EndPhaseAndProgressToNext()
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	// The Lyra phase system will automatically progress to the next phase
+	// when the current phase's ability ends. The Experience defines the phase order.
+	// Our job here is done - we've completed hero selection.
+	
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection complete. Lyra phase system will progress to next phase."));
+	
+	// Note: If you need to manually trigger the next phase, you would do:
+	// if (UWorld* World = GetWorld())
+	// {
+	//     if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+	//     {
+	//         PhaseSubsystem->StartPhase(NextPhaseAbilityClass);
+	//     }
+	// }
 }
 
 void UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: All players ready - ending phase"));
 
-	// End the phase
+	// End our phase logic
 	EndHeroSelectionPhase();
+	
+	// Signal to Lyra phase system that we're done
+	EndPhaseAndProgressToNext();
 }
 
 void UBwayHeroSelectionPhaseComponent::SpawnHeroesForAllPlayers()
@@ -210,7 +248,7 @@ void UBwayHeroSelectionPhaseComponent::SpawnHeroesForAllPlayers()
 	}
 }
 
-void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer(ABwayPlayerState* PlayerState)
+void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer_Implementation(ABwayPlayerState* PlayerState)
 {
 	if (!PlayerState)
 	{
@@ -244,18 +282,11 @@ void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer(ABwayPlayerState* Play
 		return;
 	}
 
-	// TODO: Spawn hero character based on HeroData
-	// This requires:
-	// 1. Finding appropriate spawn point for player's team
-	// 2. Spawning character with hero mesh/animations
-	// 3. Applying hero ability set
-	// 4. Possessing the character
-
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Spawning hero %s for player %s"), 
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Spawning hero %s for player %s (default implementation - override in Blueprint for custom behavior)"), 
 		*HeroData->DisplayName.ToString(), *PlayerState->GetPlayerName());
 
-	// For now, just trigger a respawn through game mode
-	// You'll need to modify your game mode to use hero data
+	// Default: Just trigger a respawn through game mode
+	// Blueprint can override to provide custom spawn logic
 	if (AGameModeBase* GameMode = GetWorld()->GetAuthGameMode())
 	{
 		GameMode->RestartPlayer(PC);

@@ -43,7 +43,7 @@ enum class EPhaseTagMatchType : uint8
  *     Game.Playing will remain active, while Game.Playing.CaptureTheFlag will end.
  */
 UCLASS()
-class ULyraGamePhaseSubsystem : public UWorldSubsystem
+class LYRAGAME_API ULyraGamePhaseSubsystem : public UWorldSubsystem
 {
 	GENERATED_BODY()
 

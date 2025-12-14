@@ -24,6 +24,8 @@ public:
 	/** Loads (sync) a single hero by soft-path – UI can call when highlighted. */
 	UFUNCTION(BlueprintCallable, Category="Heroes")
 	UBwayHeroDataAsset* LoadHeroSync(const TSoftObjectPtr<UBwayHeroDataAsset>& SoftPtr) const;
+	
+	UFUNCTION(BlueprintCallable, Category="Heroes")
 	static UBwayHeroDataAsset* GetHeroDataById(const FPrimaryAssetId& HeroId);
 
 private:

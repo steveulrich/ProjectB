@@ -30,6 +30,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"EnhancedInput",
 				"Engine", 
 				"GameplayAbilities",
+				"GameFeatures",
 				"GameplayTags",
 				"GameplayTasks",
 				"InputCore",
@@ -46,7 +47,6 @@ public class BreakawayCoreRuntime : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"CommonUI",
-				"GameFeatures",
 				"NetCore",
 				"PhysicsCore",
 				"Slate",

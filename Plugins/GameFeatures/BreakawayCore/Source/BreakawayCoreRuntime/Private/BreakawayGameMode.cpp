@@ -13,6 +13,7 @@
 #include "TimerManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameplayTagsManager.h"
+#include "HeroSystems/BwayHeroSelectionManager.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
 
@@ -72,6 +73,13 @@ void ABreakawayGameMode::BeginPlay()
 		FTimerHandle UnusedHandle;
 		GetWorldTimerManager().SetTimer(UnusedHandle, this, &ABreakawayGameMode::StartRound, PreRoundDelay, false);
 		UE_LOG(LogBreakawayGame, Log, TEXT("First round will start in %.1f seconds"), PreRoundDelay);
+	}
+
+	ABwayGameState* BwayGS = GetBreakawayGameState();
+	if (BwayGS)
+	{
+		BwayGS->HeroSelectionManager->StartHeroSelection();
+		UE_LOG(LogBreakawayGame, Log, TEXT("Hero selection phase started"));
 	}
 
 	bGameInitialized = true;
