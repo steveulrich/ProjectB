@@ -90,13 +90,15 @@ void UBwayGameplayAbility_GladiatorsLeap::ActivateAbility(const FGameplayAbility
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// Check for landing every frame
-		FTimerHandle LandingCheckTimerHandle;
+		// Clear any existing timer before setting a new one
+		World->GetTimerManager().ClearTimer(LandingCheckTimerHandle);
+		
+		// Check for landing at regular intervals
 		World->GetTimerManager().SetTimer(
 			LandingCheckTimerHandle,
 			this,
 			&UBwayGameplayAbility_GladiatorsLeap::OnLanding,
-			0.016f, // ~60fps
+			LandingCheckInterval,
 			true
 		);
 	}
@@ -119,9 +121,8 @@ FVector UBwayGameplayAbility_GladiatorsLeap::GetTargetLocation() const
 	FRotator ControlRotation = Controller->GetControlRotation();
 	FVector ForwardDirection = ControlRotation.Vector();
 
-	// Clamp distance
-	float Distance = FMath::Min(MaxLeapDistance, 1500.0f);
-	FVector TargetPoint = CharacterLocation + (ForwardDirection * Distance);
+	// Use configured max leap distance
+	FVector TargetPoint = CharacterLocation + (ForwardDirection * MaxLeapDistance);
 
 	// Ground trace to find landing location
 	UWorld* World = GetWorld();
@@ -130,7 +131,7 @@ FVector UBwayGameplayAbility_GladiatorsLeap::GetTargetLocation() const
 		return TargetPoint;
 	}
 
-	FVector TraceStart = TargetPoint + FVector(0.0f, 0.0f, 500.0f); // Start above target
+	FVector TraceStart = TargetPoint + FVector(0.0f, 0.0f, GroundTraceHeightOffset);
 	FVector TraceEnd = TargetPoint - FVector(0.0f, 0.0f, GroundTraceDistance);
 
 	FCollisionQueryParams QueryParams;
@@ -160,20 +161,16 @@ void UBwayGameplayAbility_GladiatorsLeap::PerformLeap(const FVector& TargetLocat
 	float Distance = FVector::Dist2D(StartLocation, TargetLocation);
 	float Height = TargetLocation.Z - StartLocation.Z;
 	
-	// Simple calculation: use a fixed launch angle
-	float LaunchAngle = 45.0f; // degrees
-	float Gravity = 980.0f; // cm/s^2 (Unreal default)
-	
-	// Calculate initial velocity for parabolic trajectory
-	float LaunchSpeed = FMath::Sqrt((Distance * Gravity) / FMath::Sin(2.0f * FMath::DegreesToRadians(LaunchAngle)));
+	// Calculate initial velocity for parabolic trajectory using configured constants
+	float LaunchSpeed = FMath::Sqrt((Distance * GravityConstant) / FMath::Sin(2.0f * FMath::DegreesToRadians(LeapLaunchAngle)));
 	
 	FVector LaunchVelocity = Direction * LaunchSpeed;
-	LaunchVelocity.Z = LaunchSpeed * FMath::Sin(FMath::DegreesToRadians(LaunchAngle));
+	LaunchVelocity.Z = LaunchSpeed * FMath::Sin(FMath::DegreesToRadians(LeapLaunchAngle));
 	
 	// Adjust for height difference
 	if (Height > 0)
 	{
-		LaunchVelocity.Z += FMath::Sqrt(2.0f * Gravity * Height);
+		LaunchVelocity.Z += FMath::Sqrt(2.0f * GravityConstant * Height);
 	}
 
 	// Launch character
@@ -223,6 +220,12 @@ void UBwayGameplayAbility_GladiatorsLeap::PerformAOEDamage(const FVector& Locati
 
 void UBwayGameplayAbility_GladiatorsLeap::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	// Clear landing check timer to prevent callbacks after ability ends
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(LandingCheckTimerHandle);
+	}
+
 	bIsLeaping = false;
 	CachedCharacter = nullptr;
 	CachedMovementComponent = nullptr;

@@ -146,8 +146,8 @@ void ARelicActor::InitializeRelicData(const URelicSettings* InRelicSettings)
         return;
     }
 
-    // Store the settings from the data asset
-    RelicSettings = const_cast<URelicSettings*>(InRelicSettings);
+    // Store the settings from the data asset (now properly const)
+    RelicSettings = InRelicSettings;
     
     // Apply configuration immediately (before BeginPlay)
     ApplyRelicConfiguration();
@@ -279,23 +279,15 @@ void ARelicActor::OnRep_CurrentState()
     UpdateStateVFX(CurrentState);
     UpdateTeamColorTinting();
     
-    // Client-side reaction to state changes
-    switch (CurrentState)
+    // Client-side physics management - clients don't simulate physics (server is authoritative)
+    // Only disable physics; enabling is handled by server-side replication
+    if (RelicMesh && !HasAuthority())
     {
-    case ERelicState::Carried:
-    case ERelicState::Neutral:
-    case ERelicState::Dropped:
-    case ERelicState::Thrown:
-    case ERelicState::BeingPassed:
-    case ERelicState::Resetting:
-    case ERelicState::Scoring:
-    case ERelicState::PendingRequest:
-    default:
-        RelicMesh->SetSimulatePhysics(false); // Ensure physics is off on clients when carried
-        break;
+        // Physics simulation is controlled by the server; clients only receive replicated positions
+        RelicMesh->SetSimulatePhysics(false);
     }
     
-    UE_LOG(LogTemp, Log, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), CurrentState);
+    UE_LOG(LogTemp, Verbose, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), static_cast<int32>(CurrentState));
 }
 
 void ARelicActor::OnRep_CurrentCarrier()
@@ -422,20 +414,20 @@ void ARelicActor::OnDropped()
         return;
     }
     
-    // LastPossessingTeam is maintained - don't reset it
-    CurrentCarrier = nullptr;
-    CurrentState = ERelicState::Dropped;
-    
-    // Notify game mode carrier is gone
+    // Notify game mode carrier is gone (do this first while CurrentCarrier is still valid)
     if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
     {
         GameMode->OnRelicCarrierChanged(nullptr);
     }
     
-    DetachFromCarrier(); // Detaches and sets physics state
-    CurrentCarrier = nullptr; // Clear replicated property AFTER potentially using it above
-    OnRep_CurrentCarrier(); // Call RepNotify manually on server
+    // Detach from carrier (uses CurrentCarrier internally for ability cleanup)
+    DetachFromCarrier();
+    
+    // Now clear the replicated carrier property
+    CurrentCarrier = nullptr;
+    OnRep_CurrentCarrier();
 
+    // Set state (LastPossessingTeam is maintained - don't reset it)
     SetRelicState(ERelicState::Dropped);
     
     // Play drop audio

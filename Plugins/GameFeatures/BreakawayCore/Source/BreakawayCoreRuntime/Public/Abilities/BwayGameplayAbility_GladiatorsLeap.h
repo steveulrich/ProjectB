@@ -75,10 +75,25 @@ private:
 	UPROPERTY(Transient)
 	mutable TObjectPtr<UBwayCharacterMovementComponent> CachedMovementComponent;
 
+	/** Timer handle for landing check - stored to allow proper cleanup */
+	FTimerHandle LandingCheckTimerHandle;
+
 	/** Whether we're currently leaping */
 	bool bIsLeaping = false;
 
 	/** Landing location */
 	FVector LandingLocation;
+
+	/** Interval for landing check timer in seconds (~60fps) */
+	static constexpr float LandingCheckInterval = 0.016f;
+
+	/** Launch angle for parabolic trajectory in degrees */
+	static constexpr float LeapLaunchAngle = 45.0f;
+
+	/** Gravity constant in cm/s^2 (Unreal Engine default) */
+	static constexpr float GravityConstant = 980.0f;
+
+	/** Height offset for ground trace start position in cm */
+	static constexpr float GroundTraceHeightOffset = 500.0f;
 };
 

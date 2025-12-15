@@ -24,28 +24,35 @@ UBwayGameplayAbility_Base::UBwayGameplayAbility_Base(const FObjectInitializer& O
 
 bool UBwayGameplayAbility_Base::IsEnemy(ABwayCharacterWithAbilities* OtherCharacter) const
 {
+	// Ensure CachedCharacter is initialized if not already set by child class
+	if (!CachedCharacter)
+	{
+		CachedCharacter = GetBwayCharacterFromActorInfo();
+	}
+
 	if (!CachedCharacter || !OtherCharacter)
 	{
 		return false;
 	}
 
-	// Use BwayGameState to check teams
-	if (UWorld* World = GetWorld())
+	// Cache world pointer to avoid multiple GetWorld() calls
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		if (ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			return !GameState->AreOnSameTeam(CachedCharacter, OtherCharacter);
-		}
+		return false;
+	}
+
+	// Use BwayGameState to check teams
+	if (ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		return !GameState->AreOnSameTeam(CachedCharacter, OtherCharacter);
 	}
 
 	// Fallback to Lyra team subsystem
-	if (UWorld* World = GetWorld())
+	if (ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 	{
-		if (ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			ELyraTeamComparison Comparison = TeamSubsystem->CompareTeams(CachedCharacter, OtherCharacter);
-			return Comparison == ELyraTeamComparison::DifferentTeams;
-		}
+		ELyraTeamComparison Comparison = TeamSubsystem->CompareTeams(CachedCharacter, OtherCharacter);
+		return Comparison == ELyraTeamComparison::DifferentTeams;
 	}
 
 	return false;
@@ -53,28 +60,35 @@ bool UBwayGameplayAbility_Base::IsEnemy(ABwayCharacterWithAbilities* OtherCharac
 
 bool UBwayGameplayAbility_Base::IsAlly(ABwayCharacterWithAbilities* OtherCharacter) const
 {
+	// Ensure CachedCharacter is initialized if not already set by child class
+	if (!CachedCharacter)
+	{
+		CachedCharacter = GetBwayCharacterFromActorInfo();
+	}
+
 	if (!CachedCharacter || !OtherCharacter)
 	{
 		return false;
 	}
 
-	// Use BwayGameState to check teams
-	if (UWorld* World = GetWorld())
+	// Cache world pointer to avoid multiple GetWorld() calls
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		if (ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			return GameState->AreOnSameTeam(CachedCharacter, OtherCharacter);
-		}
+		return false;
+	}
+
+	// Use BwayGameState to check teams
+	if (ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		return GameState->AreOnSameTeam(CachedCharacter, OtherCharacter);
 	}
 
 	// Fallback to Lyra team subsystem
-	if (UWorld* World = GetWorld())
+	if (ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 	{
-		if (ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			ELyraTeamComparison Comparison = TeamSubsystem->CompareTeams(CachedCharacter, OtherCharacter);
-			return Comparison == ELyraTeamComparison::OnSameTeam;
-		}
+		ELyraTeamComparison Comparison = TeamSubsystem->CompareTeams(CachedCharacter, OtherCharacter);
+		return Comparison == ELyraTeamComparison::OnSameTeam;
 	}
 
 	return false;
@@ -84,9 +98,14 @@ TArray<ABwayCharacterWithAbilities*> UBwayGameplayAbility_Base::GetEnemiesInRadi
 {
 	TArray<ABwayCharacterWithAbilities*> Enemies;
 
+	// Ensure CachedCharacter is initialized if not already set by child class
 	if (!CachedCharacter)
 	{
-		return Enemies;
+		CachedCharacter = GetBwayCharacterFromActorInfo();
+		if (!CachedCharacter)
+		{
+			return Enemies;
+		}
 	}
 
 	UWorld* World = GetWorld();
@@ -137,9 +156,14 @@ TArray<ABwayCharacterWithAbilities*> UBwayGameplayAbility_Base::GetAlliesInRadiu
 {
 	TArray<ABwayCharacterWithAbilities*> Allies;
 
+	// Ensure CachedCharacter is initialized if not already set by child class
 	if (!CachedCharacter)
 	{
-		return Allies;
+		CachedCharacter = GetBwayCharacterFromActorInfo();
+		if (!CachedCharacter)
+		{
+			return Allies;
+		}
 	}
 
 	UWorld* World = GetWorld();

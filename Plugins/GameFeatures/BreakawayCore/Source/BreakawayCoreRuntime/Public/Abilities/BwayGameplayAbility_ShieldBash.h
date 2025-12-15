@@ -69,6 +69,9 @@ private:
 	/** Timer handle for dash trace */
 	FTimerHandle DashTraceTimerHandle;
 
+	/** Timer handle for dash end - stored to allow cancellation */
+	FTimerHandle EndDashTimerHandle;
+
 	/** Start location of dash */
 	FVector DashStartLocation;
 
@@ -77,5 +80,8 @@ private:
 
 	/** Whether we've hit an enemy during this dash */
 	bool bHasHitEnemy = false;
+
+	/** Interval for dash trace timer in seconds (~60fps) */
+	static constexpr float DashTraceInterval = 0.016f;
 };
 

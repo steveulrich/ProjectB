@@ -57,6 +57,12 @@ private:
 	/** Track if a score is currently being processed to avoid double-scoring */
 	bool bIsProcessingScore = false;
 
+	/** Timer handle for delayed score processing */
+	FTimerHandle ScoreDelayTimerHandle;
+
+	/** Timer handle for resetting score processing flag */
+	FTimerHandle ScoreResetTimerHandle;
+
 	/** Reset score processing flag after a delay */
 	void ResetScoreProcessing();
 };

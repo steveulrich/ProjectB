@@ -102,18 +102,20 @@ void UBwayGameplayAbility_ShieldBash::ActivateAbility(const FGameplayAbilitySpec
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// Perform trace every frame during dash
-		float TraceInterval = 0.016f; // ~60fps
+		// Clear any existing timers before setting new ones
+		World->GetTimerManager().ClearTimer(DashTraceTimerHandle);
+		World->GetTimerManager().ClearTimer(EndDashTimerHandle);
+
+		// Perform trace at regular intervals during dash
 		World->GetTimerManager().SetTimer(
 			DashTraceTimerHandle,
 			this,
 			&UBwayGameplayAbility_ShieldBash::PerformDashTrace,
-			TraceInterval,
+			DashTraceInterval,
 			true
 		);
 
-		// End dash after duration
-		FTimerHandle EndDashTimerHandle;
+		// End dash after duration - stored as member to allow cancellation
 		World->GetTimerManager().SetTimer(
 			EndDashTimerHandle,
 			[this, Handle, ActorInfo, ActivationInfo]()
@@ -208,10 +210,11 @@ void UBwayGameplayAbility_ShieldBash::ApplyStunToEnemy(AActor* EnemyActor)
 
 void UBwayGameplayAbility_ShieldBash::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	// Clear trace timer
+	// Clear all timers to prevent callbacks after ability ends
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(DashTraceTimerHandle);
+		World->GetTimerManager().ClearTimer(EndDashTimerHandle);
 	}
 
 	// Reset state

@@ -146,7 +146,7 @@ protected:
 
     // --- Configuration ---
     UPROPERTY(BlueprintReadOnly, Category = "Relic|Config")
-    TObjectPtr<URelicSettings> RelicSettings; // Assume this contains ThrowForce, PassForce, SocketName etc.
+    TObjectPtr<const URelicSettings> RelicSettings; // Assume this contains ThrowForce, PassForce, SocketName etc.
 
     /** Handle to the ability set granted to the carrier's PlayerState ASC */
     FLyraAbilitySet_GrantedHandles GrantedCarrierSetHandle; // Use the correct Lyra type

@@ -140,9 +140,13 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 	UE_LOG(LogTemp, Log, TEXT("GOAL! Team %d scored in Team %d's goal"), 
 		ScoringTeam + 1, OwningTeam + 1);
 
+	// Clear any existing timers before setting new ones
+	GetWorldTimerManager().ClearTimer(ScoreDelayTimerHandle);
+	GetWorldTimerManager().ClearTimer(ScoreResetTimerHandle);
+
 	// Add small delay to allow state to settle (handles edge case of simultaneous pickup)
-	FTimerHandle DelayHandle;
-	GetWorldTimerManager().SetTimer(DelayHandle, [this, Relic, ScoringTeam, GameMode]()
+	constexpr float ScoreDelayDuration = 0.1f;
+	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, Relic, ScoringTeam, GameMode]()
 	{
 		// Double-check state after delay
 		if (Relic && !Relic->bHasScoredThisRound && Relic->GetCurrentState() != ERelicState::Resetting && Relic->GetCurrentState() != ERelicState::Scoring)
@@ -156,18 +160,18 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 			// Notify game mode
 			GameMode->OnRelicScored(ScoringTeam);
 		}
-	}, 0.1f, false);
+	}, ScoreDelayDuration, false);
 
 	// Get scoring cooldown from RelicSettings
-	float CooldownDuration = 3.0f; // Default fallback
+	constexpr float DefaultScoringCooldown = 3.0f;
+	float CooldownDuration = DefaultScoringCooldown;
 	if (Relic->GetRelicSettings())
 	{
 		CooldownDuration = Relic->GetRelicSettings()->ScoringCooldown;
 	}
 
-	// Reset processing flag after cooldown
-	FTimerHandle UnusedHandle;
-	GetWorldTimerManager().SetTimer(UnusedHandle, this, &ABwayGoalVolume::ResetScoreProcessing, CooldownDuration, false);
+	// Reset processing flag after cooldown - stored as member to allow cancellation
+	GetWorldTimerManager().SetTimer(ScoreResetTimerHandle, this, &ABwayGoalVolume::ResetScoreProcessing, CooldownDuration, false);
 }
 
 void ABwayGoalVolume::PlayScoringEffects_Implementation()
