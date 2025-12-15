@@ -664,63 +664,75 @@
                 gameFlowStages: ["hero_selection", "match_gameplay"]
             },
 
-            // ============ HERO ABILITIES (Planned) ============
+            // ============ HERO ABILITIES ============
+            "BwayGameplayAbility_Base": {
+                id: "BwayGameplayAbility_Base",
+                name: "BwayGameplayAbility_Base",
+                type: "cpp_class",
+                category: "Abilities",
+                status: "complete",
+                description: "Base class for Breakaway gameplay abilities with common functionality: team checks, damage application, AOE queries",
+                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/BwayGameplayAbility_Base.h",
+                dependencies: ["LyraGameplayAbility"],
+                referencedBy: ["BwayGameplayAbility_ShieldBash", "BwayGameplayAbility_WarCry", "BwayGameplayAbility_DefensiveStance", "BwayGameplayAbility_GladiatorsLeap"],
+                gameFlowStages: ["match_gameplay"]
+            },
             "AbilitySet_Spartacus": {
                 id: "AbilitySet_Spartacus",
                 name: "AbilitySet_Spartacus",
                 type: "data_asset",
                 category: "Abilities",
-                status: "planned",
-                description: "Spartacus ability set: Shield Bash, War Cry, Defensive Stance, Gladiator's Leap",
-                dependencies: ["GA_ShieldBash", "GA_WarCry", "GA_DefensiveStance", "GA_GladiatorsLeap"],
+                status: "partial",
+                description: "Spartacus ability set: Shield Bash, War Cry, Defensive Stance, Gladiator's Leap (C++ classes complete, Blueprint setup pending)",
+                dependencies: ["BwayGameplayAbility_ShieldBash", "BwayGameplayAbility_WarCry", "BwayGameplayAbility_DefensiveStance", "BwayGameplayAbility_GladiatorsLeap"],
                 referencedBy: ["DA_Hero_Spartacus"],
                 gameFlowStages: ["match_gameplay"]
             },
-            "GA_ShieldBash": {
-                id: "GA_ShieldBash",
-                name: "GA_ShieldBash",
+            "BwayGameplayAbility_ShieldBash": {
+                id: "BwayGameplayAbility_ShieldBash",
+                name: "BwayGameplayAbility_ShieldBash",
                 type: "cpp_class",
                 category: "Abilities",
-                status: "planned",
-                description: "Spartacus Q ability: Dash forward and stun enemies",
-                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/GA_ShieldBash.h",
-                dependencies: ["LyraGameplayAbility", "GE_Stun", "GE_Damage"],
+                status: "complete",
+                description: "Spartacus Q ability: Dash forward with sphere trace for enemy collision and stun effect",
+                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/BwayGameplayAbility_ShieldBash.h",
+                dependencies: ["BwayGameplayAbility_Base", "BwayCharacterMovementComponent", "GE_Stun"],
                 referencedBy: ["AbilitySet_Spartacus"],
                 gameFlowStages: ["match_gameplay"]
             },
-            "GA_WarCry": {
-                id: "GA_WarCry",
-                name: "GA_WarCry",
+            "BwayGameplayAbility_WarCry": {
+                id: "BwayGameplayAbility_WarCry",
+                name: "BwayGameplayAbility_WarCry",
                 type: "cpp_class",
                 category: "Abilities",
-                status: "planned",
-                description: "Spartacus E ability: AOE buff for allies",
-                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/GA_WarCry.h",
-                dependencies: ["LyraGameplayAbility", "GE_SpeedBuff", "GE_DamageBuff"],
+                status: "complete",
+                description: "Spartacus E ability: Sphere overlap for nearby allies, apply speed and damage buff",
+                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/BwayGameplayAbility_WarCry.h",
+                dependencies: ["BwayGameplayAbility_Base", "GE_WarCryBuff"],
                 referencedBy: ["AbilitySet_Spartacus"],
                 gameFlowStages: ["match_gameplay"]
             },
-            "GA_DefensiveStance": {
-                id: "GA_DefensiveStance",
-                name: "GA_DefensiveStance",
+            "BwayGameplayAbility_DefensiveStance": {
+                id: "BwayGameplayAbility_DefensiveStance",
+                name: "BwayGameplayAbility_DefensiveStance",
                 type: "cpp_class",
                 category: "Abilities",
-                status: "planned",
-                description: "Spartacus F ability: Reduce incoming damage, toggle",
-                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/GA_DefensiveStance.h",
-                dependencies: ["LyraGameplayAbility", "GE_DamageReduction"],
+                status: "complete",
+                description: "Spartacus F ability: Toggle damage reduction and movement slow effect",
+                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/BwayGameplayAbility_DefensiveStance.h",
+                dependencies: ["BwayGameplayAbility_Base", "GE_DefensiveStance"],
                 referencedBy: ["AbilitySet_Spartacus"],
                 gameFlowStages: ["match_gameplay"]
             },
-            "GA_GladiatorsLeap": {
-                id: "GA_GladiatorsLeap",
-                name: "GA_GladiatorsLeap",
+            "BwayGameplayAbility_GladiatorsLeap": {
+                id: "BwayGameplayAbility_GladiatorsLeap",
+                name: "BwayGameplayAbility_GladiatorsLeap",
                 type: "cpp_class",
                 category: "Abilities",
-                status: "planned",
-                description: "Spartacus R ultimate: Leap and deal AOE damage",
-                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/GA_GladiatorsLeap.h",
-                dependencies: ["LyraGameplayAbility", "GE_AOEDamage"],
+                status: "complete",
+                description: "Spartacus R ultimate: Launch to target location with AOE damage on landing",
+                path: "Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/BwayGameplayAbility_GladiatorsLeap.h",
+                dependencies: ["BwayGameplayAbility_Base", "BwayCharacterMovementComponent", "GE_LeapDamage"],
                 referencedBy: ["AbilitySet_Spartacus"],
                 gameFlowStages: ["match_gameplay"]
             },
@@ -1251,7 +1263,7 @@
                 description: "Base class for Lyra gameplay abilities",
                 path: "Source/LyraGame/AbilitySystem/LyraGameplayAbility.h",
                 dependencies: [],
-                referencedBy: ["GA_PickupRelic", "GA_ThrowRelic", "GA_PassRelic", "GA_PlaceBuildable"],
+                referencedBy: ["BwayGameplayAbility_Base", "GA_PickupRelic", "GA_ThrowRelic", "GA_PassRelic", "GA_PlaceBuildable"],
                 gameFlowStages: []
             },
             "LyraAbilitySet": {
@@ -1326,6 +1338,8 @@
                     "BreakawayGameMode", "BwayGameState", "BwayCharacterWithAbilities", "RelicActor",
                     "BwayGoalVolume", "W_HUD_Layout", "W_HUD_ScoreDisplay", "W_HUD_RoundTimer", 
                     "W_HUD_AbilityCooldowns", "W_HUD_Health", "W_HUD_RelicIndicator", "W_HUD_TeamRoster",
+                    "BwayGameplayAbility_Base", "BwayGameplayAbility_ShieldBash", "BwayGameplayAbility_WarCry",
+                    "BwayGameplayAbility_DefensiveStance", "BwayGameplayAbility_GladiatorsLeap",
                     "GA_PickupRelic", "GA_ThrowRelic", "GA_PassRelic", "GA_PlaceBuildable",
                     "BuildableBase", "W_RoundStart", "W_RoundEnd", "W_RespawnTimer"
                 ]
@@ -1368,15 +1382,20 @@
             },
             {
                 phase: "PHASE 3: First Hero - Spartacus",
-                status: "planned",
+                status: "partial",
                 tasks: [
                     { text: "Create HeroDataAsset for Spartacus", complete: false },
                     { text: "Set up skeletal mesh and animations", complete: false },
-                    { text: "Implement Shield Bash (Q) ability", complete: false },
-                    { text: "Implement War Cry (E) ability", complete: false },
-                    { text: "Implement Defensive Stance (F) ability", complete: false },
-                    { text: "Implement Gladiator's Leap (R) ultimate", complete: false },
-                    { text: "Create gameplay effects for abilities", complete: false },
+                    { text: "Create base ability class (BwayGameplayAbility_Base)", complete: true },
+                    { text: "Implement Shield Bash (Q) ability C++", complete: true },
+                    { text: "Implement War Cry (E) ability C++", complete: true },
+                    { text: "Implement Defensive Stance (F) ability C++", complete: true },
+                    { text: "Implement Gladiator's Leap (R) ultimate C++", complete: true },
+                    { text: "Add gameplay tags for Spartacus abilities", complete: true },
+                    { text: "Create Blueprint gameplay effects (Stun, War Cry Buff, Defensive Stance, Leap Damage)", complete: false },
+                    { text: "Create Blueprint ability classes and configure cooldowns", complete: false },
+                    { text: "Create Ability Set data asset", complete: false },
+                    { text: "Test abilities in singleplayer", complete: false },
                     { text: "Test abilities in multiplayer", complete: false }
                 ]
             },
