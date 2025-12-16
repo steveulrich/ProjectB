@@ -20,8 +20,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LogLyraCheat, Log, All);
  *
  *	Base cheat manager class used by this project.
  */
-UCLASS(config = Game, Within = PlayerController, MinimalAPI)
-class ULyraCheatManager : public UCheatManager
+UCLASS(config = Game, Within = PlayerController)
+class LYRAGAME_API ULyraCheatManager : public UCheatManager
 {
 	GENERATED_BODY()
 

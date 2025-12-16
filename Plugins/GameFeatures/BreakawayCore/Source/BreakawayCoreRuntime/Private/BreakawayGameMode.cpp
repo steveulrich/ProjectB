@@ -3,6 +3,7 @@
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "BwayPlayerController.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Relic/RelicActor.h"
 #include "SpawnSystem/BwaySpawnPoint.h"
@@ -25,6 +26,7 @@ ABreakawayGameMode::ABreakawayGameMode()
 	// Set default game state class
 	GameStateClass = ABwayGameState::StaticClass();
 	PlayerStateClass = ABwayPlayerState::StaticClass();
+	PlayerControllerClass = ABwayPlayerController::StaticClass();
 }
 
 void ABreakawayGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
@@ -75,12 +77,14 @@ void ABreakawayGameMode::BeginPlay()
 		UE_LOG(LogBreakawayGame, Log, TEXT("First round will start in %.1f seconds"), PreRoundDelay);
 	}
 
-	ABwayGameState* BwayGS = GetBreakawayGameState();
-	if (BwayGS)
-	{
-		BwayGS->HeroSelectionManager->StartHeroSelection();
-		UE_LOG(LogBreakawayGame, Log, TEXT("Hero selection phase started"));
-	}
+	// Hero selection is now triggered manually via dev GUI (console command: ShowHeroSelect)
+	// or will be handled in the pre-game lobby phase in the future
+	// ABwayGameState* BwayGS = GetBreakawayGameState();
+	// if (BwayGS)
+	// {
+	// 	BwayGS->HeroSelectionManager->StartHeroSelection();
+	// 	UE_LOG(LogBreakawayGame, Log, TEXT("Hero selection phase started"));
+	// }
 
 	bGameInitialized = true;
 }

@@ -239,6 +239,30 @@ bool UBwayHeroSelectWidget::LockSelection()
 	return true;
 }
 
+void UBwayHeroSelectWidget::ConfirmSelection()
+{
+	FPrimaryAssetId SelectedHero = GetSelectedHeroId();
+	if (!SelectedHero.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectWidget: Cannot confirm - no hero selected"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Confirming selection of %s"), *SelectedHero.ToString());
+
+	// Lock the selection if not already locked
+	if (!IsSelectionLocked())
+	{
+		LockSelection();
+	}
+
+	// Broadcast the confirmation event (dev tools listen for this)
+	OnHeroConfirmed.Broadcast();
+
+	// Deactivate/close the widget
+	DeactivateWidget();
+}
+
 int32 UBwayHeroSelectWidget::GetLocalPlayerTeam() const
 {
 	if (LocalPlayerState)

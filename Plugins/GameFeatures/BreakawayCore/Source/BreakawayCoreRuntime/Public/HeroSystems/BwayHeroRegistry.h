@@ -3,34 +3,35 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AssetRegistry/IAssetRegistry.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "BwayHeroRegistry.generated.h"
 
 class UBwayHeroDataAsset;
 
+/**
+ * UBwayHeroRegistry
+ * 
+ * Game Instance Subsystem that provides access to all available hero data assets.
+ * Uses Asset Manager to discover heroes registered in the /BreakawayCore/Characters/Heroes/ folder.
+ */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayHeroRegistry : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
 public:
+	/** Get the hero registry from any world context object */
 	static TObjectPtr<UBwayHeroRegistry> Get(const UObject* WorldContext);
 
-	/** Returns *soft* references for every hero asset found on disk. */
+	/** Returns soft references for every hero asset registered with Asset Manager */
 	UFUNCTION(BlueprintCallable, Category="Heroes")
 	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> GetAllHeroSoftObjects() const;
 
-	/** Loads (sync) a single hero by soft-path – UI can call when highlighted. */
+	/** Loads (sync) a single hero by soft-path – UI can call when highlighted */
 	UFUNCTION(BlueprintCallable, Category="Heroes")
 	UBwayHeroDataAsset* LoadHeroSync(const TSoftObjectPtr<UBwayHeroDataAsset>& SoftPtr) const;
 	
+	/** Get hero data by primary asset ID */
 	UFUNCTION(BlueprintCallable, Category="Heroes")
 	static UBwayHeroDataAsset* GetHeroDataById(const FPrimaryAssetId& HeroId);
-
-private:
-	/** Cached Asset Registry pointer – filled in Initialize() */
-	IAssetRegistry* Registry = nullptr;
-
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 };

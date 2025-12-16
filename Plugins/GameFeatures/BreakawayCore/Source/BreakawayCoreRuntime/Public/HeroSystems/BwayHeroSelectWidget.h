@@ -11,6 +11,9 @@ class UBwayHeroRegistry;
 class UBwayHeroSelectionManager;
 class ABwayPlayerState;
 
+// Delegate for when hero selection is confirmed (for dev tools)
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroConfirmedDelegate);
+
 /**
  * Struct containing all display info for a hero in the UI
  */
@@ -102,6 +105,21 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
 	bool LockSelection();
+
+	/**
+	 * Confirm the current selection and close the widget.
+	 * This locks the selection and broadcasts OnHeroConfirmed.
+	 * Used by dev tools to trigger respawn after selection.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	void ConfirmSelection();
+
+	/**
+	 * Delegate fired when hero selection is confirmed.
+	 * Dev tools can bind to this to trigger respawn.
+	 */
+	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Events")
+	FOnHeroConfirmedDelegate OnHeroConfirmed;
 
 	/**
 	 * Get the local player's team index

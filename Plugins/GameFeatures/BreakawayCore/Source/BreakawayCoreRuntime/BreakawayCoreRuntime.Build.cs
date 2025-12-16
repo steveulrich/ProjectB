@@ -46,7 +46,9 @@ public class BreakawayCoreRuntime : ModuleRules
         
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
+				"CommonGame",
 				"CommonUI",
+				"CommonUser",
 				"NetCore",
 				"PhysicsCore",
 				"Slate",
