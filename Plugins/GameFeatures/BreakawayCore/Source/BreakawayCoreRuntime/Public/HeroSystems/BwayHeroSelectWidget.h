@@ -28,11 +28,23 @@ struct FHeroDisplayInfo
 	UPROPERTY(BlueprintReadOnly)
 	FText DisplayName;
 
+	/** The hero's class display text (e.g., "FIGHTER", "TANK") */
+	UPROPERTY(BlueprintReadOnly)
+	FText ClassName;
+
+	/** The hero's class enum value */
+	UPROPERTY(BlueprintReadOnly)
+	EHeroClass HeroClass = EHeroClass::Fighter;
+
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UTexture2D> Portrait;
 
 	UPROPERTY(BlueprintReadOnly)
 	FHeroStats Stats;
+
+	/** Ability display information for the character select UI */
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FAbilityDisplayInfo> Abilities;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsAvailable = true;
@@ -42,6 +54,10 @@ struct FHeroDisplayInfo
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsLocked = false;
+
+	/** Player index who has selected this hero (-1 if none) */
+	UPROPERTY(BlueprintReadOnly)
+	int32 SelectedByPlayerIndex = -1;
 };
 
 /**
@@ -145,6 +161,31 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
 	void GetReadyPlayerCount(int32& OutReady, int32& OutTotal) const;
+
+	/**
+	 * Get the full hero data asset for a hero ID
+	 * @param HeroId The hero to look up
+	 * @return The hero data asset (may be null)
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	UBwayHeroDataAsset* GetHeroDataAsset(FPrimaryAssetId HeroId) const;
+
+	/**
+	 * Get the display info for a specific hero
+	 * @param HeroId The hero to look up
+	 * @param OutDisplayInfo The display info struct to populate
+	 * @return True if the hero was found
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	bool GetHeroDisplayInfo(FPrimaryAssetId HeroId, FHeroDisplayInfo& OutDisplayInfo) const;
+
+	/**
+	 * Get the currently selected hero's full display info
+	 * @param OutDisplayInfo The display info struct to populate
+	 * @return True if a hero is selected
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	bool GetSelectedHeroDisplayInfo(FHeroDisplayInfo& OutDisplayInfo) const;
 
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 

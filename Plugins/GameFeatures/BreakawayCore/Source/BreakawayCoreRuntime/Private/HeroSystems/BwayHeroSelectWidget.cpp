@@ -144,6 +144,13 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes()
 		DisplayInfo.Portrait = HeroData->Portrait;
 		DisplayInfo.Stats = HeroData->HeroStats;
 
+		// Populate class information
+		DisplayInfo.HeroClass = HeroData->HeroClass;
+		DisplayInfo.ClassName = HeroData->GetClassDisplayName();
+
+		// Populate ability display info
+		DisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
+
 		// Check availability
 		if (SelectionManager)
 		{
@@ -157,8 +164,16 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes()
 		// Check if selected by local player
 		DisplayInfo.bIsSelected = (DisplayInfo.HeroId == CurrentSelection);
 
-		// Check if locked
-		DisplayInfo.bIsLocked = IsSelectionLocked();
+		// Check if locked by local player
+		DisplayInfo.bIsLocked = IsSelectionLocked() && DisplayInfo.bIsSelected;
+
+		// Check which player has selected this hero (for P1/P2 indicators)
+		DisplayInfo.SelectedByPlayerIndex = -1;
+		if (SelectionManager)
+		{
+			// TODO: Get player index from selection manager if needed
+			// This would require adding a function to BwayHeroSelectionManager
+		}
 
 		DisplayInfos.Add(DisplayInfo);
 	}
@@ -308,6 +323,64 @@ void UBwayHeroSelectWidget::GetReadyPlayerCount(int32& OutReady, int32& OutTotal
 		OutReady = 0;
 		OutTotal = 0;
 	}
+}
+
+UBwayHeroDataAsset* UBwayHeroSelectWidget::GetHeroDataAsset(FPrimaryAssetId HeroId) const
+{
+	if (!HeroId.IsValid())
+	{
+		return nullptr;
+	}
+
+	return UBwayHeroRegistry::GetHeroDataById(HeroId);
+}
+
+bool UBwayHeroSelectWidget::GetHeroDisplayInfo(FPrimaryAssetId HeroId, FHeroDisplayInfo& OutDisplayInfo) const
+{
+	UBwayHeroDataAsset* HeroData = GetHeroDataAsset(HeroId);
+	if (!HeroData)
+	{
+		return false;
+	}
+
+	OutDisplayInfo.HeroId = HeroData->GetPrimaryAssetId();
+	OutDisplayInfo.DisplayName = HeroData->DisplayName;
+	OutDisplayInfo.Portrait = HeroData->Portrait;
+	OutDisplayInfo.Stats = HeroData->HeroStats;
+	OutDisplayInfo.HeroClass = HeroData->HeroClass;
+	OutDisplayInfo.ClassName = HeroData->GetClassDisplayName();
+	OutDisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
+
+	int32 LocalTeam = GetLocalPlayerTeam();
+	FPrimaryAssetId CurrentSelection = GetSelectedHeroId();
+
+	// Check availability
+	if (SelectionManager)
+	{
+		OutDisplayInfo.bIsAvailable = SelectionManager->IsHeroAvailableForTeam(OutDisplayInfo.HeroId, LocalTeam);
+	}
+	else
+	{
+		OutDisplayInfo.bIsAvailable = true;
+	}
+
+	// Check if selected by local player
+	OutDisplayInfo.bIsSelected = (OutDisplayInfo.HeroId == CurrentSelection);
+	OutDisplayInfo.bIsLocked = IsSelectionLocked() && OutDisplayInfo.bIsSelected;
+	OutDisplayInfo.SelectedByPlayerIndex = -1;
+
+	return true;
+}
+
+bool UBwayHeroSelectWidget::GetSelectedHeroDisplayInfo(FHeroDisplayInfo& OutDisplayInfo) const
+{
+	FPrimaryAssetId SelectedId = GetSelectedHeroId();
+	if (!SelectedId.IsValid())
+	{
+		return false;
+	}
+
+	return GetHeroDisplayInfo(SelectedId, OutDisplayInfo);
 }
 
 // ========== BINDING ==========
