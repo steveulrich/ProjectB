@@ -298,3 +298,4 @@ Both relate to the hero selection phase starting, but serve completely different
 **Now you know why they both exist and what each one does!** 🎓
 
 
+
