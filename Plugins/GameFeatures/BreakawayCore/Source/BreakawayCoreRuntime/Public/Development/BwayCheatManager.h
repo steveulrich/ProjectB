@@ -81,6 +81,39 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Cheats")
 	bool IsHeroSelectVisible() const;
 
+	// ========== DEBUG COMMANDS ==========
+
+	/**
+	 * Print current hero info to console/log.
+	 * Shows hero name, ID, and ability summary.
+	 * Console command: DebugHero
+	 */
+	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Debug")
+	void DebugHero();
+
+	/**
+	 * List all granted abilities with their input tags.
+	 * Console command: DebugAbilities
+	 */
+	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Debug")
+	void DebugAbilities();
+
+	/**
+	 * Toggle on-screen hero debug display.
+	 * Shows hero name, ability count, and activation log.
+	 * Console command: ToggleHeroDebug
+	 */
+	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Debug")
+	void ToggleHeroDebug();
+
+	/**
+	 * Force initialize hero data on current character.
+	 * Debug command to manually trigger InitializeHeroData.
+	 * Console command: ForceInitHero
+	 */
+	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Debug")
+	void ForceInitHero();
+
 	/** Widget class to use for hero selection UI */
 	UPROPERTY(EditDefaultsOnly, Category = "Breakaway|Cheats")
 	TSoftClassPtr<UUserWidget> HeroSelectionWidgetClass;

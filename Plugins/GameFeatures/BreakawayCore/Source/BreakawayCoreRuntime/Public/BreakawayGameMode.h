@@ -51,7 +51,15 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	virtual void RestartPlayer(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
+
+	/**
+	 * Called after RestartPlayer to apply hero data to the newly spawned pawn.
+	 * This ensures the character has the correct mesh, animation, and abilities.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|Players")
+	void ApplyHeroDataToNewPawn(AController* Controller);
 
 	// ========================================
 	// Round Management

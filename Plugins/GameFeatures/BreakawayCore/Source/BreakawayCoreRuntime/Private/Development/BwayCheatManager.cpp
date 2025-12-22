@@ -1,12 +1,17 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Development/BwayCheatManager.h"
+#include "Development/BwayHeroDebugComponent.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
+#include "BwayCharacterWithAbilities.h"
 #include "BreakawayGameMode.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectWidget.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "Abilities/GameplayAbility.h"
 #include "Player/LyraPlayerController.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
@@ -362,5 +367,257 @@ UBwayHeroDataAsset* UBwayCheatManager::FindHeroByName(const FString& HeroName) c
 APlayerController* UBwayCheatManager::GetOwningPlayerController() const
 {
 	return GetOuterAPlayerController();
+}
+
+// ========== DEBUG COMMANDS ==========
+
+void UBwayCheatManager::DebugHero()
+{
+#if USING_CHEAT_MANAGER
+	CheatOutputText(TEXT("=== HERO DEBUG INFO ==="));
+	
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC)
+	{
+		CheatOutputText(TEXT("Error: No player controller"));
+		return;
+	}
+
+	// Get player state
+	ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
+	if (!BwayPS)
+	{
+		CheatOutputText(TEXT("Error: No BwayPlayerState"));
+		return;
+	}
+
+	// Print hero selection from PlayerState
+	FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+	CheatOutputText(FString::Printf(TEXT("PlayerState SelectedHeroId: %s"), 
+		HeroId.IsValid() ? *HeroId.ToString() : TEXT("NONE")));
+
+	// Try to get hero data
+	if (HeroId.IsValid())
+	{
+		UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId);
+		if (HeroData)
+		{
+			CheatOutputText(FString::Printf(TEXT("Hero Display Name: %s"), *HeroData->DisplayName.ToString()));
+			CheatOutputText(FString::Printf(TEXT("AbilitySets configured: %d"), HeroData->AbilitySets.Num()));
+			CheatOutputText(FString::Printf(TEXT("HeroMesh: %s"), *GetNameSafe(HeroData->HeroMesh)));
+			CheatOutputText(FString::Printf(TEXT("AnimationBP: %s"), *GetNameSafe(HeroData->AnimationBP)));
+		}
+		else
+		{
+			CheatOutputText(TEXT("Error: Could not load hero data from registry"));
+		}
+	}
+
+	// Get character info
+	APawn* Pawn = PC->GetPawn();
+	ABwayCharacterWithAbilities* Character = Cast<ABwayCharacterWithAbilities>(Pawn);
+	
+	CheatOutputText(TEXT("--- Character Info ---"));
+	CheatOutputText(FString::Printf(TEXT("Pawn: %s"), Pawn ? *Pawn->GetName() : TEXT("NONE")));
+	CheatOutputText(FString::Printf(TEXT("Is BwayCharacterWithAbilities: %s"), Character ? TEXT("YES") : TEXT("NO")));
+	
+	if (Character)
+	{
+		CheatOutputText(FString::Printf(TEXT("Character HeroDataAsset: %s"), 
+			Character->HeroDataAsset ? *Character->HeroDataAsset->DisplayName.ToString() : TEXT("NONE")));
+	}
+
+	// Get ASC info
+	ULyraAbilitySystemComponent* ASC = nullptr;
+	if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
+	{
+		ASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PS));
+	}
+	
+	CheatOutputText(TEXT("--- Ability System Info ---"));
+	CheatOutputText(FString::Printf(TEXT("AbilitySystemComponent: %s"), ASC ? *ASC->GetName() : TEXT("NONE")));
+	
+	if (ASC)
+	{
+		TArray<FGameplayAbilitySpec>& Abilities = ASC->GetActivatableAbilities();
+		CheatOutputText(FString::Printf(TEXT("Activatable Abilities: %d"), Abilities.Num()));
+	}
+	
+	CheatOutputText(TEXT("========================"));
+	
+	UE_LOG(LogBwayCheat, Display, TEXT("DebugHero command executed. Check console output."));
+#endif
+}
+
+void UBwayCheatManager::DebugAbilities()
+{
+#if USING_CHEAT_MANAGER
+	CheatOutputText(TEXT("=== GRANTED ABILITIES ==="));
+	
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC)
+	{
+		CheatOutputText(TEXT("Error: No player controller"));
+		return;
+	}
+
+	// Get ASC from player state (Lyra pattern)
+	ULyraAbilitySystemComponent* ASC = nullptr;
+	if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
+	{
+		ASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PS));
+	}
+	
+	if (!ASC)
+	{
+		CheatOutputText(TEXT("Error: No AbilitySystemComponent on PlayerState"));
+		return;
+	}
+
+	TArray<FGameplayAbilitySpec>& Abilities = ASC->GetActivatableAbilities();
+	CheatOutputText(FString::Printf(TEXT("Total Abilities: %d"), Abilities.Num()));
+	CheatOutputText(TEXT(""));
+	
+	if (Abilities.Num() == 0)
+	{
+		CheatOutputText(TEXT("No abilities granted!"));
+		CheatOutputText(TEXT("This likely means InitializeHeroData was not called."));
+	}
+	else
+	{
+		int32 Index = 1;
+		for (const FGameplayAbilitySpec& Spec : Abilities)
+		{
+			if (Spec.Ability)
+			{
+				FString AbilityName = Spec.Ability->GetClass()->GetName();
+				
+				// Get input tags
+				FGameplayTagContainer DynamicTags = Spec.GetDynamicSpecSourceTags();
+				FString InputTags = DynamicTags.IsEmpty() ? TEXT("None") : DynamicTags.ToStringSimple();
+				
+				// Get ability tags from the ability's AbilityTags property
+				const FGameplayTagContainer& AbilityTags = Spec.Ability->AbilityTags;
+				FString AbilityTagsStr = AbilityTags.IsEmpty() ? TEXT("None") : AbilityTags.ToStringSimple();
+				
+				CheatOutputText(FString::Printf(TEXT("%d. %s"), Index, *AbilityName));
+				CheatOutputText(FString::Printf(TEXT("   Input: %s"), *InputTags));
+				CheatOutputText(FString::Printf(TEXT("   Tags: %s"), *AbilityTagsStr));
+				CheatOutputText(FString::Printf(TEXT("   Active: %s, Level: %d"), 
+					Spec.IsActive() ? TEXT("YES") : TEXT("NO"), Spec.Level));
+				
+				Index++;
+			}
+		}
+	}
+	
+	CheatOutputText(TEXT("========================="));
+	
+	UE_LOG(LogBwayCheat, Display, TEXT("DebugAbilities command executed. Check console output."));
+#endif
+}
+
+void UBwayCheatManager::ToggleHeroDebug()
+{
+#if USING_CHEAT_MANAGER
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC)
+	{
+		CheatOutputText(TEXT("Error: No player controller"));
+		return;
+	}
+
+	APawn* Pawn = PC->GetPawn();
+	if (!Pawn)
+	{
+		CheatOutputText(TEXT("Error: No pawn"));
+		return;
+	}
+
+	// Find or add debug component
+	UBwayHeroDebugComponent* DebugComp = Pawn->FindComponentByClass<UBwayHeroDebugComponent>();
+	
+	if (!DebugComp)
+	{
+		// Add the component dynamically
+		DebugComp = NewObject<UBwayHeroDebugComponent>(Pawn, TEXT("HeroDebugComponent"));
+		if (DebugComp)
+		{
+			DebugComp->RegisterComponent();
+			CheatOutputText(TEXT("Created HeroDebugComponent"));
+		}
+		else
+		{
+			CheatOutputText(TEXT("Error: Failed to create HeroDebugComponent"));
+			return;
+		}
+	}
+
+	// Toggle the debug display
+	DebugComp->ToggleDebugDisplay();
+	
+	CheatOutputText(FString::Printf(TEXT("Hero Debug Display: %s"), 
+		DebugComp->IsDebugDisplayEnabled() ? TEXT("ENABLED") : TEXT("DISABLED")));
+	
+	UE_LOG(LogBwayCheat, Display, TEXT("ToggleHeroDebug: Display is now %s"), 
+		DebugComp->IsDebugDisplayEnabled() ? TEXT("ENABLED") : TEXT("DISABLED"));
+#endif
+}
+
+void UBwayCheatManager::ForceInitHero()
+{
+#if USING_CHEAT_MANAGER
+	CheatOutputText(TEXT("=== FORCE INIT HERO ==="));
+	
+	APlayerController* PC = GetOwningPlayerController();
+	if (!PC)
+	{
+		CheatOutputText(TEXT("Error: No player controller"));
+		return;
+	}
+
+	// Get player state
+	ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
+	if (!BwayPS)
+	{
+		CheatOutputText(TEXT("Error: No BwayPlayerState"));
+		return;
+	}
+
+	// Get hero ID
+	FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+	if (!HeroId.IsValid())
+	{
+		CheatOutputText(TEXT("Error: No hero selected on PlayerState. Use 'SelectHero <name>' first."));
+		return;
+	}
+
+	// Get hero data
+	UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId);
+	if (!HeroData)
+	{
+		CheatOutputText(FString::Printf(TEXT("Error: Could not load hero data for %s"), *HeroId.ToString()));
+		return;
+	}
+
+	// Get character
+	ABwayCharacterWithAbilities* Character = Cast<ABwayCharacterWithAbilities>(PC->GetPawn());
+	if (!Character)
+	{
+		CheatOutputText(TEXT("Error: Current pawn is not ABwayCharacterWithAbilities"));
+		return;
+	}
+
+	CheatOutputText(FString::Printf(TEXT("Calling InitializeHeroData for hero: %s"), *HeroData->DisplayName.ToString()));
+	
+	// Force initialize
+	Character->InitializeHeroData(HeroData);
+	
+	CheatOutputText(TEXT("InitializeHeroData called! Check logs for details."));
+	CheatOutputText(TEXT("Use 'DebugAbilities' to verify abilities were granted."));
+	
+	UE_LOG(LogBwayCheat, Display, TEXT("ForceInitHero: Called InitializeHeroData for %s on %s"), 
+		*HeroData->DisplayName.ToString(), *Character->GetName());
+#endif
 }
 

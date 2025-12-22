@@ -102,7 +102,14 @@ void ABwayCharacterWithAbilities::TryPickupOverlappingRelic()
 
 void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* HeroData)
 {
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: BEGIN for character %s"), *GetName());
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	
 	check(HeroData);
+
+	UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: HeroData = %s (DisplayName: %s)"), 
+		*GetNameSafe(HeroData), *HeroData->DisplayName.ToString());
 
 	HeroDataAsset = HeroData;
 
@@ -110,9 +117,13 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
     USkeletalMeshComponent* MeshComp = GetMesh();
     if (MeshComp)
     {
+        UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Setting HeroMesh = %s"), *GetNameSafe(HeroData->HeroMesh));
         MeshComp->SetSkeletalMesh(HeroData->HeroMesh);
+        
         if (HeroData->AnimationBP)
         {
+            UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Setting AnimInstanceClass = %s"), 
+                *GetNameSafe(HeroData->AnimationBP->GeneratedClass));
             MeshComp->SetAnimInstanceClass(HeroData->AnimationBP->GeneratedClass);
         }
         else
@@ -120,48 +131,71 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
             UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: HeroData->AnimationBP is null for %s"), *GetNameSafe(HeroData));
         }
     }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: MeshComponent is NULL!"));
+    }
 
-    // Attributes
-    // The InitAttributeSet function must be declared in ABwayCharacterWithAbilities.h
-    // and implemented in ABwayCharacterWithAbilities.cpp.
-    // It should use the AbilitySystemComponent to initialize attributes.
-    // For example: void ABwayCharacterWithAbilities::InitAttributeSet(ULyraAbilitySystemComponent* ASC, TSubclassOf<UAttributeSet> AttributeSetClass, float BaseHealth, float BaseSpeed);
-    //const float Health = HeroData->MaxHealth;
-    //const float Speed = HeroData->MoveSpeed;
-    
+    // Get ASC
     ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
     if (!ASC)
     {
         UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: LyraAbilitySystemComponent is null for %s."), *GetName());
+        UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END (FAILED - No ASC)"));
         return;
     }
 
-    // Assuming InitAttributeSet is a member function of ABwayCharacterWithAbilities
-    // and it correctly uses the ASC to initialize attributes from HeroData->AttributeSetClass
-    // You might need to pass ASC to it, or it retrieves it internally.
-    // For example: this->InitAttributeSet(ASC, HeroData->AttributeSetClass, Health, Speed);
-    // If InitAttributeSet is defined and handles ASC internally:
-    //this->InitAttributeSet(HeroData->AttributeSetClass, Health, Speed);
+    UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: ASC = %s"), *GetNameSafe(ASC));
 
     // Ability Sets
     if (!HeroData->AbilitySets.IsEmpty())
     {
-        FLyraAbilitySet_GrantedHandles GrantedHandles; // Declare GrantedHandles here
-        for (const ULyraAbilitySet* Set : HeroData->AbilitySets)
+        UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Processing %d AbilitySets"), HeroData->AbilitySets.Num());
+        
+        FLyraAbilitySet_GrantedHandles GrantedHandles;
+        for (int32 i = 0; i < HeroData->AbilitySets.Num(); ++i)
         {
+            const ULyraAbilitySet* Set = HeroData->AbilitySets[i];
             if (Set)
             {
-                // InitAbilityActorInfo should be called on the ASC.
-                // It's often called once when the ASC is initialized or the avatar changes.
-                // If it's already been called appropriately elsewhere, this specific call might be redundant
-                // or only needed if the avatar/owner wasn't set previously.
-                ASC->InitAbilityActorInfo(this, this); 
+                UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Granting AbilitySet[%d] = %s"), i, *GetNameSafe(Set));
+                
+                // Initialize ability actor info
+                ASC->InitAbilityActorInfo(this, this);
+                
+                // Grant the ability set
                 Set->GiveToAbilitySystem(ASC, &GrantedHandles);
+                
+                UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: AbilitySet[%d] granted successfully"), i);
             }
             else
             {
-                UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: Found a null AbilitySet in HeroData for %s"), *GetNameSafe(HeroData));
+                UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: AbilitySet[%d] is NULL!"), i);
             }
         }
     }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: HeroData has NO AbilitySets configured!"));
+    }
+
+    // Log summary
+    TArray<FGameplayAbilitySpec>& ActivatableAbilities = ASC->GetActivatableAbilities();
+    UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: SUMMARY - Total activatable abilities on ASC: %d"), ActivatableAbilities.Num());
+    
+    for (const FGameplayAbilitySpec& Spec : ActivatableAbilities)
+    {
+        if (Spec.Ability)
+        {
+            FGameplayTagContainer DynamicTags = Spec.GetDynamicSpecSourceTags();
+            FString TagsStr = DynamicTags.ToStringSimple();
+            UE_LOG(LogTemp, Log, TEXT("  - %s [InputTags: %s]"), 
+                *Spec.Ability->GetClass()->GetName(), 
+                TagsStr.IsEmpty() ? TEXT("None") : *TagsStr);
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("========================================"));
+    UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END for character %s"), *GetName());
+    UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }

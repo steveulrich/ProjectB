@@ -23,6 +23,13 @@ class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Base : public ULyraGameplayA
 public:
 	UBwayGameplayAbility_Base(const FObjectInitializer& ObjectInitializer);
 
+	// Debug logging overrides
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	/** Enable/disable debug logging for this ability class */
+	static bool bEnableAbilityDebugLogging;
+
 protected:
 	/** Check if character is an enemy (different team) */
 	bool IsEnemy(ABwayCharacterWithAbilities* OtherCharacter) const;

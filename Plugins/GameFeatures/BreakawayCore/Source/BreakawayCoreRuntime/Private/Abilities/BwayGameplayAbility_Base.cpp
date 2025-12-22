@@ -14,12 +14,119 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/OverlapResult.h"
 #include "System/LyraAssetManager.h"
+#include "Development/BwayHeroDebugComponent.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayAbility, Log, All);
+
+// Static member initialization - set to true to enable debug logging
+bool UBwayGameplayAbility_Base::bEnableAbilityDebugLogging = true;
 
 UBwayGameplayAbility_Base::UBwayGameplayAbility_Base(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+}
+
+bool UBwayGameplayAbility_Base::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
+{
+	const FString AbilityName = GetClass()->GetName();
+	
+	// Check base class first
+	bool bCanActivate = Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags);
+	
+	if (bEnableAbilityDebugLogging)
+	{
+		if (!bCanActivate)
+		{
+			// Try to determine why it failed
+			FString FailReason = TEXT("Unknown");
+			
+			if (!ActorInfo)
+			{
+				FailReason = TEXT("No ActorInfo");
+			}
+			else if (!ActorInfo->AbilitySystemComponent.IsValid())
+			{
+				FailReason = TEXT("No AbilitySystemComponent");
+			}
+			else if (!ActorInfo->AvatarActor.IsValid())
+			{
+				FailReason = TEXT("No AvatarActor");
+			}
+			else
+			{
+				// Check for blocking tags
+				UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get();
+				if (ASC)
+				{
+					FGameplayTagContainer OwnedTags;
+					ASC->GetOwnedGameplayTags(OwnedTags);
+					
+					// Check if activation is blocked by tags
+					if (ActivationBlockedTags.Num() > 0 && OwnedTags.HasAny(ActivationBlockedTags))
+					{
+						FailReason = TEXT("Blocked by ActivationBlockedTags");
+					}
+					else if (ActivationRequiredTags.Num() > 0 && !OwnedTags.HasAll(ActivationRequiredTags))
+					{
+						FailReason = TEXT("Missing ActivationRequiredTags");
+					}
+					else if (IsActive())
+					{
+						FailReason = TEXT("Already Active");
+					}
+					else
+					{
+						// Check cooldown using the ability's cooldown check
+						const FGameplayTagContainer* CooldownTags = GetCooldownTags();
+						if (CooldownTags && CooldownTags->Num() > 0 && ASC->HasAnyMatchingGameplayTags(*CooldownTags))
+						{
+							FailReason = TEXT("On Cooldown");
+						}
+						else
+						{
+							FailReason = TEXT("Base class rejected (check parent ability conditions)");
+						}
+					}
+				}
+			}
+			
+			UE_LOG(LogBwayAbility, Warning, TEXT("[%s] CanActivate: FALSE - Reason: %s"), *AbilityName, *FailReason);
+			UBwayHeroDebugComponent::LogAbilityActivation(AbilityName, false, FailReason);
+		}
+		else
+		{
+			UE_LOG(LogBwayAbility, Log, TEXT("[%s] CanActivate: TRUE"), *AbilityName);
+		}
+	}
+	
+	return bCanActivate;
+}
+
+void UBwayGameplayAbility_Base::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+{
+	const FString AbilityName = GetClass()->GetName();
+	
+	if (bEnableAbilityDebugLogging)
+	{
+		FString OwnerName = TEXT("Unknown");
+		if (ActorInfo && ActorInfo->AvatarActor.IsValid())
+		{
+			OwnerName = ActorInfo->AvatarActor->GetName();
+		}
+		
+		UE_LOG(LogBwayAbility, Log, TEXT("[%s] ActivateAbility called on %s (Local: %s, Server: %s)"), 
+			*AbilityName, 
+			*OwnerName,
+			ActivationInfo.bCanBeEndedByOtherInstance ? TEXT("Yes") : TEXT("No"),
+			HasAuthority(&ActivationInfo) ? TEXT("Yes") : TEXT("No"));
+		
+		UBwayHeroDebugComponent::LogAbilityActivation(AbilityName, true);
+	}
+	
+	// Call parent implementation
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 bool UBwayGameplayAbility_Base::IsEnemy(ABwayCharacterWithAbilities* OtherCharacter) const

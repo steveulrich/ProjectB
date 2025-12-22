@@ -77,10 +77,20 @@ void ABwayHeroTestSpawner::OnOverlapBegin(UPrimitiveComponent* OverlappedCompone
 
 void ABwayHeroTestSpawner::TriggerHeroChange(APawn* Pawn)
 {
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: TriggerHeroChange BEGIN"));
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	
 	if (!Pawn || !HeroDefinition)
 	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroTestSpawner: Invalid Pawn (%s) or HeroDefinition (%s)"),
+			Pawn ? TEXT("Valid") : TEXT("NULL"),
+			HeroDefinition ? TEXT("Valid") : TEXT("NULL"));
 		return;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: Pawn = %s, HeroDefinition = %s"), 
+		*Pawn->GetName(), *HeroDefinition->DisplayName.ToString());
 
 	// Get the player controller
 	APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
@@ -90,6 +100,8 @@ void ABwayHeroTestSpawner::TriggerHeroChange(APawn* Pawn)
 		return;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: PlayerController = %s"), *PC->GetName());
+
 	// Get the Breakaway player state
 	ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
 	if (!BwayPS)
@@ -97,6 +109,8 @@ void ABwayHeroTestSpawner::TriggerHeroChange(APawn* Pawn)
 		UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: Player state is not ABwayPlayerState"));
 		return;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: BwayPlayerState = %s"), *BwayPS->GetName());
 
 	// Get the hero's primary asset ID
 	FPrimaryAssetId HeroId = HeroDefinition->GetPrimaryAssetId();
@@ -106,28 +120,52 @@ void ABwayHeroTestSpawner::TriggerHeroChange(APawn* Pawn)
 		return;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: Target HeroId = %s"), *HeroId.ToString());
+	
+	// Log current hero state
+	FPrimaryAssetId CurrentHeroId = BwayPS->GetSelectedHeroId();
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: Current PlayerState HeroId = %s"), 
+		CurrentHeroId.IsValid() ? *CurrentHeroId.ToString() : TEXT("NONE"));
+
 	// Check if already this hero to avoid unnecessary respawn
 	if (BwayPS->GetSelectedHeroId() == HeroId)
 	{
-		UE_LOG(LogTemp, Verbose, TEXT("BwayHeroTestSpawner: Player already has hero %s selected"), 
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: Player already has hero %s selected - SKIPPING"), 
 			*HeroDefinition->DisplayName.ToString());
 		return;
 	}
 
 	// Set the hero on the player state
+	UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: CALLING ServerSetSelectedHeroId(%s)"), *HeroId.ToString());
 	BwayPS->ServerSetSelectedHeroId(HeroId);
 
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: Changing player to hero %s"), 
+	// Verify the hero was set
+	FPrimaryAssetId NewHeroId = BwayPS->GetSelectedHeroId();
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: After SetHeroId, PlayerState HeroId = %s"), 
+		NewHeroId.IsValid() ? *NewHeroId.ToString() : TEXT("NONE"));
+
+	UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: Changing player to hero %s"), 
 		*HeroDefinition->DisplayName.ToString());
 
 	// Destroy current pawn and respawn
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroTestSpawner: DESTROYING current pawn: %s"), *Pawn->GetName());
 	Pawn->Destroy();
 
 	// Trigger respawn through game mode
 	if (AGameModeBase* GameMode = UGameplayStatics::GetGameMode(this))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: CALLING GameMode->RestartPlayer(%s)"), *PC->GetName());
 		GameMode->RestartPlayer(PC);
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: RestartPlayer returned"));
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroTestSpawner: NO GAME MODE FOUND - Cannot respawn player!"));
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	UE_LOG(LogTemp, Warning, TEXT("BwayHeroTestSpawner: TriggerHeroChange END"));
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 }
 
 void ABwayHeroTestSpawner::UpdateDisplayWidget()

@@ -15,6 +15,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameplayTagsManager.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
 
@@ -200,6 +202,112 @@ AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player
 	// Fall back to default behavior if no tagged spawns found
 	UE_LOG(LogBreakawayGame, Warning, TEXT("No spawn points found with tag %s, using default spawn"), *SpawnTag.ToString());
 	return Super::ChoosePlayerStart_Implementation(Player);
+}
+
+void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
+{
+	UE_LOG(LogBreakawayGame, Warning, TEXT("========================================"));
+	UE_LOG(LogBreakawayGame, Warning, TEXT("RestartPlayer: BEGIN for %s"), *GetNameSafe(NewPlayer));
+	UE_LOG(LogBreakawayGame, Warning, TEXT("========================================"));
+
+	// Check for selected hero before spawning
+	if (APlayerController* PC = Cast<APlayerController>(NewPlayer))
+	{
+		if (ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>())
+		{
+			FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+			UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: PlayerState has SelectedHeroId = %s"), 
+				HeroId.IsValid() ? *HeroId.ToString() : TEXT("NONE"));
+		}
+		else
+		{
+			UE_LOG(LogBreakawayGame, Warning, TEXT("RestartPlayer: PlayerState is not ABwayPlayerState"));
+		}
+	}
+
+	// Call base implementation to spawn the pawn
+	Super::RestartPlayer(NewPlayer);
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: Super::RestartPlayer completed"));
+
+	// Now apply hero data to the newly spawned pawn
+	ApplyHeroDataToNewPawn(NewPlayer);
+
+	UE_LOG(LogBreakawayGame, Warning, TEXT("========================================"));
+	UE_LOG(LogBreakawayGame, Warning, TEXT("RestartPlayer: END for %s"), *GetNameSafe(NewPlayer));
+	UE_LOG(LogBreakawayGame, Warning, TEXT("========================================"));
+}
+
+void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
+{
+	if (!Controller)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Controller is null"));
+		return;
+	}
+
+	APlayerController* PC = Cast<APlayerController>(Controller);
+	if (!PC)
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("ApplyHeroDataToNewPawn: Not a player controller, skipping"));
+		return;
+	}
+
+	// Get the player state to check for selected hero
+	ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
+	if (!BwayPS)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No BwayPlayerState for %s"), *PC->GetName());
+		return;
+	}
+
+	// Get the selected hero ID
+	FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+	if (!HeroId.IsValid())
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Player %s has no hero selected"), *PC->GetName());
+		return;
+	}
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("ApplyHeroDataToNewPawn: Loading hero data for %s"), *HeroId.ToString());
+
+	// Load the hero data asset
+	UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId);
+	if (!HeroData)
+	{
+		UE_LOG(LogBreakawayGame, Error, TEXT("ApplyHeroDataToNewPawn: Could not load hero data for %s"), *HeroId.ToString());
+		return;
+	}
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("ApplyHeroDataToNewPawn: HeroData loaded: %s"), *HeroData->DisplayName.ToString());
+
+	// Get the spawned pawn
+	APawn* Pawn = PC->GetPawn();
+	if (!Pawn)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No pawn for player %s after RestartPlayer"), *PC->GetName());
+		return;
+	}
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("ApplyHeroDataToNewPawn: Pawn = %s (Class: %s)"), 
+		*Pawn->GetName(), *Pawn->GetClass()->GetName());
+
+	// Cast to our character class
+	ABwayCharacterWithAbilities* Character = Cast<ABwayCharacterWithAbilities>(Pawn);
+	if (!Character)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Pawn is not ABwayCharacterWithAbilities (is %s)"), 
+			*Pawn->GetClass()->GetName());
+		return;
+	}
+
+	// Apply hero data to the character
+	UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: CALLING InitializeHeroData for hero %s on character %s"), 
+		*HeroData->DisplayName.ToString(), *Character->GetName());
+	
+	Character->InitializeHeroData(HeroData);
+	
+	UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: InitializeHeroData completed for %s"), *PC->GetName());
 }
 
 // ========================================
