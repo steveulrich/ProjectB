@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{A9367F94-430F-554F-8376-B6843DA48377}",
+	"EngineAssociation": "",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -39,14 +39,6 @@
 		{
 			"Name": "Gauntlet",
 			"Enabled": true
-		},
-		{
-			"Name": "D3DExternalGPUStatistics",
-			"Enabled": true,
-			"Optional": true,
-			"SupportedTargetPlatforms": [
-				"Win64"
-			]
 		},
 		{
 			"Name": "CommonLoadingScreen",
@@ -176,13 +168,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "LuminPlatformFeatures",
-			"Enabled": false,
-			"SupportedTargetPlatforms": [
-				"Lumin"
-			]
-		},
-		{
 			"Name": "MLSDK",
 			"Enabled": false
 		},
@@ -205,14 +190,6 @@
 			]
 		},
 		{
-			"Name": "OnlineSubsystemEOS",
-			"Enabled": true
-		},
-		{
-			"Name": "OnlineServicesEOS",
-			"Enabled": true
-		},
-		{
 			"Name": "OnlineServicesNull",
 			"Enabled": true
 		},
@@ -222,6 +199,10 @@
 		},
 		{
 			"Name": "OnlineSubsystemSteam",
+			"Enabled": true
+		},
+		{
+			"Name": "SocketSubsystemSteamIP",
 			"Enabled": true
 		},
 		{
@@ -270,11 +251,17 @@
 		},
 		{
 			"Name": "MovieRenderPipeline",
-			"Enabled": true
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		},
 		{
 			"Name": "MoviePipelineMaskRenderPass",
-			"Enabled": true
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		},
 		{
 			"Name": "AssetSearch",
@@ -349,16 +336,12 @@
 			"Enabled": true
 		},
 		{
-			"Name": "ShooterCTF",
+			"Name": "AutomatedPerfTesting",
 			"Enabled": true
 		},
 		{
-			"Name": "VisualStudioTools",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/362651520df94e4fa65492dbcba44ae2",
-			"SupportedTargetPlatforms": [
-				"Win64"
-			]
+			"Name": "Reflex",
+			"Enabled": true
 		}
 	]
 }

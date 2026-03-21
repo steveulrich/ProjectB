@@ -251,7 +251,7 @@ void ULyraHeroComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 			{
 				for (const FInputMappingContextAndPriority& Mapping : DefaultInputMappings)
 				{
-					if (UInputMappingContext* IMC = Mapping.InputMapping.Get())
+					if (UInputMappingContext* IMC = Mapping.InputMapping.LoadSynchronous())
 					{
 						if (Mapping.bRegisterWithSettings)
 						{

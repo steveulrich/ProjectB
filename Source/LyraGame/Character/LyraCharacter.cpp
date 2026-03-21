@@ -159,9 +159,9 @@ void ALyraCharacter::NotifyControllerChanged()
 	Super::NotifyControllerChanged();
 
 	// Update our team ID based on the controller
-	if (HasAuthority() && (Controller != nullptr))
+	if (HasAuthority() && (GetController() != nullptr))
 	{
-		if (ILyraTeamAgentInterface* ControllerWithTeam = Cast<ILyraTeamAgentInterface>(Controller))
+		if (ILyraTeamAgentInterface* ControllerWithTeam = Cast<ILyraTeamAgentInterface>(GetController()))
 		{
 			MyTeamID = ControllerWithTeam->GetGenericTeamId();
 			ConditionalBroadcastTeamChanged(this, OldTeamId, MyTeamID);
@@ -171,7 +171,7 @@ void ALyraCharacter::NotifyControllerChanged()
 
 ALyraPlayerController* ALyraCharacter::GetLyraPlayerController() const
 {
-	return CastChecked<ALyraPlayerController>(Controller, ECastCheckedType::NullAllowed);
+	return Cast<ALyraPlayerController>(GetController());
 }
 
 ALyraPlayerState* ALyraCharacter::GetLyraPlayerState() const
@@ -228,7 +228,7 @@ void ALyraCharacter::PossessedBy(AController* NewController)
 
 void ALyraCharacter::UnPossessed()
 {
-	AController* const OldController = Controller;
+	AController* const OldController = GetController();
 
 	// Stop listening for changes from the old controller
 	const FGenericTeamId OldTeamID = MyTeamID;
@@ -349,9 +349,9 @@ void ALyraCharacter::OnDeathFinished(AActor*)
 
 void ALyraCharacter::DisableMovementAndCollision()
 {
-	if (Controller)
+	if (GetController())
 	{
-		Controller->SetIgnoreMoveInput(true);
+		GetController()->SetIgnoreMoveInput(true);
 	}
 
 	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
@@ -427,7 +427,7 @@ void ALyraCharacter::ToggleCrouch()
 {
 	const ULyraCharacterMovementComponent* LyraMoveComp = CastChecked<ULyraCharacterMovementComponent>(GetCharacterMovement());
 
-	if (bIsCrouched || LyraMoveComp->bWantsToCrouch)
+	if (IsCrouched() || LyraMoveComp->bWantsToCrouch)
 	{
 		UnCrouch();
 	}
@@ -538,7 +538,7 @@ bool ALyraCharacter::UpdateSharedReplication()
 			if (!SharedMovement.Equals(LastSharedReplication, this))
 			{
 				LastSharedReplication = SharedMovement;
-				ReplicatedMovementMode = SharedMovement.RepMovementMode;
+				SetReplicatedMovementMode(SharedMovement.RepMovementMode);
 
 				FastSharedReplication(SharedMovement);
 			}
@@ -561,12 +561,12 @@ void ALyraCharacter::FastSharedReplication_Implementation(const FSharedRepMoveme
 	if (GetLocalRole() == ROLE_SimulatedProxy)
 	{
 		// Timestamp
-		ReplicatedServerLastTransformUpdateTimeStamp = SharedRepMovement.RepTimeStamp;
+		SetReplicatedServerLastTransformUpdateTimeStamp(SharedRepMovement.RepTimeStamp);
 
 		// Movement mode
-		if (ReplicatedMovementMode != SharedRepMovement.RepMovementMode)
+		if (GetReplicatedMovementMode() != SharedRepMovement.RepMovementMode)
 		{
-			ReplicatedMovementMode = SharedRepMovement.RepMovementMode;
+			SetReplicatedMovementMode(SharedRepMovement.RepMovementMode);
 			GetCharacterMovement()->bNetworkMovementModeChanged = true;
 			GetCharacterMovement()->bNetworkUpdateReceived = true;
 		}
@@ -579,12 +579,12 @@ void ALyraCharacter::FastSharedReplication_Implementation(const FSharedRepMoveme
 		OnRep_ReplicatedMovement();
 
 		// Jump force
-		bProxyIsJumpForceApplied = SharedRepMovement.bProxyIsJumpForceApplied;
+		SetProxyIsJumpForceApplied(SharedRepMovement.bProxyIsJumpForceApplied);
 
 		// Crouch
-		if (bIsCrouched != SharedRepMovement.bIsCrouched)
+		if (IsCrouched() != SharedRepMovement.bIsCrouched)
 		{
-			bIsCrouched = SharedRepMovement.bIsCrouched;
+			SetIsCrouched(SharedRepMovement.bIsCrouched);
 			OnRep_IsCrouched();
 		}
 	}
@@ -605,8 +605,8 @@ bool FSharedRepMovement::FillForCharacter(ACharacter* Character)
 		RepMovement.Rotation = PawnRootComponent->GetComponentRotation();
 		RepMovement.LinearVelocity = CharacterMovement->Velocity;
 		RepMovementMode = CharacterMovement->PackNetworkMovementMode();
-		bProxyIsJumpForceApplied = Character->bProxyIsJumpForceApplied || (Character->JumpForceTimeRemaining > 0.0f);
-		bIsCrouched = Character->bIsCrouched;
+		bProxyIsJumpForceApplied = Character->GetProxyIsJumpForceApplied() || (Character->JumpForceTimeRemaining > 0.0f);
+		bIsCrouched = Character->IsCrouched();
 
 		// Timestamp is sent as zero if unused
 		if ((CharacterMovement->NetworkSmoothingMode == ENetworkSmoothingMode::Linear) || CharacterMovement->bNetworkAlwaysReplicateTransformUpdateTimestamp)
