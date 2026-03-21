@@ -4,6 +4,7 @@
 #include "Player/LyraPlayerController.h"
 #include "Character/LyraPawn.h"
 #include "Player/LyraPlayerState.h"
+#include "Engine/Engine.h"
 #include "Engine/GameViewportClient.h"
 #include "Engine/GameInstance.h"
 #include "Misc/CommandLine.h"
@@ -14,6 +15,8 @@
 #include "Inventory/LyraInventoryItemInstance.h"
 #include "Inventory/LyraInventoryManagerComponent.h"
 #include "Character/LyraPawnExtensionComponent.h"
+
+#include UE_INLINE_GENERATED_CPP_BY_NAME(LyraGameplayRpcRegistrationComponent)
 
 ULyraGameplayRpcRegistrationComponent* ULyraGameplayRpcRegistrationComponent::ObjectInstance = nullptr;
 ULyraGameplayRpcRegistrationComponent* ULyraGameplayRpcRegistrationComponent::GetInstance()

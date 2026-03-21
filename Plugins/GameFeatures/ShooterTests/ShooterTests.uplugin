@@ -21,12 +21,23 @@
 		{
 			"Name": "ShooterTestsRuntime",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"TargetConfigurationDenyList": [
+				"Shipping"
+			]
 		}
 	],
 	"Plugins": [
 		{
 			"Name": "ShooterCore",
+			"Enabled": true
+		},
+		{
+			"Name": "AsyncMessageSystem",
+			"Enabled": true
+		},
+		{
+			"Name": "AsyncMessageSystemTests",
 			"Enabled": true
 		},
 		{

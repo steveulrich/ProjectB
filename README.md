@@ -9,7 +9,7 @@ To make use of the Lyra source code, you will need to download the content from 
 
 For more information please visit the [Unreal Engine Lyra documentation](https://docs.unrealengine.com/5.0/en-US/lyra-sample-game-in-unreal-engine/)
 
-Once installed, simply copy the content folder inside your solution directory and you should be good to go.
+Once installed, copy the "Content" folder and any other folders named "Content" from the Marketplace project you downloaded to the project in your solution, and you should be good to go.
 
 
 Additional Information
