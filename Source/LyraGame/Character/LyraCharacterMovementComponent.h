@@ -7,6 +7,8 @@
 
 #include "LyraCharacterMovementComponent.generated.h"
 
+#define UE_API LYRAGAME_API
+
 class UObject;
 struct FFrame;
 
@@ -42,33 +44,33 @@ struct FLyraCharacterGroundInfo
  *
  *	The base character movement component class used by this project.
  */
-UCLASS(Config = Game)
-class LYRAGAME_API ULyraCharacterMovementComponent : public UCharacterMovementComponent
+UCLASS(MinimalAPI, Config = Game)
+class ULyraCharacterMovementComponent : public UCharacterMovementComponent
 {
 	GENERATED_BODY()
 
 public:
 
-	ULyraCharacterMovementComponent(const FObjectInitializer& ObjectInitializer);
+	UE_API ULyraCharacterMovementComponent(const FObjectInitializer& ObjectInitializer);
 
-	virtual void SimulateMovement(float DeltaTime) override;
+	UE_API virtual void SimulateMovement(float DeltaTime) override;
 
-	virtual bool CanAttemptJump() const override;
+	UE_API virtual bool CanAttemptJump() const override;
 
 	// Returns the current ground info.  Calling this will update the ground info if it's out of date.
 	UFUNCTION(BlueprintCallable, Category = "Lyra|CharacterMovement")
-	const FLyraCharacterGroundInfo& GetGroundInfo();
+	UE_API const FLyraCharacterGroundInfo& GetGroundInfo();
 
-	void SetReplicatedAcceleration(const FVector& InAcceleration);
+	UE_API void SetReplicatedAcceleration(const FVector& InAcceleration);
 
 	//~UMovementComponent interface
-	virtual FRotator GetDeltaRotation(float DeltaTime) const override;
-	virtual float GetMaxSpeed() const override;
+	UE_API virtual FRotator GetDeltaRotation(float DeltaTime) const override;
+	UE_API virtual float GetMaxSpeed() const override;
 	//~End of UMovementComponent interface
 
 protected:
 
-	virtual void InitializeComponent() override;
+	UE_API virtual void InitializeComponent() override;
 
 protected:
 
@@ -78,3 +80,5 @@ protected:
 	UPROPERTY(Transient)
 	bool bHasReplicatedAcceleration = false;
 };
+
+#undef UE_API

@@ -20,6 +20,7 @@
     <ProjectReference Include="$(EngineDir)\Source\Programs\AutomationTool\Localization\Localization.Automation.csproj" />
     <ProjectReference Include="$(EngineDir)\Source\Programs\AutomationTool\OneSkyLocalization\OneSkyLocalization.Automation.csproj" />
     <ProjectReference Include="$(EngineDir)\Source\Programs\AutomationTool\XLocLocalization\XLocLocalization.Automation.csproj" />
+    <ProjectReference Include="$(EngineDir)\Source\Programs\AutomationTool\SmartlingLocalization\SmartlingLocalization.Automation.csproj" />
     <ProjectReference Include="$(EngineDir)\Source\Programs\Shared\EpicGames.Core\EpicGames.Core.csproj" PrivateAssets="All">
       <Private>false</Private>
     </ProjectReference>

@@ -25,7 +25,7 @@ public class LyraGameTarget : TargetRules
 	{
 		ILogger Logger = Target.Logger;
 		
-		Target.DefaultBuildSettings = BuildSettingsVersion.V5;
+		Target.DefaultBuildSettings = BuildSettingsVersion.V6;
 		Target.IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 
 		bool bIsTest = Target.Configuration == UnrealTargetConfiguration.Test;
@@ -33,9 +33,10 @@ public class LyraGameTarget : TargetRules
 		bool bIsDedicatedServer = Target.Type == TargetType.Server;
 		if (Target.BuildEnvironment == TargetBuildEnvironment.Unique)
 		{
-			Target.ShadowVariableWarningLevel = WarningLevel.Error;
+			Target.CppCompileWarningSettings.ShadowVariableWarningLevel = WarningLevel.Error;
 
 			Target.bUseLoggingInShipping = true;
+			Target.bTrackRHIResourceInfoForTest = true;
 
 			if (bIsShipping && !bIsDedicatedServer)
 			{
@@ -102,7 +103,7 @@ public class LyraGameTarget : TargetRules
 			// return true;
 		}
 
-		bool bIsBuildMachine = (Environment.GetEnvironmentVariable("IsBuildMachine") == "1");
+		bool bIsBuildMachine = Target.AdditionalProperties.GetProperty("IsBuildMachine") == "1";
 		if (bIsBuildMachine)
 		{
 			// This could be used to enable all plugins for build machines
@@ -149,10 +150,13 @@ public class LyraGameTarget : TargetRules
 					try
 					{
 						JsonObject RawObject;
-						if (!AllPluginRootJsonObjectsByName.TryGetValue(PluginFile.GetFileNameWithoutExtension(), out RawObject))
+						lock (AllPluginRootJsonObjectsByName)
 						{
-							RawObject = JsonObject.Read(PluginFile);
-							AllPluginRootJsonObjectsByName.Add(PluginFile.GetFileNameWithoutExtension(), RawObject);
+							if (!AllPluginRootJsonObjectsByName.TryGetValue(PluginFile.GetFileNameWithoutExtension(), out RawObject))
+							{
+								RawObject = JsonObject.Read(PluginFile);
+								AllPluginRootJsonObjectsByName.Add(PluginFile.GetFileNameWithoutExtension(), RawObject);
+							}
 						}
 
 						// Validate that all GameFeaturePlugins are disabled by default
