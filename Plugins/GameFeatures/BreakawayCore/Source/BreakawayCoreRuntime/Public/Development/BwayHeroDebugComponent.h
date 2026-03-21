@@ -79,3 +79,4 @@ private:
 	static TWeakObjectPtr<UBwayHeroDebugComponent> LocalPlayerInstance;
 };
 
+

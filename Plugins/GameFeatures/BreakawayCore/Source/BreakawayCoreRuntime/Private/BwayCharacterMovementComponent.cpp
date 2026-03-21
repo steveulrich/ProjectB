@@ -149,6 +149,16 @@ void UBwayCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteratio
 	}
 }
 
+float UBwayCharacterMovementComponent::GetSlideIntensity() const
+{
+	if (!IsSliding()) return 0.0f;
+
+	const float MaxSpeed = GetMaxSpeed();
+	if (MaxSpeed <= KINDA_SMALL_NUMBER) return 0.0f;
+
+	return FMath::Clamp(Velocity.Size() / MaxSpeed, 0.0f, 1.0f);
+}
+
 // --- Core Slide Physics Implementation ---
 void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterations)
 {
@@ -356,6 +366,21 @@ void UBwayCharacterMovementComponent::ProcessLanded(const FHitResult& Hit, float
 
 		LastSlideJumpTime = -1.0f; // Consume the timer
 	}
+}
+
+bool UBwayCharacterMovementComponent::DoJump(bool bReplicating)
+{
+	if (IsSliding())
+	{
+		// Set the jump time so we can apply the landing penalty or other logic
+		LastSlideJumpTime = GetWorld()->GetTimeSeconds();
+
+		// Apply horizontal momentum boost
+		Velocity.X *= SlideJumpMomentumBoost;
+		Velocity.Y *= SlideJumpMomentumBoost;
+	}
+
+	return Super::DoJump(bReplicating);
 }
 
 // --- Modifier Calculation ---

@@ -36,5 +36,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Data")
 	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsset;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 	virtual void OnDeathStarted(AActor* OwningActor) override;
+
+protected:
+	/** Current FOV offset being applied. Interpolates towards the target FOV based on slide speed. */
+	float CurrentSlideFOVOffset = 0.0f;
 };

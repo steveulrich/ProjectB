@@ -1,4 +1,46 @@
 ---
 alwaysApply: true
 ---
-✅ No simplifications, real C++ code matching Unreal and Lyra API — ready to paste. ✅ Provide the complete C++ code in separate .h and .cpp files, following Unreal Engine best practices for structure, including necessary includes, GENERATED_BODY(), and replication macros. ✅ Verify each API used matches actual behavior in UE5.5 and the Lyra Starter Project. ✅ Give me only functions that exist in public Unreal Engine 5.5, no pseudocode, no assumed APIs — I will verify signatures.  Ask questions to gain enough of an understanding of a task or problem as you feel is logically necessary to get the task completed in the way it is requested.  Understand that the user is not an expert, so their suggestions or requests can be fallible. Offer suggestions for improvements if the user suggests something that can be done a better way.  Use the code in E:\Unreal Projects\ProjectB\Plugins\GameFeatures and E:\Unreal Projects\ProjectB\Source and all their subdirectories to understand the current codebase.
+✅ No simplifications, real C++ code matching Unreal and Lyra API — ready to paste. 
+✅ Provide the complete C++ code in separate .h and .cpp files, following Unreal Engine best practices for structure, including necessary includes, GENERATED_BODY(), and replication macros. 
+✅ Verify each API used matches actual behavior in UE5.5 and the Lyra Starter Project. 
+✅ Give me only functions that exist in public Unreal Engine 5.5, no pseudocode, no assumed APIs — I will verify signatures.  Ask questions to gain enough of an understanding of a task or problem as you feel is logically necessary to get the task completed in the way it is requested.  Understand that the user is not an expert, so their suggestions or requests can be fallible. 
+✅ Offer suggestions for improvements if the user suggests something that can be done a better way. 
+✅ Use the code in E:\Unreal Projects\ProjectB\Plugins\GameFeatures and E:\Unreal Projects\ProjectB\Source and all their subdirectories to understand the current codebase.
+
+## Unreal Engine API Lookup (unreal-api MCP)
+
+Use the `unreal-api` MCP tools to verify UE C++ API usage instead of guessing. **Do not hallucinate signatures or #include paths.**
+
+| When | Tool | Example |
+|------|------|---------|
+| Unsure about a function's parameters or return type | `get_function_signature` | `get_function_signature("AActor::GetActorLocation")` |
+| Need the `#include` for a type | `get_include_path` | `get_include_path("ACharacter")` |
+| Want to see all members on a class | `get_class_reference` | `get_class_reference("UCharacterMovementComponent")` |
+| Searching for an API by keyword | `search_unreal_api` | `search_unreal_api("spawn actor")` |
+| Checking if an API is deprecated | `get_deprecation_warnings` | `get_deprecation_warnings("K2_AttachRootComponentTo")` |
+| Writing custom K2 nodes or editor tools | `get_class_reference` | `get_class_reference("UK2Node_SpawnActorFromClass")`, `get_class_reference("UEdGraphSchema_K2")` |
+
+**Rules:**
+- Before writing a UE API call you haven't used in this conversation, verify the signature with `get_function_signature`
+- Before adding a `#include`, verify with `get_include_path` if unsure
+- Covers: all Engine Runtime/Editor modules, built-in plugins (Enhanced Input, GAS, CommonUI, Niagara, etc.), Blueprint graph internals (UK2Node subclasses, EdGraphSchema, BlueprintGraph, KismetCompiler)
+- Does NOT cover: third-party plugins or marketplace assets
+
+## Lyra Class Inheritance Rules
+
+- Before creating a new class, check if there is a Lyra class that can be inherited from.
+- If there is a Lyra class that can be inherited from, inherit from it and override the necessary functions.
+
+## Blueprint Exposure Rules
+
+- **`FStreamableDelegate` cannot be a `UFUNCTION` parameter**. It is a C++ delegate type, not a `UPROPERTY`-compatible type. Remove `UFUNCTION(BlueprintCallable)` from any function that takes `FStreamableDelegate`. Expose async loading to Blueprint via `FLatentActionInfo` or `UAsyncActionBase` subclasses instead.
+
+## FVector / NetQuantize Rules
+
+- **Never use `FVector_NetQuantize` (or `FVector_NetQuantize10`, `FVector_NetQuantizeNormal`) directly in a ternary expression with `FVector`**. The compiler cannot resolve a common type. Always cast explicitly: `FVector(Parameters.Location)`. Prefer the two-step if/assign pattern over a ternary for clarity.
+
+## Include Completeness Rules
+
+- **Forward declarations are not enough when calling member functions.** If a `.cpp` calls any method on a pointer type (e.g., `PlayerState->GetPlayerName()`), the full `#include` for that type must be present in the `.cpp`, even if the type was forward-declared in a header it includes. When iterating over `TObjectPtr<T>` collections, always include the header for `T` in the `.cpp`.
+- **`TSubclassOf<T>` in a `UPROPERTY` requires the full type definition** (`#include`), not a forward declaration. Always include the header for `T` when using `TSubclassOf<T>` as a `UPROPERTY`.

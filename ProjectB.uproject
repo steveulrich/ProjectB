@@ -359,6 +359,6 @@
 			"SupportedTargetPlatforms": [
 				"Win64"
 			]
-		},
+		}
 	]
 }

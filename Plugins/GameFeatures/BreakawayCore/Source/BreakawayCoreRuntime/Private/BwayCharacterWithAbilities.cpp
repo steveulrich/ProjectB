@@ -2,6 +2,8 @@
 
 
 #include "BwayCharacterWithAbilities.h"
+#include "Camera/LyraCameraComponent.h"
+#include "Camera/CameraShakeBase.h"
 #include "BwayCharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -37,6 +39,40 @@ void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 			AController* VictimController = GetController();
 			AController* KillerController = nullptr; // Set if you track killer
 			GameMode->OnPlayerDied(VictimController, KillerController);
+		}
+	}
+}
+
+void ABwayCharacterWithAbilities::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
+	{
+		ULyraCameraComponent* CameraComp = ULyraCameraComponent::FindCameraComponent(this);
+		if (CameraComp)
+		{
+			// --- FOV Scaling ---
+			const float TargetFOVOffset = MoveComp->IsSliding() ? (MoveComp->GetSlideIntensity() * MoveComp->SlideFOVOffsetMax) : 0.0f;
+			CurrentSlideFOVOffset = FMath::FInterpTo(CurrentSlideFOVOffset, TargetFOVOffset, DeltaSeconds, MoveComp->SlideFOVInterpSpeed);
+
+			if (FMath::Abs(CurrentSlideFOVOffset) > KINDA_SMALL_NUMBER)
+			{
+				CameraComp->AddFieldOfViewOffset(CurrentSlideFOVOffset);
+			}
+
+			// --- Camera Shake ---
+			if (MoveComp->IsSliding() && MoveComp->SlideCameraShakeClass)
+			{
+				if (APlayerController* PC = Cast<APlayerController>(GetController()))
+				{
+					if (PC->PlayerCameraManager)
+					{
+						// Scale the shake intensity by the slide intensity
+						PC->PlayerCameraManager->StartCameraShake(MoveComp->SlideCameraShakeClass, MoveComp->GetSlideIntensity());
+					}
+				}
+			}
 		}
 	}
 }

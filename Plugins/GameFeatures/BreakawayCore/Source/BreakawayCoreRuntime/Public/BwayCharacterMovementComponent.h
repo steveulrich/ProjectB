@@ -100,6 +100,23 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="s"))
 	float SlideJumpLandingGracePeriod = 0.2f;
 
+	/** Multiplier applied to horizontal velocity when jumping out of a slide. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "1.0"))
+	float SlideJumpMomentumBoost = 1.2f;
+
+	// --- Slide Juice (Camera) ---
+	/** Maximum FOV offset to add when sliding at maximum speed. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice", meta = (ClampMin = "0.0", ForceUnits="degrees"))
+	float SlideFOVOffsetMax = 15.0f;
+
+	/** Speed at which the FOV offset interpolates towards the target value. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice", meta = (ClampMin = "0.0"))
+	float SlideFOVInterpSpeed = 5.0f;
+
+	/** Camera shake to play during sliding. Intensity should be modulated by slide speed. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice")
+	TSubclassOf<class UCameraShakeBase> SlideCameraShakeClass;
+
 	// --- Loot Modifiers (Optional) ---
 	/** Gameplay Tag checked on the ASC to determine if loot modifiers should apply. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Modifiers")
@@ -126,6 +143,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding")
 	bool IsSliding() const { return IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide); }
 
+	/** Returns a normalized value (0.0 to 1.0) representing the current slide intensity based on velocity. */
+	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding")
+	float GetSlideIntensity() const;
+
 	// Optional delegate if needed by GA
 	// UPROPERTY(BlueprintAssignable, Category = "Character Movement: Sliding")
 	// FSlideEndDelegate OnSlideEndDelegate;
@@ -135,8 +156,9 @@ protected:
 	virtual void InitializeComponent() override;
 	//~ End UObject Interface
 
-	/** Contains the core physics logic for the CMOVE_Sliding custom movement mode. */
+	//~ Begin UCharacterMovementComponent Interface
 	virtual void PhysSliding(float deltaTime, int32 Iterations);
+	virtual bool DoJump(bool bReplicating) override;
 
 	/** Applies friction based on the Lua-derived model (slope power curve, wall hits). */
 	virtual void ApplySlideFriction(float DeltaTime, float SlopeAngleDegrees);
