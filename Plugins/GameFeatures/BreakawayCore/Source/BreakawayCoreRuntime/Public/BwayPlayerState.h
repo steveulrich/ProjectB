@@ -16,6 +16,9 @@
  * - Hero selection and locking
  * - Team-specific data
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedHeroChanged, FPrimaryAssetId, NewHeroId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerNumAssigned, int32, PlayerNum);
+
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABwayPlayerState : public ALyraPlayerState
 {
@@ -89,6 +92,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnSelectedHeroChanged OnSelectedHeroChanged;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnPlayerNumAssigned OnPlayerNumAssigned;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "PlayerState")
+	void SetPlayerNum(int32 NewPlayerNum);
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerState")
+	int32 GetPlayerNum() const { return PlayerNum; }
+
 	// Replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -101,9 +113,16 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_HeroLocked)
 	bool bHeroLocked;
 
+	// Player number assigned to this player
+	UPROPERTY(ReplicatedUsing=OnRep_PlayerNum)
+	int32 PlayerNum = 0;
+
 	UFUNCTION()
 	void OnRep_SelectedHeroId();
 
 	UFUNCTION()
 	void OnRep_HeroLocked();
+
+	UFUNCTION()
+	void OnRep_PlayerNum();
 };

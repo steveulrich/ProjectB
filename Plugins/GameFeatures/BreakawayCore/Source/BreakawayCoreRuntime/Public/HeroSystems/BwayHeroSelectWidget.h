@@ -250,7 +250,7 @@ private:
 
 	// Delegate callbacks
 	UFUNCTION()
-	void HandlePlayerSelectionChanged(const FPrimaryAssetId& NewHeroId);
+	void HandlePlayerSelectionChanged(FPrimaryAssetId NewHeroId);
 
 	UFUNCTION()
 	void HandlePlayerHeroLocked(FPrimaryAssetId LockedHeroId);

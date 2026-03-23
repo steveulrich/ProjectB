@@ -348,7 +348,7 @@ void UBwayHeroSelectionManager::UnbindFromPlayerState(ABwayPlayerState* PlayerSt
 	PlayerState->OnSelectedHeroChanged.RemoveDynamic(this, &UBwayHeroSelectionManager::OnPlayerSelectedHero);
 }
 
-void UBwayHeroSelectionManager::OnPlayerSelectedHero(const FPrimaryAssetId& NewHeroId)
+void UBwayHeroSelectionManager::OnPlayerSelectedHero(FPrimaryAssetId NewHeroId)
 {
 	if (!GetOwner()->HasAuthority())
 	{

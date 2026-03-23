@@ -368,7 +368,7 @@ void UBwayCharacterMovementComponent::ProcessLanded(const FHitResult& Hit, float
 	}
 }
 
-bool UBwayCharacterMovementComponent::DoJump(bool bReplicating)
+bool UBwayCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
 	if (IsSliding())
 	{
@@ -380,7 +380,7 @@ bool UBwayCharacterMovementComponent::DoJump(bool bReplicating)
 		Velocity.Y *= SlideJumpMomentumBoost;
 	}
 
-	return Super::DoJump(bReplicating);
+	return Super::DoJump(bReplayingMoves, DeltaTime);
 }
 
 // --- Modifier Calculation ---

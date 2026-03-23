@@ -11,7 +11,9 @@ UBwayGameplayAbility_WarCry::UBwayGameplayAbility_WarCry(const FObjectInitialize
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered;
 
-	AbilityTags.AddTag(TAG_Ability_Spartacus_WarCry);
+	FGameplayTagContainer TempTags = GetAssetTags();
+	TempTags.AddTag(TAG_Ability_Spartacus_WarCry);
+	SetAssetTags(TempTags);
 }
 
 bool UBwayGameplayAbility_WarCry::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const

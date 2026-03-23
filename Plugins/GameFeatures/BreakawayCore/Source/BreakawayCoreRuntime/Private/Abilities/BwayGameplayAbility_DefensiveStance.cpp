@@ -13,7 +13,9 @@ UBwayGameplayAbility_DefensiveStance::UBwayGameplayAbility_DefensiveStance(const
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered;
 
-	AbilityTags.AddTag(TAG_Ability_Spartacus_DefensiveStance);
+	FGameplayTagContainer TempTags = GetAssetTags();
+	TempTags.AddTag(TAG_Ability_Spartacus_DefensiveStance);
+	SetAssetTags(TempTags);
 	DefensiveStanceStateTag = TAG_State_DefensiveStance;
 }
 

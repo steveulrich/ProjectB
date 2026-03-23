@@ -201,7 +201,7 @@ private:
 
 	// Callbacks for player state changes
 	UFUNCTION()
-	void OnPlayerSelectedHero(const FPrimaryAssetId& NewHeroId);
+	void OnPlayerSelectedHero(FPrimaryAssetId NewHeroId);
 
 	// Handle selection timeout
 	void OnSelectionTimeout();

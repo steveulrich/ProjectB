@@ -131,4 +131,19 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, bHasCalledForRelic);
 	DOREPLIFETIME(ABwayPlayerState, SelectedHeroId);
 	DOREPLIFETIME(ABwayPlayerState, bHeroLocked);
+	DOREPLIFETIME(ABwayPlayerState, PlayerNum);
+}
+
+void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
+{
+	if (HasAuthority())
+	{
+		PlayerNum = NewPlayerNum;
+		OnRep_PlayerNum();
+	}
+}
+
+void ABwayPlayerState::OnRep_PlayerNum()
+{
+	OnPlayerNumAssigned.Broadcast(PlayerNum);
 }

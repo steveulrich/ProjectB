@@ -497,7 +497,7 @@ void UBwayCheatManager::DebugAbilities()
 				FString InputTags = DynamicTags.IsEmpty() ? TEXT("None") : DynamicTags.ToStringSimple();
 				
 				// Get ability tags from the ability's AbilityTags property
-				const FGameplayTagContainer& AbilityTags = Spec.Ability->AbilityTags;
+				const FGameplayTagContainer& AbilityTags = Spec.Ability->GetAssetTags();
 				FString AbilityTagsStr = AbilityTags.IsEmpty() ? TEXT("None") : AbilityTags.ToStringSimple();
 				
 				CheatOutputText(FString::Printf(TEXT("%d. %s"), Index, *AbilityName));

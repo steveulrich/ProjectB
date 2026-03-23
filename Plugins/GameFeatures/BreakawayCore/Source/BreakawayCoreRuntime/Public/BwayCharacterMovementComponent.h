@@ -158,7 +158,7 @@ protected:
 
 	//~ Begin UCharacterMovementComponent Interface
 	virtual void PhysSliding(float deltaTime, int32 Iterations);
-	virtual bool DoJump(bool bReplicating) override;
+	virtual bool DoJump(bool bReplayingMoves, float DeltaTime) override;
 
 	/** Applies friction based on the Lua-derived model (slope power curve, wall hits). */
 	virtual void ApplySlideFriction(float DeltaTime, float SlopeAngleDegrees);

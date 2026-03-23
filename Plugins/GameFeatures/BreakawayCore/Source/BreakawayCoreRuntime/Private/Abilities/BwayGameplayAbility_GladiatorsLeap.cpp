@@ -17,7 +17,9 @@ UBwayGameplayAbility_GladiatorsLeap::UBwayGameplayAbility_GladiatorsLeap(const F
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered;
 
-	AbilityTags.AddTag(TAG_Ability_Spartacus_GladiatorsLeap);
+	FGameplayTagContainer TempTags = GetAssetTags();
+	TempTags.AddTag(TAG_Ability_Spartacus_GladiatorsLeap);
+	SetAssetTags(TempTags);
 	ActivationOwnedTags.AddTag(TAG_State_Leaping);
 	LeapingStateTag = TAG_State_Leaping;
 }

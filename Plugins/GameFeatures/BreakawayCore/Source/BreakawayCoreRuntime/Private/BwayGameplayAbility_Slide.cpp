@@ -19,7 +19,9 @@ UBwayGameplayAbility_Slide::UBwayGameplayAbility_Slide(const FObjectInitializer&
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted; // Standard for responsive actions [6, 10]
 	ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered; // Assumes input action triggers on press
 
-	AbilityTags.AddTag(TAG_Ability_Trigger_Slide); // Identify this ability
+	FGameplayTagContainer TempTags = GetAssetTags();
+	TempTags.AddTag(TAG_Ability_Trigger_Slide); // Identify this ability
+	SetAssetTags(TempTags);
 	ActivationOwnedTags.AddTag(TAG_State_Movement_Sliding); // Tag applied while active
 
 	// Default RequiredStateTag and SlidingStateTag should be set in the Blueprint subclass

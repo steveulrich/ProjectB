@@ -441,7 +441,7 @@ void UBwayHeroSelectWidget::UnbindFromSelectionManager()
 
 // ========== DELEGATE HANDLERS ==========
 
-void UBwayHeroSelectWidget::HandlePlayerSelectionChanged(const FPrimaryAssetId& NewHeroId)
+void UBwayHeroSelectWidget::HandlePlayerSelectionChanged(FPrimaryAssetId NewHeroId)
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Local player selection changed to %s"), *NewHeroId.ToString());
 

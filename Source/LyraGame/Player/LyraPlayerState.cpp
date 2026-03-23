@@ -137,8 +137,6 @@ void ALyraPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME_WITH_PARAMS_FAST(ThisClass, ReplicatedViewRotation, SharedParams);
 
 	DOREPLIFETIME(ThisClass, StatTags);
-	
-	DOREPLIFETIME(ThisClass, PlayerNum);
 }
 
 FRotator ALyraPlayerState::GetReplicatedViewRotation() const
@@ -298,18 +296,4 @@ void ALyraPlayerState::ClientBroadcastMessage_Implementation(const FLyraVerbMess
 	{
 		UGameplayMessageSubsystem::Get(this).BroadcastMessage(Message.Verb, Message);
 	}
-}
-
-void ALyraPlayerState::SetPlayerNum(int32 NewPlayerNum)
-{
-	if (HasAuthority())
-	{
-		PlayerNum = NewPlayerNum;
-		OnRep_PlayerNum();
-	}
-}
-
-void ALyraPlayerState::OnRep_PlayerNum()
-{
-    OnPlayerNumAssigned.Broadcast(PlayerNum);
 }

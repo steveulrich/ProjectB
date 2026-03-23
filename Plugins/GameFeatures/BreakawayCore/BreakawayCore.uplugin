@@ -26,9 +26,13 @@
 	"BuiltInInitialFeatureState": "Loaded",
 	"Plugins": [
 		{
-			"Name": "ShooterCore",
+			"Name": "GameFeatures",
 			"Enabled": true
 		},
+        {
+          "Name": "ShooterCore",
+          "Enabled": true
+        },
 		{
 			"Name": "ShooterExplorer",
 			"Enabled": true
