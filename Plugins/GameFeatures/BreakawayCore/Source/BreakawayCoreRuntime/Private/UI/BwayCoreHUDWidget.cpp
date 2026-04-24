@@ -3,6 +3,8 @@
 #include "UI/BwayCoreHUDWidget.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "GameState/BwayScoringComponent.h"
+#include "GameState/BwayRelicManagerComponent.h"
 #include "Character/LyraHealthComponent.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "Relic/RelicActor.h"
@@ -80,7 +82,10 @@ int32 UBwayCoreHUDWidget::GetTeam1Score() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		return GameState->GetTeamScore(0);
+		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			return Scoring->GetTeamScore(0);
+		}
 	}
 	return 0;
 }
@@ -89,7 +94,10 @@ int32 UBwayCoreHUDWidget::GetTeam2Score() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		return GameState->GetTeamScore(1);
+		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			return Scoring->GetTeamScore(1);
+		}
 	}
 	return 0;
 }
@@ -145,7 +153,10 @@ int32 UBwayCoreHUDWidget::GetRelicPossessingTeam() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		return GameState->GetRelicPossessingTeam();
+		if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
+		{
+			return RelicMgr->GetRelicPossessingTeam();
+		}
 	}
 	return -1;
 }
@@ -154,9 +165,12 @@ bool UBwayCoreHUDWidget::IsRelicCarried() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		if (ARelicActor* Relic = GameState->GetRelicActor())
+		if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
 		{
-			return Relic->GetCurrentState() == ERelicState::Carried;
+			if (ARelicActor* Relic = RelicMgr->GetRelicActor())
+			{
+				return Relic->GetCurrentState() == ERelicState::Carried;
+			}
 		}
 	}
 	return false;
@@ -173,8 +187,13 @@ void UBwayCoreHUDWidget::BindToGameState()
 		{
 			CachedGameState = GameState;
 
-			// Bind to game state delegates
-			GameState->OnScoreChanged.AddDynamic(this, &UBwayCoreHUDWidget::HandleScoreChanged);
+			// Bind to scoring component delegate
+			if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+			{
+				Scoring->OnTeamScoreChanged.AddDynamic(this, &UBwayCoreHUDWidget::HandleScoreChanged);
+			}
+
+			// Bind to game state round delegates
 			GameState->OnRoundTimeChanged.AddDynamic(this, &UBwayCoreHUDWidget::HandleRoundTimeChanged);
 			GameState->OnRoundStateChanged.AddDynamic(this, &UBwayCoreHUDWidget::HandleRoundStateChanged);
 		}
@@ -185,7 +204,11 @@ void UBwayCoreHUDWidget::UnbindFromGameState()
 {
 	if (CachedGameState.IsValid())
 	{
-		CachedGameState->OnScoreChanged.RemoveDynamic(this, &UBwayCoreHUDWidget::HandleScoreChanged);
+		if (UBwayScoringComponent* Scoring = CachedGameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			Scoring->OnTeamScoreChanged.RemoveDynamic(this, &UBwayCoreHUDWidget::HandleScoreChanged);
+		}
+
 		CachedGameState->OnRoundTimeChanged.RemoveDynamic(this, &UBwayCoreHUDWidget::HandleRoundTimeChanged);
 		CachedGameState->OnRoundStateChanged.RemoveDynamic(this, &UBwayCoreHUDWidget::HandleRoundStateChanged);
 	}
@@ -246,8 +269,19 @@ void UBwayCoreHUDWidget::HandleHealthChanged(ULyraHealthComponent* HealthComp, f
 	}
 }
 
-void UBwayCoreHUDWidget::HandleScoreChanged(int32 Team1Score, int32 Team2Score)
+void UBwayCoreHUDWidget::HandleScoreChanged(int32 TeamIndex, int32 NewScore)
 {
+	// Fetch both team scores from the ScoringComponent to maintain the OnScoreChanged(T1, T2) BP event
+	int32 Team1Score = 0;
+	int32 Team2Score = 0;
+	if (ABwayGameState* GameState = GetBwayGameState())
+	{
+		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			Team1Score = Scoring->GetTeamScore(0);
+			Team2Score = Scoring->GetTeamScore(1);
+		}
+	}
 	OnScoreChanged(Team1Score, Team2Score);
 }
 

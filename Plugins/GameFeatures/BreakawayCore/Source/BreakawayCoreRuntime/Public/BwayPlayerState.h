@@ -17,7 +17,9 @@
  * - Team-specific data
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedHeroChanged, FPrimaryAssetId, NewHeroId);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroLocked, FPrimaryAssetId, LockedHeroId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerNumAssigned, int32, PlayerNum);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMatchStatsChanged);
 
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABwayPlayerState : public ALyraPlayerState
@@ -92,6 +94,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnSelectedHeroChanged OnSelectedHeroChanged;
 
+	/** Fired (on client) when bHeroLocked becomes true. Passes the locked hero ID. */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHeroLocked OnHeroLocked;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnPlayerNumAssigned OnPlayerNumAssigned;
 
@@ -100,6 +106,48 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerState")
 	int32 GetPlayerNum() const { return PlayerNum; }
+
+	// ========== MATCH STATS ==========
+
+	/** Get kills this match */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetKills() const { return Kills; }
+
+	/** Get deaths this match */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetDeaths() const { return Deaths; }
+
+	/** Get assists this match */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetAssists() const { return Assists; }
+
+	/** Get objective score this match (goals scored, relics captured, etc.) */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetObjectiveScore() const { return ObjectiveScore; }
+
+	/** Server-only: Record a kill */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddKill();
+
+	/** Server-only: Record a death */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddDeath();
+
+	/** Server-only: Record an assist */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddAssist();
+
+	/** Server-only: Record an objective score */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddObjectiveScore(int32 Amount = 1);
+
+	/** Server-only: Reset all match stats (between matches) */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void ResetMatchStats();
+
+	/** Fired when any stat changes (K/D/A/Objective). Used by scoreboard/results UI. */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnMatchStatsChanged OnMatchStatsChanged;
 
 	// Replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -125,4 +173,21 @@ protected:
 
 	UFUNCTION()
 	void OnRep_PlayerNum();
+
+	// ========== Match Stats (Replicated) ==========
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 Kills = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 Deaths = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 Assists = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 ObjectiveScore = 0;
+
+	UFUNCTION()
+	void OnRep_MatchStats();
 };

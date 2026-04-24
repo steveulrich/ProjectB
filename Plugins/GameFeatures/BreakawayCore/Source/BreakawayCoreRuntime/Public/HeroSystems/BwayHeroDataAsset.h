@@ -54,9 +54,7 @@ enum class EHeroClass : uint8
     Fighter     UMETA(DisplayName = "Fighter"),
     Tank        UMETA(DisplayName = "Tank"),
     Support     UMETA(DisplayName = "Support"),
-    Assassin    UMETA(DisplayName = "Assassin"),
-    Mage        UMETA(DisplayName = "Mage"),
-    Ranger      UMETA(DisplayName = "Ranger")
+    Assassin    UMETA(DisplayName = "Assassin")
 };
 
 USTRUCT(BlueprintType)
@@ -111,6 +109,10 @@ public:
     /** Hero class type (Fighter, Tank, Support, etc.) */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
     EHeroClass HeroClass = EHeroClass::Fighter;
+
+    /** Hero class type (Fighter, Tank, Support, etc.) */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+    int32 HeroClassDisplayIndex = 0;
 
     /** Optional custom class name text (overrides enum if set) */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI", meta=(EditCondition="bUseCustomClassName"))

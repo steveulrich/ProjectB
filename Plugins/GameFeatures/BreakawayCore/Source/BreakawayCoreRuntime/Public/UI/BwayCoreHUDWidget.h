@@ -123,9 +123,9 @@ private:
 	UFUNCTION()
 	void HandleHealthChanged(ULyraHealthComponent* HealthComp, float OldValue, float NewValue, AActor* Instigator);
 
-	/** Handle score changed callback */
+	/** Handle score changed callback (from ScoringComponent) */
 	UFUNCTION()
-	void HandleScoreChanged(int32 Team1Score, int32 Team2Score);
+	void HandleScoreChanged(int32 TeamIndex, int32 NewScore);
 
 	/** Handle round time changed callback */
 	UFUNCTION()

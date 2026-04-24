@@ -3,6 +3,7 @@
 #include "GameState/BwayTeamBridgeComponent.h"
 #include "BwayGameState.h"
 #include "GameFramework/PlayerState.h"
+#include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayTeamBridgeComponent)
 
@@ -31,9 +32,11 @@ void UBwayTeamBridgeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UBwayTeamBridgeComponent::BindToTeamEvents()
 {
-	// TODO: When BwayGameState adds delegates for team changes,
-	// bind to them here. For now, SyncAllTeamsToLyra() can be called
-	// manually after AddPlayerToTeam/RemovePlayerFromTeam.
+	if (ABwayGameState* BwayGS = Cast<ABwayGameState>(GetOwner()))
+	{
+		BwayGS->OnTeamsUpdated.AddDynamic(this, &UBwayTeamBridgeComponent::SyncAllTeamsToLyra);
+	}
+	
 	UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Listening for team changes"));
 }
 
@@ -68,18 +71,12 @@ void UBwayTeamBridgeComponent::SyncPlayerTeamToLyra(APlayerState* PlayerState, i
 		return;
 	}
 
-	// TODO: Use ULyraTeamSubsystem to register the player with the corresponding Lyra team.
-	// This requires:
-	// 1. Getting the ULyraTeamSubsystem from the World
-	// 2. Finding or creating the LyraTeam for the TeamIndex
-	// 3. Calling the subsystem's team assignment API
-	//
-	// Example (depends on your Lyra version):
-	//   if (ULyraTeamSubsystem* TeamSS = GetWorld()->GetSubsystem<ULyraTeamSubsystem>())
-	//   {
-	//       TeamSS->ChangeTeamForActor(PlayerState, TeamIndex);
-	//   }
+	if (ULyraTeamSubsystem* TeamSS = GetWorld()->GetSubsystem<ULyraTeamSubsystem>())
+	{
+		// Offset by 1 since Breakaway uses indices 0/1 but Lyra expects TeamIDs 1/2
+		TeamSS->ChangeTeamForActor(PlayerState, TeamIndex + 1);
+	}
 	
 	UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Synced player %s to Lyra team %d"), 
-		*PlayerState->GetPlayerName(), TeamIndex);
+		*PlayerState->GetPlayerName(), TeamIndex + 1);
 }

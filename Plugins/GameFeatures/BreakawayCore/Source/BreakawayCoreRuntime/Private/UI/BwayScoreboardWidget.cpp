@@ -3,6 +3,7 @@
 #include "UI/BwayScoreboardWidget.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "GameState/BwayScoringComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "GameFramework/PlayerController.h"
@@ -62,7 +63,10 @@ int32 UBwayScoreboardWidget::GetTeam1Score() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		return GameState->GetTeamScore(0);
+		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			return Scoring->GetTeamScore(0);
+		}
 	}
 	return 0;
 }
@@ -71,7 +75,10 @@ int32 UBwayScoreboardWidget::GetTeam2Score() const
 {
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		return GameState->GetTeamScore(1);
+		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+		{
+			return Scoring->GetTeamScore(1);
+		}
 	}
 	return 0;
 }

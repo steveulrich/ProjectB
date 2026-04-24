@@ -3,19 +3,23 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Components/GameStateComponent.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "BwayHeroSelectionPhaseComponent.generated.h"
 
 class UBwayHeroSelectionManager;
 class ABwayPlayerState;
 class UBwayHeroDataAsset;
-class UUserWidget;  // Use base widget class instead
+class UUserWidget;
+class ULyraGamePhaseAbility;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEndedEvent);
-
 /**
- * Phase component that manages the hero selection phase
- * Handles UI display, waiting for players, and spawning heroes
+ * Phase component that manages the hero selection phase.
+ * Integrates with Lyra's GamePhaseSubsystem to drive phase transitions:
+ *   HeroSelection → (next phase, e.g. Warmup/Playing)
+ *
+ * Handles UI display, waiting for players, and spawning heroes.
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayHeroSelectionPhaseComponent : public UGameStateComponent
@@ -31,22 +35,22 @@ public:
 	//~End of UActorComponent interface
 
 	/**
-	 * Start the hero selection phase
-	 * Shows UI to all players and starts selection timer
+	 * Start the hero selection phase.
+	 * Shows UI to all players and starts selection timer.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection Phase")
 	void StartHeroSelectionPhase();
 
 	/**
-	 * End the hero selection phase
-	 * Validates selections and spawns heroes
+	 * End the hero selection phase.
+	 * Validates selections, assigns defaults, hides UI, and spawns heroes.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection Phase")
 	void EndHeroSelectionPhase();
 
 	/**
-	 * Skip hero selection and assign default heroes
-	 * Useful for testing or single-player
+	 * Skip hero selection and assign default heroes.
+	 * Useful for testing or single-player.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection Phase")
 	void SkipHeroSelection();
@@ -54,41 +58,44 @@ public:
 	// ========== CONFIGURATION ==========
 
 	/**
-	 * Widget class to show for hero selection
-	 * Should be a subclass of BwayHeroSelectWidget
+	 * Widget class to show for hero selection.
+	 * Should be a subclass of BwayHeroSelectWidget.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
 	TSoftClassPtr<UUserWidget> HeroSelectionWidgetClass;
 
 	/**
-	 * Default hero to assign if player doesn't select
+	 * Default hero to assign if player doesn't select.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
 	TSoftObjectPtr<UBwayHeroDataAsset> DefaultHeroData;
 
 	/**
-	 * Whether to show UI on listen server (false = dedicated server only shows for clients)
+	 * Whether to show UI on listen server (false = dedicated server only shows for clients).
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
 	bool bShowUIOnListenServer = true;
 
 	/**
-	 * Gameplay tag to add to game state during this phase
+	 * Gameplay tag identifying this phase (must match the phase ability's GamePhaseTag).
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
 	FGameplayTag PhaseTag;
 
+	/**
+	 * Phase ability class to start AFTER hero selection completes (e.g. Warmup or Playing phase).
+	 * If not set, the component will log an error but hero selection will still function.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
+	TSubclassOf<ULyraGamePhaseAbility> NextPhaseAbilityClass;
+
 	// ========== EVENTS ==========
 
-	/**
-	 * Called when hero selection phase starts
-	 */
+	/** Called when hero selection phase starts */
 	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Phase")
 	FOnHeroSelectionPhaseEvent OnHeroSelectionPhaseStarted;
 
-	/**
-	 * Called when hero selection phase ends
-	 */
+	/** Called when hero selection phase ends */
 	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Phase")
 	FOnHeroSelectionPhaseEndedEvent OnHeroSelectionPhaseEnded;
 
@@ -112,7 +119,7 @@ protected:
 	UFUNCTION()
 	void HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag);
 	
-	/** Tell Lyra phase system that hero selection is complete and ready to progress */
+	/** Start the next Lyra phase after hero selection is done */
 	void EndPhaseAndProgressToNext();
 
 private:

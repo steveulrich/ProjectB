@@ -3,6 +3,7 @@
 #include "GameState/BwayRelicManagerComponent.h"
 #include "BwayGameState.h"
 #include "Relic/RelicActor.h"
+#include "Relic/RelicSettings.h"
 #include "BwayCharacterWithAbilities.h"
 #include "SpawnSystem/BwaySpawnPoint.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
@@ -63,6 +64,25 @@ ARelicActor* UBwayRelicManagerComponent::SpawnRelic()
 			ActiveRelic = Cast<ARelicActor>(SpawnedRelics[0]);
 			if (ActiveRelic)
 			{
+				// Initialize relic with settings data asset
+				if (!RelicSettingsAsset.IsNull())
+				{
+					URelicSettings* Settings = RelicSettingsAsset.LoadSynchronous();
+					if (Settings)
+					{
+						ActiveRelic->InitializeRelicData(Settings);
+						UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Relic initialized with RelicSettings"));
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Failed to load RelicSettingsAsset"));
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No RelicSettingsAsset configured — relic spawned without settings!"));
+				}
+
 				UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Spawned relic via spawn point manager"));
 				return ActiveRelic;
 			}
@@ -126,4 +146,15 @@ void UBwayRelicManagerComponent::OnRep_RelicPossessingTeam()
 	{
 		UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Relic is now neutral"));
 	}
+}
+
+void UBwayRelicManagerComponent::SetActiveRelic(ARelicActor* NewRelic)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	ActiveRelic = NewRelic;
+	UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Active relic set to %s"), *GetNameSafe(ActiveRelic));
 }

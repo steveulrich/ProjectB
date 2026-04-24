@@ -7,8 +7,8 @@
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Make sure this is included
 #include "AbilitySystem/LyraAbilitySet.h"         // Make sure this is included
 #include "AbilitySystemGlobals.h"
-#include "BreakawayGameMode.h"
 #include "BwayGameState.h"
+#include "GameState/BwayRelicManagerComponent.h"
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Net/UnrealNetwork.h"
@@ -390,10 +390,13 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
         }
     }
     
-    // Notify game mode of carrier change
-    if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+    // Notify relic manager component of carrier change
+    if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
     {
-        GameMode->OnRelicCarrierChanged(NewCarrier);
+        if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
+        {
+            RelicMgr->OnRelicCarrierChanged(NewCarrier);
+        }
     }
     
     CurrentCarrier = NewCarrier; // Set replicated property
@@ -414,10 +417,13 @@ void ARelicActor::OnDropped()
         return;
     }
     
-    // Notify game mode carrier is gone (do this first while CurrentCarrier is still valid)
-    if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+    // Notify relic manager component carrier is gone (do this first while CurrentCarrier is still valid)
+    if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
     {
-        GameMode->OnRelicCarrierChanged(nullptr);
+        if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
+        {
+            RelicMgr->OnRelicCarrierChanged(nullptr);
+        }
     }
     
     // Detach from carrier (uses CurrentCarrier internally for ability cleanup)

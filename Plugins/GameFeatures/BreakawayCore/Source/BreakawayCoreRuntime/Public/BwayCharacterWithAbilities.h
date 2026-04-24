@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "Character/LyraCharacter.h"
+#include "AbilitySystem/LyraAbilitySet.h"
+#include "Net/UnrealNetwork.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
 UCLASS(config=Game)
@@ -40,7 +42,31 @@ public:
 
 	virtual void OnDeathStarted(AActor* OwningActor) override;
 
+	/** Set the last actor that dealt damage to this character. Called from health component callbacks. */
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SetLastDamageInstigator(AActor* InInstigator) { LastDamageInstigator = InInstigator; }
+
+	// Replication
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	/** Current FOV offset being applied. Interpolates towards the target FOV based on slide speed. */
 	float CurrentSlideFOVOffset = 0.0f;
+
+	/** The last actor that dealt damage to us — used for kill attribution */
+	UPROPERTY()
+	TWeakObjectPtr<AActor> LastDamageInstigator;
+
+	/** Handles for hero ability sets granted via InitializeHeroData (cleared on death to prevent double-grant) */
+	FLyraAbilitySet_GrantedHandles HeroAbilityGrantedHandles;
+
+	/** Replicated hero ID — clients use this to apply visuals */
+	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedHeroId)
+	FPrimaryAssetId ReplicatedHeroId;
+
+	UFUNCTION()
+	void OnRep_ReplicatedHeroId();
+
+	/** Apply visual-only hero data (mesh/anim). Called on both server and clients. */
+	void ApplyHeroVisuals(const UBwayHeroDataAsset* HeroData);
 };

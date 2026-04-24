@@ -1,13 +1,17 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BwayGameState.h"
-#include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayPlayerState.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/PlayerController.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
+#include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameState/BwayRoundManagementComponent.h"
 
 ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -24,11 +28,6 @@ void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABwayGameState, Teams);
-	DOREPLIFETIME(ABwayGameState, CurrentRoundState);
-	DOREPLIFETIME(ABwayGameState, RoundStartTime);
-	DOREPLIFETIME(ABwayGameState, CurrentRoundNumber);
-	DOREPLIFETIME(ABwayGameState, RelicActor);
-	DOREPLIFETIME(ABwayGameState, RelicPossessingTeam);
 }
 
 void ABwayGameState::PostInitializeComponents()
@@ -39,23 +38,18 @@ void ABwayGameState::PostInitializeComponents()
 	{
 		InitializeTeams();
 	}
+
+	// Listen for match end to transition to PostGame
+	if (UBwayRoundManagementComponent* RoundMgmt = FindComponentByClass<UBwayRoundManagementComponent>())
+	{
+		RoundMgmt->OnMatchEnded.AddDynamic(this, &ABwayGameState::HandleMatchEnded);
+	}
 }
 
 void ABwayGameState::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	// Broadcast round time updates every second
-	if (HasAuthority() && CurrentRoundState == ERoundState::RoundActive)
-	{
-		const float CurrentTime = GetWorld()->GetTimeSeconds();
-		if (CurrentTime - LastRoundTimeUpdateBroadcast >= RoundTimeUpdateInterval)
-		{
-			LastRoundTimeUpdateBroadcast = CurrentTime;
-			const int32 RemainingSeconds = GetRoundTimeRemaining();
-			OnRoundTimeChanged.Broadcast(RemainingSeconds);
-		}
-	}
+	// Round timing is now handled by UBwayRoundManagementComponent::TickComponent()
 }
 
 void ABwayGameState::InitializeTeams()
@@ -119,7 +113,15 @@ void ABwayGameState::AddPlayerToTeam(APlayerState* PlayerState, int32 TeamIndex)
 	Teams[TeamIndex].TeamMembers.AddUnique(PlayerState);
 	Teams[TeamIndex].AlivePlayerCount++;
 
+	if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+	{
+		// Offset by 1 since Breakaway uses indices 0/1 but Lyra expects TeamIDs 1/2
+		BwayPS->SetGenericTeamId(FGenericTeamId(TeamIndex + 1));
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("Added player %s to Team %d"), *PlayerState->GetPlayerName(), TeamIndex + 1);
+
+	OnTeamsUpdated.Broadcast();
 }
 
 void ABwayGameState::RemovePlayerFromTeam(APlayerState* PlayerState)
@@ -135,6 +137,13 @@ void ABwayGameState::RemovePlayerFromTeam(APlayerState* PlayerState)
 		{
 			Team.AlivePlayerCount = FMath::Max(0, Team.AlivePlayerCount - 1);
 			UE_LOG(LogTemp, Log, TEXT("Removed player %s from Team %d"), *PlayerState->GetPlayerName(), Team.TeamIndex + 1);
+			
+			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+			{
+				BwayPS->SetGenericTeamId(FGenericTeamId::NoTeam);
+			}
+
+			OnTeamsUpdated.Broadcast();
 		}
 	}
 }
@@ -187,151 +196,39 @@ int32 ABwayGameState::GetTeamIndexForActor(const AActor* Actor) const
 }
 
 // ========================================
-// Score Management
-// ========================================
-
-void ABwayGameState::AddScore(int32 TeamIndex, int32 Points)
-{
-	if (!HasAuthority() || !Teams.IsValidIndex(TeamIndex))
-	{
-		return;
-	}
-
-	Teams[TeamIndex].Score += Points;
-	
-	UE_LOG(LogTemp, Log, TEXT("Team %d scored! New score: %d"), TeamIndex + 1, Teams[TeamIndex].Score);
-	
-	// Broadcast score change
-	OnScoreChanged.Broadcast(Teams[0].Score, Teams[1].Score);
-}
-
-int32 ABwayGameState::GetTeamScore(int32 TeamIndex) const
-{
-	if (Teams.IsValidIndex(TeamIndex))
-	{
-		return Teams[TeamIndex].Score;
-	}
-	return 0;
-}
-
-void ABwayGameState::ResetScores()
-{
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	for (FTeamInfo& Team : Teams)
-	{
-		Team.Score = 0;
-	}
-
-	OnScoreChanged.Broadcast(0, 0);
-	UE_LOG(LogTemp, Log, TEXT("All scores reset"));
-}
-
-// ========================================
 // Round State Management
 // ========================================
 
-void ABwayGameState::SetRoundState(ERoundState NewState)
+UBwayRoundManagementComponent* ABwayGameState::GetRoundManagement() const
 {
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	if (CurrentRoundState != NewState)
-	{
-		const ERoundState OldState = CurrentRoundState;
-		CurrentRoundState = NewState;
-
-		// Handle state transitions
-		switch (NewState)
-		{
-		case ERoundState::RoundActive:
-			RoundStartTime = GetWorld()->GetTimeSeconds();
-			CurrentRoundNumber++;
-			UE_LOG(LogTemp, Log, TEXT("Round %d started"), CurrentRoundNumber);
-			break;
-
-		case ERoundState::RoundEnding:
-			UE_LOG(LogTemp, Log, TEXT("Round ending..."));
-			break;
-
-		case ERoundState::RoundComplete:
-			UE_LOG(LogTemp, Log, TEXT("Round complete"));
-			break;
-
-		default:
-			break;
-		}
-
-		// Broadcast state change
-		OnRep_RoundState();
-	}
+	return FindComponentByClass<UBwayRoundManagementComponent>();
 }
 
-void ABwayGameState::OnRep_RoundState()
+ERoundState ABwayGameState::GetCurrentRoundState() const
 {
-	// Broadcast to blueprints/UI
-	OnRoundStateChanged.Broadcast(FName( *StaticEnum<ERoundState>()->GetNameStringByValue((int64)CurrentRoundState)));
-	
-	UE_LOG(LogTemp, Log, TEXT("Round state changed to: %s"), 
-		*StaticEnum<ERoundState>()->GetNameStringByValue((int64)CurrentRoundState));
+	if (const UBwayRoundManagementComponent* RoundMgmt = GetRoundManagement())
+	{
+		return RoundMgmt->GetCurrentRoundState();
+	}
+	return ERoundState::WaitingToStart;
 }
 
 int32 ABwayGameState::GetRoundTimeRemaining() const
 {
-	if (CurrentRoundState != ERoundState::RoundActive)
+	if (const UBwayRoundManagementComponent* RoundMgmt = GetRoundManagement())
 	{
-		return 0;
+		return RoundMgmt->GetRoundTimeRemaining();
 	}
-
-	const float ElapsedTime = GetWorld()->GetTimeSeconds() - RoundStartTime;
-	const float RemainingTime = FMath::Max(0.0f, RoundDuration - ElapsedTime);
-	return FMath::CeilToInt(RemainingTime);
+	return 0;
 }
 
-// ========================================
-// Relic Tracking
-// ========================================
-
-void ABwayGameState::SetRelicActor(ARelicActor* NewRelic)
+int32 ABwayGameState::GetCurrentRoundNumber() const
 {
-	if (!HasAuthority())
+	if (const UBwayRoundManagementComponent* RoundMgmt = GetRoundManagement())
 	{
-		return;
+		return RoundMgmt->GetCurrentRoundNumber();
 	}
-
-	RelicActor = NewRelic;
-	UE_LOG(LogTemp, Log, TEXT("Relic actor set: %s"), *GetNameSafe(RelicActor));
-}
-
-void ABwayGameState::SetRelicPossessingTeam(int32 TeamIndex)
-{
-	if (!HasAuthority())
-	{
-		return;
-	}
-
-	if (RelicPossessingTeam != TeamIndex)
-	{
-		RelicPossessingTeam = TeamIndex;
-		OnRep_RelicPossessingTeam();
-	}
-}
-
-void ABwayGameState::OnRep_RelicPossessingTeam()
-{
-	if (RelicPossessingTeam >= 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Team %d now possesses the relic"), RelicPossessingTeam + 1);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Relic is now neutral"));
-	}
+	return 0;
 }
 
 // ========================================
@@ -384,4 +281,124 @@ void ABwayGameState::OnRep_TeamInfo()
 {
 	// Teams changed, notify UI or other systems if needed
 	UE_LOG(LogTemp, Verbose, TEXT("Team info replicated"));
+}
+
+// ========================================
+// Match Flow Control
+// ========================================
+
+void ABwayGameState::HandleMatchEnded(int32 WinningTeam, int32 TotalRounds)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BwayGameState: MATCH ENDED — Team %d wins! Transitioning to PostGame."), WinningTeam + 1);
+
+	// Broadcast match state change
+	OnMatchStateChanged.Broadcast(FName("MatchComplete"));
+
+	TransitionToPostGame(WinningTeam);
+}
+
+void ABwayGameState::TransitionToPostGame(int32 WinningTeam)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Transitioning to PostGame phase"));
+
+	// Start PostGame phase via Lyra
+	if (PostGamePhaseAbilityClass)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+			{
+				PhaseSubsystem->StartPhase(PostGamePhaseAbilityClass);
+				UE_LOG(LogTemp, Log, TEXT("BwayGameState: Started PostGame phase via %s"),
+					*PostGamePhaseAbilityClass->GetName());
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: PostGamePhaseAbilityClass is not set!"));
+	}
+
+	// Show results screen to all players
+	ShowResultsScreen(WinningTeam);
+}
+
+void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: ShowResultsScreen base impl (override in Blueprint)"));
+
+	if (ResultsScreenWidgetClass.IsNull())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: No ResultsScreenWidgetClass configured"));
+		return;
+	}
+
+	UClass* WidgetClass = ResultsScreenWidgetClass.LoadSynchronous();
+	if (!WidgetClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Failed to load ResultsScreenWidgetClass"));
+		return;
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			if (PC->IsLocalController())
+			{
+				UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
+				if (Widget)
+				{
+					Widget->AddToViewport(200);
+					PC->SetShowMouseCursor(true);
+					FInputModeUIOnly InputMode;
+					InputMode.SetWidgetToFocus(Widget->TakeWidget());
+					PC->SetInputMode(InputMode);
+					UE_LOG(LogTemp, Log, TEXT("BwayGameState: Created results screen for %s"), *PC->GetName());
+				}
+			}
+		}
+	}
+}
+
+void ABwayGameState::ReturnToFrontEnd()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Returning to front-end"));
+
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: ReturnToFrontEnd called on non-authority! Ignoring."));
+		return;
+	}
+
+	if (!FrontEndLevel.IsNull())
+	{
+		if (UWorld* World = GetWorld())
+		{
+			const FString TravelURL = FrontEndLevel.GetLongPackageName();
+			World->ServerTravel(TravelURL + TEXT("?listen"), true);
+			UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: FrontEndLevel is not set! Disconnecting all players."));
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (APlayerController* PC = It->Get())
+			{
+				PC->ConsoleCommand(TEXT("disconnect"));
+			}
+		}
+	}
 }

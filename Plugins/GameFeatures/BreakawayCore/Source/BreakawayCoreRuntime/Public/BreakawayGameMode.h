@@ -16,24 +16,20 @@ class UBwaySpawnPointManagerComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogBreakawayGame, Log, All);
 
 /**
- * Win condition types for Breakaway
- */
-UENUM(BlueprintType)
-enum class EWinCondition : uint8
-{
-	None			UMETA(DisplayName = "None"),
-	GoalScored		UMETA(DisplayName = "Goal Scored"),
-	TeamEliminated	UMETA(DisplayName = "Team Eliminated"),
-	TimeExpired		UMETA(DisplayName = "Time Expired - Possession")
-};
-
-/**
  * Game Mode for Breakaway
- * Handles server-authoritative game logic including:
- * - Round lifecycle management
- * - All three win conditions (Goal scoring, Team elimination, Timer possession)
- * - Team assignment and balancing
- * - Relic spawning and respawning via new spawn point system
+ * 
+ * Handles server-authoritative player lifecycle only:
+ * - Player login/logout and team assignment
+ * - Pawn spawning and hero data application
+ * - Team-based spawn point selection
+ * - Initial game object spawning (relic, goals)
+ * 
+ * All domain logic (rounds, scoring, relic tracking, win conditions, player death/respawn)
+ * is handled by GameState Components:
+ * - UBwayRoundManagementComponent
+ * - UBwayScoringComponent
+ * - UBwayRelicManagerComponent
+ * - UBwayTeamBridgeComponent
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABreakawayGameMode : public ALyraGameMode
@@ -49,7 +45,6 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
@@ -60,42 +55,6 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Players")
 	void ApplyHeroDataToNewPawn(AController* Controller);
-
-	// ========================================
-	// Round Management
-	// ========================================
-
-	/** Start a new round */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Round")
-	void StartRound();
-
-	/** End the current round with a specific win condition */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Round")
-	void EndRound(int32 WinningTeam, EWinCondition WinCondition);
-
-	/** Reset all players and relic for a new round */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Round")
-	void ResetRoundState();
-
-	// ========================================
-	// Scoring & Win Conditions
-	// ========================================
-
-	/** Called when the relic enters a goal trigger */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Scoring")
-	void OnRelicScored(int32 ScoringTeam);
-
-	/** Check if a team has been eliminated (all players dead) */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Scoring")
-	void CheckTeamElimination();
-
-	/** Handle when round timer expires - check relic possession */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Scoring")
-	void OnRoundTimerExpired();
-
-	/** Check if match is over (a team reached the winning score) */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Scoring")
-	bool CheckMatchEnd();
 
 	// ========================================
 	// Team Management
@@ -110,40 +69,8 @@ public:
 	int32 GetTeamWithFewerPlayers() const;
 
 	// ========================================
-	// Relic Management
-	// ========================================
-
-	/** Reset the relic to its spawn location */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic")
-	void ResetRelic();
-
-	/** Called when relic carrier changes */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic")
-	void OnRelicCarrierChanged(ABwayCharacterWithAbilities* NewCarrier);
-
-	// ========================================
-	// Player Management
-	// ========================================
-
-	/** Called when a player character dies */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Players")
-	void OnPlayerDied(AController* VictimController, AController* KillerController);
-
-	/** Respawn a player after death */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Players")
-	void RespawnPlayer(AController* Controller);
-
-	// ========================================
 	// Configuration
 	// ========================================
-
-	/** Class to use for the relic actor */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Breakaway|Config")
-	TSubclassOf<ARelicActor> RelicClass;
-
-	/** Tag to identify relic spawn points in the level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	FName RelicSpawnPointTag = FName("RelicSpawn");
 
 	/** Tag to identify Team 1 spawn points */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
@@ -153,18 +80,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	FName Team2SpawnPointTag = FName("Team2Spawn");
 
-	/** Delay before respawning a player after death */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	float RespawnDelay = 3.0f;
-
-	/** Delay before starting first round */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	float PreRoundDelay = 5.0f;
-
-	/** Whether to automatically start the first round */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	bool bAutoStartFirstRound = true;
-
 protected:
 
 	/** Get the Breakaway game state (casted for convenience) */
@@ -173,19 +88,6 @@ protected:
 
 	/** Find all player start actors with a specific tag */
 	TArray<AActor*> GetPlayerStartsWithTag(const FName& Tag) const;
-
-	/** Handle to track round timer */
-	FTimerHandle RoundTimerHandle;
-
-	/** Handle to track pre-round countdown */
-	FTimerHandle PreRoundTimerHandle;
-
-	/** Handles for respawn timers (one per player) */
-	TMap<AController*, FTimerHandle> RespawnTimers;
-
-	/** Current active relic in the match */
-	UPROPERTY()
-	TObjectPtr<ARelicActor> ActiveRelic;
 
 	/** Track if we've initialized the game properly */
 	bool bGameInitialized = false;
@@ -204,7 +106,4 @@ protected:
 
 	/** Spawn initial game objects (relic, goals) using spawn point system */
 	void SpawnInitialGameObjects();
-
-	/** Internal helper to determine which team has relic possession based on location */
-	int32 DetermineRelicPossessionTeam() const;
 };

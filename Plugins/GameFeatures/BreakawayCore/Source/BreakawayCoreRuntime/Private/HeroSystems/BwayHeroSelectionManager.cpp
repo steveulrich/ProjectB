@@ -308,18 +308,31 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 
 	for (FPlayerHeroSelectionState& Selection : PlayerSelections)
 	{
-		if (!Selection.bIsLocked && Selection.SelectedHeroId.IsValid())
+		if (!Selection.bIsLocked)
 		{
-			Selection.bIsLocked = true;
-
-			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
+			// Only lock if they have a valid selection
+			if (Selection.SelectedHeroId.IsValid())
 			{
-				BwayPS->ServerLockHeroSelection();
+				Selection.bIsLocked = true;
+
+				// Use authority-side lock (not the Server RPC)
+				if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
+				{
+					// Directly lock on authority side
+					BwayPS->ServerLockHeroSelection_Implementation();
+				}
+
+				OnPlayerHeroLocked.Broadcast(Selection.PlayerState, Selection.SelectedHeroId);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Player %s has no selection — will receive default hero"),
+					Selection.PlayerState ? *Selection.PlayerState->GetPlayerName() : TEXT("Unknown"));
 			}
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Force locked all players"));
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Force locked all players with valid selections"));
 
 	CheckAllPlayersReady();
 }
@@ -398,6 +411,8 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 		{
 			// Update from player state
 			FPrimaryAssetId OldHeroId = Selection.SelectedHeroId;
+			bool bOldLocked = Selection.bIsLocked;
+			
 			Selection.SelectedHeroId = BwayPS->GetSelectedHeroId();
 			Selection.bIsLocked = BwayPS->IsHeroLocked();
 
@@ -411,7 +426,7 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 			}
 
 			// Broadcast lock if newly locked
-			if (Selection.bIsLocked && OldHeroId != Selection.SelectedHeroId)
+			if (Selection.bIsLocked && !bOldLocked)
 			{
 				OnPlayerHeroLocked.Broadcast(PlayerState, Selection.SelectedHeroId);
 				

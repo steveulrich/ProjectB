@@ -103,8 +103,12 @@ void ABwayPlayerState::OnRep_HeroLocked()
 {
 	UE_LOG(LogTemp, Verbose, TEXT("BwayPlayerState: Hero lock status changed to %s for %s"), 
 		bHeroLocked ? TEXT("LOCKED") : TEXT("UNLOCKED"), *GetName());
-	
-	// Blueprint events can bind here to update UI (disable hero change buttons, etc.)
+
+	// Broadcast the locked delegate so the widget can react (e.g., play lock animation)
+	if (bHeroLocked && SelectedHeroId.IsValid())
+	{
+		OnHeroLocked.Broadcast(SelectedHeroId);
+	}
 }
 
 void ABwayPlayerState::UnlockHeroSelection()
@@ -132,6 +136,10 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, SelectedHeroId);
 	DOREPLIFETIME(ABwayPlayerState, bHeroLocked);
 	DOREPLIFETIME(ABwayPlayerState, PlayerNum);
+	DOREPLIFETIME(ABwayPlayerState, Kills);
+	DOREPLIFETIME(ABwayPlayerState, Deaths);
+	DOREPLIFETIME(ABwayPlayerState, Assists);
+	DOREPLIFETIME(ABwayPlayerState, ObjectiveScore);
 }
 
 void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
@@ -146,4 +154,64 @@ void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
 void ABwayPlayerState::OnRep_PlayerNum()
 {
 	OnPlayerNumAssigned.Broadcast(PlayerNum);
+}
+
+// ========== MATCH STATS ==========
+
+void ABwayPlayerState::AddKill()
+{
+	if (HasAuthority())
+	{
+		Kills++;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded kill (total: %d)"), *GetPlayerName(), Kills);
+	}
+}
+
+void ABwayPlayerState::AddDeath()
+{
+	if (HasAuthority())
+	{
+		Deaths++;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded death (total: %d)"), *GetPlayerName(), Deaths);
+	}
+}
+
+void ABwayPlayerState::AddAssist()
+{
+	if (HasAuthority())
+	{
+		Assists++;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded assist (total: %d)"), *GetPlayerName(), Assists);
+	}
+}
+
+void ABwayPlayerState::AddObjectiveScore(int32 Amount)
+{
+	if (HasAuthority())
+	{
+		ObjectiveScore += Amount;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded objective score +%d (total: %d)"), *GetPlayerName(), Amount, ObjectiveScore);
+	}
+}
+
+void ABwayPlayerState::ResetMatchStats()
+{
+	if (HasAuthority())
+	{
+		Kills = 0;
+		Deaths = 0;
+		Assists = 0;
+		ObjectiveScore = 0;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s match stats reset"), *GetPlayerName());
+	}
+}
+
+void ABwayPlayerState::OnRep_MatchStats()
+{
+	OnMatchStatsChanged.Broadcast();
 }

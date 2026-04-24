@@ -2,10 +2,15 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
-#include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "GameState/BwayFrontendStateSubsystem.h"
 #include "GameFramework/PlayerController.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
+#include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
+#include "GameState/BwayRoundManagementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Blueprint/UserWidget.h"
 
 UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -32,27 +37,21 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 	{
 		if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
 		{
-			// Get the phase tag (either from property or use default)
-			FGameplayTag HeroSelectionTag = PhaseTag;
-			if (!HeroSelectionTag.IsValid())
-			{
-				HeroSelectionTag = FGameplayTag::RequestGameplayTag(FName("GamePhase.HeroSelection"));
-			}
-
-			// Bind to phase start/active callback
 			PhaseSubsystem->WhenPhaseStartsOrIsActive(
-				HeroSelectionTag,
+				PhaseTag,
 				EPhaseTagMatchType::ExactMatch,
 				FLyraGamePhaseTagDelegate::CreateUObject(this, &UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated)
 			);
 			
-			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Listening for Lyra phase: %s"), *HeroSelectionTag.ToString());
+			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Listening for Lyra phase: %s"), *PhaseTag.ToString());
 		}
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: Could not find LyraGamePhaseSubsystem - phase integration disabled"));
 		}
 	}
+
+
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Initialized"));
 }
@@ -64,8 +63,14 @@ void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPla
 		EndHeroSelectionPhase();
 	}
 
+
+
 	Super::EndPlay(EndPlayReason);
 }
+
+// ============================================================
+// Hero Selection Phase
+// ============================================================
 
 void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 {
@@ -94,6 +99,14 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		return;
 	}
 
+	// IMPORTANT: Bind to the all-ready delegate FIRST, before any locking calls.
+	// This ensures we receive the broadcast even if all players are pre-selected from Frontend.
+	Manager->OnAllPlayersReady.AddDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
+
+	// Start selection phase FIRST — this resets all player selections and starts the timer.
+	// Must happen before registering players and applying pre-selections.
+	Manager->StartHeroSelection();
+
 	// Register all current players
 	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
 	{
@@ -103,17 +116,49 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		}
 	}
 
-	// Bind to all players ready event
-	Manager->OnAllPlayersReady.AddDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
+	// Now apply any pre-selections from the Frontend subsystem (after registration)
+	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
+	{
+		for (APlayerState* PS : GameState->PlayerArray)
+		{
+			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
+			{
+				if (APlayerController* PC = BwayPS->GetPlayerController())
+				{
+					if (PC->IsLocalController())
+					{
+						if (ULocalPlayer* LP = PC->GetLocalPlayer())
+						{
+							if (UBwayFrontendStateSubsystem* FrontendSubsystem = LP->GetSubsystem<UBwayFrontendStateSubsystem>())
+							{
+								FPrimaryAssetId PreSelected = FrontendSubsystem->GetSelectedHeroId();
+								if (PreSelected.IsValid())
+								{
+									UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Auto-selecting %s from Frontend Subsystem"), *PreSelected.ToString());
+									BwayPS->ServerSetSelectedHeroId(PreSelected);
+									BwayPS->ServerLockHeroSelection();
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
-	// Start selection phase
-	Manager->StartHeroSelection();
-
-	// Show UI to all players
+	// Show UI to players who haven't already locked
 	ShowHeroSelectionUI();
 
 	// Broadcast event
 	OnHeroSelectionPhaseStarted.Broadcast();
+
+	// Explicitly check if all players are already ready (e.g. all pre-selected from Frontend).
+	// The delegate may have already fired during the lock calls above, but if not, check now.
+	if (Manager->AreAllPlayersReady())
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: All players pre-selected from Frontend — ending phase immediately"));
+		HandleAllPlayersReady();
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection phase started"));
 }
@@ -178,13 +223,69 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 
 void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 {
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Should show UI (implement in Blueprint)"));
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: ShowHeroSelectionUI base impl (override in Blueprint)"));
+
+	// Base C++ implementation: if a widget class is configured, create it for each local player
+	if (HeroSelectionWidgetClass.IsNull())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No HeroSelectionWidgetClass configured"));
+		return;
+	}
+
+	UClass* WidgetClass = HeroSelectionWidgetClass.LoadSynchronous();
+	if (!WidgetClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: Failed to load HeroSelectionWidgetClass"));
+		return;
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			// Skip showing UI if this player already locked their selection (e.g. from Frontend)
+			if (ABwayPlayerState* PS = PC->GetPlayerState<ABwayPlayerState>())
+			{
+				if (PS->IsHeroLocked())
+				{
+					continue;
+				}
+			}
+
+			if (PC->IsLocalController() || bShowUIOnListenServer)
+			{
+				UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
+				if (Widget)
+				{
+					Widget->AddToViewport(100);
+					PC->SetShowMouseCursor(true);
+					FInputModeUIOnly InputMode;
+					InputMode.SetWidgetToFocus(Widget->TakeWidget());
+					PC->SetInputMode(InputMode);
+					UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Created hero select widget for %s"), *PC->GetName());
+				}
+			}
+		}
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::HideHeroSelectionUI_Implementation()
 {
-	// TODO: Remove widget from all players
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Should hide UI (implement in Blueprint)"));
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: HideHeroSelectionUI base impl (override in Blueprint)"));
+
+	// Base C++ implementation: remove hero selection widgets and restore game input
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			if (PC->IsLocalController() || bShowUIOnListenServer)
+			{
+				PC->SetShowMouseCursor(false);
+				FInputModeGameOnly InputMode;
+				PC->SetInputMode(InputMode);
+			}
+		}
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag)
@@ -202,32 +303,41 @@ void UBwayHeroSelectionPhaseComponent::EndPhaseAndProgressToNext()
 		return;
 	}
 
-	// The Lyra phase system will automatically progress to the next phase
-	// when the current phase's ability ends. The Experience defines the phase order.
-	// Our job here is done - we've completed hero selection.
-	
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection complete. Lyra phase system will progress to next phase."));
-	
-	// Note: If you need to manually trigger the next phase, you would do:
-	// if (UWorld* World = GetWorld())
-	// {
-	//     if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
-	//     {
-	//         PhaseSubsystem->StartPhase(NextPhaseAbilityClass);
-	//     }
-	// }
+	// In Lyra's phase system, starting a new sibling phase automatically ends the
+	// current one (phases are nested by tag — sibling phases cancel each other).
+	// So we start the next phase, which auto-cancels HeroSelection.
+	if (NextPhaseAbilityClass)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+			{
+				PhaseSubsystem->StartPhase(NextPhaseAbilityClass);
+				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Started next phase via %s"),
+					*NextPhaseAbilityClass->GetName());
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: NextPhaseAbilityClass is not set! Cannot progress beyond hero selection. Set it in BP_BW_GameState or in the component defaults."));
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: All players ready - ending phase"));
 
-	// End our phase logic
+	// End our phase logic (assigns defaults, hides UI, spawns heroes)
 	EndHeroSelectionPhase();
 	
-	// Signal to Lyra phase system that we're done
+	// Progress Lyra's phase to the next one (e.g. Warmup / Playing)
 	EndPhaseAndProgressToNext();
 }
+
+// ============================================================
+// Internal Helpers
+// ============================================================
 
 void UBwayHeroSelectionPhaseComponent::SpawnHeroesForAllPlayers()
 {
@@ -282,11 +392,10 @@ void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer_Implementation(ABwayPl
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Spawning hero %s for player %s (default implementation - override in Blueprint for custom behavior)"), 
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Spawning hero %s for player %s"), 
 		*HeroData->DisplayName.ToString(), *PlayerState->GetPlayerName());
 
-	// Default: Just trigger a respawn through game mode
-	// Blueprint can override to provide custom spawn logic
+	// Trigger a respawn through game mode (which calls ApplyHeroDataToNewPawn)
 	if (AGameModeBase* GameMode = GetWorld()->GetAuthGameMode())
 	{
 		GameMode->RestartPlayer(PC);
@@ -301,12 +410,31 @@ void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes()
 		return;
 	}
 
-	// Check if we have a default hero
+	// Check if we have a default hero configured
 	if (DefaultHeroData.IsNull())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No default hero configured"));
+		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No default hero configured — players without a selection will have no hero"));
 		return;
 	}
+
+	// Load the default hero data asset
+	UBwayHeroDataAsset* DefaultHero = DefaultHeroData.LoadSynchronous();
+	if (!DefaultHero)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: Failed to load DefaultHeroData"));
+		return;
+	}
+
+	// Get its PrimaryAssetId so we can assign via the standard path
+	FPrimaryAssetId DefaultHeroId = DefaultHero->GetPrimaryAssetId();
+	if (!DefaultHeroId.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: DefaultHeroData has invalid PrimaryAssetId"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Default hero is %s (%s)"),
+		*DefaultHero->DisplayName.ToString(), *DefaultHeroId.ToString());
 
 	// Assign default to anyone without a selection
 	for (APlayerState* PS : GameState->PlayerArray)
@@ -315,14 +443,11 @@ void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes()
 		{
 			if (!BwayPS->GetSelectedHeroId().IsValid())
 			{
-				// Load default hero
-				//FPrimaryAssetId DefaultHeroId = DefaultHeroData.ToSoftObjectPath().GetAssetPathName();
-				
-				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Assigning default hero to %s"), 
-					*BwayPS->GetPlayerName());
+				BwayPS->ServerSetSelectedHeroId(DefaultHeroId);
+				BwayPS->ServerLockHeroSelection();
 
-				// This would need the actual primary asset ID from the asset
-				// BwayPS->ServerSetSelectedHeroId(DefaultHeroId);
+				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Assigned default hero %s to %s"), 
+					*DefaultHero->DisplayName.ToString(), *BwayPS->GetPlayerName());
 			}
 		}
 	}

@@ -4,29 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameModes/LyraGameState.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "BwayGameState.generated.h"
 
 class ARelicActor;
 class ABwayCharacterWithAbilities;
 class UBwayHeroSelectionManager;
 class UBwayHeroSelectionPhaseComponent;
+class UBwayRoundManagementComponent;
+class UUserWidget;
+class ULyraGamePhaseAbility;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnScoreChanged, int32, Team1Score, int32, Team2Score);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMatchStateChanged, FName, NewMatchState);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundTimeChanged, int32, RemainingSeconds);
-
-/**
- * Enum for tracking the current state of a round
- */
-UENUM(BlueprintType)
-enum class ERoundState : uint8
-{
-	WaitingToStart		UMETA(DisplayName = "Waiting To Start"),
-	RoundActive			UMETA(DisplayName = "Round Active"),
-	RoundEnding			UMETA(DisplayName = "Round Ending"),
-	RoundComplete		UMETA(DisplayName = "Round Complete")
-};
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTeamsUpdated);
 
 /**
  * Struct to hold team information
@@ -38,9 +28,6 @@ struct FTeamInfo
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 TeamIndex = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 Score = 0;
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 AlivePlayerCount = 0;
@@ -101,60 +88,24 @@ public:
 	bool AreOnSameTeam(const AActor* ActorA, const AActor* ActorB) const;
 
 	// ========================================
-	// Score Management
+	// Round State (delegates to UBwayRoundManagementComponent)
 	// ========================================
 
-	/** Add a point to a team's score */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Score", meta = (BlueprintAuthorityOnly))
-	void AddScore(int32 TeamIndex, int32 Points = 1);
-
-	/** Get the current score for a team */
-	UFUNCTION(BlueprintPure, Category = "Breakaway|Score")
-	int32 GetTeamScore(int32 TeamIndex) const;
-
-	/** Reset all scores to zero */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Score", meta = (BlueprintAuthorityOnly))
-	void ResetScores();
-
-	// ========================================
-	// Round State Management
-	// ========================================
-
-	/** Get the current round state */
+	/** Get the RoundManagementComponent (convenience accessor) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
-	ERoundState GetCurrentRoundState() const { return CurrentRoundState; }
+	UBwayRoundManagementComponent* GetRoundManagement() const;
 
-	/** Set the round state (server only) */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Round", meta = (BlueprintAuthorityOnly))
-	void SetRoundState(ERoundState NewState);
+	/** Get the current round state (delegates to RoundManagementComponent) */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
+	ERoundState GetCurrentRoundState() const;
 
-	/** Get remaining time in the current round (in seconds) */
+	/** Get remaining time in the current round (delegates to RoundManagementComponent) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
 	int32 GetRoundTimeRemaining() const;
 
-	/** Get the current round number (1-indexed) */
+	/** Get the current round number (delegates to RoundManagementComponent) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
-	int32 GetCurrentRoundNumber() const { return CurrentRoundNumber; }
-
-	// ========================================
-	// Relic Tracking
-	// ========================================
-
-	/** Set the active relic actor (server only) */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic", meta = (BlueprintAuthorityOnly))
-	void SetRelicActor(ARelicActor* NewRelic);
-
-	/** Get the active relic actor */
-	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
-	ARelicActor* GetRelicActor() const { return RelicActor; }
-
-	/** Track which team currently has possession of the relic */
-	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic", meta = (BlueprintAuthorityOnly))
-	void SetRelicPossessingTeam(int32 TeamIndex);
-
-	/** Get which team currently possesses the relic (-1 if neutral) */
-	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
-	int32 GetRelicPossessingTeam() const { return RelicPossessingTeam; }
+	int32 GetCurrentRoundNumber() const;
 
 	// ========================================
 	// Player Tracking
@@ -173,32 +124,57 @@ public:
 	void OnPlayerRespawned(APlayerState* PlayerState);
 
 	// ========================================
-	// Configuration
+	// Match Flow Control
 	// ========================================
 
-	/** Points needed to win the match */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	int32 PointsToWin = 3;
+	/**
+	 * Transition to the PostGame phase after a match ends.
+	 * Shows the results screen widget to all players.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Match Flow")
+	void TransitionToPostGame(int32 WinningTeam);
 
-	/** Duration of each round in seconds */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	float RoundDuration = 180.0f; // 3 minutes
+	/** Show the post-game results screen to all players - implement in Blueprint */
+	UFUNCTION(BlueprintNativeEvent, Category = "Match Flow")
+	void ShowResultsScreen(int32 WinningTeam);
+	virtual void ShowResultsScreen_Implementation(int32 WinningTeam);
 
-	/** Time to wait before starting a new round after one ends */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	float RoundEndDelay = 5.0f;
+	/**
+	 * Return all players to the front-end / lobby map.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Match Flow")
+	void ReturnToFrontEnd();
+
+	/** Called when RoundManagement detects match end */
+	UFUNCTION()
+	void HandleMatchEnded(int32 WinningTeam, int32 TotalRounds);
 
 	/** Maximum number of players per team */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	int32 MaxPlayersPerTeam = 4;
 
+	/**
+	 * Phase ability class for the PostGame phase (end-of-match results screen).
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	TSubclassOf<ULyraGamePhaseAbility> PostGamePhaseAbilityClass;
+
+	/**
+	 * Widget class for the post-match results screen.
+	 * Must be a subclass of UBwayResultsScreenWidget.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	TSoftClassPtr<UUserWidget> ResultsScreenWidgetClass;
+
+	/**
+	 * Map to load when returning to lobby / front-end.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	TSoftObjectPtr<UWorld> FrontEndLevel;
+
 	// ========================================
 	// Events/Delegates
 	// ========================================
-
-	/** Broadcast when team scores change */
-	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
-	FOnScoreChanged OnScoreChanged;
 
 	/** Broadcast when round state changes */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
@@ -212,6 +188,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundTimeChanged OnRoundTimeChanged;
 
+	/** Broadcast when team members change (add/remove) */
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
+	FOnTeamsUpdated OnTeamsUpdated;
+
 protected:
 	// ========================================
 	// Replicated Properties
@@ -224,41 +204,9 @@ protected:
 	UFUNCTION()
 	void OnRep_TeamInfo();
 
-	/** Current round state */
-	UPROPERTY(ReplicatedUsing = OnRep_RoundState)
-	ERoundState CurrentRoundState = ERoundState::WaitingToStart;
-
-	UFUNCTION()
-	void OnRep_RoundState();
-
-	/** When the current round started (server time) */
-	UPROPERTY(Replicated)
-	float RoundStartTime = 0.0f;
-
-	/** Current round number */
-	UPROPERTY(Replicated)
-	int32 CurrentRoundNumber = 0;
-
-	/** Reference to the active relic in the match */
-	UPROPERTY(Replicated)
-	TObjectPtr<ARelicActor> RelicActor = nullptr;
-
-	/** Which team currently possesses the relic (-1 = neutral/dropped) */
-	UPROPERTY(ReplicatedUsing = OnRep_RelicPossessingTeam)
-	int32 RelicPossessingTeam = -1;
-
-	UFUNCTION()
-	void OnRep_RelicPossessingTeam();
-
 	// ========================================
 	// Internal State
 	// ========================================
-
-	/** Last time we broadcast the round time update */
-	float LastRoundTimeUpdateBroadcast = 0.0f;
-
-	/** Interval for broadcasting round time updates */
-	const float RoundTimeUpdateInterval = 1.0f;
 
 	/** Initialize teams on begin play */
 	void InitializeTeams();

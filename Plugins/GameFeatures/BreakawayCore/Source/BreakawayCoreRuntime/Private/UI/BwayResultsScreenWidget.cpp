@@ -3,6 +3,7 @@
 #include "UI/BwayResultsScreenWidget.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "GameState/BwayScoringComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "GameFramework/PlayerController.h"
@@ -36,9 +37,12 @@ FMatchResultsData UBwayResultsScreenWidget::GetMatchResults() const
 		return Results;
 	}
 
-	// Get scores
-	Results.Team1Score = GameState->GetTeamScore(0);
-	Results.Team2Score = GameState->GetTeamScore(1);
+	// Get scores from ScoringComponent
+	if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
+	{
+		Results.Team1Score = Scoring->GetTeamScore(0);
+		Results.Team2Score = Scoring->GetTeamScore(1);
+	}
 	Results.TotalRounds = GameState->GetCurrentRoundNumber();
 
 	// Determine winner
@@ -110,12 +114,9 @@ void UBwayResultsScreenWidget::ReturnToLobby()
 {
 	OnReturnToLobbyRequested();
 
-	if (!LobbyLevel.IsNull())
+	if (ABwayGameState* GameState = GetBwayGameState())
 	{
-		if (UWorld* World = GetWorld())
-		{
-			UGameplayStatics::OpenLevelBySoftObjectPtr(World, LobbyLevel);
-		}
+		GameState->ReturnToFrontEnd();
 	}
 	else
 	{

@@ -57,6 +57,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
 	int32 GetRelicPossessingTeam() const { return RelicPossessingTeam; }
 
+	/** Set the active relic actor (e.g., when spawned by GameMode) */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Relic")
+	void SetActiveRelic(ARelicActor* NewRelic);
+
 	// ========================================
 	// Configuration
 	// ========================================
@@ -68,6 +72,10 @@ public:
 	/** Gameplay tag for relic spawn points */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	FGameplayTag RelicSpawnTag;
+
+	/** Relic configuration data asset — provides physics, gameplay, visual, and audio settings */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Breakaway|Config")
+	TSoftObjectPtr<class URelicSettings> RelicSettingsAsset;
 
 	// ========================================
 	// Events

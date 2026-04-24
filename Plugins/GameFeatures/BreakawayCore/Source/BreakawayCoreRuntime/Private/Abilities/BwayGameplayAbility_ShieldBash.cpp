@@ -17,7 +17,9 @@ UBwayGameplayAbility_ShieldBash::UBwayGameplayAbility_ShieldBash(const FObjectIn
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	ActivationPolicy = ELyraAbilityActivationPolicy::OnInputTriggered;
 
+PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	AbilityTags.AddTag(TAG_Ability_Spartacus_ShieldBash);
+PRAGMA_ENABLE_DEPRECATION_WARNINGS
 	ActivationOwnedTags.AddTag(TAG_State_Dashing);
 	DashingStateTag = TAG_State_Dashing;
 }

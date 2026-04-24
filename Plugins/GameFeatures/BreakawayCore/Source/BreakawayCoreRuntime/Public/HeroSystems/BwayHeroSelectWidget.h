@@ -10,6 +10,7 @@
 class UBwayHeroRegistry;
 class UBwayHeroSelectionManager;
 class ABwayPlayerState;
+class UBwayFrontendStateSubsystem;
 
 // Delegate for when hero selection is confirmed (for dev tools)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroConfirmedDelegate);
@@ -35,6 +36,10 @@ struct FHeroDisplayInfo
 	/** The hero's class enum value */
 	UPROPERTY(BlueprintReadOnly)
 	EHeroClass HeroClass = EHeroClass::Fighter;
+
+	/** The hero class index (for display order within their respective class)*/
+	UPROPERTY(BlueprintReadOnly)
+	int HeroClassIndex = 0;
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<UTexture2D> Portrait;
@@ -234,6 +239,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<UBwayHeroSelectionManager> SelectionManager;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	TObjectPtr<UBwayFrontendStateSubsystem> FrontendSubsystem;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<UBwayHeroRegistry> HeroRegistry;

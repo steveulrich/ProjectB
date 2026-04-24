@@ -2,7 +2,8 @@
 
 #include "BwayGoalVolume.h"
 #include "Relic/RelicActor.h"
-#include "BreakawayGameMode.h"
+#include "BwayGameState.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -88,14 +89,6 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 		return;
 	}
 
-	// Get the game mode
-	ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>();
-	if (!GameMode)
-	{
-		UE_LOG(LogTemp, Error, TEXT("GoalVolume: Cannot score - GameMode is null"));
-		return;
-	}
-
 	// Determine scoring team based on relic state
 	int32 ScoringTeam = -1;
 
@@ -146,19 +139,26 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 
 	// Add small delay to allow state to settle (handles edge case of simultaneous pickup)
 	constexpr float ScoreDelayDuration = 0.1f;
-	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, Relic, ScoringTeam, GameMode]()
+	const int32 CapturedScoringTeam = ScoringTeam;
+	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, Relic, CapturedScoringTeam]()
 	{
 		// Double-check state after delay
 		if (Relic && !Relic->bHasScoredThisRound && Relic->GetCurrentState() != ERelicState::Resetting && Relic->GetCurrentState() != ERelicState::Scoring)
 		{
 			// Notify relic that it entered the goal (handles state and scoring flag)
-			Relic->OnEnteredGoal(ScoringTeam);
+			Relic->OnEnteredGoal(CapturedScoringTeam);
 
 			// Play effects
 			PlayScoringEffects();
 
-			// Notify game mode
-			GameMode->OnRelicScored(ScoringTeam);
+			// Notify round management component
+			if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
+			{
+				if (UBwayRoundManagementComponent* RoundMgmt = GS->FindComponentByClass<UBwayRoundManagementComponent>())
+				{
+					RoundMgmt->OnRelicScored(CapturedScoringTeam);
+				}
+			}
 		}
 	}, ScoreDelayDuration, false);
 

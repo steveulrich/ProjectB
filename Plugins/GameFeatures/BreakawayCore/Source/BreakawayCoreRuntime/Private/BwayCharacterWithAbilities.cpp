@@ -10,12 +10,16 @@
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "AbilitySystemGlobals.h"
-#include "BreakawayGameMode.h"
+#include "BwayGameState.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "BwayPlayerState.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
 #include "HeroSystems/BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "Animation/AnimBlueprint.h" // For UAnimBlueprint
+#include "Net/UnrealNetwork.h"
 
 
 ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
@@ -30,15 +34,54 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 
 }
 
+void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABwayCharacterWithAbilities, ReplicatedHeroId);
+}
+
 void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 {
 	if (HasAuthority())
 	{
-		if (ABreakawayGameMode* GameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+		if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
 		{
-			AController* VictimController = GetController();
-			AController* KillerController = nullptr; // Set if you track killer
-			GameMode->OnPlayerDied(VictimController, KillerController);
+			if (UBwayRoundManagementComponent* RoundMgmt = GS->FindComponentByClass<UBwayRoundManagementComponent>())
+			{
+				AController* VictimController = GetController();
+
+				// Determine killer from the last damage instigator
+				AController* KillerController = nullptr;
+				if (LastDamageInstigator.IsValid())
+				{
+					if (APawn* InstigatorPawn = Cast<APawn>(LastDamageInstigator.Get()))
+					{
+						KillerController = InstigatorPawn->GetController();
+					}
+				}
+
+				// Record stats on PlayerStates
+				if (VictimController)
+				{
+					if (ABwayPlayerState* VictimPS = VictimController->GetPlayerState<ABwayPlayerState>())
+					{
+						VictimPS->AddDeath();
+					}
+				}
+				if (KillerController && KillerController != VictimController)
+				{
+					if (ABwayPlayerState* KillerPS = KillerController->GetPlayerState<ABwayPlayerState>())
+					{
+						KillerPS->AddKill();
+					}
+				}
+
+				// TODO: Assist tracking - need damage contribution system
+				// For now, only direct killer gets credit
+
+				RoundMgmt->OnPlayerDied(VictimController, KillerController);
+			}
 		}
 	}
 }
@@ -149,89 +192,133 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
 
 	HeroDataAsset = HeroData;
 
-    // Visuals
-    USkeletalMeshComponent* MeshComp = GetMesh();
-    if (MeshComp)
-    {
-        UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Setting HeroMesh = %s"), *GetNameSafe(HeroData->HeroMesh));
-        MeshComp->SetSkeletalMesh(HeroData->HeroMesh);
-        
-        if (HeroData->AnimationBP)
-        {
-            UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Setting AnimInstanceClass = %s"), 
-                *GetNameSafe(HeroData->AnimationBP->GeneratedClass));
-            MeshComp->SetAnimInstanceClass(HeroData->AnimationBP->GeneratedClass);
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: HeroData->AnimationBP is null for %s"), *GetNameSafe(HeroData));
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: MeshComponent is NULL!"));
-    }
+	// Set the replicated hero ID so clients can apply visuals via OnRep
+	if (HasAuthority())
+	{
+		ReplicatedHeroId = HeroData->GetPrimaryAssetId();
+	}
 
-    // Get ASC
-    ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
-    if (!ASC)
-    {
-        UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: LyraAbilitySystemComponent is null for %s."), *GetName());
-        UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END (FAILED - No ASC)"));
-        return;
-    }
+	// Apply visuals on the server (clients will apply via OnRep_ReplicatedHeroId)
+	ApplyHeroVisuals(HeroData);
 
-    UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: ASC = %s"), *GetNameSafe(ASC));
+	// Abilities are server-only
+	if (HasAuthority())
+	{
+		ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
+		if (!ASC)
+		{
+			UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: LyraAbilitySystemComponent is null for %s."), *GetName());
+			UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END (FAILED - No ASC)"));
+			return;
+		}
 
-    // Ability Sets
-    if (!HeroData->AbilitySets.IsEmpty())
-    {
-        UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Processing %d AbilitySets"), HeroData->AbilitySets.Num());
-        
-        FLyraAbilitySet_GrantedHandles GrantedHandles;
-        for (int32 i = 0; i < HeroData->AbilitySets.Num(); ++i)
-        {
-            const ULyraAbilitySet* Set = HeroData->AbilitySets[i];
-            if (Set)
-            {
-                UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Granting AbilitySet[%d] = %s"), i, *GetNameSafe(Set));
-                
-                // Initialize ability actor info
-                ASC->InitAbilityActorInfo(this, this);
-                
-                // Grant the ability set
-                Set->GiveToAbilitySystem(ASC, &GrantedHandles);
-                
-                UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: AbilitySet[%d] granted successfully"), i);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: AbilitySet[%d] is NULL!"), i);
-            }
-        }
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: HeroData has NO AbilitySets configured!"));
-    }
+		UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: ASC = %s"), *GetNameSafe(ASC));
 
-    // Log summary
-    TArray<FGameplayAbilitySpec>& ActivatableAbilities = ASC->GetActivatableAbilities();
-    UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: SUMMARY - Total activatable abilities on ASC: %d"), ActivatableAbilities.Num());
-    
-    for (const FGameplayAbilitySpec& Spec : ActivatableAbilities)
-    {
-        if (Spec.Ability)
-        {
-            FGameplayTagContainer DynamicTags = Spec.GetDynamicSpecSourceTags();
-            FString TagsStr = DynamicTags.ToStringSimple();
-            UE_LOG(LogTemp, Log, TEXT("  - %s [InputTags: %s]"), 
-                *Spec.Ability->GetClass()->GetName(), 
-                TagsStr.IsEmpty() ? TEXT("None") : *TagsStr);
-        }
-    }
+		// Ability Sets
+		if (!HeroData->AbilitySets.IsEmpty())
+		{
+			UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Processing %d AbilitySets"), HeroData->AbilitySets.Num());
+			
+			// Clear any previously granted abilities (prevents double-grant on respawn)
+			HeroAbilityGrantedHandles.TakeFromAbilitySystem(ASC);
+			
+			for (int32 i = 0; i < HeroData->AbilitySets.Num(); ++i)
+			{
+				const ULyraAbilitySet* Set = HeroData->AbilitySets[i];
+				if (Set)
+				{
+					UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Granting AbilitySet[%d] = %s"), i, *GetNameSafe(Set));
+					
+					// Initialize ability actor info
+					ASC->InitAbilityActorInfo(this, this);
+					
+					// Grant the ability set (tracked for cleanup)
+					Set->GiveToAbilitySystem(ASC, &HeroAbilityGrantedHandles);
+					
+					UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: AbilitySet[%d] granted successfully"), i);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: AbilitySet[%d] is NULL!"), i);
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: HeroData has NO AbilitySets configured!"));
+		}
 
-    UE_LOG(LogTemp, Warning, TEXT("========================================"));
-    UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END for character %s"), *GetName());
-    UE_LOG(LogTemp, Warning, TEXT("========================================"));
+		// Log summary
+		TArray<FGameplayAbilitySpec>& ActivatableAbilities = ASC->GetActivatableAbilities();
+		UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: SUMMARY - Total activatable abilities on ASC: %d"), ActivatableAbilities.Num());
+		
+		for (const FGameplayAbilitySpec& Spec : ActivatableAbilities)
+		{
+			if (Spec.Ability)
+			{
+				FGameplayTagContainer DynamicTags = Spec.GetDynamicSpecSourceTags();
+				FString TagsStr = DynamicTags.ToStringSimple();
+				UE_LOG(LogTemp, Log, TEXT("  - %s [InputTags: %s]"), 
+					*Spec.Ability->GetClass()->GetName(), 
+					TagsStr.IsEmpty() ? TEXT("None") : *TagsStr);
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+	UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END for character %s"), *GetName());
+	UE_LOG(LogTemp, Warning, TEXT("========================================"));
+}
+
+void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* HeroData)
+{
+	if (!HeroData)
+	{
+		return;
+	}
+
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (MeshComp)
+	{
+		UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting HeroMesh = %s on %s"), *GetNameSafe(HeroData->HeroMesh), *GetName());
+		MeshComp->SetSkeletalMesh(HeroData->HeroMesh);
+		
+		if (HeroData->AnimationBP)
+		{
+			UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting AnimInstanceClass = %s"), 
+				*GetNameSafe(HeroData->AnimationBP->GeneratedClass));
+			MeshComp->SetAnimInstanceClass(HeroData->AnimationBP->GeneratedClass);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationBP is null for %s"), *GetNameSafe(HeroData));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ApplyHeroVisuals: MeshComponent is NULL on %s!"), *GetName());
+	}
+}
+
+void ABwayCharacterWithAbilities::OnRep_ReplicatedHeroId()
+{
+	if (!ReplicatedHeroId.IsValid())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("OnRep_ReplicatedHeroId: Applying hero visuals for %s on %s"), 
+		*ReplicatedHeroId.ToString(), *GetName());
+
+	// Load hero data from registry and apply visuals
+	UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(ReplicatedHeroId);
+	if (HeroData)
+	{
+		HeroDataAsset = HeroData;
+		ApplyHeroVisuals(HeroData);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnRep_ReplicatedHeroId: Could not load hero data for %s"), *ReplicatedHeroId.ToString());
+	}
 }
