@@ -7,6 +7,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "GameFramework/Actor.h"
+#include "Net/UnrealNetwork.h"
 #include "BwayActorWithAbilities.generated.h"
 
 class ULyraAbilitySystemComponent;
@@ -25,6 +26,9 @@ public:
 	ABwayActorWithAbilities(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	FORCEINLINE FGenericTeamId GetTeamId() const { return TeamId; }
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "BWay|Team")
+	void SetTeamId(FGenericTeamId NewTeamId);
 
 protected:
 	//~AActor implementation
@@ -47,9 +51,15 @@ protected:
 	 */
 	virtual void UninitializeAbilitySystem();
 	
+	UPROPERTY(ReplicatedUsing = OnRep_TeamId)
 	FGenericTeamId TeamId;
 
+	UFUNCTION()
+	void OnRep_TeamId();
+
 public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	//~IAbilitySystemComponent interface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	ULyraAbilitySystemComponent* GetLyraAbilitySystemComponentChecked() const;

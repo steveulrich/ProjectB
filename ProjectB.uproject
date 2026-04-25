@@ -21,6 +21,10 @@
 	],
 	"Plugins": [
 		{
+			"Name": "PythonScriptPlugin",
+			"Enabled": true
+		},
+		{
 			"Name": "ActorPalette",
 			"Enabled": true
 		},
@@ -341,6 +345,10 @@
 		},
 		{
 			"Name": "Reflex",
+			"Enabled": true
+		},
+		{
+			"Name": "UE_MCP_Bridge",
 			"Enabled": true
 		}
 	]

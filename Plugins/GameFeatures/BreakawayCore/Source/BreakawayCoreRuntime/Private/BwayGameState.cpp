@@ -2,11 +2,13 @@
 
 #include "BwayGameState.h"
 #include "BwayCharacterWithAbilities.h"
+#include "BwayPlayerController.h"
 #include "BwayPlayerState.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/PlayerController.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "GameState/BwayBotCreationComponent.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 #include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
 #include "Blueprint/UserWidget.h"
@@ -21,6 +23,7 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 
 	HeroSelectionManager = CreateDefaultSubobject<UBwayHeroSelectionManager>(TEXT("HeroSelectionManager"));
 	HeroSelectionPhaseComponent = CreateDefaultSubobject<UBwayHeroSelectionPhaseComponent>(TEXT("HeroSelectionPhaseComponent"));
+	CreateDefaultSubobject<UBwayBotCreationComponent>(TEXT("BotCreationComponent"));
 }
 
 void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -111,7 +114,7 @@ void ABwayGameState::AddPlayerToTeam(APlayerState* PlayerState, int32 TeamIndex)
 
 	// Add to new team
 	Teams[TeamIndex].TeamMembers.AddUnique(PlayerState);
-	Teams[TeamIndex].AlivePlayerCount++;
+	Teams[TeamIndex].AlivePlayerCount = Teams[TeamIndex].TeamMembers.Num();
 
 	if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
 	{
@@ -135,7 +138,7 @@ void ABwayGameState::RemovePlayerFromTeam(APlayerState* PlayerState)
 	{
 		if (Team.TeamMembers.Remove(PlayerState) > 0)
 		{
-			Team.AlivePlayerCount = FMath::Max(0, Team.AlivePlayerCount - 1);
+			Team.AlivePlayerCount = FMath::Min(Team.AlivePlayerCount, Team.TeamMembers.Num());
 			UE_LOG(LogTemp, Log, TEXT("Removed player %s from Team %d"), *PlayerState->GetPlayerName(), Team.TeamIndex + 1);
 			
 			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
@@ -242,7 +245,7 @@ void ABwayGameState::UpdateTeamAliveCount(int32 TeamIndex, int32 AliveCount)
 		return;
 	}
 
-	Teams[TeamIndex].AlivePlayerCount = AliveCount;
+	Teams[TeamIndex].AlivePlayerCount = FMath::Clamp(AliveCount, 0, Teams[TeamIndex].TeamMembers.Num());
 }
 
 void ABwayGameState::OnPlayerDied(APlayerState* PlayerState)
@@ -271,7 +274,7 @@ void ABwayGameState::OnPlayerRespawned(APlayerState* PlayerState)
 	const int32 TeamIndex = GetPlayerTeam(PlayerState);
 	if (Teams.IsValidIndex(TeamIndex))
 	{
-		Teams[TeamIndex].AlivePlayerCount++;
+		Teams[TeamIndex].AlivePlayerCount = FMath::Min(Teams[TeamIndex].AlivePlayerCount + 1, Teams[TeamIndex].TeamMembers.Num());
 		UE_LOG(LogTemp, Log, TEXT("Player %s respawned. Team %d alive count: %d"), 
 			*PlayerState->GetPlayerName(), TeamIndex + 1, Teams[TeamIndex].AlivePlayerCount);
 	}
@@ -279,8 +282,8 @@ void ABwayGameState::OnPlayerRespawned(APlayerState* PlayerState)
 
 void ABwayGameState::OnRep_TeamInfo()
 {
-	// Teams changed, notify UI or other systems if needed
 	UE_LOG(LogTemp, Verbose, TEXT("Team info replicated"));
+	OnTeamsUpdated.Broadcast();
 }
 
 // ========================================
@@ -343,30 +346,12 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 		return;
 	}
 
-	UClass* WidgetClass = ResultsScreenWidgetClass.LoadSynchronous();
-	if (!WidgetClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Failed to load ResultsScreenWidgetClass"));
-		return;
-	}
-
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if (APlayerController* PC = It->Get())
+		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
 		{
-			if (PC->IsLocalController())
-			{
-				UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
-				if (Widget)
-				{
-					Widget->AddToViewport(200);
-					PC->SetShowMouseCursor(true);
-					FInputModeUIOnly InputMode;
-					InputMode.SetWidgetToFocus(Widget->TakeWidget());
-					PC->SetInputMode(InputMode);
-					UE_LOG(LogTemp, Log, TEXT("BwayGameState: Created results screen for %s"), *PC->GetName());
-				}
-			}
+			BwayPC->Client_ShowResults(WinningTeam, ResultsScreenWidgetClass);
+			UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent results screen RPC to %s"), *BwayPC->GetName());
 		}
 	}
 }
@@ -381,24 +366,22 @@ void ABwayGameState::ReturnToFrontEnd()
 		return;
 	}
 
+	// Prefer the FrontEndLevel set on the BP defaults; fall back to the Lyra frontend map
+	// so the FE -> Match -> FE loop always works even if content hasn't wired an override yet.
+	FString TravelURL;
 	if (!FrontEndLevel.IsNull())
 	{
-		if (UWorld* World = GetWorld())
-		{
-			const FString TravelURL = FrontEndLevel.GetLongPackageName();
-			World->ServerTravel(TravelURL + TEXT("?listen"), true);
-			UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
-		}
+		TravelURL = FrontEndLevel.GetLongPackageName();
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: FrontEndLevel is not set! Disconnecting all players."));
-		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-		{
-			if (APlayerController* PC = It->Get())
-			{
-				PC->ConsoleCommand(TEXT("disconnect"));
-			}
-		}
+		TravelURL = TEXT("/Game/System/FrontEnd/Maps/L_LyraFrontEnd");
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: FrontEndLevel not set; falling back to Lyra frontend map %s"), *TravelURL);
+	}
+
+	if (UWorld* World = GetWorld())
+	{
+		World->ServerTravel(TravelURL + TEXT("?listen"), true);
+		UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
 	}
 }

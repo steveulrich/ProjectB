@@ -12,7 +12,6 @@
 
 class UGameplayEffect;
 class UInputAction;
-class ULyraCharacterMovementComponent_Slide;
 
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Slide : public ULyraGameplayAbility

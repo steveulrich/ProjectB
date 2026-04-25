@@ -1,6 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BwayPlayerState.h"
+#include "BwayGameState.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "Economy/BwayGoldAttributeSet.h"
+#include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Net/UnrealNetwork.h"
 
 ABwayPlayerState::ABwayPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -14,6 +18,18 @@ ABwayPlayerState::ABwayPlayerState(const FObjectInitializer& ObjectInitializer)
 void ABwayPlayerState::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
+
+	if (HasAuthority())
+	{
+		if (ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent())
+		{
+			if (!ASC->GetSet<UBwayGoldAttributeSet>())
+			{
+				UBwayGoldAttributeSet* GoldSet = NewObject<UBwayGoldAttributeSet>(ASC);
+				ASC->AddSpawnedAttribute(GoldSet);
+			}
+		}
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: PostInitializeComponents called for %s"), *GetName());
 }
@@ -67,6 +83,22 @@ void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId Ne
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Attempted to set invalid hero ID for %s"), *GetName());
 		return;
+	}
+
+	if (SelectedHeroId != NewHeroId)
+	{
+		if (ABwayGameState* BwayGS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+		{
+			const int32 TeamIndex = BwayGS->GetPlayerTeam(this);
+			if (UBwayHeroSelectionManager* SelectionManager = BwayGS->FindComponentByClass<UBwayHeroSelectionManager>())
+			{
+				if (TeamIndex >= 0 && !SelectionManager->IsHeroAvailableForTeam(NewHeroId, TeamIndex))
+				{
+					UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Rejecting duplicate hero %s for team %d"), *NewHeroId.ToString(), TeamIndex + 1);
+					return;
+				}
+			}
+		}
 	}
 
 	SelectedHeroId = NewHeroId;

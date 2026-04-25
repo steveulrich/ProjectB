@@ -175,7 +175,7 @@ void UBwayCheatManager::SelectHero(FString HeroName)
 	if (!HeroId.IsValid())
 	{
 		// Construct the asset ID manually if not set
-		HeroId = FPrimaryAssetId(FPrimaryAssetType("BwayHeroDataAsset"), HeroData->GetFName());
+		HeroId = FPrimaryAssetId(FPrimaryAssetType("HeroDataAsset"), HeroData->GetFName());
 	}
 
 	// Call the server RPC to set the hero

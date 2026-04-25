@@ -5,8 +5,6 @@
 #include "BwayPlayerState.h"
 #include "BwayPlayerController.h"
 #include "BwayCharacterWithAbilities.h"
-#include "Relic/RelicActor.h"
-#include "SpawnSystem/BwaySpawnPoint.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameFramework/PlayerStart.h"
@@ -121,18 +119,6 @@ AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player
 	// Determine which team the player is on
 	const int32 TeamIndex = BwayGS->GetPlayerTeam(Player->PlayerState);
 	
-	// Use spawn point manager if available
-	if (SpawnPointManager)
-	{
-		// Get spawn points for the player's team
-		TArray<ABwaySpawnPoint*> TeamSpawnPoints = SpawnPointManager->GetSpawnPointsByTeam(TeamIndex);
-		
-		if (TeamSpawnPoints.Num() > 0)
-		{
-			UE_LOG(LogBreakawayGame, Log, TEXT("Using spawn point manager for player spawn"));
-		}
-	}
-
 	// Fallback to tag-based player start search
 	FName SpawnTag = (TeamIndex == 0) ? Team1SpawnPointTag : Team2SpawnPointTag;
 	TArray<AActor*> TeamSpawns = GetPlayerStartsWithTag(SpawnTag);
@@ -282,7 +268,6 @@ int32 ABreakawayGameMode::GetTeamWithFewerPlayers() const
 void ABreakawayGameMode::InitializeSpawnPointTags()
 {
 	// Initialize gameplay tags for spawn points
-	RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"));
 	Goal1SpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Goal.Team1"));
 	Goal2SpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Goal.Team2"));
 	
@@ -303,22 +288,15 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 		return;
 	}
 
-	// Spawn relic — set it on the RelicManagerComponent
-	TArray<AActor*> SpawnedRelics = SpawnPointManager->SpawnObjectsAtPoints(RelicSpawnTag);
-	if (SpawnedRelics.Num() > 0)
+	// Relic ownership belongs to UBwayRelicManagerComponent. GameMode only kicks off
+	// initial world-object spawning.
+	if (UBwayRelicManagerComponent* RelicMgr = BwayGS->FindComponentByClass<UBwayRelicManagerComponent>())
 	{
-		if (ARelicActor* Relic = Cast<ARelicActor>(SpawnedRelics[0]))
-		{
-			if (UBwayRelicManagerComponent* RelicMgr = BwayGS->FindComponentByClass<UBwayRelicManagerComponent>())
-			{
-				RelicMgr->SetActiveRelic(Relic);
-			}
-			UE_LOG(LogBreakawayGame, Log, TEXT("Spawned relic at spawn point"));
-		}
+		RelicMgr->SpawnRelic();
 	}
 	else
 	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("No relic spawned - check spawn points and spawn data"));
+		UE_LOG(LogBreakawayGame, Warning, TEXT("No relic manager found - relic was not spawned"));
 	}
 
 	// Spawn goals

@@ -7,6 +7,8 @@
 #include "BwayCurrencyDisplayWidget.generated.h"
 
 class UTexture2D;
+class UAbilitySystemComponent;
+struct FOnAttributeChangeData;
 
 /**
  * UBwayCurrencyDisplayWidget
@@ -54,6 +56,11 @@ public:
 	bool GetCanAfford() const { return bPlayerCanAfford; }
 
 protected:
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+
+	void HandleCurrentGoldChanged(const FOnAttributeChangeData& ChangeData);
+
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 
 	/**
@@ -90,5 +97,10 @@ protected:
 	/** Whether player can afford this amount */
 	UPROPERTY(BlueprintReadOnly, Category = "Currency Display")
 	bool bPlayerCanAfford = true;
+
+	FDelegateHandle CurrentGoldChangedHandle;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAbilitySystemComponent> BoundAbilitySystemComponent;
 };
 

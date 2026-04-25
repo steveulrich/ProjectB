@@ -7,6 +7,8 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/PlayerController.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogBreakawayMovement, Log, All);
+
 // --- Constructor ---
 UBwayCharacterMovementComponent::UBwayCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -31,7 +33,7 @@ void UBwayCharacterMovementComponent::InitializeComponent()
 // --- Movement Mode Change Handling ---
 void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
-	UE_LOG(LogTemp, Warning, TEXT("MovementMode Changed: %s"), *UEnum::GetDisplayValueAsText(MovementMode).ToString());
+	UE_LOG(LogBreakawayMovement, Verbose, TEXT("MovementMode Changed: %s"), *UEnum::GetDisplayValueAsText(MovementMode).ToString());
 	// Check if entering the slide mode
 	if (IsSliding()) // Use helper function for clarity
 	{
@@ -101,13 +103,13 @@ bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 	// 1. Check Speed: End if speed drops below minimum threshold
 	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: TRUE Velocity too low!"));
+		UE_LOG(LogBreakawayMovement, Verbose, TEXT("CheckShouldEndSlide: TRUE Velocity too low"));
 		return true;
 	}
 
 	// 2. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
 	// No explicit check needed here as PhysSliding runs after this check.
-	UE_LOG(LogTemp, Warning, TEXT("CheckShouldEndSlide: FALSE - CONTINUE SLIDE"));
+	UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("CheckShouldEndSlide: FALSE - continue slide"));
 	return false; // Conditions met to continue sliding
 }
 
@@ -139,12 +141,12 @@ void UBwayCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteratio
 {
 	if (CustomMovementMode == (uint8)ECustomMovementMode::CMOVE_Slide)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Execute PhysSliding!"));
+		UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("Execute PhysSliding"));
 		PhysSliding(deltaTime, Iterations);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("In Different mode: %u"), CustomMovementMode);
+		UE_LOG(LogBreakawayMovement, Verbose, TEXT("In different custom mode: %u"), CustomMovementMode);
 		Super::PhysCustom(deltaTime, Iterations); // Handle other custom modes if any
 	}
 }
@@ -168,7 +170,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	if (!HasValidData() || deltaTime < MIN_TICK_TIME || Iterations >= MaxSimulationIterations)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not valid data or time < tickTime or iterations exceeded!"));
+		UE_LOG(LogBreakawayMovement, Verbose, TEXT("PhysSlide - invalid data, tiny timestep, or max iterations exceeded"));
 		return;
 	}
 
@@ -176,7 +178,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
 	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
 	{
-		UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Not on walkable floor!"));
+		UE_LOG(LogBreakawayMovement, Verbose, TEXT("PhysSlide - not on walkable floor"));
 		// Became airborne - Transition to Falling
 		SetMovementMode(MOVE_Falling);
 		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
@@ -184,7 +186,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	}
 
 	// --- Calculate Physics Inputs ---
-	UE_LOG(LogTemp, Warning, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
+	UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
 
 	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
 	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering

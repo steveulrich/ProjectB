@@ -70,6 +70,8 @@ public:
 	//~UActorComponent interface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	//~End of UActorComponent interface
 
 	// ========== HERO SELECTION TRACKING ==========
@@ -123,6 +125,10 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
 	int32 GetTotalPlayers() const { return PlayerSelections.Num(); }
+
+	/** Remaining hero-selection time in seconds. Replicated for UI. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	float GetSelectionTimeRemaining() const { return SelectionTimeRemaining; }
 
 	// ========== SELECTION PHASE CONTROL ==========
 
@@ -186,8 +192,14 @@ public:
 
 private:
 	// Track all player selections
-	UPROPERTY()
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerSelections)
 	TArray<FPlayerHeroSelectionState> PlayerSelections;
+
+	UFUNCTION()
+	void OnRep_PlayerSelections();
+
+	UPROPERTY(Replicated)
+	float SelectionTimeRemaining = 0.0f;
 
 	// Timer handle for selection timeout
 	FTimerHandle SelectionTimerHandle;

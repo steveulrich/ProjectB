@@ -26,12 +26,21 @@ ABuildableActor::ABuildableActor()
     RootComponent = MeshComponent;
 }
 
+void ABuildableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(ABuildableActor, bIsDestroyed);
+    DOREPLIFETIME(ABuildableActor, bIsActive);
+    DOREPLIFETIME(ABuildableActor, CurrentBuildProgress);
+}
+
 void ABuildableActor::InitializeAbilitySystem()
 {
     Super::InitializeAbilitySystem();
 
     HealthSet->InitMaxHealth(100.f);
-    HealthSet->InitHealth(1.f);
+    HealthSet->InitHealth(HealthSet->GetMaxHealth());
 }
 
 void ABuildableActor::BeginPlay()
@@ -43,6 +52,8 @@ void ABuildableActor::BeginPlay()
         if (BuildTime > 0.0f)
         {
             bIsActive = false;
+            CurrentBuildProgress = 0.0f;
+            SetCanBeDamaged(!bInvulnerableDuringBuild);
             GetWorldTimerManager().SetTimer(BuildTimerHandle, this, &ABuildableActor::FinishBuilding, BuildTime, false);
         }
         else
@@ -52,13 +63,30 @@ void ABuildableActor::BeginPlay()
     }
 }
 
+void ABuildableActor::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    if (HasAuthority() && !bIsActive && BuildTime > 0.0f && GetWorldTimerManager().IsTimerActive(BuildTimerHandle))
+    {
+        const float Remaining = GetWorldTimerManager().GetTimerRemaining(BuildTimerHandle);
+        CurrentBuildProgress = FMath::Clamp(1.0f - (Remaining / BuildTime), 0.0f, 1.0f);
+    }
+}
+
 void ABuildableActor::InitializeBuildable(AController* InOwningPlayerController, int32 InTeamId)
 {
     if (HasAuthority())
     {
+        SetOwner(InOwningPlayerController);
+        // Breakaway team indices are 0/1; Lyra team IDs are 1/2.
+        SetTeamId(FGenericTeamId(static_cast<uint8>(FMath::Max(0, InTeamId) + 1)));
+
         // If already placed and re-initialized (e.g. round start), re-evaluate build state
         if (BuildTime > 0.0f && !bIsActive && !GetWorldTimerManager().IsTimerActive(BuildTimerHandle))
         {
+             SetCanBeDamaged(!bInvulnerableDuringBuild);
+             CurrentBuildProgress = 0.0f;
              GetWorldTimerManager().SetTimer(BuildTimerHandle, this, &ABuildableActor::FinishBuilding, BuildTime, false);
         }
         else if (BuildTime <= 0.0f)
@@ -71,8 +99,15 @@ void ABuildableActor::InitializeBuildable(AController* InOwningPlayerController,
 void ABuildableActor::FinishBuilding()
 {
     bIsActive = true;
+    CurrentBuildProgress = 1.0f;
+    SetCanBeDamaged(true);
     // UE_LOG(LogTemp, Log, TEXT("Buildable %s finished building and is now active."), *GetName());
     // Additional logic for when building completes (e.g., play a sound, enable functionality)
+}
+
+void ABuildableActor::OnRep_BuildState()
+{
+    SetCanBeDamaged(bIsActive || !bInvulnerableDuringBuild);
 }
 
 // --- ATurretBase ---
@@ -110,11 +145,22 @@ void ATurretBase::BeginPlay()
     if (AIPerceptionComponent)
     {
         AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &ATurretBase::OnTargetPerceptionUpdated);
-        if ( bIsActive ) // bIsActive would be set when building completes
+        if (bIsActive)
         {
             AIPerceptionComponent->Activate();
+            AcquireNewTarget();
         }
-        AcquireNewTarget(); // Initial target scan
+    }
+}
+
+void ATurretBase::FinishBuilding()
+{
+    Super::FinishBuilding();
+
+    if (AIPerceptionComponent)
+    {
+        AIPerceptionComponent->Activate();
+        AcquireNewTarget();
     }
 }
 
@@ -214,21 +260,19 @@ bool ATurretBase::IsHostile(AActor* ActorToTest) const
         return false;
     }
 
-    // Hostility check using Lyra's team system if available, otherwise fallback to TeamID comparison.
-    // Try to use Lyra's team system via IGenericTeamAgentInterface
     const IGenericTeamAgentInterface* TargetTeamAgent = Cast<IGenericTeamAgentInterface>(ActorToTest);
-    const IGenericTeamAgentInterface* OwnerTeamAgent = nullptr;
-
-    if (TargetTeamAgent && OwnerTeamAgent)
+    if (TargetTeamAgent)
     {
-        return OwnerTeamAgent->GetTeamAttitudeTowards(*ActorToTest) == ETeamAttitude::Hostile;
+        return FGenericTeamId::GetAttitude(TeamId, TargetTeamAgent->GetGenericTeamId()) == ETeamAttitude::Hostile;
     }
 
-    // Fallback: Use TeamID if available
-    const ALyraPlayerState* TargetPS = Cast<ALyraPlayerState>(Cast<APawn>(ActorToTest)->GetPlayerState());
-    if (TargetPS)
+    if (const APawn* TargetPawn = Cast<APawn>(ActorToTest))
     {
-        return FGenericTeamId::GetAttitude( TeamId , TargetPS->GetTeamId()) == ETeamAttitude::Hostile;
+        const ALyraPlayerState* TargetPS = TargetPawn->GetPlayerState<ALyraPlayerState>();
+        if (TargetPS)
+        {
+            return FGenericTeamId::GetAttitude(TeamId, TargetPS->GetTeamId()) == ETeamAttitude::Hostile;
+        }
     }
 
     // Fallback: If ActorToTest is a buildable, compare TeamIDs
@@ -237,21 +281,6 @@ bool ATurretBase::IsHostile(AActor* ActorToTest) const
     {
         return OtherBuildable->GetTeamId() != this->GetTeamId() && OtherBuildable->GetTeamId() != 0;
     }
-
-    // Simpler custom check if not using Lyra's team system fully:
-    // Assuming Your Characters/Pawns have a GetTeamId() method or PlayerStates do.
-    // ABuildableActor* OtherBuildable = Cast<ABuildableActor>(ActorToTest);
-    // if (OtherBuildable)
-    // {
-    //     return OtherBuildable->GetTeamId() != this->GetTeamId() && OtherBuildable->GetTeamId() != 0; // Team 0 might be neutral
-    // }
-    //
-    // AYourGameCharacter* OtherCharacter = Cast<AYourGameCharacter>(ActorToTest);
-    // if (OtherCharacter && OtherCharacter->GetPlayerState())
-    // {
-    //      AYourGamePlayerState* TargetPS = Cast<AYourGamePlayerState>(OtherCharacter->GetPlayerState());
-    //      if(TargetPS) return TargetPS->GetTeamId() != this->GetTeamId() && TargetPS->GetTeamId() != 0;
-    // }
 
     return false; // Default to not hostile if unsure
 }
@@ -381,7 +410,7 @@ void ATrapBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor*
 
     if (bDestroyOnTrigger && HasAuthority())
     {
-        OnDestroyed.Broadcast(this); // Destroy the trap after it triggers
+        Destroy();
     }
 }
 

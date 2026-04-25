@@ -2,9 +2,9 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
+#include "BwayPlayerController.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
-#include "GameState/BwayFrontendStateSubsystem.h"
 #include "GameFramework/PlayerController.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 #include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
@@ -123,24 +123,9 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		{
 			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
 			{
-				if (APlayerController* PC = BwayPS->GetPlayerController())
+				if (ABwayPlayerController* PC = Cast<ABwayPlayerController>(BwayPS->GetPlayerController()))
 				{
-					if (PC->IsLocalController())
-					{
-						if (ULocalPlayer* LP = PC->GetLocalPlayer())
-						{
-							if (UBwayFrontendStateSubsystem* FrontendSubsystem = LP->GetSubsystem<UBwayFrontendStateSubsystem>())
-							{
-								FPrimaryAssetId PreSelected = FrontendSubsystem->GetSelectedHeroId();
-								if (PreSelected.IsValid())
-								{
-									UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Auto-selecting %s from Frontend Subsystem"), *PreSelected.ToString());
-									BwayPS->ServerSetSelectedHeroId(PreSelected);
-									BwayPS->ServerLockHeroSelection();
-								}
-							}
-						}
-					}
+					PC->Client_RequestPreSelectedHero();
 				}
 			}
 		}
@@ -225,23 +210,16 @@ void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: ShowHeroSelectionUI base impl (override in Blueprint)"));
 
-	// Base C++ implementation: if a widget class is configured, create it for each local player
+	// Base C++ implementation: ask each owning client to create its local widget.
 	if (HeroSelectionWidgetClass.IsNull())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No HeroSelectionWidgetClass configured"));
 		return;
 	}
 
-	UClass* WidgetClass = HeroSelectionWidgetClass.LoadSynchronous();
-	if (!WidgetClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: Failed to load HeroSelectionWidgetClass"));
-		return;
-	}
-
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if (APlayerController* PC = It->Get())
+		if (ABwayPlayerController* PC = Cast<ABwayPlayerController>(It->Get()))
 		{
 			// Skip showing UI if this player already locked their selection (e.g. from Frontend)
 			if (ABwayPlayerState* PS = PC->GetPlayerState<ABwayPlayerState>())
@@ -252,19 +230,8 @@ void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 				}
 			}
 
-			if (PC->IsLocalController() || bShowUIOnListenServer)
-			{
-				UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
-				if (Widget)
-				{
-					Widget->AddToViewport(100);
-					PC->SetShowMouseCursor(true);
-					FInputModeUIOnly InputMode;
-					InputMode.SetWidgetToFocus(Widget->TakeWidget());
-					PC->SetInputMode(InputMode);
-					UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Created hero select widget for %s"), *PC->GetName());
-				}
-			}
+			PC->Client_ShowHeroSelection(HeroSelectionWidgetClass);
+			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Sent hero select widget RPC to %s"), *PC->GetName());
 		}
 	}
 }
@@ -276,14 +243,9 @@ void UBwayHeroSelectionPhaseComponent::HideHeroSelectionUI_Implementation()
 	// Base C++ implementation: remove hero selection widgets and restore game input
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if (APlayerController* PC = It->Get())
+		if (ABwayPlayerController* PC = Cast<ABwayPlayerController>(It->Get()))
 		{
-			if (PC->IsLocalController() || bShowUIOnListenServer)
-			{
-				PC->SetShowMouseCursor(false);
-				FInputModeGameOnly InputMode;
-				PC->SetInputMode(InputMode);
-			}
+			PC->Client_HideHeroSelection();
 		}
 	}
 }

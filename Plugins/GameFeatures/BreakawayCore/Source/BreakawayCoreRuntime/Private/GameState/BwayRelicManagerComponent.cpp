@@ -100,6 +100,7 @@ void UBwayRelicManagerComponent::ResetRelic()
 		return;
 	}
 
+	ActiveRelic->BeginResettingState();
 	ActiveRelic->ClearScoringFlag();
 
 	if (CachedSpawnPointManager)

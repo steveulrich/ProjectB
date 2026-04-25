@@ -9,6 +9,8 @@
 #include "Net/UnrealNetwork.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
+class UCameraShakeBase;
+
 UCLASS(config=Game)
 class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharacter
 {
@@ -50,6 +52,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UCameraShakeBase> ActiveSlideCameraShake;
+
 	/** Current FOV offset being applied. Interpolates towards the target FOV based on slide speed. */
 	float CurrentSlideFOVOffset = 0.0f;
 

@@ -1,8 +1,3 @@
-// Copyright 2022 xist.gg
-//
-// THIS CODE WILL NOT COMPILE
-// See README for more info: https://github.com/x157/Lyra-ActorWithAbilities
-
 #pragma once
 
 #include "CoreMinimal.h"

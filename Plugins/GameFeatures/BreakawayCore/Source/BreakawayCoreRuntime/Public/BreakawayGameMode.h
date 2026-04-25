@@ -96,8 +96,7 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UBwaySpawnPointManagerComponent> SpawnPointManager;
 
-	/** Gameplay tags for spawn points */
-	FGameplayTag RelicSpawnTag;
+	/** Gameplay tags for goal spawn points */
 	FGameplayTag Goal1SpawnTag;
 	FGameplayTag Goal2SpawnTag;
 

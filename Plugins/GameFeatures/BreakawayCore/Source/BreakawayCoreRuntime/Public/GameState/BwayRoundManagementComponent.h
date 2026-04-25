@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
+#include "GameplayEffectTypes.h"
+#include "GameplayTagContainer.h"
 #include "Net/UnrealNetwork.h"
 #include "BwayRoundManagementComponent.generated.h"
 
@@ -11,6 +13,7 @@ class ABwayGameState;
 class UBwaySpawnPointManagerComponent;
 class AController;
 class APlayerState;
+class UAbilitySystemComponent;
 
 // Forward declare the round state enum so GameState.h can reference it
 // (GameState.h includes this header)
@@ -145,15 +148,29 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	float RespawnDelay = 3.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
+	float GoldAwardForKill = 50.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
+	float GoldAwardForGoalScored = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
+	float PassiveGoldPerSecond = 1.0f;
+
 	/** Delay before starting first round */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	float PreRoundDelay = 5.0f;
 
 	/** Whether to automatically start the first round.
 	 * Set to false when using Lyra Phase-driven flow (hero selection → warmup → playing).
-	 * When false, call StartRound() manually or bind to OnHeroSelectionPhaseEnded. */
+	 * When false, the component listens for PlayingPhaseTag via ULyraGamePhaseSubsystem. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	bool bAutoStartFirstRound = false;
+
+	/** Gameplay tag that represents the Playing phase (round active).
+	 * When this phase begins, the component automatically calls StartRound(). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
+	FGameplayTag PlayingPhaseTag;
 
 	// ========================================
 	// Events
@@ -169,13 +186,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnMatchEnded OnMatchEnded;
 
-	/** Broadcast when round time updates (every second during active round) */
+	/** Broadcast when the round state changes (WaitingToStart / RoundActive / RoundEnding / RoundComplete). */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundStateChanged OnRoundStateChanged;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	/** Called by ULyraGamePhaseSubsystem when the Playing phase becomes active. */
+	void HandlePlayingPhaseActivated(const FGameplayTag& ActivePhaseTag);
 
 	/** Get the owning game state cast to ABwayGameState */
 	ABwayGameState* GetBwayGameState() const;
@@ -185,6 +205,10 @@ protected:
 
 	/** Set the round state and broadcast changes */
 	void SetRoundState(ERoundState NewState);
+
+	void ApplyGoldDeltaToPlayerState(APlayerState* PlayerState, float GoldDelta) const;
+	FActiveGameplayEffectHandle ApplyPassiveGoldIncomeToPlayerState(APlayerState* PlayerState) const;
+	void RemovePassiveGoldIncome();
 
 	// ========================================
 	// Replicated Round State
@@ -213,4 +237,6 @@ protected:
 
 	/** Per-player respawn timers */
 	TMap<TObjectPtr<AController>, FTimerHandle> RespawnTimers;
+
+	TMap<TObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;
 };

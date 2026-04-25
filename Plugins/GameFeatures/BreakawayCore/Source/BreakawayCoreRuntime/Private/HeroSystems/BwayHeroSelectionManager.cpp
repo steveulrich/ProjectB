@@ -6,12 +6,23 @@
 #include "GameFramework/PlayerState.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
+#include "Net/UnrealNetwork.h"
 
 UBwayHeroSelectionManager::UBwayHeroSelectionManager(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bWantsInitializeComponent = true;
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = true;
 	SetIsReplicatedByDefault(true);
+}
+
+void UBwayHeroSelectionManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UBwayHeroSelectionManager, PlayerSelections);
+	DOREPLIFETIME(UBwayHeroSelectionManager, SelectionTimeRemaining);
 }
 
 void UBwayHeroSelectionManager::BeginPlay()
@@ -43,6 +54,18 @@ void UBwayHeroSelectionManager::EndPlay(const EEndPlayReason::Type EndPlayReason
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void UBwayHeroSelectionManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!GetOwner()->HasAuthority() || !bSelectionActive || SelectionTimeLimit <= 0.0f)
+	{
+		return;
+	}
+
+	SelectionTimeRemaining = FMath::Max(0.0f, GetWorld()->GetTimerManager().GetTimerRemaining(SelectionTimerHandle));
 }
 
 // ========== PLAYER REGISTRATION ==========
@@ -200,6 +223,7 @@ void UBwayHeroSelectionManager::StartHeroSelection()
 	}
 
 	bSelectionActive = true;
+	SelectionTimeRemaining = SelectionTimeLimit;
 
 	// Reset all player selections
 	for (FPlayerHeroSelectionState& Selection : PlayerSelections)
@@ -243,6 +267,7 @@ bool UBwayHeroSelectionManager::EndHeroSelection()
 	}
 
 	bSelectionActive = false;
+	SelectionTimeRemaining = 0.0f;
 
 	// Clear timer
 	GetWorld()->GetTimerManager().ClearTimer(SelectionTimerHandle);
@@ -282,6 +307,7 @@ void UBwayHeroSelectionManager::ResetHeroSelection()
 	GetWorld()->GetTimerManager().ClearTimer(SelectionTimerHandle);
 
 	bSelectionActive = false;
+	SelectionTimeRemaining = 0.0f;
 
 	// Reset all selections
 	for (FPlayerHeroSelectionState& Selection : PlayerSelections)
@@ -335,6 +361,21 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Force locked all players with valid selections"));
 
 	CheckAllPlayersReady();
+}
+
+void UBwayHeroSelectionManager::OnRep_PlayerSelections()
+{
+	for (const FPlayerHeroSelectionState& Selection : PlayerSelections)
+	{
+		if (Selection.PlayerState)
+		{
+			OnPlayerHeroSelectionChanged.Broadcast(Selection.PlayerState, Selection.SelectedHeroId, Selection.TeamIndex);
+			if (Selection.bIsLocked && Selection.SelectedHeroId.IsValid())
+			{
+				OnPlayerHeroLocked.Broadcast(Selection.PlayerState, Selection.SelectedHeroId);
+			}
+		}
+	}
 }
 
 // ========== PRIVATE HELPERS ==========

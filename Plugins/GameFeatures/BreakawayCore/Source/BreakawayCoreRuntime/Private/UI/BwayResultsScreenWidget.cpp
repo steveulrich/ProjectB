@@ -2,6 +2,7 @@
 
 #include "UI/BwayResultsScreenWidget.h"
 #include "BwayGameState.h"
+#include "BwayPlayerController.h"
 #include "BwayPlayerState.h"
 #include "GameState/BwayScoringComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
@@ -114,17 +115,21 @@ void UBwayResultsScreenWidget::ReturnToLobby()
 {
 	OnReturnToLobbyRequested();
 
+	// Always route through the PC RPC so non-authority clients work correctly.
+	if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(GetOwningPlayer()))
+	{
+		BwayPC->Server_RequestReturnToFrontEnd();
+		return;
+	}
+
+	// Listen-host / standalone fallback.
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
 		GameState->ReturnToFrontEnd();
 	}
-	else
+	else if (APlayerController* PC = GetOwningPlayer())
 	{
-		// Fallback - disconnect
-		if (APlayerController* PC = GetOwningPlayer())
-		{
-			PC->ConsoleCommand(TEXT("disconnect"));
-		}
+		PC->ConsoleCommand(TEXT("disconnect"));
 	}
 }
 

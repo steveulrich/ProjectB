@@ -19,6 +19,7 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "Animation/AnimBlueprint.h" // For UAnimBlueprint
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -109,12 +110,16 @@ void ABwayCharacterWithAbilities::Tick(float DeltaSeconds)
 			{
 				if (APlayerController* PC = Cast<APlayerController>(GetController()))
 				{
-					if (PC->PlayerCameraManager)
+					if (PC->PlayerCameraManager && !ActiveSlideCameraShake.IsValid())
 					{
 						// Scale the shake intensity by the slide intensity
-						PC->PlayerCameraManager->StartCameraShake(MoveComp->SlideCameraShakeClass, MoveComp->GetSlideIntensity());
+						ActiveSlideCameraShake = PC->PlayerCameraManager->StartCameraShake(MoveComp->SlideCameraShakeClass, MoveComp->GetSlideIntensity());
 					}
 				}
+			}
+			else
+			{
+				ActiveSlideCameraShake.Reset();
 			}
 		}
 	}
@@ -135,8 +140,27 @@ FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() co
 // Optional method to update character appearance based on team
 void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 {
-	// This would be implemented to change mesh colors, effects, etc.
-	// based on the current TeamId
+	const APlayerState* PS = GetPlayerState();
+	const ABwayGameState* BwayGS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+	const int32 TeamIndex = (BwayGS && PS) ? BwayGS->GetPlayerTeam(PS) : -1;
+
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp || TeamIndex < 0)
+	{
+		return;
+	}
+
+	const float TeamScalar = static_cast<float>(TeamIndex);
+	const FLinearColor TeamColor = (TeamIndex == 0) ? FLinearColor::Blue : FLinearColor::Red;
+
+	for (int32 MaterialIndex = 0; MaterialIndex < MeshComp->GetNumMaterials(); ++MaterialIndex)
+	{
+		if (UMaterialInstanceDynamic* MID = MeshComp->CreateAndSetMaterialInstanceDynamic(MaterialIndex))
+		{
+			MID->SetScalarParameterValue(FName("TeamColor"), TeamScalar);
+			MID->SetVectorParameterValue(FName("TeamTint"), TeamColor);
+		}
+	}
 }
 
 void ABwayCharacterWithAbilities::TryPickupOverlappingRelic()
@@ -298,6 +322,8 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 	{
 		UE_LOG(LogTemp, Error, TEXT("ApplyHeroVisuals: MeshComponent is NULL on %s!"), *GetName());
 	}
+
+	UpdateAppearanceForTeam();
 }
 
 void ABwayCharacterWithAbilities::OnRep_ReplicatedHeroId()

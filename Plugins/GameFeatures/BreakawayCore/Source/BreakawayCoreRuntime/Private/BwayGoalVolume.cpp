@@ -140,8 +140,11 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 	// Add small delay to allow state to settle (handles edge case of simultaneous pickup)
 	constexpr float ScoreDelayDuration = 0.1f;
 	const int32 CapturedScoringTeam = ScoringTeam;
-	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, Relic, CapturedScoringTeam]()
+	const TWeakObjectPtr<ARelicActor> WeakRelic = Relic;
+	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, WeakRelic, CapturedScoringTeam]()
 	{
+		ARelicActor* Relic = WeakRelic.Get();
+
 		// Double-check state after delay
 		if (Relic && !Relic->bHasScoredThisRound && Relic->GetCurrentState() != ERelicState::Resetting && Relic->GetCurrentState() != ERelicState::Scoring)
 		{

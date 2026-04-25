@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
 
 const FName ABwayActorWithAbilities::AbilitySystemComponentName = TEXT("AbilitySystemComponent");
 
@@ -19,6 +20,29 @@ ABwayActorWithAbilities::ABwayActorWithAbilities(const FObjectInitializer& Objec
 
 	// AbilitySystemComponent needs to be updated at a high frequency.
 	SetNetUpdateFrequency(100.0f);
+}
+
+void ABwayActorWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABwayActorWithAbilities, TeamId);
+}
+
+void ABwayActorWithAbilities::SetTeamId(FGenericTeamId NewTeamId)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	TeamId = NewTeamId;
+	OnRep_TeamId();
+}
+
+void ABwayActorWithAbilities::OnRep_TeamId()
+{
+	// Blueprint subclasses can react by overriding replicated visual setup if needed.
 }
 
 

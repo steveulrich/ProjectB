@@ -33,6 +33,14 @@ public:
 
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaTime) override;
+    virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buildable")
+    void InitializeBuildable(AController* InOwningPlayerController, int32 InTeamId);
+
+    UFUNCTION(BlueprintPure, Category = "Buildable")
+    bool ShouldPersistBetweenRounds() const { return bPersistsBetweenRounds; }
     
 protected:
     /** Root Component is Skeletal Mesh */
@@ -54,15 +62,21 @@ protected:
     bool bPersistsBetweenRounds = true;  // 
 
 
+    UPROPERTY(Replicated)
     bool bIsDestroyed = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_BuildState)
     bool bIsActive = false;
+
+    UPROPERTY(ReplicatedUsing = OnRep_BuildState, BlueprintReadOnly, Category = "Buildable|State")
+    float CurrentBuildProgress = 0.0f;
+
+    UFUNCTION()
+    void OnRep_BuildState();
+
     FTimerHandle BuildTimerHandle;
 
     virtual void FinishBuilding();
-
-private:
-    
-    void InitializeBuildable(AController* InOwningPlayerController, int32 InTeamId);
 
 };
 
@@ -75,6 +89,12 @@ public:
     /* -------- Buildables -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables")
     TSubclassOf<ABuildableActor> BuildableActorClass;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Economy", meta=(ClampMin="0.0"))
+    float Cost = 100.0f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Placement", meta=(ClampMin="0"))
+    int32 MaxActiveBuildablesPerPlayer = 2;
     
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<USkeletalMesh> PrimaryBuildableMesh;
@@ -119,6 +139,7 @@ protected:
 
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
+    virtual void FinishBuilding() override;
 
     UFUNCTION()
     virtual void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);

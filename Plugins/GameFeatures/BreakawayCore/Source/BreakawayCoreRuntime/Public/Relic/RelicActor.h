@@ -98,6 +98,10 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
     void ClearScoringFlag();
 
+    // Mark the relic as resetting before a round reset moves it back to spawn.
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    void BeginResettingState();
+
     // Server RPC called by GA_ThrowRelic
     UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
     void Server_ThrowRelic(const FVector& ThrowVelocity);

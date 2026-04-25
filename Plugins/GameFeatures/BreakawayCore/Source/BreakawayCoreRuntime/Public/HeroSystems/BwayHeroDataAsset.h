@@ -5,7 +5,6 @@
 // Forward declarations
 class UAbilitySet;
 class UAttributeSet;
-class ABuildableBase;
 class UMediaSource;
 
 /**

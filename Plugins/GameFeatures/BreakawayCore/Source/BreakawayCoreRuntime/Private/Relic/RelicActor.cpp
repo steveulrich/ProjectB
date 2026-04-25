@@ -24,8 +24,9 @@ ARelicActor::ARelicActor()
     PrimaryActorTick.bCanEverTick = true;
     bReplicates = true;
 
-    // Enable movement replication for smooth physics sync
-    SetReplicatingMovement(true); // Important for physics objects
+    // Movement is replicated by URelicMovementReplicationComponent. Do not also
+    // use AActor::bReplicateMovement, or the two systems will fight each other.
+    SetReplicatingMovement(false);
 
     // Set the root component to replicate movement for physics [1, 2]
     // Note: RelicMesh MUST be the root component for bReplicateMovement to work correctly with physics simulation.
@@ -263,9 +264,14 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
 bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
 {
     UE_LOG(LogTemp, Log, TEXT("Relic current state is %d"), CurrentState);
+
+    if (!Character || !RelicSettings || !RelicSettings->RequestingTag.IsValid())
+    {
+        return false;
+    }
     
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return CurrentState != ERelicState::Carried && (Character && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag));
+    return CurrentState != ERelicState::Carried && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag);
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
@@ -279,12 +285,18 @@ void ARelicActor::OnRep_CurrentState()
     UpdateStateVFX(CurrentState);
     UpdateTeamColorTinting();
     
-    // Client-side physics management - clients don't simulate physics (server is authoritative)
-    // Only disable physics; enabling is handled by server-side replication
     if (RelicMesh && !HasAuthority())
     {
-        // Physics simulation is controlled by the server; clients only receive replicated positions
-        RelicMesh->SetSimulatePhysics(false);
+        const bool bShouldSimulateForSmoothing =
+            CurrentState == ERelicState::Neutral ||
+            CurrentState == ERelicState::Dropped ||
+            CurrentState == ERelicState::Thrown ||
+            CurrentState == ERelicState::BeingPassed;
+
+        // Clients simulate only so the custom movement replication component can
+        // smooth loose-ball movement. The server still owns authoritative state.
+        RelicMesh->SetSimulatePhysics(bShouldSimulateForSmoothing);
+        RelicMesh->SetCollisionEnabled(bShouldSimulateForSmoothing ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     }
     
     UE_LOG(LogTemp, Verbose, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), static_cast<int32>(CurrentState));
@@ -353,6 +365,8 @@ void ARelicActor::SetRelicState(ERelicState NewState)
                 break;
             case ERelicState::Resetting:
             case ERelicState::Scoring:
+                RelicMesh->SetSimulatePhysics(false);
+                RelicMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
                 // Disable smooth replication during reset/scoring
                 if (MovementReplicationComponent)
                 {
@@ -415,6 +429,14 @@ void ARelicActor::OnDropped()
     if (!HasAuthority())
     {
         return;
+    }
+
+    if (CurrentCarrier && CurrentCarrier->GetPlayerState())
+    {
+        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+        {
+            LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
+        }
     }
     
     // Notify relic manager component carrier is gone (do this first while CurrentCarrier is still valid)
@@ -484,15 +506,38 @@ void ARelicActor::ClearScoringFlag()
     UE_LOG(LogTemp, Verbose, TEXT("Relic scoring flag cleared for new round"));
 }
 
+void ARelicActor::BeginResettingState()
+{
+    if (!HasAuthority())
+    {
+        return;
+    }
+
+    SetRelicState(ERelicState::Resetting);
+    PlayStateAudio(ERelicState::Resetting);
+}
+
 // --- Throw/Pass RPCs ---
 
-bool ARelicActor::Server_ThrowRelic_Validate(const FVector& ThrowVelocity) { return true; } // Basic validation
+bool ARelicActor::Server_ThrowRelic_Validate(const FVector& ThrowVelocity)
+{
+    const float MaxThrowSpeed = RelicSettings ? FMath::Max(RelicSettings->ThrowVelocity * 1.5f, RelicSettings->ThrowVelocity + 250.0f) : 3000.0f;
+    return CurrentState == ERelicState::Carried &&
+        CurrentCarrier != nullptr &&
+        !ThrowVelocity.ContainsNaN() &&
+        ThrowVelocity.SizeSquared() <= FMath::Square(MaxThrowSpeed);
+}
 void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
 {
     if (HasAuthority() && CurrentState == ERelicState::Carried && CurrentCarrier!= nullptr)
     {
-        // LastPossessingTeam is already set from when it was picked up, so we maintain it
-        // No need to update here as the carrier hasn't changed
+        if (CurrentCarrier->GetPlayerState())
+        {
+            if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+            {
+                LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
+            }
+        }
         
         // Send client prediction RPC to the throwing client for immediate feedback
         if (APlayerController* CarrierPC = CurrentCarrier->GetController<APlayerController>())
@@ -509,13 +554,25 @@ void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
     }
 }
 
-bool ARelicActor::Server_PassRelic_Validate(const FVector& PassVelocity) { return true; } // Basic validation
+bool ARelicActor::Server_PassRelic_Validate(const FVector& PassVelocity)
+{
+    const float MaxPassSpeed = RelicSettings ? FMath::Max(RelicSettings->ThrowVelocity * 1.5f, RelicSettings->ThrowVelocity + 250.0f) : 3000.0f;
+    return CurrentState == ERelicState::Carried &&
+        CurrentCarrier != nullptr &&
+        !PassVelocity.ContainsNaN() &&
+        PassVelocity.SizeSquared() <= FMath::Square(MaxPassSpeed);
+}
 void ARelicActor::Server_PassRelic_Implementation(const FVector& PassVelocity)
 {
     if (HasAuthority() && CurrentState == ERelicState::Carried && CurrentCarrier!= nullptr)
     {
-        // LastPossessingTeam is already set from when it was picked up, so we maintain it
-        // No need to update here as the carrier hasn't changed
+        if (CurrentCarrier->GetPlayerState())
+        {
+            if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+            {
+                LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
+            }
+        }
         
         DetachFromCarrier(&PassVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
@@ -615,8 +672,12 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
     }
     else
     {
-        // Clients DO NOT simulate physics for thrown/passed objects
-        RelicMesh->SetSimulatePhysics(false);
+        const bool bShouldSimulateForSmoothing =
+            CurrentState == ERelicState::Neutral ||
+            CurrentState == ERelicState::Dropped ||
+            CurrentState == ERelicState::Thrown ||
+            CurrentState == ERelicState::BeingPassed;
+        RelicMesh->SetSimulatePhysics(bShouldSimulateForSmoothing);
     }
 }
 

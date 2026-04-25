@@ -123,6 +123,9 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes() {
 
   int32 LocalTeam = GetLocalPlayerTeam();
   FPrimaryAssetId CurrentSelection = GetSelectedHeroId();
+  TMap<uint8, int32> ClassCounts;
+  const TArray<FPlayerHeroSelectionState> PlayerSelections =
+      SelectionManager ? SelectionManager->GetAllPlayerSelections() : TArray<FPlayerHeroSelectionState>();
 
   // Load and process each hero
   for (const TSoftObjectPtr<UBwayHeroDataAsset> &SoftRef : HeroSoftRefs) {
@@ -142,14 +145,16 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes() {
     // Populate class information
     DisplayInfo.HeroClass = HeroData->HeroClass;
     DisplayInfo.ClassName = HeroData->GetClassDisplayName();
+    int32& ClassCount = ClassCounts.FindOrAdd(static_cast<uint8>(DisplayInfo.HeroClass));
+    DisplayInfo.HeroClassIndex = ClassCount++;
 
     // Populate ability display info
     DisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
 
     // Check availability
     if (SelectionManager) {
-      DisplayInfo.bIsAvailable = SelectionManager->IsHeroAvailableForTeam(
-          DisplayInfo.HeroId, LocalTeam);
+      DisplayInfo.bIsAvailable = (DisplayInfo.HeroId == CurrentSelection) ||
+          SelectionManager->IsHeroAvailableForTeam(DisplayInfo.HeroId, LocalTeam);
     } else {
       DisplayInfo.bIsAvailable = true;
     }
@@ -162,9 +167,16 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes() {
 
     // Check which player has selected this hero (for P1/P2 indicators)
     DisplayInfo.SelectedByPlayerIndex = -1;
-    if (SelectionManager) {
-      // TODO: Get player index from selection manager if needed
-      // This would require adding a function to BwayHeroSelectionManager
+    for (int32 SelectionIndex = 0; SelectionIndex < PlayerSelections.Num(); ++SelectionIndex) {
+      const FPlayerHeroSelectionState& Selection = PlayerSelections[SelectionIndex];
+      if (Selection.SelectedHeroId == DisplayInfo.HeroId) {
+        if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState)) {
+          DisplayInfo.SelectedByPlayerIndex = BwayPS->GetPlayerNum();
+        } else {
+          DisplayInfo.SelectedByPlayerIndex = SelectionIndex;
+        }
+        break;
+      }
     }
 
     DisplayInfos.Add(DisplayInfo);
@@ -290,7 +302,9 @@ void UBwayHeroSelectWidget::ConfirmSelection() {
 
 int32 UBwayHeroSelectWidget::GetLocalPlayerTeam() const {
   if (LocalPlayerState) {
-    return LocalPlayerState->GetTeamId();
+    if (const ABwayGameState* BwayGS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr) {
+      return BwayGS->GetPlayerTeam(LocalPlayerState);
+    }
   }
   return -1;
 }
@@ -309,10 +323,7 @@ float UBwayHeroSelectWidget::GetRemainingSelectionTime() const {
     return -1.0f; // No time limit
   }
 
-  // This would need to be tracked by the selection manager
-  // For now, return -1 to indicate unknown
-  // TODO: Add time tracking to selection manager
-  return -1.0f;
+  return SelectionManager->GetSelectionTimeRemaining();
 }
 
 void UBwayHeroSelectWidget::GetReadyPlayerCount(int32 &OutReady,
@@ -349,14 +360,15 @@ bool UBwayHeroSelectWidget::GetHeroDisplayInfo(
   OutDisplayInfo.HeroClass = HeroData->HeroClass;
   OutDisplayInfo.ClassName = HeroData->GetClassDisplayName();
   OutDisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
+  OutDisplayInfo.HeroClassIndex = 0;
 
   int32 LocalTeam = GetLocalPlayerTeam();
   FPrimaryAssetId CurrentSelection = GetSelectedHeroId();
 
   // Check availability
   if (SelectionManager) {
-    OutDisplayInfo.bIsAvailable = SelectionManager->IsHeroAvailableForTeam(
-        OutDisplayInfo.HeroId, LocalTeam);
+    OutDisplayInfo.bIsAvailable = (OutDisplayInfo.HeroId == CurrentSelection) ||
+        SelectionManager->IsHeroAvailableForTeam(OutDisplayInfo.HeroId, LocalTeam);
   } else {
     OutDisplayInfo.bIsAvailable = true;
   }
@@ -365,6 +377,20 @@ bool UBwayHeroSelectWidget::GetHeroDisplayInfo(
   OutDisplayInfo.bIsSelected = (OutDisplayInfo.HeroId == CurrentSelection);
   OutDisplayInfo.bIsLocked = IsSelectionLocked() && OutDisplayInfo.bIsSelected;
   OutDisplayInfo.SelectedByPlayerIndex = -1;
+  if (SelectionManager) {
+    const TArray<FPlayerHeroSelectionState> PlayerSelections = SelectionManager->GetAllPlayerSelections();
+    for (int32 SelectionIndex = 0; SelectionIndex < PlayerSelections.Num(); ++SelectionIndex) {
+      const FPlayerHeroSelectionState& Selection = PlayerSelections[SelectionIndex];
+      if (Selection.SelectedHeroId == OutDisplayInfo.HeroId) {
+        if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState)) {
+          OutDisplayInfo.SelectedByPlayerIndex = BwayPS->GetPlayerNum();
+        } else {
+          OutDisplayInfo.SelectedByPlayerIndex = SelectionIndex;
+        }
+        break;
+      }
+    }
+  }
 
   return true;
 }
@@ -493,8 +519,5 @@ void UBwayHeroSelectWidget::HandleAllPlayersReady() {
 }
 
 void UBwayHeroSelectWidget::UpdateSelectionTimer() {
-  // This would need time tracking in selection manager
-  // For now, just call the BP event with a placeholder
-  // TODO: Implement proper time tracking
-  OnSelectionTimerUpdated(0.0f);
+  OnSelectionTimerUpdated(GetRemainingSelectionTime());
 }

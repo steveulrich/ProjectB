@@ -4,9 +4,16 @@
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Relic/RelicActor.h"
+#include "Buildable/BuildableBase.h"
+#include "Economy/BwayGoldAttributeSet.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayScoringComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
+#include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
+#include "GameplayEffect.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameModeBase.h"
 #include "TimerManager.h"
@@ -20,6 +27,10 @@ UBwayRoundManagementComponent::UBwayRoundManagementComponent(const FObjectInitia
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 	SetIsReplicatedByDefault(true);
+
+	// Align with the existing BW_Phase_Playing phase ability tag (inherited from ShooterCore).
+	// Override in component defaults if the project switches to a Breakaway-specific tag later.
+	PlayingPhaseTag = FGameplayTag::RequestGameplayTag(FName("ShooterGame.GamePhase.Playing"), /*ErrorIfNotFound*/ false);
 }
 
 void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -35,12 +46,59 @@ void UBwayRoundManagementComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwnerRole() == ROLE_Authority && bAutoStartFirstRound)
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	if (bAutoStartFirstRound)
 	{
 		GetWorld()->GetTimerManager().SetTimer(
 			PreRoundTimerHandle, this, &UBwayRoundManagementComponent::StartRound, PreRoundDelay, false);
-		
-		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: First round will start in %.1f seconds"), PreRoundDelay);
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: First round will start in %.1f seconds (auto-start)"), PreRoundDelay);
+		return;
+	}
+
+	// Phase-driven flow: listen for the Playing phase to activate, then call StartRound().
+	if (PlayingPhaseTag.IsValid())
+	{
+		if (UWorld* World = GetWorld())
+		{
+			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+			{
+				PhaseSubsystem->WhenPhaseStartsOrIsActive(
+					PlayingPhaseTag,
+					EPhaseTagMatchType::ExactMatch,
+					FLyraGamePhaseTagDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePlayingPhaseActivated));
+
+				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Listening for Playing phase tag: %s"), *PlayingPhaseTag.ToString());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem not available - round will not auto-start"));
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PlayingPhaseTag set and bAutoStartFirstRound is false - round will not auto-start"));
+	}
+}
+
+void UBwayRoundManagementComponent::HandlePlayingPhaseActivated(const FGameplayTag& ActivePhaseTag)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Playing phase activated (%s) - starting first round"), *ActivePhaseTag.ToString());
+
+	// Only start the first round this way. Subsequent rounds are scheduled internally by EndRound().
+	if (CurrentRoundState == ERoundState::WaitingToStart)
+	{
+		StartRound();
 	}
 }
 
@@ -166,6 +224,15 @@ void UBwayRoundManagementComponent::StartRound()
 	ResetRoundState();
 	SetRoundState(ERoundState::RoundActive);
 
+	RemovePassiveGoldIncome();
+	for (APlayerState* PlayerState : BwayGS->PlayerArray)
+	{
+		if (FActiveGameplayEffectHandle Handle = ApplyPassiveGoldIncomeToPlayerState(PlayerState); Handle.IsValid())
+		{
+			PassiveGoldEffectHandles.Add(PlayerState, Handle);
+		}
+	}
+
 	OnRoundStarted.Broadcast(CurrentRoundNumber, RoundDuration);
 }
 
@@ -176,6 +243,8 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 	{
 		return;
 	}
+
+	RemovePassiveGoldIncome();
 
 	SetRoundState(ERoundState::RoundEnding);
 
@@ -214,6 +283,16 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 
 void UBwayRoundManagementComponent::ResetRoundState()
 {
+	// Remove buildables that should not persist between rounds before respawning players.
+	for (TActorIterator<ABuildableActor> It(GetWorld()); It; ++It)
+	{
+		ABuildableActor* Buildable = *It;
+		if (Buildable && !Buildable->ShouldPersistBetweenRounds())
+		{
+			Buildable->Destroy();
+		}
+	}
+
 	// Reset relic via RelicManagerComponent if available
 	if (UBwayRelicManagerComponent* RelicMgr = GetOwner()->FindComponentByClass<UBwayRelicManagerComponent>())
 	{
@@ -245,6 +324,18 @@ void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Goal! Team %d scored"), ScoringTeam + 1);
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		for (APlayerState* PlayerState : BwayGS->PlayerArray)
+		{
+			if (BwayGS->GetPlayerTeam(PlayerState) == ScoringTeam)
+			{
+				ApplyGoldDeltaToPlayerState(PlayerState, GoldAwardForGoalScored);
+			}
+		}
+	}
+
 	EndRound(ScoringTeam, EBwayWinCondition::GoalScored);
 }
 
@@ -336,6 +427,11 @@ void UBwayRoundManagementComponent::OnPlayerDied(AController* VictimController, 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Player %s died"),
 		*VictimController->PlayerState->GetPlayerName());
 
+	if (KillerController && KillerController != VictimController && KillerController->PlayerState)
+	{
+		ApplyGoldDeltaToPlayerState(KillerController->PlayerState, GoldAwardForKill);
+	}
+
 	// Check for team elimination
 	CheckTeamElimination();
 
@@ -384,4 +480,69 @@ void UBwayRoundManagementComponent::RespawnPlayer(AController* Controller)
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Player %s respawned"),
 		*PC->PlayerState->GetPlayerName());
+}
+
+void UBwayRoundManagementComponent::ApplyGoldDeltaToPlayerState(APlayerState* PlayerState, float GoldDelta) const
+{
+	if (!PlayerState || FMath::IsNearlyZero(GoldDelta))
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
+	if (!ASC || !ASC->GetSet<UBwayGoldAttributeSet>())
+	{
+		return;
+	}
+
+	UGameplayEffect* GoldEffect = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None);
+	GoldEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
+	FGameplayModifierInfo& Modifier = GoldEffect->Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayGoldAttributeSet::GetCurrentGoldAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FScalableFloat(GoldDelta);
+
+	ASC->ApplyGameplayEffectToSelf(GoldEffect, 1.0f, ASC->MakeEffectContext());
+}
+
+FActiveGameplayEffectHandle UBwayRoundManagementComponent::ApplyPassiveGoldIncomeToPlayerState(APlayerState* PlayerState) const
+{
+	if (!PlayerState || PassiveGoldPerSecond <= 0.0f)
+	{
+		return FActiveGameplayEffectHandle();
+	}
+
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
+	if (!ASC || !ASC->GetSet<UBwayGoldAttributeSet>())
+	{
+		return FActiveGameplayEffectHandle();
+	}
+
+	UGameplayEffect* PassiveEffect = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None);
+	PassiveEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+	PassiveEffect->Period = FScalableFloat(1.0f);
+	PassiveEffect->bExecutePeriodicEffectOnApplication = false;
+
+	FGameplayModifierInfo& Modifier = PassiveEffect->Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayGoldAttributeSet::GetCurrentGoldAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FScalableFloat(PassiveGoldPerSecond);
+
+	return ASC->ApplyGameplayEffectToSelf(PassiveEffect, 1.0f, ASC->MakeEffectContext());
+}
+
+void UBwayRoundManagementComponent::RemovePassiveGoldIncome()
+{
+	for (const TPair<TObjectPtr<APlayerState>, FActiveGameplayEffectHandle>& Pair : PassiveGoldEffectHandles)
+	{
+		if (APlayerState* PlayerState = Pair.Key.Get())
+		{
+			if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState))
+			{
+				ASC->RemoveActiveGameplayEffect(Pair.Value);
+			}
+		}
+	}
+
+	PassiveGoldEffectHandles.Reset();
 }
