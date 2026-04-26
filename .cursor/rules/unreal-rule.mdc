@@ -7,6 +7,7 @@ alwaysApply: true
 ✅ Give me only functions that exist in public Unreal Engine 5.5, no pseudocode, no assumed APIs — I will verify signatures.  Ask questions to gain enough of an understanding of a task or problem as you feel is logically necessary to get the task completed in the way it is requested.  Understand that the user is not an expert, so their suggestions or requests can be fallible. 
 ✅ Offer suggestions for improvements if the user suggests something that can be done a better way. 
 ✅ Use the code in E:\Unreal Projects\ProjectB\Plugins\GameFeatures and E:\Unreal Projects\ProjectB\Source and all their subdirectories to understand the current codebase.
+✅ When C++ changes require rebuilding binaries, ask the user to recompile the project and run/restart the Unreal Editor manually. Do not rely on MCP tools to build the editor/project.
 
 ## Unreal Engine API Lookup (unreal-api MCP)
 

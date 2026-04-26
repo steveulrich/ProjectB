@@ -5,6 +5,15 @@
 #include "EngineUtils.h"
 #include "Engine/World.h"
 
+namespace
+{
+bool IsRelicSpawnTag(const FGameplayTag& Tag)
+{
+	const FGameplayTag RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"), /*ErrorIfNotFound*/ false);
+	return RelicSpawnTag.IsValid() && Tag.MatchesTagExact(RelicSpawnTag);
+}
+}
+
 UBwaySpawnPointManagerComponent::UBwaySpawnPointManagerComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -75,7 +84,7 @@ void UBwaySpawnPointManagerComponent::DiscoverSpawnPoints()
 			// Spawn at all points
 			for (ABwaySpawnPoint* SpawnPoint : RegisteredSpawnPoints)
 			{
-				if (SpawnPoint && SpawnPoint->bAutoSpawnOnBeginPlay)
+				if (SpawnPoint && SpawnPoint->bAutoSpawnOnBeginPlay && !IsRelicSpawnTag(SpawnPoint->SpawnPointTag))
 				{
 					SpawnPoint->SpawnObject();
 				}
@@ -86,7 +95,10 @@ void UBwaySpawnPointManagerComponent::DiscoverSpawnPoints()
 			// Spawn only at points matching the tags
 			for (const FGameplayTag& Tag : AutoSpawnTags)
 			{
-				SpawnObjectsAtPoints(Tag);
+				if (!IsRelicSpawnTag(Tag))
+				{
+					SpawnObjectsAtPoints(Tag);
+				}
 			}
 		}
 	}
@@ -272,6 +284,12 @@ int32 UBwaySpawnPointManagerComponent::GetSpawnPointCount(FGameplayTag Tag) cons
 TArray<AActor*> UBwaySpawnPointManagerComponent::SpawnObjectsAtPoints(FGameplayTag Tag)
 {
 	TArray<AActor*> SpawnedActors;
+
+	if (IsRelicSpawnTag(Tag))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SpawnPointManager: Relics must be spawned by BwayRelicManager, not SpawnObjectsAtPoints"));
+		return SpawnedActors;
+	}
 
 	TArray<ABwaySpawnPoint*> MatchingPoints = GetSpawnPointsByTag(Tag);
 

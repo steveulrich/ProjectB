@@ -184,11 +184,14 @@ void ABwayCharacterWithAbilities::TryPickupOverlappingRelic()
 			{
 				ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(MyPlayerState));
 				const URelicSettings* Settings = Relic->GetRelicSettings(); // Assuming a getter for RelicSettings
+				const FGameplayTag PickupEventTag = (Settings && Settings->PickupEventTag.IsValid())
+					? Settings->PickupEventTag
+					: FGameplayTag::RequestGameplayTag(FName("Event.Interaction.PickupRelic"), /*ErrorIfNotFound*/ false);
 
-				if (PlayerStateASC && Settings && Settings->PickupEventTag.IsValid())
+				if (PlayerStateASC && PickupEventTag.IsValid())
 				{
 					FGameplayEventData Payload;
-					Payload.EventTag = Settings->PickupEventTag;
+					Payload.EventTag = PickupEventTag;
 					Payload.Instigator = this;
 					Payload.Target = Relic; // Target is the relic
 

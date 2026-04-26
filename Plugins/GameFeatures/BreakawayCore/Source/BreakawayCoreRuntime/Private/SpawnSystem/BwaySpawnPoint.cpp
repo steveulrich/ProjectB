@@ -50,6 +50,14 @@ void ABwaySpawnPoint::BeginPlay()
 		return;
 	}
 
+	const FGameplayTag RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"), /*ErrorIfNotFound*/ false);
+	if (RelicSpawnTag.IsValid() && SpawnPointTag.MatchesTagExact(RelicSpawnTag))
+	{
+		// Relics are spawned exclusively by UBwayRelicManagerComponent so it can
+		// own ActiveRelic, reset behavior, and round lifecycle.
+		bAutoSpawnOnBeginPlay = false;
+	}
+
 	// Auto-spawn if configured
 	if (bAutoSpawnOnBeginPlay)
 	{

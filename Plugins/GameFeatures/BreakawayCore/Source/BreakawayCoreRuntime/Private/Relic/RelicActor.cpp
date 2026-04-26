@@ -18,6 +18,42 @@
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
+namespace
+{
+FGameplayTag ResolvePickupEventTag(const URelicSettings* RelicSettings)
+{
+    if (RelicSettings && RelicSettings->PickupEventTag.IsValid())
+    {
+        return RelicSettings->PickupEventTag;
+    }
+
+    return FGameplayTag::RequestGameplayTag(FName("Event.Interaction.PickupRelic"), /*ErrorIfNotFound*/ false);
+}
+
+bool IsCharacterRequestingRelic(const ABwayCharacterWithAbilities* Character, const URelicSettings* RelicSettings)
+{
+    if (!Character)
+    {
+        return false;
+    }
+
+    if (RelicSettings && RelicSettings->RequestingTag.IsValid())
+    {
+        return Character->HasMatchingGameplayTag(RelicSettings->RequestingTag);
+    }
+
+    // Backward-compatible fallback while data assets are corrected.
+    const FGameplayTag RequestingTag = FGameplayTag::RequestGameplayTag(FName("State.RequestingRelic"), /*ErrorIfNotFound*/ false);
+    if (RequestingTag.IsValid() && Character->HasMatchingGameplayTag(RequestingTag))
+    {
+        return true;
+    }
+
+    const FGameplayTag RequestingMessageTag = FGameplayTag::RequestGameplayTag(FName("State.RequestingRelic.Message"), /*ErrorIfNotFound*/ false);
+    return RequestingMessageTag.IsValid() && Character->HasMatchingGameplayTag(RequestingMessageTag);
+}
+}
+
 ARelicActor::ARelicActor()
 {
     // Enable ticking and replication
@@ -234,10 +270,11 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
             // Get the Ability System Component from the PlayerState
             UAbilitySystemComponent* PlayerStateASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
 
-            if (PlayerStateASC && RelicSettings && RelicSettings->PickupEventTag.IsValid())
+            const FGameplayTag PickupEventTag = ResolvePickupEventTag(RelicSettings);
+            if (PlayerStateASC && PickupEventTag.IsValid())
             {
                 FGameplayEventData Payload;
-                Payload.EventTag = RelicSettings->PickupEventTag;
+                Payload.EventTag = PickupEventTag;
                 Payload.Instigator = OverlappingCharacter; // Character still initiated it
                 Payload.Target = this; // The Relic itself is the target of the event
 
@@ -265,13 +302,13 @@ bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
 {
     UE_LOG(LogTemp, Log, TEXT("Relic current state is %d"), CurrentState);
 
-    if (!Character || !RelicSettings || !RelicSettings->RequestingTag.IsValid())
+    if (!Character || !RelicSettings)
     {
         return false;
     }
     
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return CurrentState != ERelicState::Carried && Character->HasMatchingGameplayTag(RelicSettings->RequestingTag);
+    return CurrentState != ERelicState::Carried && IsCharacterRequestingRelic(Character, RelicSettings);
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const

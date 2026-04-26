@@ -49,47 +49,96 @@ ARelicActor* UBwayRelicManagerComponent::SpawnRelic()
 		return nullptr;
 	}
 
+	if (ActiveRelic)
+	{
+		return ActiveRelic;
+	}
+
 	if (!RelicClass)
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayRelicManager: No RelicClass set!"));
 		return nullptr;
 	}
 
-	// Use spawn point manager if available
-	if (CachedSpawnPointManager)
+	if (!CachedSpawnPointManager)
 	{
-		TArray<AActor*> SpawnedRelics = CachedSpawnPointManager->SpawnObjectsAtPoints(RelicSpawnTag);
-		if (SpawnedRelics.Num() > 0)
+		if (AActor* Owner = GetOwner())
 		{
-			ActiveRelic = Cast<ARelicActor>(SpawnedRelics[0]);
-			if (ActiveRelic)
-			{
-				// Initialize relic with settings data asset
-				if (!RelicSettingsAsset.IsNull())
-				{
-					URelicSettings* Settings = RelicSettingsAsset.LoadSynchronous();
-					if (Settings)
-					{
-						ActiveRelic->InitializeRelicData(Settings);
-						UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Relic initialized with RelicSettings"));
-					}
-					else
-					{
-						UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Failed to load RelicSettingsAsset"));
-					}
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No RelicSettingsAsset configured — relic spawned without settings!"));
-				}
-
-				UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Spawned relic via spawn point manager"));
-				return ActiveRelic;
-			}
+			CachedSpawnPointManager = Owner->FindComponentByClass<UBwaySpawnPointManagerComponent>();
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Could not spawn relic via spawn points"));
+	if (!CachedSpawnPointManager)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No SpawnPointManager found on %s"), *GetNameSafe(GetOwner()));
+		return nullptr;
+	}
+
+	if (!RelicSpawnTag.IsValid())
+	{
+		RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"), /*ErrorIfNotFound*/ false);
+	}
+
+	CachedSpawnPointManager->DiscoverSpawnPoints();
+
+	TArray<ABwaySpawnPoint*> RelicSpawnPoints = CachedSpawnPointManager->GetSpawnPointsByTag(RelicSpawnTag);
+	if (RelicSpawnPoints.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No registered spawn points found for tag %s"), *RelicSpawnTag.ToString());
+		return nullptr;
+	}
+
+	for (ABwaySpawnPoint* SpawnPoint : RelicSpawnPoints)
+	{
+		if (!SpawnPoint)
+		{
+			continue;
+		}
+
+		AActor* SpawnedActor = SpawnPoint->GetSpawnedObject();
+		if (!SpawnedActor)
+		{
+			SpawnedActor = SpawnPoint->SpawnObject();
+		}
+
+		if (!SpawnedActor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Spawn point %s did not spawn an actor"), *GetNameSafe(SpawnPoint));
+			continue;
+		}
+
+		ActiveRelic = Cast<ARelicActor>(SpawnedActor);
+		if (!ActiveRelic)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Spawn point %s spawned %s, which is not an ARelicActor"),
+				*GetNameSafe(SpawnPoint), *GetNameSafe(SpawnedActor));
+			continue;
+		}
+
+		if (!RelicSettingsAsset.IsNull())
+		{
+			URelicSettings* Settings = RelicSettingsAsset.LoadSynchronous();
+			if (Settings)
+			{
+				ActiveRelic->InitializeRelicData(Settings);
+				UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Relic initialized with RelicSettings"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Failed to load RelicSettingsAsset"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No RelicSettingsAsset configured — relic spawned without settings!"));
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRelicManager: Spawned relic %s via spawn point %s"),
+			*GetNameSafe(ActiveRelic), *GetNameSafe(SpawnPoint));
+		return ActiveRelic;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: Could not spawn a valid relic from %d registered relic spawn point(s)"), RelicSpawnPoints.Num());
 	return nullptr;
 }
 

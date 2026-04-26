@@ -92,6 +92,11 @@ protected:
 	/** Track if we've initialized the game properly */
 	bool bGameInitialized = false;
 
+	/** Prevent duplicate world-object spawning if BeginPlay/retry paths overlap. */
+	bool bInitialGameObjectsSpawned = false;
+
+	int32 InitialGameObjectSpawnAttempts = 0;
+
 	/** Spawn point manager component reference */
 	UPROPERTY()
 	TObjectPtr<UBwaySpawnPointManagerComponent> SpawnPointManager;

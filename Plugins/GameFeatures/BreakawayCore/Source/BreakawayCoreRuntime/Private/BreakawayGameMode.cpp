@@ -15,6 +15,7 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
 
@@ -63,8 +64,9 @@ void ABreakawayGameMode::BeginPlay()
 	// Initialize spawn point tags
 	InitializeSpawnPointTags();
 
-	// Spawn initial game objects
-	SpawnInitialGameObjects();
+	// Let level actors/components finish BeginPlay and register with the spawn
+	// manager before spawning match-owned objects like the relic.
+	GetWorldTimerManager().SetTimerForNextTick(this, &ABreakawayGameMode::SpawnInitialGameObjects);
 
 	bGameInitialized = true;
 }
@@ -276,6 +278,13 @@ void ABreakawayGameMode::InitializeSpawnPointTags()
 
 void ABreakawayGameMode::SpawnInitialGameObjects()
 {
+	if (bInitialGameObjectsSpawned)
+	{
+		return;
+	}
+
+	++InitialGameObjectSpawnAttempts;
+
 	if (!SpawnPointManager)
 	{
 		UE_LOG(LogBreakawayGame, Warning, TEXT("No spawn point manager - cannot spawn initial objects"));
@@ -292,7 +301,19 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 	// initial world-object spawning.
 	if (UBwayRelicManagerComponent* RelicMgr = BwayGS->FindComponentByClass<UBwayRelicManagerComponent>())
 	{
-		RelicMgr->SpawnRelic();
+		if (!RelicMgr->SpawnRelic())
+		{
+			if (InitialGameObjectSpawnAttempts < 5)
+			{
+				UE_LOG(LogBreakawayGame, Warning, TEXT("Relic manager could not spawn relic; initial objects will retry next tick"));
+				GetWorldTimerManager().SetTimerForNextTick(this, &ABreakawayGameMode::SpawnInitialGameObjects);
+			}
+			else
+			{
+				UE_LOG(LogBreakawayGame, Error, TEXT("Relic manager could not spawn relic after %d attempts"), InitialGameObjectSpawnAttempts);
+			}
+			return;
+		}
 	}
 	else
 	{
@@ -303,6 +324,7 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 	SpawnPointManager->SpawnObjectsAtPoints(Goal1SpawnTag);
 	SpawnPointManager->SpawnObjectsAtPoints(Goal2SpawnTag);
 	
+	bInitialGameObjectsSpawned = true;
 	UE_LOG(LogBreakawayGame, Log, TEXT("Spawned initial game objects"));
 }
 
