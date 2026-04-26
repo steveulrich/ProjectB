@@ -158,6 +158,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	void ForceLockAllPlayers();
 
+	/** Refresh this manager's replicated state from a player's authoritative PlayerState. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	void SynchronizePlayerSelectionState(APlayerState* PlayerState);
+
 	// ========== CONFIGURATION ==========
 
 	/**
@@ -214,6 +218,9 @@ private:
 	// Callbacks for player state changes
 	UFUNCTION()
 	void OnPlayerSelectedHero(FPrimaryAssetId NewHeroId);
+
+	UFUNCTION()
+	void OnPlayerLockedHero(FPrimaryAssetId LockedHeroId);
 
 	// Handle selection timeout
 	void OnSelectionTimeout();

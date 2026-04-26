@@ -9,6 +9,7 @@
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 #include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "Player/LyraPlayerBotController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 
@@ -18,8 +19,8 @@ UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObject
 	bWantsInitializeComponent = true;
 	SetIsReplicatedByDefault(true);
 
-	// Set default phase tag
-	PhaseTag = FGameplayTag::RequestGameplayTag(FName("ShooterGame.GamePhase.HeroSelection"));
+	// BreakawayCore tags may not be registered while the CDO is constructed.
+	PhaseTag = FGameplayTag::RequestGameplayTag(FName("Breakaway.GamePhase.HeroSelection"), false);
 }
 
 void UBwayHeroSelectionPhaseComponent::BeginPlay()
@@ -37,6 +38,17 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 	{
 		if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
 		{
+			if (!PhaseTag.IsValid())
+			{
+				PhaseTag = FGameplayTag::RequestGameplayTag(FName("Breakaway.GamePhase.HeroSelection"), false);
+			}
+
+			if (!PhaseTag.IsValid())
+			{
+				UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: Breakaway.GamePhase.HeroSelection is not registered; cannot listen for hero selection phase"));
+				return;
+			}
+
 			PhaseSubsystem->WhenPhaseStartsOrIsActive(
 				PhaseTag,
 				EPhaseTagMatchType::ExactMatch,
@@ -87,6 +99,7 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 	}
 
 	bPhaseActive = true;
+	bHeroSelectionCompleted = false;
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting hero selection phase"));
 
@@ -131,8 +144,13 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		}
 	}
 
-	// Show UI to players who haven't already locked
+	// Bots do not have a local hero-selection UI, so lock them immediately.
+	AssignDefaultHeroes(true);
+
+	// Let Blueprint run cosmetic/audio/camera hooks, but always perform the C++
+	// CommonUI push as well so overrides cannot swallow the client RPC.
 	ShowHeroSelectionUI();
+	PushHeroSelectionUIToPlayers();
 
 	// Broadcast event
 	OnHeroSelectionPhaseStarted.Broadcast();
@@ -161,6 +179,7 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 	}
 
 	bPhaseActive = false;
+	bHeroSelectionCompleted = true;
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Ending hero selection phase"));
 
@@ -178,8 +197,9 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 		Manager->EndHeroSelection();
 	}
 
-	// Hide UI from all players
+	// Let Blueprint run cosmetic cleanup, then always remove the C++ CommonUI widget.
 	HideHeroSelectionUI();
+	PopHeroSelectionUIFromPlayers();
 
 	// Spawn heroes for all players
 	SpawnHeroesForAllPlayers();
@@ -199,6 +219,9 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Skipping hero selection"));
 
+	bPhaseActive = false;
+	bHeroSelectionCompleted = true;
+
 	// Assign default heroes to everyone
 	AssignDefaultHeroes();
 
@@ -209,6 +232,11 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: ShowHeroSelectionUI base impl (override in Blueprint)"));
+}
+
+void UBwayHeroSelectionPhaseComponent::PushHeroSelectionUIToPlayers()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Pushing hero selection UI to players"));
 
 	// Base C++ implementation: ask each owning client to create its local widget.
 	if (HeroSelectionWidgetClass.IsNull())
@@ -239,6 +267,11 @@ void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 void UBwayHeroSelectionPhaseComponent::HideHeroSelectionUI_Implementation()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: HideHeroSelectionUI base impl (override in Blueprint)"));
+}
+
+void UBwayHeroSelectionPhaseComponent::PopHeroSelectionUIFromPlayers()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Popping hero selection UI from players"));
 
 	// Base C++ implementation: remove hero selection widgets and restore game input
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -364,7 +397,7 @@ void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer_Implementation(ABwayPl
 	}
 }
 
-void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes()
+void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes(bool bOnlyBots)
 {
 	ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner());
 	if (!GameState)
@@ -403,10 +436,19 @@ void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes()
 	{
 		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
 		{
+			if (bOnlyBots && !Cast<ALyraPlayerBotController>(BwayPS->GetOwner()))
+			{
+				continue;
+			}
+
 			if (!BwayPS->GetSelectedHeroId().IsValid())
 			{
 				BwayPS->ServerSetSelectedHeroId(DefaultHeroId);
 				BwayPS->ServerLockHeroSelection();
+				if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
+				{
+					Manager->SynchronizePlayerSelectionState(BwayPS);
+				}
 
 				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Assigned default hero %s to %s"), 
 					*DefaultHero->DisplayName.ToString(), *BwayPS->GetPlayerName());

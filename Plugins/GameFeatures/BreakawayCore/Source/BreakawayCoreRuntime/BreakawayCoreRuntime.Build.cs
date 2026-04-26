@@ -25,6 +25,7 @@ public class BreakawayCoreRuntime : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[] { 
 				"AIModule",
+				"CommonUI",
 				"Core", 
 				"CoreUObject", 
 				"EnhancedInput",
@@ -47,7 +48,6 @@ public class BreakawayCoreRuntime : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
 				"CommonGame",
-				"CommonUI",
 				"CommonUser",
 				"MediaAssets",
 				"NetCore",

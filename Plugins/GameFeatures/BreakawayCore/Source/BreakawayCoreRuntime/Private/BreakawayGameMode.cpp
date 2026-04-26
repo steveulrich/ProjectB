@@ -13,6 +13,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameplayTagsManager.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "TimerManager.h"
@@ -96,6 +97,17 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 	}
 }
 
+void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	if (ShouldDeferPlayerRestartForHeroSelection(NewPlayer))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: deferring spawn for %s until hero selection completes"), *GetNameSafe(NewPlayer));
+		return;
+	}
+
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+}
+
 void ABreakawayGameMode::Logout(AController* Exiting)
 {
 	if (APlayerController* PC = Cast<APlayerController>(Exiting))
@@ -108,6 +120,16 @@ void ABreakawayGameMode::Logout(AController* Exiting)
 	}
 
 	Super::Logout(Exiting);
+}
+
+bool ABreakawayGameMode::ControllerCanRestart(AController* Controller)
+{
+	if (ShouldDeferPlayerRestartForHeroSelection(Controller))
+	{
+		return false;
+	}
+
+	return Super::ControllerCanRestart(Controller);
 }
 
 AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player)
@@ -335,6 +357,18 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 ABwayGameState* ABreakawayGameMode::GetBreakawayGameState() const
 {
 	return GetGameState<ABwayGameState>();
+}
+
+bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AController* Controller) const
+{
+	if (!Controller)
+	{
+		return false;
+	}
+
+	const ABwayGameState* BwayGS = GetBreakawayGameState();
+	const UBwayHeroSelectionPhaseComponent* HeroSelectionPhase = BwayGS ? BwayGS->HeroSelectionPhaseComponent : nullptr;
+	return HeroSelectionPhase && HeroSelectionPhase->ShouldBlockPlayerSpawning();
 }
 
 TArray<AActor*> ABreakawayGameMode::GetPlayerStartsWithTag(const FName& Tag) const

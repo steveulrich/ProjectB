@@ -363,6 +363,16 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 	CheckAllPlayersReady();
 }
 
+void UBwayHeroSelectionManager::SynchronizePlayerSelectionState(APlayerState* PlayerState)
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	UpdatePlayerSelection(PlayerState);
+}
+
 void UBwayHeroSelectionManager::OnRep_PlayerSelections()
 {
 	for (const FPlayerHeroSelectionState& Selection : PlayerSelections)
@@ -387,8 +397,8 @@ void UBwayHeroSelectionManager::BindToPlayerState(ABwayPlayerState* PlayerState)
 		return;
 	}
 
-	// Bind to selection changed delegate
 	PlayerState->OnSelectedHeroChanged.AddDynamic(this, &UBwayHeroSelectionManager::OnPlayerSelectedHero);
+	PlayerState->OnHeroLocked.AddDynamic(this, &UBwayHeroSelectionManager::OnPlayerLockedHero);
 }
 
 void UBwayHeroSelectionManager::UnbindFromPlayerState(ABwayPlayerState* PlayerState)
@@ -398,8 +408,8 @@ void UBwayHeroSelectionManager::UnbindFromPlayerState(ABwayPlayerState* PlayerSt
 		return;
 	}
 
-	// Unbind from selection changed delegate
 	PlayerState->OnSelectedHeroChanged.RemoveDynamic(this, &UBwayHeroSelectionManager::OnPlayerSelectedHero);
+	PlayerState->OnHeroLocked.RemoveDynamic(this, &UBwayHeroSelectionManager::OnPlayerLockedHero);
 }
 
 void UBwayHeroSelectionManager::OnPlayerSelectedHero(FPrimaryAssetId NewHeroId)
@@ -418,6 +428,22 @@ void UBwayHeroSelectionManager::OnPlayerSelectedHero(FPrimaryAssetId NewHeroId)
 		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
 		{
 			UpdatePlayerSelection(Selection.PlayerState);
+		}
+	}
+}
+
+void UBwayHeroSelectionManager::OnPlayerLockedHero(FPrimaryAssetId LockedHeroId)
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	for (FPlayerHeroSelectionState& Selection : PlayerSelections)
+	{
+		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
+		{
+			UpdatePlayerSelection(BwayPS);
 		}
 	}
 }

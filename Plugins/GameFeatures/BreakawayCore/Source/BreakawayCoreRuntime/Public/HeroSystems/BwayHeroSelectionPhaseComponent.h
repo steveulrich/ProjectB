@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
 #include "GameplayTagContainer.h"
 #include "Components/GameStateComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
@@ -9,7 +10,6 @@
 class UBwayHeroSelectionManager;
 class ABwayPlayerState;
 class UBwayHeroDataAsset;
-class UUserWidget;
 class ULyraGamePhaseAbility;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEvent);
@@ -55,6 +55,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection Phase")
 	void SkipHeroSelection();
 
+	/** Returns true while the replicated hero-selection phase is running. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
+	bool IsHeroSelectionActive() const { return bPhaseActive; }
+
+	/** Returns true once this component has finished hero selection for the current match. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
+	bool HasHeroSelectionCompleted() const { return bHeroSelectionCompleted; }
+
+	/** Whether GameMode should hold player spawning until hero selection completes. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
+	bool ShouldBlockPlayerSpawning() const { return bBlockPlayerSpawningUntilComplete && !bHeroSelectionCompleted; }
+
 	// ========== CONFIGURATION ==========
 
 	/**
@@ -62,7 +74,7 @@ public:
 	 * Should be a subclass of BwayHeroSelectWidget.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
-	TSoftClassPtr<UUserWidget> HeroSelectionWidgetClass;
+	TSoftClassPtr<UCommonActivatableWidget> HeroSelectionWidgetClass;
 
 	/**
 	 * Default hero to assign if player doesn't select.
@@ -88,6 +100,13 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
 	TSubclassOf<ULyraGamePhaseAbility> NextPhaseAbilityClass;
+
+	/**
+	 * When true, BreakawayGameMode will not spawn player pawns until this phase
+	 * completes. Disable only for test experiences that intentionally skip hero select.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase")
+	bool bBlockPlayerSpawningUntilComplete = true;
 
 	// ========== EVENTS ==========
 
@@ -132,11 +151,17 @@ private:
 	void SpawnHeroesForAllPlayers();
 
 	// Assign a default hero to players who didn't select
-	void AssignDefaultHeroes();
+	void AssignDefaultHeroes(bool bOnlyBots = false);
 
 	// Get reference to selection manager
 	UBwayHeroSelectionManager* GetSelectionManager() const;
 
+	// Always run the C++ CommonUI push/pop path, even when Blueprint overrides the events.
+	void PushHeroSelectionUIToPlayers();
+	void PopHeroSelectionUIFromPlayers();
+
 	// Track if phase is active
 	bool bPhaseActive = false;
+
+	bool bHeroSelectionCompleted = false;
 };

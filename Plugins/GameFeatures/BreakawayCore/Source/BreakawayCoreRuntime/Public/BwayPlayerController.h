@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommonActivatableWidget.h"
 #include "Player/LyraPlayerController.h"
 #include "BwayPlayerController.generated.h"
 
@@ -59,7 +60,7 @@ public:
 
 	/** Show hero selection UI on the owning client. */
 	UFUNCTION(Client, Reliable)
-	void Client_ShowHeroSelection(const TSoftClassPtr<UUserWidget>& WidgetClass);
+	void Client_ShowHeroSelection(const TSoftClassPtr<UCommonActivatableWidget>& WidgetClass);
 
 	/** Hide hero selection UI on the owning client. */
 	UFUNCTION(Client, Reliable)
@@ -86,9 +87,9 @@ public:
 	void Server_RequestReturnToFrontEnd();
 
 private:
-	/** Active hero-selection widget, owned by the local player controller. */
+	/** Active hero-selection widget pushed through Lyra's CommonUI layer stack. */
 	UPROPERTY(Transient)
-	TObjectPtr<UUserWidget> HeroSelectionWidget;
+	TObjectPtr<UCommonActivatableWidget> HeroSelectionWidget;
 
 	/** Active results widget, kept so we can clean it up if the match restarts. */
 	UPROPERTY(Transient)

@@ -45,7 +45,9 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	virtual void BeginPlay() override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	virtual bool ControllerCanRestart(AController* Controller) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
 
@@ -110,4 +112,7 @@ protected:
 
 	/** Spawn initial game objects (relic, goals) using spawn point system */
 	void SpawnInitialGameObjects();
+
+	/** True while the Hero Selection phase owns the initial spawn gate. */
+	bool ShouldDeferPlayerRestartForHeroSelection(const AController* Controller) const;
 };

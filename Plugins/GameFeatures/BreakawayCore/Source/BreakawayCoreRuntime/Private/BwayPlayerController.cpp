@@ -4,7 +4,10 @@
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Blueprint/UserWidget.h"
+#include "CommonActivatableWidget.h"
+#include "CommonUIExtensions.h"
 #include "Development/BwayCheatManager.h"
+#include "GameplayTagContainer.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayPlayerController)
@@ -83,14 +86,14 @@ void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimary
 	}
 }
 
-void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftClassPtr<UUserWidget>& WidgetClass)
+void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftClassPtr<UCommonActivatableWidget>& WidgetClass)
 {
 	if (WidgetClass.IsNull())
 	{
 		return;
 	}
 
-	UClass* LoadedClass = WidgetClass.LoadSynchronous();
+	TSubclassOf<UCommonActivatableWidget> LoadedClass = WidgetClass.LoadSynchronous();
 	if (!LoadedClass)
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayPlayerController: Failed to load hero selection widget"));
@@ -99,34 +102,33 @@ void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftC
 
 	if (HeroSelectionWidget)
 	{
-		HeroSelectionWidget->RemoveFromParent();
+		UCommonUIExtensions::PopContentFromLayer(HeroSelectionWidget);
 		HeroSelectionWidget = nullptr;
 	}
 
-	HeroSelectionWidget = CreateWidget<UUserWidget>(this, LoadedClass);
-	if (!HeroSelectionWidget)
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!LocalPlayer)
 	{
+		UE_LOG(LogTemp, Error, TEXT("BwayPlayerController: Cannot show hero selection without a local player"));
 		return;
 	}
 
-	HeroSelectionWidget->AddToViewport(100);
-	SetShowMouseCursor(true);
-	FInputModeUIOnly InputMode;
-	InputMode.SetWidgetToFocus(HeroSelectionWidget->TakeWidget());
-	SetInputMode(InputMode);
+	const FGameplayTag MenuLayer = FGameplayTag::RequestGameplayTag(FName("UI.Layer.Menu"));
+	HeroSelectionWidget = UCommonUIExtensions::PushContentToLayer_ForPlayer(LocalPlayer, MenuLayer, LoadedClass);
+	if (!HeroSelectionWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayPlayerController: Failed to push hero selection widget to the CommonUI layer"));
+		return;
+	}
 }
 
 void ABwayPlayerController::Client_HideHeroSelection_Implementation()
 {
 	if (HeroSelectionWidget)
 	{
-		HeroSelectionWidget->RemoveFromParent();
+		UCommonUIExtensions::PopContentFromLayer(HeroSelectionWidget);
 		HeroSelectionWidget = nullptr;
 	}
-
-	SetShowMouseCursor(false);
-	FInputModeGameOnly InputMode;
-	SetInputMode(InputMode);
 }
 
 void ABwayPlayerController::Client_ShowResults_Implementation(int32 WinningTeam, const TSoftClassPtr<UUserWidget>& WidgetClass)
