@@ -25,7 +25,7 @@ void ABwayPlayerState::PostInitializeComponents()
 		{
 			if (!ASC->GetSet<UBwayGoldAttributeSet>())
 			{
-				UBwayGoldAttributeSet* GoldSet = NewObject<UBwayGoldAttributeSet>(ASC);
+				UBwayGoldAttributeSet* GoldSet = NewObject<UBwayGoldAttributeSet>(this);
 				ASC->AddSpawnedAttribute(GoldSet);
 			}
 		}
