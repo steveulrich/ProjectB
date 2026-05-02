@@ -11,6 +11,7 @@ class UBwayHeroSelectionManager;
 class ABwayPlayerState;
 class UBwayHeroDataAsset;
 class ULyraGamePhaseAbility;
+class ULyraExperienceDefinition;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEndedEvent);
@@ -102,6 +103,20 @@ public:
 	TSubclassOf<ULyraGamePhaseAbility> NextPhaseAbilityClass;
 
 	/**
+	 * Optional fallback map to load after hero selection when the current URL contains HeroSelectStaging.
+	 * The URL option HeroSelectTargetMap takes precedence when present.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase|Travel", meta = (AllowedTypes = "Map"))
+	FPrimaryAssetId PostHeroSelectionMapID;
+
+	/**
+	 * Optional fallback experience to pass after hero selection when the current URL contains HeroSelectStaging.
+	 * The URL option HeroSelectTargetExperience takes precedence when present.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Selection Phase|Travel", meta = (AllowedTypes = "LyraExperienceDefinition"))
+	FPrimaryAssetId PostHeroSelectionExperienceID;
+
+	/**
 	 * When true, BreakawayGameMode will not spawn player pawns until this phase
 	 * completes. Disable only for test experiences that intentionally skip hero select.
 	 */
@@ -137,9 +152,15 @@ protected:
 	/** Internal callback when Lyra's Game Phase system activates the HeroSelection phase */
 	UFUNCTION()
 	void HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag);
+
+	void HandleExperienceLoaded(const ULyraExperienceDefinition* Experience);
 	
 	/** Start the next Lyra phase after hero selection is done */
 	void EndPhaseAndProgressToNext();
+
+	bool ShouldSkipHeroSelectionPhase() const;
+	bool ShouldTravelToPostHeroSelectionMap() const;
+	bool TryTravelToPostHeroSelectionMap() const;
 
 private:
 

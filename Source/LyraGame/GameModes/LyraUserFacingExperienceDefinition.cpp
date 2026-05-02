@@ -10,10 +10,43 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraUserFacingExperienceDefinition)
 
+namespace
+{
+	ECommonSessionOnlineMode ToCommonSessionOnlineMode(ELyraUserFacingExperienceOnlineMode OnlineMode)
+	{
+		switch (OnlineMode)
+		{
+		case ELyraUserFacingExperienceOnlineMode::Offline:
+			return ECommonSessionOnlineMode::Offline;
+		case ELyraUserFacingExperienceOnlineMode::LAN:
+			return ECommonSessionOnlineMode::LAN;
+		case ELyraUserFacingExperienceOnlineMode::Online:
+		default:
+			return ECommonSessionOnlineMode::Online;
+		}
+	}
+}
+
 UCommonSession_HostSessionRequest* ULyraUserFacingExperienceDefinition::CreateHostingRequest(const UObject* WorldContextObject) const
 {
 	const FString ExperienceName = ExperienceID.PrimaryAssetName.ToString();
 	const FString UserFacingExperienceName = GetPrimaryAssetId().PrimaryAssetName.ToString();
+	ELyraUserFacingExperienceOnlineMode EffectiveOnlineMode = OnlineMode;
+	if (const FString* OnlineModeOverride = ExtraArgs.Find(TEXT("OnlineMode")))
+	{
+		if (OnlineModeOverride->Equals(TEXT("Offline"), ESearchCase::IgnoreCase))
+		{
+			EffectiveOnlineMode = ELyraUserFacingExperienceOnlineMode::Offline;
+		}
+		else if (OnlineModeOverride->Equals(TEXT("LAN"), ESearchCase::IgnoreCase))
+		{
+			EffectiveOnlineMode = ELyraUserFacingExperienceOnlineMode::LAN;
+		}
+		else if (OnlineModeOverride->Equals(TEXT("Online"), ESearchCase::IgnoreCase))
+		{
+			EffectiveOnlineMode = ELyraUserFacingExperienceOnlineMode::Online;
+		}
+	}
 
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
 	UGameInstance* GameInstance = World ? World->GetGameInstance() : nullptr;
@@ -34,9 +67,13 @@ UCommonSession_HostSessionRequest* ULyraUserFacingExperienceDefinition::CreateHo
 		// We always enable presence on this session because it is the primary session used for matchmaking. For online systems that care about presence, only the primary session should have presence enabled
 		Result->bUsePresence = !IsRunningDedicatedServer();
 	}
+	Result->OnlineMode = ToCommonSessionOnlineMode(EffectiveOnlineMode);
+	Result->bUseLobbies = bUseLobbies && (Result->OnlineMode == ECommonSessionOnlineMode::Online);
+	Result->bUsePresence = bUsePresence && (Result->OnlineMode == ECommonSessionOnlineMode::Online) && !IsRunningDedicatedServer();
 	Result->MapID = MapID;
 	Result->ModeNameForAdvertisement = UserFacingExperienceName;
 	Result->ExtraArgs = ExtraArgs;
+	Result->ExtraArgs.Remove(TEXT("OnlineMode"));
 	Result->ExtraArgs.Add(TEXT("Experience"), ExperienceName);
 	Result->MaxPlayerCount = MaxPlayerCount;
 

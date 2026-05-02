@@ -220,6 +220,10 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
       return false;
     }
 
+    if (FrontendSubsystem) {
+      FrontendSubsystem->SetSelectedHeroId(HeroId);
+    }
+
     // Send selection to server
     LocalPlayerState->ServerSetSelectedHeroId(HeroId);
     UE_LOG(LogTemp, Log,

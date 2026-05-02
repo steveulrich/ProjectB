@@ -34,6 +34,18 @@ void ABwayPlayerState::PostInitializeComponents()
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: PostInitializeComponents called for %s"), *GetName());
 }
 
+void ABwayPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	if (ABwayPlayerState* BwayPlayerState = Cast<ABwayPlayerState>(PlayerState))
+	{
+		BwayPlayerState->SelectedHeroId = SelectedHeroId;
+		BwayPlayerState->bHeroLocked = bHeroLocked;
+		BwayPlayerState->PlayerNum = PlayerNum;
+	}
+}
+
 // ========== RELIC SYSTEM ==========
 
 void ABwayPlayerState::SetHasRelic(bool bNewHasRelic)

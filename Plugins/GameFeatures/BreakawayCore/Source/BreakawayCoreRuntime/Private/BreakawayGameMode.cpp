@@ -7,6 +7,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/PlayerController.h"
 #include "EngineUtils.h"
@@ -94,6 +95,14 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 	{
 		UE_LOG(LogBreakawayGame, Warning, TEXT("Player %s logged in without a selected hero"), 
 			*NewPlayer->GetName());
+
+		if (UGameplayStatics::HasOption(OptionsString, TEXT("SkipHeroSelection")))
+		{
+			if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(NewPlayer))
+			{
+				BwayPC->Client_RequestPreSelectedHero();
+			}
+		}
 	}
 }
 
@@ -161,6 +170,21 @@ AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player
 
 void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 {
+	if (!IsExperienceLoaded())
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: deferring spawn for %s until experience loads"), *GetNameSafe(NewPlayer));
+		FTimerDelegate RestartDelegate;
+		RestartDelegate.BindUObject(this, &ThisClass::RestartPlayer, NewPlayer);
+		GetWorldTimerManager().SetTimerForNextTick(RestartDelegate);
+		return;
+	}
+
+	if (ShouldDeferPlayerRestartForHeroSelection(NewPlayer))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: deferring spawn for %s until hero selection completes"), *GetNameSafe(NewPlayer));
+		return;
+	}
+
 	UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: BEGIN for %s"), *GetNameSafe(NewPlayer));
 
 	// Check for selected hero before spawning
@@ -176,6 +200,19 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 
 	// Call base implementation to spawn the pawn
 	Super::RestartPlayer(NewPlayer);
+	NewPlayer->ResetIgnoreInputFlags();
+
+	if (APlayerController* PC = Cast<APlayerController>(NewPlayer))
+	{
+		if (APawn* RestartedPawn = PC->GetPawn())
+		{
+			// Seamless travel plus the immediate round-start restart can leave the
+			// owning client without a fresh pawn restart, so force the client path
+			// that recreates/binds the local input component.
+			PC->ClientRetryClientRestart(RestartedPawn);
+			RestartedPawn->ForceNetUpdate();
+		}
+	}
 
 	// Now apply hero data to the newly spawned pawn
 	ApplyHeroDataToNewPawn(NewPlayer);
@@ -362,6 +399,11 @@ ABwayGameState* ABreakawayGameMode::GetBreakawayGameState() const
 bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AController* Controller) const
 {
 	if (!Controller)
+	{
+		return false;
+	}
+
+	if (UGameplayStatics::HasOption(OptionsString, TEXT("SkipHeroSelection")))
 	{
 		return false;
 	}

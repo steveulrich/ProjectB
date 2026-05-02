@@ -48,6 +48,14 @@ void ULyraBotCreationComponent::ServerCreateBots_Implementation()
 		return;
 	}
 
+	if (AGameModeBase* GameModeBase = GetGameMode<AGameModeBase>())
+	{
+		if (UGameplayStatics::HasOption(GameModeBase->OptionsString, TEXT("HeroSelectStaging")))
+		{
+			return;
+		}
+	}
+
 	RemainingBotNames = RandomBotNames;
 
 	// Determine how many bots to spawn

@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BwayPlayerController.h"
+#include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Blueprint/UserWidget.h"
@@ -82,6 +83,14 @@ void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimary
 		{
 			BwayPS->ServerSetSelectedHeroId(PreSelectedHeroId);
 			BwayPS->ServerLockHeroSelection();
+		}
+
+		if (GetPawn())
+		{
+			if (ABreakawayGameMode* BreakawayGameMode = GetWorld() ? Cast<ABreakawayGameMode>(GetWorld()->GetAuthGameMode()) : nullptr)
+			{
+				BreakawayGameMode->ApplyHeroDataToNewPawn(this);
+			}
 		}
 	}
 }

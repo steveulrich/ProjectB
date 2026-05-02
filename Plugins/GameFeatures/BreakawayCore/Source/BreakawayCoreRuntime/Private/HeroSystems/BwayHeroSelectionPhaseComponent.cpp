@@ -5,13 +5,17 @@
 #include "BwayPlayerController.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/PlayerController.h"
+#include "GameFramework/GameModeBase.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 #include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
+#include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "Player/LyraPlayerBotController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "TimerManager.h"
 
 UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -66,6 +70,27 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Initialized"));
+
+	if (ShouldSkipHeroSelectionPhase())
+	{
+		bHeroSelectionCompleted = true;
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: SkipHeroSelection URL option found; hero select UI will not be shown"));
+	}
+	else if (ShouldTravelToPostHeroSelectionMap())
+	{
+		if (ULyraExperienceManagerComponent* ExperienceManager = GetOwner()->FindComponentByClass<ULyraExperienceManagerComponent>())
+		{
+			ExperienceManager->CallOrRegister_OnExperienceLoaded_LowPriority(
+				FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::HandleExperienceLoaded));
+			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: HeroSelectStaging URL option found; waiting for experience load before starting hero selection"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No LyraExperienceManagerComponent found; starting staging hero selection on next tick"));
+			GetWorld()->GetTimerManager().SetTimerForNextTick(
+				FTimerDelegate::CreateUObject(this, &ThisClass::StartHeroSelectionPhase));
+		}
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -89,6 +114,14 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 	if (!GetOwner()->HasAuthority())
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: StartHeroSelectionPhase called on client"));
+		return;
+	}
+
+	if (ShouldSkipHeroSelectionPhase())
+	{
+		bHeroSelectionCompleted = true;
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection phase start ignored because SkipHeroSelection is set"));
+		EndPhaseAndProgressToNext();
 		return;
 	}
 
@@ -201,8 +234,15 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 	HideHeroSelectionUI();
 	PopHeroSelectionUIFromPlayers();
 
-	// Spawn heroes for all players
-	SpawnHeroesForAllPlayers();
+	if (!ShouldTravelToPostHeroSelectionMap())
+	{
+		// Spawn heroes for all players
+		SpawnHeroesForAllPlayers();
+	}
+	else
+	{
+		TryTravelToPostHeroSelectionMap();
+	}
 
 	// Broadcast event
 	OnHeroSelectionPhaseEnded.Broadcast();
@@ -226,7 +266,14 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 	AssignDefaultHeroes();
 
 	// Spawn heroes immediately
-	SpawnHeroesForAllPlayers();
+	if (!ShouldTravelToPostHeroSelectionMap())
+	{
+		SpawnHeroesForAllPlayers();
+	}
+	else
+	{
+		TryTravelToPostHeroSelectionMap();
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
@@ -291,6 +338,17 @@ void UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated(const FGameplayT
 	StartHeroSelectionPhase();
 }
 
+void UBwayHeroSelectionPhaseComponent::HandleExperienceLoaded(const ULyraExperienceDefinition* Experience)
+{
+	if (!GetOwner()->HasAuthority() || bPhaseActive || bHeroSelectionCompleted || !ShouldTravelToPostHeroSelectionMap())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Experience loaded; starting staging hero selection"));
+	StartHeroSelectionPhase();
+}
+
 void UBwayHeroSelectionPhaseComponent::EndPhaseAndProgressToNext()
 {
 	if (!GetOwner()->HasAuthority())
@@ -301,30 +359,133 @@ void UBwayHeroSelectionPhaseComponent::EndPhaseAndProgressToNext()
 	// In Lyra's phase system, starting a new sibling phase automatically ends the
 	// current one (phases are nested by tag — sibling phases cancel each other).
 	// So we start the next phase, which auto-cancels HeroSelection.
-	if (NextPhaseAbilityClass)
+	TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = NextPhaseAbilityClass;
+	if (!PhaseAbilityClass)
+	{
+		const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+			FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_Warmup.BW_Phase_Warmup_C")));
+		PhaseAbilityClass = FallbackPhaseAbilityClass.LoadSynchronous();
+		if (PhaseAbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: NextPhaseAbilityClass is not set; using BW_Phase_Warmup fallback"));
+		}
+	}
+
+	if (PhaseAbilityClass)
 	{
 		if (UWorld* World = GetWorld())
 		{
 			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
 			{
-				PhaseSubsystem->StartPhase(NextPhaseAbilityClass);
+				PhaseSubsystem->StartPhase(PhaseAbilityClass);
 				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Started next phase via %s"),
-					*NextPhaseAbilityClass->GetName());
+					*PhaseAbilityClass->GetName());
 			}
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: NextPhaseAbilityClass is not set! Cannot progress beyond hero selection. Set it in BP_BW_GameState or in the component defaults."));
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: NextPhaseAbilityClass is not set and BW_Phase_Warmup fallback failed to load! Cannot progress beyond hero selection."));
 	}
+}
+
+bool UBwayHeroSelectionPhaseComponent::ShouldTravelToPostHeroSelectionMap() const
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (const AGameModeBase* GameMode = World->GetAuthGameMode())
+		{
+			return UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("HeroSelectStaging"));
+		}
+	}
+
+	return false;
+}
+
+bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return false;
+	}
+
+	UWorld* World = GetWorld();
+	AGameModeBase* GameMode = World ? World->GetAuthGameMode() : nullptr;
+	if (!World || !GameMode)
+	{
+		return false;
+	}
+
+	const FString& OptionsString = GameMode->OptionsString;
+	if (!UGameplayStatics::HasOption(OptionsString, TEXT("HeroSelectStaging")))
+	{
+		return false;
+	}
+
+	FString TargetMap = UGameplayStatics::ParseOption(OptionsString, TEXT("HeroSelectTargetMap"));
+	if (TargetMap.IsEmpty() && PostHeroSelectionMapID.IsValid())
+	{
+		if (UAssetManager* AssetManager = UAssetManager::GetIfInitialized())
+		{
+			TargetMap = AssetManager->GetPrimaryAssetPath(PostHeroSelectionMapID).GetLongPackageName();
+		}
+	}
+
+	if (TargetMap.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: HeroSelectStaging is set but no HeroSelectTargetMap or PostHeroSelectionMapID was provided"));
+		return false;
+	}
+
+	FString TargetExperience = UGameplayStatics::ParseOption(OptionsString, TEXT("HeroSelectTargetExperience"));
+	if (TargetExperience.IsEmpty() && PostHeroSelectionExperienceID.IsValid())
+	{
+		TargetExperience = PostHeroSelectionExperienceID.PrimaryAssetName.ToString();
+	}
+
+	FString TravelURL = TargetMap;
+	if (!TargetExperience.IsEmpty())
+	{
+		TravelURL += FString::Printf(TEXT("?Experience=%s"), *TargetExperience);
+	}
+
+	if (UGameplayStatics::HasOption(OptionsString, TEXT("listen")))
+	{
+		TravelURL += TEXT("?listen");
+	}
+
+	TravelURL += TEXT("?SkipHeroSelection=1");
+	TravelURL += TEXT("?SeamlessTravel");
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection complete; travelling to match URL %s"), *TravelURL);
+	return World->ServerTravel(TravelURL, /*bAbsolute=*/true, /*bShouldSkipGameNotify=*/false);
+}
+
+bool UBwayHeroSelectionPhaseComponent::ShouldSkipHeroSelectionPhase() const
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (const AGameModeBase* GameMode = World->GetAuthGameMode())
+		{
+			return UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("SkipHeroSelection"));
+		}
+	}
+
+	return false;
 }
 
 void UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: All players ready - ending phase"));
 
+	const bool bWillTravelToMatchMap = ShouldTravelToPostHeroSelectionMap();
+
 	// End our phase logic (assigns defaults, hides UI, spawns heroes)
 	EndHeroSelectionPhase();
+	if (bWillTravelToMatchMap)
+	{
+		return;
+	}
 	
 	// Progress Lyra's phase to the next one (e.g. Warmup / Playing)
 	EndPhaseAndProgressToNext();
@@ -405,19 +566,34 @@ void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes(bool bOnlyBots)
 		return;
 	}
 
-	// Check if we have a default hero configured
-	if (DefaultHeroData.IsNull())
+	UBwayHeroDataAsset* DefaultHero = nullptr;
+	if (!DefaultHeroData.IsNull())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No default hero configured — players without a selection will have no hero"));
-		return;
+		DefaultHero = DefaultHeroData.LoadSynchronous();
 	}
 
-	// Load the default hero data asset
-	UBwayHeroDataAsset* DefaultHero = DefaultHeroData.LoadSynchronous();
 	if (!DefaultHero)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: Failed to load DefaultHeroData"));
-		return;
+		if (UBwayHeroRegistry* HeroRegistry = UBwayHeroRegistry::Get(this))
+		{
+			for (const TSoftObjectPtr<UBwayHeroDataAsset>& HeroSoftObject : HeroRegistry->GetAllHeroSoftObjects())
+			{
+				UBwayHeroDataAsset* CandidateHero = HeroRegistry->LoadHeroSync(HeroSoftObject);
+				if (CandidateHero && CandidateHero->GetPrimaryAssetId().IsValid())
+				{
+					DefaultHero = CandidateHero;
+					UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: DefaultHeroData is not configured; using %s as fallback default hero"),
+						*DefaultHero->GetPrimaryAssetId().ToString());
+					break;
+				}
+			}
+		}
+
+		if (!DefaultHero)
+		{
+			UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: No default hero configured and no fallback hero could be loaded"));
+			return;
+		}
 	}
 
 	// Get its PrimaryAssetId so we can assign via the standard path
@@ -436,7 +612,8 @@ void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes(bool bOnlyBots)
 	{
 		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
 		{
-			if (bOnlyBots && !Cast<ALyraPlayerBotController>(BwayPS->GetOwner()))
+			const bool bIsBot = Cast<ALyraPlayerBotController>(BwayPS->GetOwner()) != nullptr || BwayPS->GetPlayerController() == nullptr;
+			if (bOnlyBots && !bIsBot)
 			{
 				continue;
 			}

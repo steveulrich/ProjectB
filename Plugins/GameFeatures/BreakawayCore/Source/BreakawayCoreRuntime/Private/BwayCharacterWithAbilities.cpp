@@ -255,10 +255,7 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
 				if (Set)
 				{
 					UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Granting AbilitySet[%d] = %s"), i, *GetNameSafe(Set));
-					
-					// Initialize ability actor info
-					ASC->InitAbilityActorInfo(this, this);
-					
+
 					// Grant the ability set (tracked for cleanup)
 					Set->GiveToAbilitySystem(ASC, &HeroAbilityGrantedHandles);
 					

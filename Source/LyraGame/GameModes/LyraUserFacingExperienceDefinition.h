@@ -13,6 +13,15 @@ class UTexture2D;
 class UUserWidget;
 struct FFrame;
 
+/** Network/session behavior requested by a user-facing experience tile. */
+UENUM(BlueprintType)
+enum class ELyraUserFacingExperienceOnlineMode : uint8
+{
+	Offline,
+	LAN,
+	Online
+};
+
 /** Description of settings used to display experiences in the UI and start a new session */
 UCLASS(BlueprintType)
 class ULyraUserFacingExperienceDefinition : public UPrimaryDataAsset
@@ -31,6 +40,18 @@ public:
 	/** Extra arguments passed as URL options to the game */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Experience)
 	TMap<FString, FString> ExtraArgs;
+
+	/** Online behavior for the session created from this tile. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Session)
+	ELyraUserFacingExperienceOnlineMode OnlineMode = ELyraUserFacingExperienceOnlineMode::Online;
+
+	/** True if this session should use lobbies when the active online subsystem supports them. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Session)
+	bool bUseLobbies = true;
+
+	/** True if this session should advertise presence when the active online subsystem supports it. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Session)
+	bool bUsePresence = true;
 
 	/** Primary title in the UI */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Experience)
