@@ -354,6 +354,10 @@
 		{
 			"Name": "PCG",
 			"Enabled": true
+		},
+		{
+			"Name": "Hero_Spartacus",
+			"Enabled": true
 		}
 	]
 }
