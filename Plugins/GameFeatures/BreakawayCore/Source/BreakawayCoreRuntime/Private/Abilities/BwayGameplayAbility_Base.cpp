@@ -26,6 +26,12 @@ UBwayGameplayAbility_Base::UBwayGameplayAbility_Base(const FObjectInitializer& O
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+
+	const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
+	if (RelicCarrierTag.IsValid())
+	{
+		ActivationBlockedTags.AddTag(RelicCarrierTag);
+	}
 }
 
 bool UBwayGameplayAbility_Base::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const

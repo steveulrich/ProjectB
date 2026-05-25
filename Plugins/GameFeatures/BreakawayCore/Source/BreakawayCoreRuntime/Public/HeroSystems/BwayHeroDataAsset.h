@@ -146,8 +146,17 @@ public:
     TArray<TObjectPtr<const ULyraAbilitySet>> AbilitySets;
 
     /* -------- Buildables -------- */
+    /** Legacy single buildable reference. Prefer BuildableDataAssets. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables")
     TObjectPtr<UBwayBuildableDataAsset> BuildableDataAsset;
+
+    /** Up to two buildables per hero (design spec). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables")
+    TArray<TObjectPtr<UBwayBuildableDataAsset>> BuildableDataAssets;
+
+    /** Returns all configured buildable data assets (merges legacy + array). */
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category="Buildables")
+    TArray<UBwayBuildableDataAsset*> GetAllBuildableDataAssets() const;
 
     /* -------- Audio -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")

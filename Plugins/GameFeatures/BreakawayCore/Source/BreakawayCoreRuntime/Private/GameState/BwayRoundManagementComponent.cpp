@@ -4,6 +4,7 @@
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Relic/RelicActor.h"
+#include "BwayCharacterWithAbilities.h"
 #include "Buildable/BuildableBase.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "GameState/BwayRelicManagerComponent.h"
@@ -274,6 +275,8 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 
 	SetRoundState(ERoundState::RoundComplete);
 
+	OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, RoundEndDelay);
+
 	// Schedule next round
 	FTimerHandle UnusedHandle;
 	GetWorld()->GetTimerManager().SetTimer(
@@ -327,6 +330,20 @@ void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
 
 	if (ABwayGameState* BwayGS = GetBwayGameState())
 	{
+		if (UBwayRelicManagerComponent* RelicMgr = BwayGS->RelicManagerComponent)
+		{
+			if (ARelicActor* Relic = RelicMgr->GetRelicActor())
+			{
+				if (ABwayCharacterWithAbilities* Carrier = Relic->CurrentCarrier)
+				{
+					if (ABwayPlayerState* ScorerPS = Cast<ABwayPlayerState>(Carrier->GetPlayerState()))
+					{
+						ScorerPS->AddObjectiveScore(1);
+					}
+				}
+			}
+		}
+
 		for (APlayerState* PlayerState : BwayGS->PlayerArray)
 		{
 			if (BwayGS->GetPlayerTeam(PlayerState) == ScoringTeam)

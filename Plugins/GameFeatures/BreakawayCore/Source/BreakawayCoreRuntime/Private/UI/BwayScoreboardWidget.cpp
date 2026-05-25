@@ -160,8 +160,10 @@ FScoreboardPlayerData UBwayScoreboardWidget::BuildPlayerData(ABwayPlayerState* P
 		}
 	}
 
-	// TODO: Get K/D/A and objective stats from player state when those properties are added
-	// For now, these default to 0
+	Data.Kills = PlayerState->GetKills();
+	Data.Deaths = PlayerState->GetDeaths();
+	Data.Assists = PlayerState->GetAssists();
+	Data.ObjectiveScore = PlayerState->GetObjectiveScore();
 
 	// Check alive status from game state
 	if (ABwayGameState* GameState = GetBwayGameState())

@@ -18,6 +18,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	int32 NumBotsToCreate = 7;
 
+	/** When enabled, spawns enough bots to reach TargetPlayerCount (4v4 = 8). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
+	bool bScaleBotsToTargetPlayerCount = true;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
+	int32 TargetPlayerCount = 8;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	TSubclassOf<class AAIController> BotControllerClass;
 

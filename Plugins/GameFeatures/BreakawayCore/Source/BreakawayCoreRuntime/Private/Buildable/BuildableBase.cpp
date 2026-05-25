@@ -11,6 +11,8 @@
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "Player/LyraPlayerState.h"
+#include "BwayGameState.h"
+#include "GameState/BwayBuildableRegistryComponent.h"
 
 
 const FName ABuildableActor::MeshComponentName = TEXT("MeshComponent");
@@ -63,6 +65,22 @@ void ABuildableActor::BeginPlay()
     }
 }
 
+void ABuildableActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (HasAuthority())
+    {
+        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+        {
+            if (UBwayBuildableRegistryComponent* Registry = GameState->BuildableRegistryComponent)
+            {
+                Registry->UnregisterBuildable(this);
+            }
+        }
+    }
+
+    Super::EndPlay(EndPlayReason);
+}
+
 void ABuildableActor::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
@@ -81,6 +99,14 @@ void ABuildableActor::InitializeBuildable(AController* InOwningPlayerController,
         SetOwner(InOwningPlayerController);
         // Breakaway team indices are 0/1; Lyra team IDs are 1/2.
         SetTeamId(FGenericTeamId(static_cast<uint8>(FMath::Max(0, InTeamId) + 1)));
+
+        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+        {
+            if (UBwayBuildableRegistryComponent* Registry = GameState->BuildableRegistryComponent)
+            {
+                Registry->RegisterBuildable(this);
+            }
+        }
 
         // If already placed and re-initialized (e.g. round start), re-evaluate build state
         if (BuildTime > 0.0f && !bIsActive && !GetWorldTimerManager().IsTimerActive(BuildTimerHandle))

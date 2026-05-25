@@ -150,28 +150,43 @@ void UBwayResultsScreenWidget::DetermineMVP(FMatchResultsData& OutResults) const
 		return;
 	}
 
-	// Simple MVP logic: pick the first player from the winning team
-	// TODO: Implement proper MVP calculation based on K/D/A, objective score, etc.
-	
-	if (OutResults.WinningTeam >= 0 && OutResults.WinningTeam < 2)
-	{
-		const FTeamInfo& WinningTeamInfo = GameState->GetTeamInfo(OutResults.WinningTeam);
-		if (WinningTeamInfo.TeamMembers.Num() > 0)
-		{
-			if (ABwayPlayerState* MVPPS = Cast<ABwayPlayerState>(WinningTeamInfo.TeamMembers[0]))
-			{
-				OutResults.MVPPlayerName = FText::FromString(MVPPS->GetPlayerName());
+	ABwayPlayerState* BestPlayer = nullptr;
+	float BestScore = -1.0f;
 
-				// Get hero name
-				FPrimaryAssetId HeroId = MVPPS->GetSelectedHeroId();
-				if (HeroId.IsValid())
-				{
-					if (UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
-					{
-						OutResults.MVPHeroName = HeroData->DisplayName;
-					}
-				}
-			}
+	for (APlayerState* PS : GameState->PlayerArray)
+	{
+		ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
+		if (!BwayPS)
+		{
+			continue;
+		}
+
+		const float MVPScore =
+			static_cast<float>(BwayPS->GetKills()) * 2.0f +
+			static_cast<float>(BwayPS->GetAssists()) * 1.0f +
+			static_cast<float>(BwayPS->GetObjectiveScore()) * 3.0f -
+			static_cast<float>(BwayPS->GetDeaths()) * 0.5f;
+
+		if (MVPScore > BestScore)
+		{
+			BestScore = MVPScore;
+			BestPlayer = BwayPS;
+		}
+	}
+
+	if (!BestPlayer)
+	{
+		return;
+	}
+
+	OutResults.MVPPlayerName = FText::FromString(BestPlayer->GetPlayerName());
+
+	FPrimaryAssetId HeroId = BestPlayer->GetSelectedHeroId();
+	if (HeroId.IsValid())
+	{
+		if (UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
+		{
+			OutResults.MVPHeroName = HeroData->DisplayName;
 		}
 	}
 }

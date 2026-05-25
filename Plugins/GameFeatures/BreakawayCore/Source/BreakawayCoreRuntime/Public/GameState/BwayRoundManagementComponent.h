@@ -47,6 +47,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRoundEnded, int32, WinningTeam
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMatchEnded, int32, WinningTeam, int32, TotalRounds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundTimeChanged, int32, RemainingSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBetweenRoundPlanningStarted, int32, CompletedRoundNumber, float, PlanningDurationSeconds);
 
 /**
  * Component responsible for managing Breakaway round lifecycle.
@@ -189,6 +190,10 @@ public:
 	/** Broadcast when the round state changes (WaitingToStart / RoundActive / RoundEnding / RoundComplete). */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundStateChanged OnRoundStateChanged;
+
+	/** Fired after a round ends and before the next round starts (planning / buildable spend window). */
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
+	FOnBetweenRoundPlanningStarted OnBetweenRoundPlanningStarted;
 
 protected:
 	virtual void BeginPlay() override;

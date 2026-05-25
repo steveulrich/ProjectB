@@ -1,5 +1,6 @@
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
+#include "BwayPlayerState.h"
 #include "Relic/RelicSettings.h"
 #include "Relic/RelicMovementReplicationComponent.h"
 #include "Components/SphereComponent.h"
@@ -663,6 +664,17 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
                 UE_LOG(LogTemp, Warning, TEXT("Server: Failed to grant RelicAbilitySet to PlayerState. PlayerStateASC Valid: %d, AbilitySetToGrant Valid: %d"),
                     IsValid(PlayerStateASC), IsValid(AbilitySetToGrant));
             }
+
+            const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
+            if (PlayerStateASC && RelicCarrierTag.IsValid())
+            {
+                PlayerStateASC->AddLooseGameplayTag(RelicCarrierTag);
+            }
+
+            if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CarrierPlayerState))
+            {
+                BwayPS->SetHasRelic(true);
+            }
         }
         else
         {
@@ -694,6 +706,17 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
                 {
                     GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
                     UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(CarrierPlayerState), *GetNameSafe(CurrentCarrier));
+
+                    const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
+                    if (RelicCarrierTag.IsValid())
+                    {
+                        PlayerStateASC->RemoveLooseGameplayTag(RelicCarrierTag);
+                    }
+                }
+
+                if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CarrierPlayerState))
+                {
+                    BwayPS->SetHasRelic(false);
                 }
             }
         }

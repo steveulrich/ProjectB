@@ -3,6 +3,7 @@
 #include "BwayGameState.h"
 #include "Buildable/BuildableBase.h"
 #include "Economy/BwayGoldAttributeSet.h"
+#include "GameState/BwayBuildableRegistryComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystemComponent.h"
 #include "Engine/Engine.h"
@@ -131,6 +132,14 @@ int32 UBwayBuildablePlacementLibrary::CountActiveBuildablesForPlayer(const UObje
 	if (!World || !PlayerController)
 	{
 		return 0;
+	}
+
+	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		if (const UBwayBuildableRegistryComponent* Registry = GameState->BuildableRegistryComponent)
+		{
+			return Registry->GetBuildableCountForPlayer(PlayerController->PlayerState);
+		}
 	}
 
 	int32 Count = 0;

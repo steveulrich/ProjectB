@@ -14,6 +14,10 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameState/BwayScoringComponent.h"
+#include "GameState/BwayRelicManagerComponent.h"
+#include "GameState/BwayTeamBridgeComponent.h"
+#include "GameState/BwayBuildableRegistryComponent.h"
 
 ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -24,6 +28,11 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	HeroSelectionManager = CreateDefaultSubobject<UBwayHeroSelectionManager>(TEXT("HeroSelectionManager"));
 	HeroSelectionPhaseComponent = CreateDefaultSubobject<UBwayHeroSelectionPhaseComponent>(TEXT("HeroSelectionPhaseComponent"));
 	CreateDefaultSubobject<UBwayBotCreationComponent>(TEXT("BotCreationComponent"));
+	RoundManagementComponent = CreateDefaultSubobject<UBwayRoundManagementComponent>(TEXT("RoundManagementComponent"));
+	ScoringComponent = CreateDefaultSubobject<UBwayScoringComponent>(TEXT("ScoringComponent"));
+	RelicManagerComponent = CreateDefaultSubobject<UBwayRelicManagerComponent>(TEXT("RelicManagerComponent"));
+	TeamBridgeComponent = CreateDefaultSubobject<UBwayTeamBridgeComponent>(TEXT("TeamBridgeComponent"));
+	BuildableRegistryComponent = CreateDefaultSubobject<UBwayBuildableRegistryComponent>(TEXT("BuildableRegistryComponent"));
 }
 
 void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -43,9 +52,9 @@ void ABwayGameState::PostInitializeComponents()
 	}
 
 	// Listen for match end to transition to PostGame
-	if (UBwayRoundManagementComponent* RoundMgmt = FindComponentByClass<UBwayRoundManagementComponent>())
+	if (RoundManagementComponent)
 	{
-		RoundMgmt->OnMatchEnded.AddDynamic(this, &ABwayGameState::HandleMatchEnded);
+		RoundManagementComponent->OnMatchEnded.AddDynamic(this, &ABwayGameState::HandleMatchEnded);
 	}
 }
 
@@ -204,7 +213,7 @@ int32 ABwayGameState::GetTeamIndexForActor(const AActor* Actor) const
 
 UBwayRoundManagementComponent* ABwayGameState::GetRoundManagement() const
 {
-	return FindComponentByClass<UBwayRoundManagementComponent>();
+	return RoundManagementComponent;
 }
 
 ERoundState ABwayGameState::GetCurrentRoundState() const

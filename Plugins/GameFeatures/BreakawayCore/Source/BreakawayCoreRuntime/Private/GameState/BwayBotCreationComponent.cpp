@@ -1,5 +1,6 @@
 #include "GameState/BwayBotCreationComponent.h"
 
+#include "BwayGameState.h"
 #include "GameModes/LyraGameMode.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
@@ -7,6 +8,14 @@
 #include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayBotCreationComponent)
+
+namespace
+{
+bool IsHumanPlayerController(const AController* Controller)
+{
+	return Controller && !Controller->IsA<AAIController>();
+}
+}
 
 UBwayBotCreationComponent::UBwayBotCreationComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -27,7 +36,23 @@ void UBwayBotCreationComponent::BeginPlay()
 
 void UBwayBotCreationComponent::SpawnInitialBots()
 {
-	for (int32 Index = SpawnedBotList.Num(); Index < NumBotsToCreate; ++Index)
+	int32 BotsToSpawn = NumBotsToCreate;
+
+	if (bScaleBotsToTargetPlayerCount && GetWorld())
+	{
+		int32 HumanCount = 0;
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (IsHumanPlayerController(It->Get()))
+			{
+				++HumanCount;
+			}
+		}
+
+		BotsToSpawn = FMath::Max(0, TargetPlayerCount - HumanCount);
+	}
+
+	for (int32 Index = SpawnedBotList.Num(); Index < BotsToSpawn; ++Index)
 	{
 		SpawnOneBot();
 	}

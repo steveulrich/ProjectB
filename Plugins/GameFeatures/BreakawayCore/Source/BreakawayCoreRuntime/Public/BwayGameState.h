@@ -12,6 +12,10 @@ class ABwayCharacterWithAbilities;
 class UBwayHeroSelectionManager;
 class UBwayHeroSelectionPhaseComponent;
 class UBwayRoundManagementComponent;
+class UBwayScoringComponent;
+class UBwayRelicManagerComponent;
+class UBwayTeamBridgeComponent;
+class UBwayBuildableRegistryComponent;
 class UUserWidget;
 class ULyraGamePhaseAbility;
 
@@ -62,6 +66,21 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<UBwayHeroSelectionPhaseComponent> HeroSelectionPhaseComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
+	TObjectPtr<UBwayRoundManagementComponent> RoundManagementComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
+	TObjectPtr<UBwayScoringComponent> ScoringComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
+	TObjectPtr<UBwayRelicManagerComponent> RelicManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
+	TObjectPtr<UBwayTeamBridgeComponent> TeamBridgeComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Buildables")
+	TObjectPtr<UBwayBuildableRegistryComponent> BuildableRegistryComponent;
 
 	// ========================================
 	// Team Management
