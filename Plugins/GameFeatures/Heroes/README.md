@@ -34,12 +34,14 @@ Heroes/
 
 ## Vertical Slice Roster
 
-| Plugin | Hero | C++ abilities | Buildables |
-|--------|------|---------------|------------|
-| Hero_Spartacus | Spartacus | Yes (4) | Fire Catapult, Dragon Spire |
-| Hero_Morgan | Morgan Le Fay | Content/BP | Elder Stone, Tome of Frailty |
-| Hero_Alona | Alona | Content/BP | Sun Shrine, Starlight |
-| Hero_Rawlins | Rawlins | Content/BP | Cage, Boom Box |
+Codename paths: [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
+
+| Plugin | DisplayName | Codename folder | Gate | Buildables |
+|--------|-------------|-----------------|------|------------|
+| Hero_Spartacus | Spartacus | `Argus` | 1 | Fire Catapult, Dragon Spire |
+| Hero_Alona | Alona | `Alona` | 2 | Sun Shrine, Starlight |
+| Hero_Morgan | Morgan Le Fay | `Hexweaver` | 3 | Elder Stone, Tome of Frailty |
+| Hero_Rawlins | Rawlins | `Gunslinger` | 4 | Cage, Boom Box |
 
 ## Loader
 

@@ -1,22 +1,25 @@
-# Morgan Le Fay — Content Setup
+# Morgan Le Fay — Content Setup (Gate 3)
 
-Controller/debuff hero. Implement abilities as BP `ULyraGameplayAbility` or new C++ subclasses.
+**Codename:** `Hexweaver` (folder paths). **DisplayName:** Morgan Le Fay.  
+See [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
 
-## Design Spec Abilities
+Greenfield in `Hero_Morgan` plugin — no BreakawayCore legacy folder.
 
-- **Q:** Burden of Sin (slow projectile)
-- **E:** Circle of Spite (hex zone)
-- **Ultimate:** Aura of Silence (AOE silence + damage)
+## Target (F3 + K2 + O2)
 
-## Buildables
+| Item | Path pattern |
+|------|----------------|
+| Hero DA | `/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_HeroData_Hexweaver` |
+| Ability set | K2 MVP — Burden of Sin, Circle of Spite, Aura of Silence (+ passive/slide as needed) |
+| Buildables | **Elder Stone**, **Tome of Frailty** — O2 placement + persist |
+| GFD | `GFD_Hero_Morgan` |
 
-- Elder Stone (trap/explosion charge)
-- Tome of Frailty (`ATurretBase` — attack debuff)
+Implement abilities as BP `ULyraGameplayAbility` or new C++ subclasses. See [Breakaway_Reborn_Design_Spec.md](../../../AI_Planning/Breakaway_Reborn_Design_Spec.md).
 
-## Hero Data
+## Gate 3 done when
 
-`DA_BW_Hero_Morgan` — Support/Controller class, two entries in `BuildableDataAssets`.
+- [ ] Plugin enabled + scan path `/Hero_Morgan/Characters/Heroes`
+- [ ] Morgan Le Fay appears in hero select (4-hero E2 progress)
+- [ ] ue-mcp confirms DA under Hexweaver folder
 
-Register via `GFD_Hero_Morgan` (`UBwayGameFeatureData`).
-
-See [Breakaway_Reborn_Design_Spec.md](../../../AI_Planning/Breakaway_Reborn_Design_Spec.md).
+Then **Gate 4 — Gunslinger** ([Rawlins CONTENT_SETUP](../Rawlins/CONTENT_SETUP.md)).

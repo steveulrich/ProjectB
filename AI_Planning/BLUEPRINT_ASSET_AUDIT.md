@@ -203,7 +203,7 @@ All five assets exist under `/BreakawayCore/Experiences/Phases/`, parent `LyraGa
 3. Open `B_BW_Experience_CaptureTheRelic` — confirm GameMode, pawn data, action sets match section 1 (manual — MCP cannot read experience CDO fields)
 4. PIE on `L_BW_DevMap` with `?Experience=B_BW_Experience_CaptureTheRelic`
 5. Confirm hero select → round start → relic spawn → goal score → results → front-end travel
-6. Fix hero data: rename Argus → Spartacus, add Morgan/Rawlins DAs, fill `BuildableDataAssets[]`, fix Argus mesh
+6. Hero migration per [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md) — Gate 1 Spartacus (DisplayName + mesh + 2 buildables); then Hexweaver/Gunslinger greenfield
 
 **Automated re-run:** `node Scripts/audit-breakaway-assets.mjs` (+ `audit-breakaway-assets-extra.mjs`) with Editor open and ue-mcp bridge connected.
 
@@ -232,6 +232,7 @@ All five assets exist under `/BreakawayCore/Experiences/Phases/`, parent `LyraGa
 
 ## Related Docs
 
+- [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md) — DisplayName vs codename folders (Argus = Spartacus, Hexweaver, Gunslinger)
 - [BreakawayCore/Docs/SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)
 - [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)
 - [BLUEPRINT_INTEGRATION_GUIDE.md](./BLUEPRINT_INTEGRATION_GUIDE.md)

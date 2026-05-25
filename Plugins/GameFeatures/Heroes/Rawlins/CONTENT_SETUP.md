@@ -1,23 +1,25 @@
-# Rawlins — Content Setup
+# Rawlins — Content Setup (Gate 4)
 
-Ranged DPS hero.
+**Codename:** `Gunslinger` (folder paths). **DisplayName:** Rawlins.  
+See [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
 
-## Design Spec Abilities
+Greenfield in `Hero_Rawlins` plugin.
 
-- Trick Shot passive (ricochet)
-- Scatter Shot (cone)
-- Sticky Bomb
-- Ricochet ultimate
+## Target (F3 + K2 + O2)
 
-## Buildables
+| Item | Path pattern |
+|------|----------------|
+| Hero DA | `/Hero_Rawlins/Characters/Heroes/Gunslinger/DA_BW_HeroData_Gunslinger` |
+| Ability set | K2 MVP — Trick Shot, Scatter Shot, Sticky Bomb, Ricochet ult |
+| Buildables | **Cage**, **Boom Box** — O2 placement + persist |
+| GFD | `GFD_Hero_Rawlins` |
 
-- Cage (`ATrapBase` — imprison)
-- Boom Box (explosive trap/turret)
+Use Lyra/ShooterCore projectile patterns for hitscan/projectile GAs.
 
-## Hero Data
+## Gate 4 done when
 
-`DA_BW_Hero_Rawlins` — Assassin/Ranged class.
+- [ ] Plugin enabled + scan path `/Hero_Rawlins/Characters/Heroes`
+- [ ] All **four** heroes in hero select (E2 satisfied)
+- [ ] ue-mcp hero search returns 4 `HeroData` assets from plugin paths
 
-Register via `GFD_Hero_Rawlins`.
-
-Use Lyra projectile / weapon patterns from ShooterCore as reference for hitscan/projectile GAs.
+Then run **A1c playtest** — [DEVMAP_PLAYTEST_GUIDE.md](../../../AI_Planning/DEVMAP_PLAYTEST_GUIDE.md) (human = Alona).

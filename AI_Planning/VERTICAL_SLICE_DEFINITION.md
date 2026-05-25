@@ -42,8 +42,14 @@ Design-spec Capture-the-Relic: **4v4**, **4 heroes**, **buildables**, **match-on
 | System reference | `Plugins/GameFeatures/BreakawayCore/Docs/` |
 | Planning / schedule | `AI_Planning/` |
 
+## Hero content gates (before A1c)
+
+All four heroes (**E2 + F3**) must pass plugin migration gates. Order: Spartacus → Alona → Morgan → Rawlins.  
+Codenames: [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md). Gate 1 checklist: [Spartacus CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md).
+
 ## Related
 
+- [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md)
 - [project_architecture_overview.md](./project_architecture_overview.md)
 - [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md)
 - [Breakaway_Reborn_Design_Spec.md](./Breakaway_Reborn_Design_Spec.md)
