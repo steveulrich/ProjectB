@@ -1,55 +1,56 @@
 # Breakaway: Reborn - Vertical Slice Roadmap
 
-This roadmap outlines the path from the current prototype state to a production-quality Vertical Slice. It incorporates current project progress (C++ movement systems, Lyra integration) and focuses on "Slide feel and fluidity" as a core priority.
+> **Scope:** [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)  
+> **Systems detail:** [BreakawayCore/Docs/SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)
 
-## 1. Current State Assessment
-- **Movement Foundation:** Solid C++ implementation in `BreakawayCore` plugin. Sliding uses a custom physics mode (`PhysSliding`) with slope-based acceleration and steering.
-- **Architecture:** Lyra-based GAS integration is established. Hero data assets and base classes (`BwayCharacterWithAbilities`) are ready.
-- **UI:** Functional HUD and ability widgets exist but lack production polish.
-- **Missing Elements:** No dedicated SaveGame/Persistence logic for campaign or stats. Lack of high-fidelity sensory feedback (Audio/VFX) for core mechanics.
+## Current State (2026-05-25)
 
-## 2. Gap Analysis: The "Slice" Requirements
-To reach Vertical Slice status, the following "Gaps" must be bridged:
-| Feature | Current State | Vertical Slice Requirement |
-| :--- | :--- | :--- |
-| **Slide Feel** | Functional physics | "Elastic" feel with camera juice, sparks, and wind audio. |
-| **Persistence** | Session-only | Persistent Gold/Upgrades and Campaign progress (`SaveGame`). |
-| **VFX / Audio** | Placeholder / Standard | Impactful soundscapes and Niagara-based particle effects. |
-| **Env. Polish** | Basic Arena | One "Production Ready" arena (Mythological theme). |
+- **C++ match loop:** Round/score/relic/teams on GameState components (default subobjects)
+- **Buildables:** Persistence flag + `UBwayBuildableRegistryComponent`
+- **4v4 bots:** Auto-scale to 8 players
+- **Relic carrier:** Combat abilities blocked via `Gameplay.State.RelicCarrier`
+- **Docs:** Dual-location dev + planning docs synced
+- **Content gap:** Editor assets not in git — use [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
 
----
+## Priority Order (Design-Spec Slice)
 
-## 3. The Roadmap
+### 1. Playable Loop (DevMap)
+- [x] C++ GameState components wired
+- [ ] Experience + map assets verified in Editor
+- [ ] End-to-end PIE — [DEVMAP_PLAYTEST_GUIDE.md](./DEVMAP_PLAYTEST_GUIDE.md)
 
-### ## Core Gameplay (Movement & Combat)
-- [ ] **Slide Juice Phase 1 (Camera):** Implement dynamic FOV scaling and camera shake based on slide velocity.
-- [ ] **Slide Juice Phase 2 (Audio):** Add looping "friction" audio with real-time pitching based on surface material and speed.
-- [ ] **Slide Juice Phase 3 (VFX):** Implement Niagara dust/sparks trail that scales with slide intensity.
-- [ ] **Movement Tuning:** Refine `SlideSteerSpeed` and `SlideFrictionPower` constants in C++ to remove jitter during high-speed turns.
-- [ ] **Relic Interaction:** Polish `GA_Throw` and `GA_Pass` animations with predictive client-side trajectories.
+### 2. Spartacus Content
+- [x] C++ abilities
+- [x] Relic carrier restrictions
+- [ ] BP ability assets, mesh, 2 buildables — [Heroes/Spartacus/CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md)
 
-### ## Meta Systems (Persistence)
-- [ ] **SaveGame Implementation:** Create `UBwaySaveGame` class to track Gold, Hero Upgrades, and "Ascension Rites" progress.
-- [ ] **Campaign Flow:** Implement the "Liberation" logic where a hero is removed from the roster upon victory.
-- [ ] **Attribute Persistence:** Ensure GAS `AttributeSet` values (Health, Gold) correctly load/save between matches.
+### 3. Heroes 2–4
+- [x] GF plugin templates (Morgan, Alona, Rawlins)
+- [ ] Ability + buildable content per hero CONTENT_SETUP.md
 
-### ## UI / UX
-- [ ] **HUD Polish:** Replace placeholder bars with stylized "Mythological" containers.
-- [ ] **Feedback Loop:** Add screen-space damage indicators and Relic possession highlights.
-- [ ] **Menu Flow:** Create a production-ready Character Select screen using the existing `HeroSelect` content.
+### 4. Relic & Net Polish
+- [x] Scoring cooldown, LastPossessingTeam, movement replication component
+- [ ] 200ms latency playtest
+- [ ] Fumble-on-damage (design spec)
 
-### ## Art & Tech Art (Environment & Character)
-- [ ] **Hero Polish:** Finalize the "Spartacus" model with high-fidelity materials and physics-driven cloth/armor.
-- [ ] **Arena "The Rite":** Texturing pass using Polycam-derived tileables for the arena floor.
-- [ ] **Lighting Pass:** Set up Lumen-optimized lighting with dynamic GI for the main battle arena.
+### 5. Buildables & Between-Round UI
+- [x] Registry, planning delegate `OnBetweenRoundPlanningStarted`
+- [ ] BP planning/shop widget
+- [ ] 8 buildable data assets
 
----
+### 6. Dorado Parity + Polish
+- [ ] Mirror DevMap spawn/goals on L_BW_Dorado
+- [ ] HUD/scoreboard BP polish
+- [ ] Slide juice (FOV/VFX/audio) — post-slice gate optional
 
-## 4. Technical Debt Warning
-- **[IMPORTANT] Networking & Prediction:** The current `ApplySlideSteering` implementation directly rotates the `Velocity` vector. While fine for local testing, this can cause "teleporting" or jitter under latency. Recommend moving steering logic into `CalcVelocity` or using a predictive movement proxy.
-- **[CAUTION] TObjectPtr Usage:** Ensure all raw pointers in newer headers are converted to `TObjectPtr` to follow UE5 best practices and avoid potential GC issues.
-- **[NOTE] Asset Manager:** The project needs a configured `AssetManager` to handle asynchronous loading of Heroes/Buildables to prevent hitching during match start.
+## Explicitly Deferred
 
-## 5. High-Risk Areas
-- **Buildable Persistence:** Storing structure locations across rounds is technically complex for networking. This requires a robust `Server-Authoritative` serialization system.
-- **AI StateTree Complexity:** Transitioning between "Combat" and "Sports" modes in StateTree may require significant debugging to prevent AI "indecision" at high speeds.
+- Ascension Rites campaign
+- SaveGame / meta gold
+- Production art pass
+
+## Technical Debt
+
+- Consolidate duplicate GameState vs component state
+- Migrate off ShooterCTF spawn tag coupling
+- Slide net steering under latency

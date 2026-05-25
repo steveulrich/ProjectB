@@ -1,6 +1,18 @@
 # Breakaway Vertical Slice: Blueprint Integration Guide
 
+> **Audit checklist:** [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)  
+> **Systems reference:** [BreakawayCore/Docs/SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)
+
 This guide walks you through the remaining Blueprint/Editor work to complete your Vertical Slice.
+
+## GameState Components (Updated)
+
+`ABwayGameState` creates these in **C++** — do **not** add duplicate components on `BP_BW_GameState`:
+
+- RoundManagement, Scoring, RelicManager, TeamBridge, BuildableRegistry
+- HeroSelectionManager, HeroSelectionPhaseComponent, BotCreationComponent
+
+Only override **properties** (timers, widget classes, phase ability refs) in BP if needed.
 
 ---
 

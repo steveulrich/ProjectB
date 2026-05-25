@@ -1,5 +1,8 @@
 # Breakaway Vertical Slice - Project Roadmap
 
+> **Scope:** [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)  
+> **Playtest:** [DEVMAP_PLAYTEST_GUIDE.md](./DEVMAP_PLAYTEST_GUIDE.md)
+
 ## ✅ PHASE 1: Core Game Mode (COMPLETED)
 **Status:** Ready for integration  
 **Priority:** CRITICAL
@@ -20,124 +23,81 @@
 
 ---
 
-## 🔄 PHASE 2: Relic System Polish (NEXT)
-**Estimated Time:** 2-3 days  
+## 🔄 PHASE 2: Relic System Polish (IN PROGRESS)
 **Priority:** HIGH
 
-### Current Issues to Fix
-1. **Replication Choppiness**
-   - Smooth interpolation for thrown/passed relic
-   - Proper physics replication settings
-   - Network prediction for carrier
+### C++ Done (2026-05)
+- [x] `URelicMovementReplicationComponent` smoothing
+- [x] `LastPossessingTeam` replicated tracking
+- [x] Goal volume scoring cooldown + settle delay
+- [x] `bHasScoredThisRound` guard
+- [x] Client throw prediction RPC
 
-2. **Goal Scoring Reliability**
-   - Ensure LastPossessingTeam always tracks correctly
-   - Handle edge cases (simultaneous pickup/drop)
-   - Add scoring cooldown to prevent double-scores
+### Remaining
+- [ ] 200ms latency playtest checklist
+- [ ] Relic VFX/audio content
+- [ ] Fumble-on-damage (design spec)
 
-3. **Visual Feedback**
-   - Relic trail effect
-   - Pickup/drop animations
-   - Team color tinting on relic
-
-### Implementation Tasks
-- [ ] Add network smoothing to relic movement
-- [ ] Implement client-side prediction for relic throws
-- [ ] Add LastPossessingTeam tracking (see INTEGRATION_QUICK_REF.md)
-- [ ] Create VFX for relic states (carried, thrown, scored)
-- [ ] Add audio cues for relic events
-
-### Testing Checklist
-- [ ] Test with 200ms latency simulation
-- [ ] Verify scoring works in all scenarios
-- [ ] Test rapid pickup/drop/throw sequences
-- [ ] Multiplayer test with 8 clients
+See [Relic_System.md](../Plugins/GameFeatures/BreakawayCore/Docs/Relic_System.md).
 
 ---
 
-## 🦸 PHASE 3: First Hero Implementation (Spartacus)
-**Estimated Time:** 5-7 days  
+## 🦸 PHASE 3: Spartacus (C++ DONE — CONTENT NEXT)
 **Priority:** HIGH
 
-### Hero Choice: Spartacus (Tank)
-**Why first?** Simpler abilities, good for testing core systems
+### C++ Done
+- [x] Shield Bash, War Cry, Defensive Stance, Gladiator's Leap
+- [x] Relic carrier blocks combat via `Gameplay.State.RelicCarrier`
 
-### Design Specs
-**Role:** Tank/Initiator  
-**Health:** 300  
-**Movement Speed:** 550 (slightly slower than base)
-
-### Abilities to Implement
-
-#### Q - Shield Bash (Ability 1)
-- Dash forward, stunning first enemy hit
-- Cooldown: 8 seconds
-- Implementation: Dash movement + sphere trace for collision
-
-#### E - War Cry (Ability 2)  
-- AOE buff for nearby allies (speed + damage)
-- Cooldown: 12 seconds
-- Implementation: Sphere overlap + temporary gameplay effects
-
-#### F - Defensive Stance (Ability 3)
-- Reduce incoming damage, slow movement
-- Toggle ability, drains resource over time
-- Implementation: Gameplay effect with tags
-
-#### R - Gladiator's Leap (Ultimate)
-- Leap to target location, AOE damage on landing
-- Cooldown: 45 seconds
-- Implementation: Launch character + target actor + AOE damage
-
-### Implementation Tasks
-- [ ] Create HeroDataAsset for Spartacus
-- [ ] Set up skeletal mesh and animations
-- [ ] Implement all 4 abilities as ULyraGameplayAbility subclasses
-- [ ] Create gameplay effects (damage, buffs, debuffs)
-- [ ] Set up input bindings
-- [ ] Create ability UI icons and cooldown displays
-- [ ] Polish VFX and SFX for each ability
-
-### Testing Checklist
-- [ ] All abilities work in singleplayer
-- [ ] All abilities replicate correctly in multiplayer
-- [ ] Cooldowns work and display correctly
-- [ ] Can pick up/throw relic while using abilities
-- [ ] Abilities interact correctly with buildables
+### Editor Tasks
+- [ ] Hero data asset, mesh, ability BPs — [CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md)
+- [ ] Fire Catapult + Dragon Spire buildables
 
 ---
 
-## 🏗️ PHASE 4: Buildable System Implementation
-**Estimated Time:** 4-5 days  
-**Priority:** MEDIUM
+## 🦸 PHASE 4: Heroes Morgan, Alona, Rawlins
+**Priority:** HIGH
 
-### Spartacus Buildable: Barricade Wall
-**Function:** Blocks movement and projectiles  
-**Health:** 200  
-**Build Time:** 2 seconds
+- [x] Game Feature plugin templates + CONTENT_SETUP per hero
+- [ ] Ability BPs/C++ per design spec
+- [ ] 2 buildables each (6 remaining after Spartacus)
 
-### Implementation Tasks
-- [ ] Polish buildable placement system (already prototyped)
-- [ ] Implement build timer and invulnerability
-- [ ] Create Barricade Wall actor with collision
-- [ ] Add health system to buildables (extends BwayActorWithAbilitiesAndHealth)
-- [ ] Implement destruction VFX
-- [ ] Add placement preview with valid/invalid zones
-- [ ] Limit to 1 buildable per player at a time
-- [ ] Add buildable destruction on round reset
-
-### Testing Checklist
-- [ ] Can place buildable in valid locations
-- [ ] Cannot place in invalid locations (out of bounds, too close to goal)
-- [ ] Buildable blocks movement correctly
-- [ ] Buildable takes damage and can be destroyed
-- [ ] Buildable persists between rounds (if not destroyed)
-- [ ] Replicates correctly in multiplayer
+See [Plugins/GameFeatures/Heroes/README.md](../Plugins/GameFeatures/Heroes/README.md).
 
 ---
 
-## 🎨 PHASE 5: UI/UX Polish
-**Estimated Time:** 3-4 days  
+## 🏗️ PHASE 5: Buildables & Persistence (C++ DONE — CONTENT NEXT)
+**Priority:** HIGH
+
+### C++ Done
+- [x] `bPersistsBetweenRounds` + round reset logic
+- [x] `UBwayBuildableRegistryComponent`
+- [x] `OnBetweenRoundPlanningStarted` delegate
+- [x] `BuildableDataAssets[]` on hero data (2 per hero)
+
+### Remaining
+- [ ] 8 buildable BPs + data assets
+- [ ] Between-round planning UI (BP)
+
+See [Buildable_System.md](../Plugins/GameFeatures/BreakawayCore/Docs/Buildable_System.md).
+
+---
+
+## 🎮 PHASE 6: 4v4 Listen Server + Dorado + UI (IN PROGRESS)
+
+### C++ Done
+- [x] Bot backfill to 8 (`UBwayBotCreationComponent`)
+- [x] Scoreboard K/D/A/objective from PlayerState
+- [x] Results MVP weighted formula
+
+### Remaining
+- [ ] Dorado map parity with DevMap — [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
+- [ ] HUD/scoreboard/results BP widgets
+- [ ] 200ms relic latency test
+
+---
+
+## 🎨 PHASE 7: UI/UX Polish (POST-SLICE)
 **Priority:** MEDIUM
 
 ### Required UI Elements

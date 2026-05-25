@@ -1,0 +1,21 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Hero Spartacus",
+	"Description": "Spartacus hero content for Breakaway",
+	"Category": "Game Features",
+	"CreatedBy": "ProjectB",
+	"CanContainContent": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"EnabledByDefault": false,
+	"ExplicitlyLoaded": true,
+	"BuiltInInitialFeatureState": "Registered",
+	"Plugins": [
+		{
+			"Name": "BreakawayCore",
+			"Enabled": true
+		}
+	]
+}

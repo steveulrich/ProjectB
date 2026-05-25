@@ -1,0 +1,14 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Hero Rawlins",
+	"Description": "Rawlins hero content for Breakaway",
+	"Category": "Game Features",
+	"CreatedBy": "ProjectB",
+	"CanContainContent": true,
+	"EnabledByDefault": false,
+	"ExplicitlyLoaded": true,
+	"BuiltInInitialFeatureState": "Registered",
+	"Plugins": [{ "Name": "BreakawayCore", "Enabled": true }]
+}

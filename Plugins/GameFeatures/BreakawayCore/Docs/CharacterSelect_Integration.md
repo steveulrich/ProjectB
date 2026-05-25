@@ -1,5 +1,7 @@
 # Character Selection UI - Integration Guide
 
+> **See also:** [SYSTEMS_INDEX.md](./SYSTEMS_INDEX.md) · [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) · [UI_System.md](./UI_System.md)
+
 This guide explains how to integrate the character selection UI with your game systems.
 
 ---

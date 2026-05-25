@@ -1,5 +1,11 @@
 # Spartacus Hero Implementation Summary
 
+> **See also:** [GAS_and_Abilities.md](./GAS_and_Abilities.md) · [Hero plugin setup](../../Heroes/Spartacus/CONTENT_SETUP.md)
+
+## Relic Carrier Note
+
+Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation when ASC has `Gameplay.State.RelicCarrier`. Relic interaction abilities must use `ULyraGameplayAbility` (or a non-blocked base).
+
 ## Completed (C++ Code)
 
 All C++ ability classes have been implemented:

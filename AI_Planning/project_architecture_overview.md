@@ -39,6 +39,7 @@ graph TB
             Scoring["UBwayScoringComponent"]
             RelicMgr["UBwayRelicManagerComponent"]
             TeamBridge["UBwayTeamBridgeComponent"]
+            BuildReg["UBwayBuildableRegistryComponent"]
         end
 
         subgraph Hero["Hero Systems"]
@@ -82,7 +83,6 @@ graph TB
             PauseW["BwayPauseMenuWidget"]
         end
 
-        BwAssetMgr["UBwayAssetManager"]
         Exp["B_BW_Experience_CaptureTheRelic"]
     end
 
@@ -92,26 +92,16 @@ graph TB
     BwPS -->|extends| LyraPS
     BwPC -->|extends| LyraPC
     BwChar -->|extends| LyraChar
-    BwAssetMgr -->|extends| AssetMgr
 
-    %% GameState owns components
     BwGS --> RoundMgmt
     BwGS --> Scoring
     BwGS --> RelicMgr
     BwGS --> TeamBridge
-    BwGS --> HeroSelMgr
-    BwGS --> HeroPhase
-    BwGS --> SpawnMgr
-
-    %% Relationships
+    BwGS --> BuildReg
     TeamBridge -->|syncs to| TeamSubsys
     HeroPhase -->|integrates with| PhaseSubsys
-    HeroSelMgr -->|reads| HeroReg
-    HeroWidget -->|calls| HeroSelMgr
-    HeroWidget -->|reads| HeroReg
-    HeroWidget -->|updates| BwPS
-    HeroData -->|referenced by| HeroReg
     Exp -->|loaded by| ExpDef
+    AssetMgr -->|ULyraAssetManager scans| HeroData
     RelicMgr -->|spawns/tracks| RelicActor
     GoalVol -->|triggers| RoundMgmt
     SpawnMgr -->|manages| SpawnPt
@@ -147,7 +137,10 @@ Following Lyra's `UGameStateComponent` pattern, these components live on `ABwayG
 | [UBwayRoundManagementComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayRoundManagementComponent.h) | Round lifecycle | Start/end rounds, check win conditions (goal scored, team eliminated, timer expired), pre-round delay |
 | [UBwayScoringComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayScoringComponent.h) | Score tracking | Replicated per-team score array, [AddScore()](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayScoringComponent.h#28-29), [ResetScores()](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayScoringComponent.h#36-37), broadcasts `OnTeamScoreChanged` |
 | [UBwayRelicManagerComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayRelicManagerComponent.h) | Relic lifecycle | Spawns relic via SpawnPointManager, tracks carrier changes, resets relic between rounds |
-| [UBwayTeamBridgeComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayTeamBridgeComponent.h) | Lyra team sync | Bridges [BwayGameState](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/HeroSystems/BwayHeroSelectionManager.h#215-217) team data → `ULyraTeamSubsystem` so Lyra HUD/cues work |
+| [UBwayTeamBridgeComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayTeamBridgeComponent.h) | Lyra team sync | Bridges BwayGameState team data → `ULyraTeamSubsystem` |
+| [UBwayBuildableRegistryComponent](file:///e:/Unreal%20Projects/ProjectB/Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayBuildableRegistryComponent.h) | Buildable registry | Server-side tracking of placed buildables for caps and late-joiner queries |
+
+> **Note:** Round, Scoring, Relic, TeamBridge, and BuildableRegistry are **C++ default subobjects** on `ABwayGameState` (2026-05). BP GameState subclasses must not duplicate them.
 
 > [!IMPORTANT]
 > There is **dual responsibility** between `ABreakawayGameMode` (which has its own round/scoring/relic methods) and the `UGameStateComponent` versions. The components were extracted from the GameMode as part of a refactoring effort but the GameMode still retains the original methods. This is the primary architectural debt.
@@ -248,15 +241,15 @@ HeroSelectionPhaseComponent ──spawns heroes──→ GameMode::ApplyHeroData
 
 ```
 Engine Boot
-  └→ UBwayAssetManager::StartInitialLoading()     — registers primary asset types
-  └→ Lyra loads B_LyraFrontEnd_Experience          — Lyra's built-in frontend experience
+  └→ ULyraAssetManager — registers primary asset types (incl. Breakaway paths in DefaultGame.ini)
+  └→ Lyra loads B_LyraFrontEnd_Experience
        └→ L_LyraFrontEnd map loads
        └→ W_LyraFrontEnd widget displayed           — experience selection screen
        └→ Player selects "Capture the Relic"
             └→ Lyra's session/travel system initiates server travel
 ```
 
-**Systems involved:** `UBwayAssetManager` (Breakaway), `ULyraExperienceDefinition`, `UCommonSession` (Lyra)
+**Systems involved:** `ULyraAssetManager`, `ULyraExperienceDefinition`, `UCommonSession` (Lyra)
 
 ---
 
@@ -267,15 +260,17 @@ Server Travel to L_BW_Dorado (or L_BW_DevMap)
   └→ ABreakawayGameMode::InitGame()
        └→ Reads map options
   └→ ABreakawayGameMode::InitGameState()
-       └→ ABwayGameState is created (from BP_BW_GameState)
-       └→ GameState components created:
+       └→ ABwayGameState is created
+       └→ GameState components (C++ defaults on ABwayGameState):
             ├── UBwayRoundManagementComponent
             ├── UBwayScoringComponent
             ├── UBwayRelicManagerComponent
             ├── UBwayTeamBridgeComponent
+            ├── UBwayBuildableRegistryComponent
             ├── UBwayHeroSelectionManager
             ├── UBwayHeroSelectionPhaseComponent
-            └── UBwaySpawnPointManagerComponent
+            ├── UBwayBotCreationComponent
+            └── UBwaySpawnPointManagerComponent (added by GameMode)
   └→ B_BW_Experience_CaptureTheRelic loaded by Lyra
        └→ Injects action sets (LAS_BW_SharedInput)
        └→ Configures game phases
@@ -438,6 +433,20 @@ PostGame phase:
 - **Data-driven heroes**: Hero definitions as `UPrimaryDataAsset` with Asset Manager discovery
 - **Relic state machine**: Comprehensive 8-state FSM with proper replication
 - **GAS economy**: Clean attribute-set-only design with GameplayEffect-driven modifications
+
+## Vertical Slice Readiness (2026-05-25)
+
+| Dimension | Status |
+|-----------|--------|
+| C++ match loop | ~80% — components on GameState by default |
+| Relic / rounds / gold | Functional — polish & fumble-on-damage open |
+| Buildable persistence | C++ flag + registry |
+| 4 heroes | Spartacus C++ only; others need content |
+| 4v4 listen + bots | Bot scaler to 8 implemented |
+| Editor content | Audit template; verify in Editor |
+| Documentation | [SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md) |
+
+See [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md).
 
 ### Known Architectural Debt
 

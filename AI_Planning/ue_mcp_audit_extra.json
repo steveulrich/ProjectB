@@ -1,0 +1,3152 @@
+{
+  "experienceCaptureCDO": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/B_BW_Experience_CaptureTheRelic.B_BW_Experience_CaptureTheRelic_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/B_BW_Experience_CaptureTheRelic.B_BW_Experience_CaptureTheRelic_C\"\n}"
+  },
+  "experienceDevCDO": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/B_BW_Experience_Dev.B_BW_Experience_Dev_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/B_BW_Experience_Dev.B_BW_Experience_Dev_C\"\n}"
+  },
+  "gameModeDefaultCDO": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/GameModes/B_BWayGameMode_Default.B_BWayGameMode_Default_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/GameModes/B_BWayGameMode_Default.B_BWayGameMode_Default_C\"\n}"
+  },
+  "gameModeBaseCDO": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/GameModes/B_BWayGameMode.B_BWayGameMode_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/GameModes/B_BWayGameMode.B_BWayGameMode_C\"\n}"
+  },
+  "gameStateCDO": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/GameModes/BP_BW_GameState.BP_BW_GameState_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/GameModes/BP_BW_GameState.BP_BW_GameState_C\"\n}"
+  },
+  "phase_Warmup": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_Warmup.BW_Phase_Warmup_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_Warmup.BW_Phase_Warmup_C\"\n}"
+  },
+  "phase_HeroSelection": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_HeroSelection.BW_Phase_HeroSelection_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_HeroSelection.BW_Phase_HeroSelection_C\"\n}"
+  },
+  "phase_Playing": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_Playing.BW_Phase_Playing_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_Playing.BW_Phase_Playing_C\"\n}"
+  },
+  "phase_PostRound": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_PostRound.BW_Phase_PostRound_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_PostRound.BW_Phase_PostRound_C\"\n}"
+  },
+  "phase_PostGame": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_PostGame.BW_Phase_PostGame_C"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Asset not found: /BreakawayCore/Experiences/Phases/BW_Phase_PostGame.BW_Phase_PostGame_C\"\n}"
+  },
+  "bp_WBP_BW_HeroSelect": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "path": "/BreakawayCore/UI/HeroSelect/WBP_BW_HeroSelect",
+      "className": "WBP_BW_HeroSelect",
+      "parentClass": "BwayHeroSelectWidget",
+      "components": []
+    },
+    "raw": "{\n  \"success\": true,\n  \"path\": \"/BreakawayCore/UI/HeroSelect/WBP_BW_HeroSelect\",\n  \"className\": \"WBP_BW_HeroSelect\",\n  \"parentClass\": \"BwayHeroSelectWidget\",\n  \"components\": []\n}"
+  },
+  "bp_WBP_BW_CoreHUD": {
+    "ok": true,
+    "parsed": {
+      "success": false,
+      "error": "Blueprint not found: /BreakawayCore/UI/WBP_BW_CoreHUD"
+    },
+    "raw": "{\n  \"success\": false,\n  \"error\": \"Blueprint not found: /BreakawayCore/UI/WBP_BW_CoreHUD\"\n}"
+  },
+  "bp_WBP_BW_ResultsWidget": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "path": "/BreakawayCore/UI/WBP_BW_ResultsWidget",
+      "className": "WBP_BW_ResultsWidget",
+      "parentClass": "BwayResultsScreenWidget",
+      "components": []
+    },
+    "raw": "{\n  \"success\": true,\n  \"path\": \"/BreakawayCore/UI/WBP_BW_ResultsWidget\",\n  \"className\": \"WBP_BW_ResultsWidget\",\n  \"parentClass\": \"BwayResultsScreenWidget\",\n  \"components\": []\n}"
+  },
+  "outliner_L_BW_DevMap": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "worldName": "L_BW_DevMap",
+      "totalActors": 36,
+      "returnedActors": 36,
+      "actors": [
+        {
+          "name": "LyraWorldSettings",
+          "label": "LyraWorldSettings",
+          "class": "LyraWorldSettings",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraWorldSettings",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": []
+        },
+        {
+          "name": "Brush_0",
+          "label": "Brush0",
+          "class": "Brush",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.Brush_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_1",
+          "label": "CubeGridToolOutput",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_1",
+          "location": {
+            "x": -900,
+            "y": -900,
+            "z": -100
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "ExponentialHeightFog_0",
+          "label": "ExponentialHeightFog",
+          "class": "ExponentialHeightFog",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.ExponentialHeightFog_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": -70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "HeightFogComponent0",
+              "class": "ExponentialHeightFogComponent"
+            }
+          ]
+        },
+        {
+          "name": "VolumetricCloud_0",
+          "label": "VolumetricCloud",
+          "class": "VolumetricCloud",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.VolumetricCloud_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": -70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "VolumetricCloudComponent",
+              "class": "VolumetricCloudComponent"
+            }
+          ]
+        },
+        {
+          "name": "SkyAtmosphere_0",
+          "label": "SkyAtmosphere",
+          "class": "SkyAtmosphere",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SkyAtmosphere_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": -70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "SkyAtmosphereComponent",
+              "class": "SkyAtmosphereComponent"
+            },
+            {
+              "name": "ArrowComponent",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "DirectionalLight_0",
+          "label": "DirectionalLight",
+          "class": "DirectionalLight",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.DirectionalLight_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": -70
+          },
+          "rotation": {
+            "pitch": -31,
+            "yaw": -14,
+            "roll": -105.00000000000001
+          },
+          "components": [
+            {
+              "name": "LightComponent0",
+              "class": "DirectionalLightComponent"
+            },
+            {
+              "name": "ArrowComponent0",
+              "class": "ArrowComponent"
+            },
+            {
+              "name": "BillboardComponent_0",
+              "class": "BillboardComponent"
+            }
+          ]
+        },
+        {
+          "name": "SkyLight_0",
+          "label": "SkyLight",
+          "class": "SkyLight",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SkyLight_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": -70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "SkyLightComponent0",
+              "class": "SkyLightComponent"
+            },
+            {
+              "name": "BillboardComponent_0",
+              "class": "BillboardComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_0",
+          "label": "LyraPlayerStart2",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_0",
+          "location": {
+            "x": -630,
+            "y": 240,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_1",
+          "label": "LyraPlayerStart3",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_1",
+          "location": {
+            "x": 1070,
+            "y": 240,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_2",
+          "label": "LyraPlayerStart4",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_2",
+          "location": {
+            "x": -630,
+            "y": 410,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_3",
+          "label": "LyraPlayerStart5",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_3",
+          "location": {
+            "x": 1070,
+            "y": 440,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_4",
+          "label": "LyraPlayerStart6",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_4",
+          "location": {
+            "x": -630,
+            "y": 580,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_5",
+          "label": "LyraPlayerStart7",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_5",
+          "location": {
+            "x": -780,
+            "y": 240,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_6",
+          "label": "LyraPlayerStart8",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_6",
+          "location": {
+            "x": -779.9999999999973,
+            "y": 409.99999999999983,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_7",
+          "label": "LyraPlayerStart9",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_7",
+          "location": {
+            "x": -779.9999999999968,
+            "y": 579.9999999999997,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_8",
+          "label": "LyraPlayerStart10",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_8",
+          "location": {
+            "x": 1070,
+            "y": 610,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_9",
+          "label": "LyraPlayerStart11",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_9",
+          "location": {
+            "x": 1270,
+            "y": 240,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_10",
+          "label": "LyraPlayerStart12",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_10",
+          "location": {
+            "x": 1270,
+            "y": 440,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_11",
+          "label": "LyraPlayerStart13",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_11",
+          "location": {
+            "x": 1270,
+            "y": 610,
+            "z": 92
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999999,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_0",
+          "label": "CubeGridToolOutput2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_0",
+          "location": {
+            "x": 1400,
+            "y": 3500,
+            "z": -100
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_2",
+          "label": "CubeGridToolOutput3",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_2",
+          "location": {
+            "x": 1600,
+            "y": 1110,
+            "z": -200
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_3",
+          "label": "CubeGridToolOutput4",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_3",
+          "location": {
+            "x": -1295,
+            "y": -440,
+            "z": -200
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.00000239434594,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_4",
+          "label": "CubeGridToolOutput5",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_4",
+          "location": {
+            "x": -150,
+            "y": -280,
+            "z": -130
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -179.999998697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "RecastNavMesh_1",
+          "label": "RecastNavMesh1",
+          "class": "RecastNavMesh",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.RecastNavMesh_1",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "SceneComp",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "NavRenderingComp",
+              "class": "NavMeshRenderingComponent"
+            }
+          ]
+        },
+        {
+          "name": "NavMeshBoundsVolume_2",
+          "label": "NavMeshBoundsVolume",
+          "class": "NavMeshBoundsVolume",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.NavMeshBoundsVolume_2",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_0",
+          "label": "SP_GoalTeam1",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_0",
+          "location": {
+            "x": -400,
+            "y": 450,
+            "z": 30
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_1",
+          "label": "SP_GoalTeam2",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_1",
+          "location": {
+            "x": 700,
+            "y": 460,
+            "z": 30
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_2",
+          "label": "SP_Relic",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_2",
+          "location": {
+            "x": 240,
+            "y": 990,
+            "z": 70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "B_BW_HeroTestSpawner_C_1",
+          "label": "B_BW_HeroTestSpawner",
+          "class": "B_BW_HeroTestSpawner_C",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.B_BW_HeroTestSpawner_C_1",
+          "location": {
+            "x": -250,
+            "y": 1350,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionVolume",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "PadMesh",
+              "class": "StaticMeshComponent"
+            },
+            {
+              "name": "InfoWidgetComponent",
+              "class": "WidgetComponent"
+            }
+          ]
+        },
+        {
+          "name": "BuoyancyManager_0",
+          "label": "BuoyancyManager0",
+          "class": "BuoyancyManager",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BuoyancyManager_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": []
+        },
+        {
+          "name": "DefaultPhysicsVolume_0",
+          "label": "DefaultPhysicsVolume0",
+          "class": "DefaultPhysicsVolume",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.DefaultPhysicsVolume_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "GameplayDebuggerPlayerManager_0",
+          "label": "GameplayDebuggerPlayerManager0",
+          "class": "GameplayDebuggerPlayerManager",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.GameplayDebuggerPlayerManager_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "GameplayDebug_Input",
+              "class": "InputComponent"
+            }
+          ]
+        },
+        {
+          "name": "ChaosDebugDrawActor",
+          "label": "Actor",
+          "class": "Actor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.ChaosDebugDrawActor",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "ChaosDebugDrawComponent_0",
+              "class": "ChaosDebugDrawComponent"
+            }
+          ]
+        },
+        {
+          "name": "SmartObjectSubsystemRenderingActor_0",
+          "label": "SmartObjectSubsystemRenderingActor0",
+          "class": "SmartObjectSubsystemRenderingActor",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SmartObjectSubsystemRenderingActor_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "RenderingComp",
+              "class": "SmartObjectSubsystemRenderingComponent"
+            }
+          ]
+        },
+        {
+          "name": "AbstractNavData-Default",
+          "label": "AbstractNavData-Default",
+          "class": "AbstractNavData",
+          "path": "/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.AbstractNavData-Default",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "SceneComp",
+              "class": "SceneComponent"
+            }
+          ]
+        }
+      ]
+    },
+    "raw": "{\n  \"success\": true,\n  \"worldName\": \"L_BW_DevMap\",\n  \"totalActors\": 36,\n  \"returnedActors\": 36,\n  \"actors\": [\n    {\n      \"name\": \"LyraWorldSettings\",\n      \"label\": \"LyraWorldSettings\",\n      \"class\": \"LyraWorldSettings\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraWorldSettings\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": []\n    },\n    {\n      \"name\": \"Brush_0\",\n      \"label\": \"Brush0\",\n      \"class\": \"Brush\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.Brush_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_1\",\n      \"label\": \"CubeGridToolOutput\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_1\",\n      \"location\": {\n        \"x\": -900,\n        \"y\": -900,\n        \"z\": -100\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"ExponentialHeightFog_0\",\n      \"label\": \"ExponentialHeightFog\",\n      \"class\": \"ExponentialHeightFog\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.ExponentialHeightFog_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": -70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"HeightFogComponent0\",\n          \"class\": \"ExponentialHeightFogComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"VolumetricCloud_0\",\n      \"label\": \"VolumetricCloud\",\n      \"class\": \"VolumetricCloud\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.VolumetricCloud_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": -70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"VolumetricCloudComponent\",\n          \"class\": \"VolumetricCloudComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SkyAtmosphere_0\",\n      \"label\": \"SkyAtmosphere\",\n      \"class\": \"SkyAtmosphere\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SkyAtmosphere_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": -70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"SkyAtmosphereComponent\",\n          \"class\": \"SkyAtmosphereComponent\"\n        },\n        {\n          \"name\": \"ArrowComponent\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"DirectionalLight_0\",\n      \"label\": \"DirectionalLight\",\n      \"class\": \"DirectionalLight\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.DirectionalLight_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": -70\n      },\n      \"rotation\": {\n        \"pitch\": -31,\n        \"yaw\": -14,\n        \"roll\": -105.00000000000001\n      },\n      \"components\": [\n        {\n          \"name\": \"LightComponent0\",\n          \"class\": \"DirectionalLightComponent\"\n        },\n        {\n          \"name\": \"ArrowComponent0\",\n          \"class\": \"ArrowComponent\"\n        },\n        {\n          \"name\": \"BillboardComponent_0\",\n          \"class\": \"BillboardComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SkyLight_0\",\n      \"label\": \"SkyLight\",\n      \"class\": \"SkyLight\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SkyLight_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": -70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"SkyLightComponent0\",\n          \"class\": \"SkyLightComponent\"\n        },\n        {\n          \"name\": \"BillboardComponent_0\",\n          \"class\": \"BillboardComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_0\",\n      \"label\": \"LyraPlayerStart2\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_0\",\n      \"location\": {\n        \"x\": -630,\n        \"y\": 240,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_1\",\n      \"label\": \"LyraPlayerStart3\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_1\",\n      \"location\": {\n        \"x\": 1070,\n        \"y\": 240,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_2\",\n      \"label\": \"LyraPlayerStart4\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_2\",\n      \"location\": {\n        \"x\": -630,\n        \"y\": 410,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_3\",\n      \"label\": \"LyraPlayerStart5\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_3\",\n      \"location\": {\n        \"x\": 1070,\n        \"y\": 440,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_4\",\n      \"label\": \"LyraPlayerStart6\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_4\",\n      \"location\": {\n        \"x\": -630,\n        \"y\": 580,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_5\",\n      \"label\": \"LyraPlayerStart7\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_5\",\n      \"location\": {\n        \"x\": -780,\n        \"y\": 240,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_6\",\n      \"label\": \"LyraPlayerStart8\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_6\",\n      \"location\": {\n        \"x\": -779.9999999999973,\n        \"y\": 409.99999999999983,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_7\",\n      \"label\": \"LyraPlayerStart9\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_7\",\n      \"location\": {\n        \"x\": -779.9999999999968,\n        \"y\": 579.9999999999997,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_8\",\n      \"label\": \"LyraPlayerStart10\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_8\",\n      \"location\": {\n        \"x\": 1070,\n        \"y\": 610,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_9\",\n      \"label\": \"LyraPlayerStart11\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_9\",\n      \"location\": {\n        \"x\": 1270,\n        \"y\": 240,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_10\",\n      \"label\": \"LyraPlayerStart12\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_10\",\n      \"location\": {\n        \"x\": 1270,\n        \"y\": 440,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_11\",\n      \"label\": \"LyraPlayerStart13\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.LyraPlayerStart_11\",\n      \"location\": {\n        \"x\": 1270,\n        \"y\": 610,\n        \"z\": 92\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999999,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_0\",\n      \"label\": \"CubeGridToolOutput2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_0\",\n      \"location\": {\n        \"x\": 1400,\n        \"y\": 3500,\n        \"z\": -100\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_2\",\n      \"label\": \"CubeGridToolOutput3\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_2\",\n      \"location\": {\n        \"x\": 1600,\n        \"y\": 1110,\n        \"z\": -200\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_3\",\n      \"label\": \"CubeGridToolOutput4\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_3\",\n      \"location\": {\n        \"x\": -1295,\n        \"y\": -440,\n        \"z\": -200\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.00000239434594,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_4\",\n      \"label\": \"CubeGridToolOutput5\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.StaticMeshActor_4\",\n      \"location\": {\n        \"x\": -150,\n        \"y\": -280,\n        \"z\": -130\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -179.999998697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"RecastNavMesh_1\",\n      \"label\": \"RecastNavMesh1\",\n      \"class\": \"RecastNavMesh\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.RecastNavMesh_1\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"SceneComp\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"NavRenderingComp\",\n          \"class\": \"NavMeshRenderingComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"NavMeshBoundsVolume_2\",\n      \"label\": \"NavMeshBoundsVolume\",\n      \"class\": \"NavMeshBoundsVolume\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.NavMeshBoundsVolume_2\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_0\",\n      \"label\": \"SP_GoalTeam1\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_0\",\n      \"location\": {\n        \"x\": -400,\n        \"y\": 450,\n        \"z\": 30\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_1\",\n      \"label\": \"SP_GoalTeam2\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_1\",\n      \"location\": {\n        \"x\": 700,\n        \"y\": 460,\n        \"z\": 30\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_2\",\n      \"label\": \"SP_Relic\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BwaySpawnPoint_2\",\n      \"location\": {\n        \"x\": 240,\n        \"y\": 990,\n        \"z\": 70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"B_BW_HeroTestSpawner_C_1\",\n      \"label\": \"B_BW_HeroTestSpawner\",\n      \"class\": \"B_BW_HeroTestSpawner_C\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.B_BW_HeroTestSpawner_C_1\",\n      \"location\": {\n        \"x\": -250,\n        \"y\": 1350,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionVolume\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"PadMesh\",\n          \"class\": \"StaticMeshComponent\"\n        },\n        {\n          \"name\": \"InfoWidgetComponent\",\n          \"class\": \"WidgetComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BuoyancyManager_0\",\n      \"label\": \"BuoyancyManager0\",\n      \"class\": \"BuoyancyManager\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.BuoyancyManager_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": []\n    },\n    {\n      \"name\": \"DefaultPhysicsVolume_0\",\n      \"label\": \"DefaultPhysicsVolume0\",\n      \"class\": \"DefaultPhysicsVolume\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.DefaultPhysicsVolume_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"GameplayDebuggerPlayerManager_0\",\n      \"label\": \"GameplayDebuggerPlayerManager0\",\n      \"class\": \"GameplayDebuggerPlayerManager\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.GameplayDebuggerPlayerManager_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"GameplayDebug_Input\",\n          \"class\": \"InputComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"ChaosDebugDrawActor\",\n      \"label\": \"Actor\",\n      \"class\": \"Actor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.ChaosDebugDrawActor\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"ChaosDebugDrawComponent_0\",\n          \"class\": \"ChaosDebugDrawComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SmartObjectSubsystemRenderingActor_0\",\n      \"label\": \"SmartObjectSubsystemRenderingActor0\",\n      \"class\": \"SmartObjectSubsystemRenderingActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.SmartObjectSubsystemRenderingActor_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"RenderingComp\",\n          \"class\": \"SmartObjectSubsystemRenderingComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"AbstractNavData-Default\",\n      \"label\": \"AbstractNavData-Default\",\n      \"class\": \"AbstractNavData\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_DevMap.L_BW_DevMap:PersistentLevel.AbstractNavData-Default\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"SceneComp\",\n          \"class\": \"SceneComponent\"\n        }\n      ]\n    }\n  ]\n}"
+  },
+  "outliner_L_BW_Dorado": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "worldName": "L_BW_Dorado",
+      "totalActors": 78,
+      "returnedActors": 78,
+      "actors": [
+        {
+          "name": "LyraWorldSettings",
+          "label": "LyraWorldSettings",
+          "class": "LyraWorldSettings",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraWorldSettings",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": []
+        },
+        {
+          "name": "Brush_0",
+          "label": "Brush0",
+          "class": "Brush",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.Brush_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_0",
+          "label": "LyraPlayerStart2",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_0",
+          "location": {
+            "x": -239.99999634961137,
+            "y": 3499.9999917257837,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_1",
+          "label": "LyraPlayerStart3",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_1",
+          "location": {
+            "x": -180.00000486718534,
+            "y": -3410.000009004293,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_2",
+          "label": "LyraPlayerStart4",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_2",
+          "location": {
+            "x": -69.99999634961137,
+            "y": 3499.9999958628914,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_3",
+          "label": "LyraPlayerStart5",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_3",
+          "location": {
+            "x": 19.99999513281432,
+            "y": -3410.0000041371077,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_4",
+          "label": "LyraPlayerStart6",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_4",
+          "location": {
+            "x": 100.00000365038966,
+            "y": 3500.000000000001,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_5",
+          "label": "LyraPlayerStart7",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_5",
+          "location": {
+            "x": -240.00000000000023,
+            "y": 3649.9999917257846,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_6",
+          "label": "LyraPlayerStart8",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_6",
+          "location": {
+            "x": -70.0000000000008,
+            "y": 3649.9999958628923,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_7",
+          "label": "LyraPlayerStart9",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_7",
+          "location": {
+            "x": 100,
+            "y": 3650,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": -89.99999930282696,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_8",
+          "label": "LyraPlayerStart10",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_8",
+          "location": {
+            "x": 189.9999951328141,
+            "y": -3410,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_9",
+          "label": "LyraPlayerStart11",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_9",
+          "location": {
+            "x": -179.99999999999966,
+            "y": -3610.000009004294,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_10",
+          "label": "LyraPlayerStart12",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_10",
+          "location": {
+            "x": 20.000000000000227,
+            "y": -3610.0000041371077,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "LyraPlayerStart_11",
+          "label": "LyraPlayerStart13",
+          "class": "LyraPlayerStart",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_11",
+          "location": {
+            "x": 190,
+            "y": -3610,
+            "z": 362
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 90.000001697173,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "CollisionCapsule",
+              "class": "CapsuleComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Sprite2",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "Arrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "ExponentialHeightFog_0",
+          "label": "ExponentialHeightFog",
+          "class": "ExponentialHeightFog",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.ExponentialHeightFog_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "HeightFogComponent0",
+              "class": "ExponentialHeightFogComponent"
+            }
+          ]
+        },
+        {
+          "name": "VolumetricCloud_0",
+          "label": "VolumetricCloud",
+          "class": "VolumetricCloud",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.VolumetricCloud_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "VolumetricCloudComponent",
+              "class": "VolumetricCloudComponent"
+            }
+          ]
+        },
+        {
+          "name": "SkyAtmosphere_0",
+          "label": "SkyAtmosphere",
+          "class": "SkyAtmosphere",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SkyAtmosphere_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "SkyAtmosphereComponent",
+              "class": "SkyAtmosphereComponent"
+            },
+            {
+              "name": "ArrowComponent",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "DirectionalLight_1",
+          "label": "DirectionalLight",
+          "class": "DirectionalLight",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.DirectionalLight_1",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": -31,
+            "yaw": -14,
+            "roll": -105.00000000000001
+          },
+          "components": [
+            {
+              "name": "LightComponent0",
+              "class": "DirectionalLightComponent"
+            },
+            {
+              "name": "ArrowComponent0",
+              "class": "ArrowComponent"
+            },
+            {
+              "name": "BillboardComponent_0",
+              "class": "BillboardComponent"
+            }
+          ]
+        },
+        {
+          "name": "SkyLight_0",
+          "label": "SkyLight",
+          "class": "SkyLight",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SkyLight_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "SkyLightComponent0",
+              "class": "SkyLightComponent"
+            },
+            {
+              "name": "BillboardComponent_0",
+              "class": "BillboardComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_28",
+          "label": "LevelScalar",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_28",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "SphereReflectionCapture_0",
+          "label": "SphereReflectionCapture",
+          "class": "SphereReflectionCapture",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SphereReflectionCapture_0",
+          "location": {
+            "x": -10.907654,
+            "y": -9.328659,
+            "z": 266.861328
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "NewReflectionComponent",
+              "class": "SphereReflectionCaptureComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "CaptureOffset",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DrawRadius0",
+              "class": "DrawSphereComponent"
+            },
+            {
+              "name": "DrawRadius1",
+              "class": "DrawSphereComponent"
+            }
+          ]
+        },
+        {
+          "name": "NavMeshBoundsVolume_0",
+          "label": "NavMeshBoundsVolume",
+          "class": "NavMeshBoundsVolume",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.NavMeshBoundsVolume_0",
+          "location": {
+            "x": -1080,
+            "y": 0,
+            "z": 150
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "RecastNavMesh-Default",
+          "label": "RecastNavMesh-Default",
+          "class": "RecastNavMesh",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.RecastNavMesh-Default",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "SceneComp",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "NavRenderingComp",
+              "class": "NavMeshRenderingComponent"
+            }
+          ]
+        },
+        {
+          "name": "AtmosphericFog_0",
+          "label": "Atmospheric Fog",
+          "class": "AtmosphericFog",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.AtmosphericFog_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "AtmosphericFogComponent0",
+              "class": "AtmosphericFogComponent"
+            },
+            {
+              "name": "ArrowComponent0",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_0",
+          "label": "SP_Relic",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 540
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_1",
+          "label": "SP_GoalTeam2",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_1",
+          "location": {
+            "x": 0,
+            "y": -4000,
+            "z": 230
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BwaySpawnPoint_2",
+          "label": "SP_GoalTeam1",
+          "class": "BwaySpawnPoint",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_2",
+          "location": {
+            "x": 0,
+            "y": 4000,
+            "z": 230
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "Root",
+              "class": "SceneComponent"
+            },
+            {
+              "name": "Sprite",
+              "class": "BillboardComponent"
+            },
+            {
+              "name": "DirectionArrow",
+              "class": "ArrowComponent"
+            }
+          ]
+        },
+        {
+          "name": "BuoyancyManager_0",
+          "label": "BuoyancyManager0",
+          "class": "BuoyancyManager",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BuoyancyManager_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": []
+        },
+        {
+          "name": "DefaultPhysicsVolume_0",
+          "label": "DefaultPhysicsVolume0",
+          "class": "DefaultPhysicsVolume",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.DefaultPhysicsVolume_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "BrushComponent0",
+              "class": "BrushComponent"
+            }
+          ]
+        },
+        {
+          "name": "GameplayDebuggerPlayerManager_0",
+          "label": "GameplayDebuggerPlayerManager0",
+          "class": "GameplayDebuggerPlayerManager",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.GameplayDebuggerPlayerManager_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "GameplayDebug_Input",
+              "class": "InputComponent"
+            }
+          ]
+        },
+        {
+          "name": "ChaosDebugDrawActor",
+          "label": "Actor",
+          "class": "Actor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.ChaosDebugDrawActor",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "ChaosDebugDrawComponent_0",
+              "class": "ChaosDebugDrawComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_90",
+          "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_90",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_91",
+          "label": "el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_91",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_93",
+          "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_93",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_94",
+          "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_94",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_96",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_b",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_96",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_97",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_c",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_97",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_98",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_c",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_98",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_99",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_d",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_99",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_100",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_B",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_100",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_101",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_C",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_101",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_102",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_D",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_102",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_103",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_E",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_103",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_104",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_F",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_104",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_105",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_TC",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_105",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_106",
+          "label": "el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_106",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_107",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_startramp_clump",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_107",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_0",
+          "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_0",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_1",
+          "label": "el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_1",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_2",
+          "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_2",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_3",
+          "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_3",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_4",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_b2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_4",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_5",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_c2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_5",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_6",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_c2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_6",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_7",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_d2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_7",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_8",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_B2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_8",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_9",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_C2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_9",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_10",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_D2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_10",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_11",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_E2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_11",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_12",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_F2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_12",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_13",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_TC2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_13",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_14",
+          "label": "el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_14",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_15",
+          "label": "el_dorado_fbx_Scene_rel_eldorado_startramp_clump2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_15",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056539,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_29",
+          "label": "WhiteboxScalar",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_29",
+          "location": {
+            "x": 5,
+            "y": 5,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_16",
+          "label": "Cube",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_16",
+          "location": {
+            "x": 0,
+            "y": 3926,
+            "z": 226
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_17",
+          "label": "Cube2",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_17",
+          "location": {
+            "x": 0,
+            "y": 1705,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_18",
+          "label": "Cube3",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_18",
+          "location": {
+            "x": 0,
+            "y": 590,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_19",
+          "label": "Cube4",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_19",
+          "location": {
+            "x": 0,
+            "y": 2605,
+            "z": 70
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": -24.999999806341012
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_20",
+          "label": "Cube5",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_20",
+          "location": {
+            "x": 0,
+            "y": 2915,
+            "z": 140
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": -1.9365910475244164e-7
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_21",
+          "label": "Cube6",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_21",
+          "location": {
+            "x": 0,
+            "y": 3020,
+            "z": 155
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": -25.000000000000007
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_22",
+          "label": "Cube7",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_22",
+          "location": {
+            "x": -5.000077321325108,
+            "y": -3921.249999756632,
+            "z": 226
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056548,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_23",
+          "label": "Cube8",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_23",
+          "location": {
+            "x": -4.999969221134798,
+            "y": -1700.2499997566442,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056548,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_24",
+          "label": "Cube9",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_24",
+          "location": {
+            "x": -4.999914952016269,
+            "y": -585.2499997566524,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056548,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_25",
+          "label": "Cube10",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_25",
+          "location": {
+            "x": -5.000013025805924,
+            "y": -2600.249999756639,
+            "z": 70
+          },
+          "rotation": {
+            "pitch": 9.677452710409909e-15,
+            "yaw": 179.9999986056546,
+            "roll": -25.000000000000004
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_26",
+          "label": "Cube11",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_26",
+          "location": {
+            "x": -5.000028114080273,
+            "y": -2910.2499997566374,
+            "z": 140
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 179.9999986056548,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "StaticMeshActor_27",
+          "label": "Cube12",
+          "class": "StaticMeshActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_27",
+          "location": {
+            "x": -5.000033224624623,
+            "y": -3015.2499997566374,
+            "z": 155
+          },
+          "rotation": {
+            "pitch": 9.677452710409909e-15,
+            "yaw": 179.9999986056546,
+            "roll": -25.000000000000004
+          },
+          "components": [
+            {
+              "name": "StaticMeshComponent0",
+              "class": "StaticMeshComponent"
+            }
+          ]
+        },
+        {
+          "name": "SmartObjectSubsystemRenderingActor_0",
+          "label": "SmartObjectSubsystemRenderingActor0",
+          "class": "SmartObjectSubsystemRenderingActor",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SmartObjectSubsystemRenderingActor_0",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "RenderingComp",
+              "class": "SmartObjectSubsystemRenderingComponent"
+            }
+          ]
+        },
+        {
+          "name": "AbstractNavData-Default",
+          "label": "AbstractNavData-Default",
+          "class": "AbstractNavData",
+          "path": "/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.AbstractNavData-Default",
+          "location": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "pitch": 0,
+            "yaw": 0,
+            "roll": 0
+          },
+          "components": [
+            {
+              "name": "SceneComp",
+              "class": "SceneComponent"
+            }
+          ]
+        }
+      ]
+    },
+    "raw": "{\n  \"success\": true,\n  \"worldName\": \"L_BW_Dorado\",\n  \"totalActors\": 78,\n  \"returnedActors\": 78,\n  \"actors\": [\n    {\n      \"name\": \"LyraWorldSettings\",\n      \"label\": \"LyraWorldSettings\",\n      \"class\": \"LyraWorldSettings\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraWorldSettings\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": []\n    },\n    {\n      \"name\": \"Brush_0\",\n      \"label\": \"Brush0\",\n      \"class\": \"Brush\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.Brush_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_0\",\n      \"label\": \"LyraPlayerStart2\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_0\",\n      \"location\": {\n        \"x\": -239.99999634961137,\n        \"y\": 3499.9999917257837,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_1\",\n      \"label\": \"LyraPlayerStart3\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_1\",\n      \"location\": {\n        \"x\": -180.00000486718534,\n        \"y\": -3410.000009004293,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_2\",\n      \"label\": \"LyraPlayerStart4\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_2\",\n      \"location\": {\n        \"x\": -69.99999634961137,\n        \"y\": 3499.9999958628914,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_3\",\n      \"label\": \"LyraPlayerStart5\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_3\",\n      \"location\": {\n        \"x\": 19.99999513281432,\n        \"y\": -3410.0000041371077,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_4\",\n      \"label\": \"LyraPlayerStart6\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_4\",\n      \"location\": {\n        \"x\": 100.00000365038966,\n        \"y\": 3500.000000000001,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_5\",\n      \"label\": \"LyraPlayerStart7\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_5\",\n      \"location\": {\n        \"x\": -240.00000000000023,\n        \"y\": 3649.9999917257846,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_6\",\n      \"label\": \"LyraPlayerStart8\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_6\",\n      \"location\": {\n        \"x\": -70.0000000000008,\n        \"y\": 3649.9999958628923,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_7\",\n      \"label\": \"LyraPlayerStart9\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_7\",\n      \"location\": {\n        \"x\": 100,\n        \"y\": 3650,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": -89.99999930282696,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_8\",\n      \"label\": \"LyraPlayerStart10\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_8\",\n      \"location\": {\n        \"x\": 189.9999951328141,\n        \"y\": -3410,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_9\",\n      \"label\": \"LyraPlayerStart11\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_9\",\n      \"location\": {\n        \"x\": -179.99999999999966,\n        \"y\": -3610.000009004294,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_10\",\n      \"label\": \"LyraPlayerStart12\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_10\",\n      \"location\": {\n        \"x\": 20.000000000000227,\n        \"y\": -3610.0000041371077,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"LyraPlayerStart_11\",\n      \"label\": \"LyraPlayerStart13\",\n      \"class\": \"LyraPlayerStart\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.LyraPlayerStart_11\",\n      \"location\": {\n        \"x\": 190,\n        \"y\": -3610,\n        \"z\": 362\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 90.000001697173,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"CollisionCapsule\",\n          \"class\": \"CapsuleComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Sprite2\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"Arrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"ExponentialHeightFog_0\",\n      \"label\": \"ExponentialHeightFog\",\n      \"class\": \"ExponentialHeightFog\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.ExponentialHeightFog_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"HeightFogComponent0\",\n          \"class\": \"ExponentialHeightFogComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"VolumetricCloud_0\",\n      \"label\": \"VolumetricCloud\",\n      \"class\": \"VolumetricCloud\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.VolumetricCloud_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"VolumetricCloudComponent\",\n          \"class\": \"VolumetricCloudComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SkyAtmosphere_0\",\n      \"label\": \"SkyAtmosphere\",\n      \"class\": \"SkyAtmosphere\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SkyAtmosphere_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"SkyAtmosphereComponent\",\n          \"class\": \"SkyAtmosphereComponent\"\n        },\n        {\n          \"name\": \"ArrowComponent\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"DirectionalLight_1\",\n      \"label\": \"DirectionalLight\",\n      \"class\": \"DirectionalLight\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.DirectionalLight_1\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": -31,\n        \"yaw\": -14,\n        \"roll\": -105.00000000000001\n      },\n      \"components\": [\n        {\n          \"name\": \"LightComponent0\",\n          \"class\": \"DirectionalLightComponent\"\n        },\n        {\n          \"name\": \"ArrowComponent0\",\n          \"class\": \"ArrowComponent\"\n        },\n        {\n          \"name\": \"BillboardComponent_0\",\n          \"class\": \"BillboardComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SkyLight_0\",\n      \"label\": \"SkyLight\",\n      \"class\": \"SkyLight\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SkyLight_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"SkyLightComponent0\",\n          \"class\": \"SkyLightComponent\"\n        },\n        {\n          \"name\": \"BillboardComponent_0\",\n          \"class\": \"BillboardComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_28\",\n      \"label\": \"LevelScalar\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_28\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SphereReflectionCapture_0\",\n      \"label\": \"SphereReflectionCapture\",\n      \"class\": \"SphereReflectionCapture\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SphereReflectionCapture_0\",\n      \"location\": {\n        \"x\": -10.907654,\n        \"y\": -9.328659,\n        \"z\": 266.861328\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"NewReflectionComponent\",\n          \"class\": \"SphereReflectionCaptureComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"CaptureOffset\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DrawRadius0\",\n          \"class\": \"DrawSphereComponent\"\n        },\n        {\n          \"name\": \"DrawRadius1\",\n          \"class\": \"DrawSphereComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"NavMeshBoundsVolume_0\",\n      \"label\": \"NavMeshBoundsVolume\",\n      \"class\": \"NavMeshBoundsVolume\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.NavMeshBoundsVolume_0\",\n      \"location\": {\n        \"x\": -1080,\n        \"y\": 0,\n        \"z\": 150\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"RecastNavMesh-Default\",\n      \"label\": \"RecastNavMesh-Default\",\n      \"class\": \"RecastNavMesh\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.RecastNavMesh-Default\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"SceneComp\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"NavRenderingComp\",\n          \"class\": \"NavMeshRenderingComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"AtmosphericFog_0\",\n      \"label\": \"Atmospheric Fog\",\n      \"class\": \"AtmosphericFog\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.AtmosphericFog_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"AtmosphericFogComponent0\",\n          \"class\": \"AtmosphericFogComponent\"\n        },\n        {\n          \"name\": \"ArrowComponent0\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_0\",\n      \"label\": \"SP_Relic\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 540\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_1\",\n      \"label\": \"SP_GoalTeam2\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_1\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": -4000,\n        \"z\": 230\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BwaySpawnPoint_2\",\n      \"label\": \"SP_GoalTeam1\",\n      \"class\": \"BwaySpawnPoint\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BwaySpawnPoint_2\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 4000,\n        \"z\": 230\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"Root\",\n          \"class\": \"SceneComponent\"\n        },\n        {\n          \"name\": \"Sprite\",\n          \"class\": \"BillboardComponent\"\n        },\n        {\n          \"name\": \"DirectionArrow\",\n          \"class\": \"ArrowComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"BuoyancyManager_0\",\n      \"label\": \"BuoyancyManager0\",\n      \"class\": \"BuoyancyManager\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.BuoyancyManager_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": []\n    },\n    {\n      \"name\": \"DefaultPhysicsVolume_0\",\n      \"label\": \"DefaultPhysicsVolume0\",\n      \"class\": \"DefaultPhysicsVolume\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.DefaultPhysicsVolume_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"BrushComponent0\",\n          \"class\": \"BrushComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"GameplayDebuggerPlayerManager_0\",\n      \"label\": \"GameplayDebuggerPlayerManager0\",\n      \"class\": \"GameplayDebuggerPlayerManager\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.GameplayDebuggerPlayerManager_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"GameplayDebug_Input\",\n          \"class\": \"InputComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"ChaosDebugDrawActor\",\n      \"label\": \"Actor\",\n      \"class\": \"Actor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.ChaosDebugDrawActor\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"ChaosDebugDrawComponent_0\",\n          \"class\": \"ChaosDebugDrawComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_90\",\n      \"label\": \"el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_90\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_91\",\n      \"label\": \"el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_91\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_93\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_93\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_94\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_94\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_96\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_base_b\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_96\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_97\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_base_c\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_97\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_98\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_foot_c\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_98\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_99\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_foot_d\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_99\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_100\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_B\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_100\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_101\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_C\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_101\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_102\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_D\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_102\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_103\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_E\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_103\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_104\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_F\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_104\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_105\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_TC\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_105\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_106\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_106\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_107\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_startramp_clump\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_107\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_0\",\n      \"label\": \"el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_0\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_1\",\n      \"label\": \"el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_1\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_2\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_2\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_3\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_3\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_4\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_base_b2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_4\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_5\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_base_c2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_5\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_6\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_foot_c2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_6\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_7\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_flr_foot_d2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_7\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_8\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_B2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_8\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_9\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_C2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_9\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_10\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_D2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_10\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_11\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_E2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_11\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_12\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_F2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_12\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_13\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_main_floor_TC2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_13\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_14\",\n      \"label\": \"el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_14\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_15\",\n      \"label\": \"el_dorado_fbx_Scene_rel_eldorado_startramp_clump2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_15\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056539,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_29\",\n      \"label\": \"WhiteboxScalar\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_29\",\n      \"location\": {\n        \"x\": 5,\n        \"y\": 5,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_16\",\n      \"label\": \"Cube\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_16\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 3926,\n        \"z\": 226\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_17\",\n      \"label\": \"Cube2\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_17\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 1705,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_18\",\n      \"label\": \"Cube3\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_18\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 590,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_19\",\n      \"label\": \"Cube4\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_19\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 2605,\n        \"z\": 70\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": -24.999999806341012\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_20\",\n      \"label\": \"Cube5\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_20\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 2915,\n        \"z\": 140\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": -1.9365910475244164e-7\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_21\",\n      \"label\": \"Cube6\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_21\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 3020,\n        \"z\": 155\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": -25.000000000000007\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_22\",\n      \"label\": \"Cube7\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_22\",\n      \"location\": {\n        \"x\": -5.000077321325108,\n        \"y\": -3921.249999756632,\n        \"z\": 226\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056548,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_23\",\n      \"label\": \"Cube8\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_23\",\n      \"location\": {\n        \"x\": -4.999969221134798,\n        \"y\": -1700.2499997566442,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056548,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_24\",\n      \"label\": \"Cube9\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_24\",\n      \"location\": {\n        \"x\": -4.999914952016269,\n        \"y\": -585.2499997566524,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056548,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_25\",\n      \"label\": \"Cube10\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_25\",\n      \"location\": {\n        \"x\": -5.000013025805924,\n        \"y\": -2600.249999756639,\n        \"z\": 70\n      },\n      \"rotation\": {\n        \"pitch\": 9.677452710409909e-15,\n        \"yaw\": 179.9999986056546,\n        \"roll\": -25.000000000000004\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_26\",\n      \"label\": \"Cube11\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_26\",\n      \"location\": {\n        \"x\": -5.000028114080273,\n        \"y\": -2910.2499997566374,\n        \"z\": 140\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 179.9999986056548,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"StaticMeshActor_27\",\n      \"label\": \"Cube12\",\n      \"class\": \"StaticMeshActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.StaticMeshActor_27\",\n      \"location\": {\n        \"x\": -5.000033224624623,\n        \"y\": -3015.2499997566374,\n        \"z\": 155\n      },\n      \"rotation\": {\n        \"pitch\": 9.677452710409909e-15,\n        \"yaw\": 179.9999986056546,\n        \"roll\": -25.000000000000004\n      },\n      \"components\": [\n        {\n          \"name\": \"StaticMeshComponent0\",\n          \"class\": \"StaticMeshComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"SmartObjectSubsystemRenderingActor_0\",\n      \"label\": \"SmartObjectSubsystemRenderingActor0\",\n      \"class\": \"SmartObjectSubsystemRenderingActor\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.SmartObjectSubsystemRenderingActor_0\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"RenderingComp\",\n          \"class\": \"SmartObjectSubsystemRenderingComponent\"\n        }\n      ]\n    },\n    {\n      \"name\": \"AbstractNavData-Default\",\n      \"label\": \"AbstractNavData-Default\",\n      \"class\": \"AbstractNavData\",\n      \"path\": \"/BreakawayCore/Maps/L_BW_Dorado.L_BW_Dorado:PersistentLevel.AbstractNavData-Default\",\n      \"location\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"z\": 0\n      },\n      \"rotation\": {\n        \"pitch\": 0,\n        \"yaw\": 0,\n        \"roll\": 0\n      },\n      \"components\": [\n        {\n          \"name\": \"SceneComp\",\n          \"class\": \"SceneComponent\"\n        }\n      ]\n    }\n  ]\n}"
+  },
+  "search_Morgan": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "query": "Morgan",
+      "directory": "/BreakawayCore",
+      "resultCount": 0,
+      "results": []
+    },
+    "raw": "{\n  \"success\": true,\n  \"query\": \"Morgan\",\n  \"directory\": \"/BreakawayCore\",\n  \"resultCount\": 0,\n  \"results\": []\n}"
+  },
+  "search_Rawlins": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "query": "Rawlins",
+      "directory": "/BreakawayCore",
+      "resultCount": 0,
+      "results": []
+    },
+    "raw": "{\n  \"success\": true,\n  \"query\": \"Rawlins\",\n  \"directory\": \"/BreakawayCore\",\n  \"resultCount\": 0,\n  \"results\": []\n}"
+  },
+  "search_HeroData": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "query": "HeroData",
+      "directory": "/BreakawayCore",
+      "resultCount": 2,
+      "results": [
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona",
+          "name": "DA_BW_HeroData_Alona",
+          "className": "BwayHeroDataAsset"
+        },
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus",
+          "name": "DA_BW_HeroData_Argus",
+          "className": "BwayHeroDataAsset"
+        }
+      ]
+    },
+    "raw": "{\n  \"success\": true,\n  \"query\": \"HeroData\",\n  \"directory\": \"/BreakawayCore\",\n  \"resultCount\": 2,\n  \"results\": [\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona\",\n      \"name\": \"DA_BW_HeroData_Alona\",\n      \"className\": \"BwayHeroDataAsset\"\n    },\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus\",\n      \"name\": \"DA_BW_HeroData_Argus\",\n      \"className\": \"BwayHeroDataAsset\"\n    }\n  ]\n}"
+  },
+  "search_DA_BW_Hero": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "query": "DA_BW_Hero",
+      "directory": "/BreakawayCore",
+      "resultCount": 2,
+      "results": [
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona",
+          "name": "DA_BW_HeroData_Alona",
+          "className": "BwayHeroDataAsset"
+        },
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus",
+          "name": "DA_BW_HeroData_Argus",
+          "className": "BwayHeroDataAsset"
+        }
+      ]
+    },
+    "raw": "{\n  \"success\": true,\n  \"query\": \"DA_BW_Hero\",\n  \"directory\": \"/BreakawayCore\",\n  \"resultCount\": 2,\n  \"results\": [\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona\",\n      \"name\": \"DA_BW_HeroData_Alona\",\n      \"className\": \"BwayHeroDataAsset\"\n    },\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus\",\n      \"name\": \"DA_BW_HeroData_Argus\",\n      \"className\": \"BwayHeroDataAsset\"\n    }\n  ]\n}"
+  },
+  "heroDataAssets": {
+    "ok": true,
+    "parsed": {
+      "success": true,
+      "query": "HeroData",
+      "directory": "/BreakawayCore/Characters/Heroes",
+      "resultCount": 2,
+      "results": [
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona",
+          "name": "DA_BW_HeroData_Alona",
+          "className": "BwayHeroDataAsset"
+        },
+        {
+          "path": "/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus",
+          "name": "DA_BW_HeroData_Argus",
+          "className": "BwayHeroDataAsset"
+        }
+      ]
+    },
+    "raw": "{\n  \"success\": true,\n  \"query\": \"HeroData\",\n  \"directory\": \"/BreakawayCore/Characters/Heroes\",\n  \"resultCount\": 2,\n  \"results\": [\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona\",\n      \"name\": \"DA_BW_HeroData_Alona\",\n      \"className\": \"BwayHeroDataAsset\"\n    },\n    {\n      \"path\": \"/BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus\",\n      \"name\": \"DA_BW_HeroData_Argus\",\n      \"className\": \"BwayHeroDataAsset\"\n    }\n  ]\n}"
+  }
+}

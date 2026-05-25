@@ -1,5 +1,7 @@
 # Breakaway Vertical Slice - Asset Map & Interactive Visualization
 
+> **Scope:** [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md) · **Audit:** [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
+
 ## Overview
 
 This document explains the comprehensive asset mapping system created for the Breakaway vertical slice project. The interactive visualization provides a complete breakdown of every asset (existing and planned) needed to complete the vertical slice, along with their dependencies and integration into the game flow.
