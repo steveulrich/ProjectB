@@ -1,0 +1,38 @@
+[AGENT DIRECTIVE — MANDATORY]
+execute_python was used as a workaround (1 time(s) this session).
+This means a native ue-mcp tool could not handle the task.
+
+YOUR NEXT MESSAGE TO THE USER must include:
+"I had to use execute_python to <describe what you did and why>.
+ Would you like to submit feedback so this can become a native tool?"
+
+If the user agrees, call feedback(action="submit") with:
+  title  — short description of the gap
+  summary — what was attempted and why the native tool fell short
+  pythonWorkaround — the Python code above
+  idealTool — what tool/action should handle this natively
+
+Do NOT skip this step. Do NOT defer it to "later."
+{
+  "success": true,
+  "result": "None",
+  "log_output": [
+    {
+      "type": "Info",
+      "output": "delete /BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus -> True"
+    },
+    {
+      "type": "Info",
+      "output": "delete /BreakawayCore/Characters/Heroes/Argus/hud_headshot_magnus -> True"
+    },
+    {
+      "type": "Info",
+      "output": "GFD HeroDataAssets set"
+    },
+    {
+      "type": "Info",
+      "output": "remaining=0 dest=34"
+    }
+  ],
+  "output": "delete /BreakawayCore/Characters/Heroes/Argus/DA_BW_HeroData_Argus -> True\ndelete /BreakawayCore/Characters/Heroes/Argus/hud_headshot_magnus -> True\nGFD HeroDataAssets set\nremaining=0 dest=34"
+}
