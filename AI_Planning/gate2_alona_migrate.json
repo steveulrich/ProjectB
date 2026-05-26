@@ -1,0 +1,29 @@
+{
+  "verify": {
+    "heroData": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"success\": true,\n  \"path\": \"/Hero_Alona/Characters/Heroes/Alona/DA_BW_HeroData_Alona\",\n  \"className\": \"BwayHeroDataAsset\",\n  \"propertyCount\": 17,\n  \"properties\": [\n    {\n      \"name\": \"DisplayName\",\n      \"type\": \"FText\",\n      \"value\": \"NSLOCTEXT(\\\"[3605FB3053A7BED88DA06A2DF86E1C2C]\\\", \\\"2C140A104C1D0084183617AAF9B2A275\\\", \\\"Alona\\\")\"\n    },\n    {\n      \"name\": \"HeroClass\",\n      \"type\": \"EHeroClass\",\n      \"value\": \"Support\"\n    },\n    {\n      \"name\": \"HeroClassDisplayIndex\",\n      \"type\": \"int32\",\n      \"value\": \"0\"\n    },\n    {\n      \"name\": \"CustomClassName\",\n      \"type\": \"FText\",\n      \"value\": \"\"\n    },\n    {\n      \"name\": \"bUseCustomClassName\",\n      \"type\": \"bool\",\n      \"value\": \"False\"\n    },\n    {\n      \"name\": \"Portrait\",\n      \"type\": \"TObjectPtr<UTexture2D>\",\n      \"value\": \"/Script/Engine.Texture2D'/Hero_Alona/Characters/Heroes/Alona/hud_headshot_sunpriestess.hud_headshot_sunpriestess'\"\n    },\n    {\n      \"name\": \"AbilityDisplayInfos\",\n      \"type\": \"TArray\",\n      \"value\": \"\"\n    },\n    {\n      \"name\": \"HeroMesh\",\n      \"type\": \"TObjectPtr<USkeletalMesh>\",\n      \"value\": \"/Script/Engine.SkeletalMesh'/Hero_Alona/Characters/Heroes/Alona/Models/SKM_BW_alona.SKM_BW_alona'\"\n    },\n    {\n      \"name\": \"AnimationBP\",\n      \"type\": \"TObjectPtr<UAnimBlueprint>\",\n      \"value\": \"/Script/Engine.AnimBlueprint'/Game/Characters/Heroes/Mannequin/Animations/ABP_Mannequin_Base.ABP_Mannequin_Base'\"\n    },\n    {\n      \"name\": \"HeroStats\",\n      \"type\": \"FHeroStats\",\n      \"value\": \"(MaxHealth=200.000000,BaseDamage=25.000000,MoveSpeed=600.000000)\"\n    },\n    {\n      \"name\": \"AttributeSetClass\",\n      \"type\": \"TSubclassOf<UAttributeSet>\",\n      \"value\": \"/Script/CoreUObject.Class'/Script/LyraGame.LyraCombatSet'\"\n    },\n    {\n      \"name\": \"AbilitySets\",\n      \"type\": \"TArray\",\n      \"value\": \"(\\\"/Script/LyraGame.LyraAbilitySet'/Hero_Alona/Characters/Heroes/Alona/DA_BW_AbilitySet_Alona.DA_BW_AbilitySet_Alona'\\\")\"\n    },\n    {\n      \"name\": \"BuildableDataAsset\",\n      \"type\": \"TObjectPtr<UBwayBuildableDataAsset>\",\n      \"value\": \"/Script/BreakawayCoreRuntime.BwayBuildableDataAsset'/Hero_Alona/Characters/Heroes/Alona/DA_BW_BuildableData_Alona.DA_BW_BuildableData_Alona'\"\n    },\n    {\n      \"name\": \"BuildableDataAssets\",\n      \"type\": \"TArray\",\n      \"value\": \"(\\\"/Script/BreakawayCoreRuntime.BwayBuildableDataAsset'/Hero_Alona/Characters/Heroes/Alona/DA_BW_Buildable_SunShrine.DA_BW_Buildable_SunShrine'\\\",\\\"/Script/BreakawayCoreRuntime.BwayBuildableDataAsset'/Hero_Alona/Characters/Heroes/Alona/DA_BW_Buildable_Starlight.DA_BW_Buildable_Starlight'\\\")\"\n    },\n    {\n      \"name\": \"VoiceBank\",\n      \"type\": \"TObjectPtr<USoundBase>\",\n      \"value\": \"None\"\n    },\n    {\n      \"name\": \"AssetBundleData\",\n      \"type\": \"FAssetBundleData\",\n      \"value\": \"\"\n    },\n    {\n      \"name\": \"NativeClass\",\n      \"type\": \"TSubclassOf<UDataAsset>\",\n      \"value\": \"/Script/CoreUObject.Class'/Script/BreakawayCoreRuntime.BwayHeroDataAsset'\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    "remaining": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"directory\": \"/BreakawayCore/Characters/Heroes/Alona\",\n  \"recursive\": true,\n  \"assetCount\": 0,\n  \"assets\": [],\n  \"suggestion\": \"No assets found in /BreakawayCore/Characters/Heroes/Alona. This project has plugin content — try listing one of these: /BreakawayCore/, /Alona/, /Spartacus/, /ShooterCore/, /ShooterCTF/, /ShooterExplorer/, /ShooterMaps/, /ShooterTests/, /TopDownArena/, /LyraExampleContent/, /LyraExtTool/, /PocketWorlds/\",\n  \"availablePlugins\": [\n    {\n      \"name\": \"BreakawayCore\",\n      \"mountPoint\": \"/BreakawayCore/\"\n    },\n    {\n      \"name\": \"Alona\",\n      \"mountPoint\": \"/Alona/\"\n    },\n    {\n      \"name\": \"Spartacus\",\n      \"mountPoint\": \"/Spartacus/\"\n    },\n    {\n      \"name\": \"ShooterCore\",\n      \"mountPoint\": \"/ShooterCore/\"\n    },\n    {\n      \"name\": \"ShooterCTF\",\n      \"mountPoint\": \"/ShooterCTF/\"\n    },\n    {\n      \"name\": \"ShooterExplorer\",\n      \"mountPoint\": \"/ShooterExplorer/\"\n    },\n    {\n      \"name\": \"ShooterMaps\",\n      \"mountPoint\": \"/ShooterMaps/\"\n    },\n    {\n      \"name\": \"ShooterTests\",\n      \"mountPoint\": \"/ShooterTests/\"\n    },\n    {\n      \"name\": \"TopDownArena\",\n      \"mountPoint\": \"/TopDownArena/\"\n    },\n    {\n      \"name\": \"LyraExampleContent\",\n      \"mountPoint\": \"/LyraExampleContent/\"\n    },\n    {\n      \"name\": \"LyraExtTool\",\n      \"mountPoint\": \"/LyraExtTool/\"\n    },\n    {\n      \"name\": \"PocketWorlds\",\n      \"mountPoint\": \"/PocketWorlds/\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    "pluginList": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Error [TASK_FAILED]: Directory not found: /Hero_Alona"
+        }
+      ],
+      "isError": true
+    }
+  }
+}
