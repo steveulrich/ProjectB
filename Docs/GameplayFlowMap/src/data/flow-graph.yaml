@@ -1,0 +1,1194 @@
+version: 1
+title: ProjectB Gameplay Flow
+description: End-to-end flow from engine launch through frontend, hero select staging, match loop, and return.
+
+layers:
+  - id: core
+    label: Boot & Frontend
+    defaultVisible: true
+  - id: match
+    label: Match Systems
+    defaultVisible: true
+  - id: hero
+    label: Hero Plugins
+    defaultVisible: true
+  - id: gas
+    label: GAS & Phases
+    defaultVisible: false
+  - id: dev
+    label: Dev / PIE
+    defaultVisible: false
+
+nodes:
+  # ── Boot (Lyra) ──
+  - id: game-launch
+    type: event
+    lane: lyra
+    layers: [core]
+    journeyOrder: 0
+    title: Game Launch
+    summary: Engine starts; loads GameDefaultMap from DefaultEngine.ini.
+    filePath: Config/DefaultEngine.ini
+    tags: [boot, engine]
+    docLinks:
+      - title: Lyra Integration
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Lyra_Integration.md
+
+  - id: l-lyra-frontend
+    type: map
+    lane: lyra
+    layers: [core]
+    journeyOrder: 5
+    title: L_LyraFrontEnd
+    summary: Default boot map — Lyra front-end shell.
+    assets:
+      - /Game/System/FrontEnd/Maps/L_LyraFrontEnd
+    filePath: Config/DefaultEngine.ini
+    tags: [map, frontend]
+
+  - id: b-lyra-game-instance
+    type: class
+    lane: lyra
+    layers: [core]
+    journeyOrder: 8
+    title: B_LyraGameInstance
+    summary: Game instance — sessions, user init, subsystems.
+    className: ULyraGameInstance
+    filePath: Source/LyraGame/System/LyraGameInstance.h
+    tags: [gameinstance]
+
+  - id: b-lyra-game-mode
+    type: class
+    lane: lyra
+    layers: [core]
+    journeyOrder: 10
+    title: B_LyraGameMode
+    summary: Resolves experience from URL/PIE/world settings; drives match assignment.
+    className: ALyraGameMode
+    filePath: Source/LyraGame/GameModes/LyraGameMode.cpp
+    callChain:
+      - HandleMatchAssignmentIfNotExpectingOne
+      - OnExperienceLoaded
+    tags: [gamemode]
+
+  - id: lyra-experience-manager
+    type: component
+    lane: lyra
+    layers: [core]
+    journeyOrder: 12
+    title: ULyraExperienceManagerComponent
+    summary: Async-loads experience assets, enables Game Features, runs ActionSets.
+    className: ULyraExperienceManagerComponent
+    filePath: Source/LyraGame/GameModes/LyraExperienceManagerComponent.cpp
+    callChain:
+      - SetCurrentExperience
+      - OnExperienceLoaded (High/Normal/Low)
+    tags: [experience]
+
+  - id: b-lyra-frontend-experience
+    type: experience
+    lane: lyra
+    layers: [core]
+    journeyOrder: 15
+    title: B_LyraFrontEnd_Experience
+    summary: Front-end experience — menu UI, no match rules.
+    assets:
+      - /Game/System/FrontEnd/B_LyraFrontEnd_Experience
+    className: ULyraExperienceDefinition
+    tags: [experience, frontend]
+
+  - id: lyra-asset-manager
+    type: subsystem
+    lane: lyra
+    layers: [core]
+    journeyOrder: 14
+    title: ULyraAssetManager
+    summary: Scans Breakaway maps, experiences, playlists, hero data assets.
+    className: ULyraAssetManager
+    filePath: Config/DefaultGame.ini
+    assets:
+      - /BreakawayCore/Maps/
+      - /BreakawayCore/Experiences/
+      - /BreakawayCore/Playlists/
+    tags: [assets]
+
+  - id: lyra-game-feature-policy
+    type: subsystem
+    lane: lyra
+    layers: [core]
+    journeyOrder: 13
+    title: LyraGameFeaturePolicy
+    summary: Controls which Game Feature plugins can load per context.
+    filePath: Config/DefaultGame.ini
+    tags: [gamefeatures]
+
+  - id: lyra-frontend-state
+    type: component
+    lane: lyra
+    layers: [core]
+    journeyOrder: 18
+    title: ULyraFrontendStateComponent
+    summary: ControlFlow pipeline — user init, press start, session join, main menu.
+    className: ULyraFrontendStateComponent
+    filePath: Source/LyraGame/UI/Frontend/LyraFrontendStateComponent.cpp
+    callChain:
+      - FrontendFlow
+      - TryShowPressStartScreen
+      - TryJoinRequestedSession
+      - TryShowMainScreen
+    tags: [frontend, ui]
+
+  - id: press-start-screen
+    type: widget
+    lane: lyra
+    layers: [core]
+    journeyOrder: 20
+    title: Press Start Screen
+    summary: Platform login gate via UCommonUserSubsystem.
+    tags: [ui, frontend]
+
+  - id: session-join
+    type: event
+    lane: lyra
+    layers: [core]
+    journeyOrder: 22
+    title: Session Join (optional)
+    summary: Deep-link or invite join before main menu.
+    className: UCommonSessionSubsystem
+    tags: [session]
+
+  - id: main-menu-ui
+    type: widget
+    lane: lyra
+    layers: [core]
+    journeyOrder: 25
+    title: Main Menu / Playlist UI
+    summary: Lyra lobby widget on UI.Layer.Menu — lists mode tiles.
+    filePath: Source/LyraGame/UI/Frontend/LyraFrontendStateComponent.cpp
+    tags: [ui, playlist]
+
+  - id: lyra-ui-policy
+    type: subsystem
+    lane: lyra
+    layers: [core]
+    journeyOrder: 17
+    title: B_LyraUIPolicy
+    summary: CommonUI layer policy for menu, game, modal layers.
+    assets:
+      - /Game/UI/B_LyraUIPolicy
+    className: ULyraUIPolicy
+    filePath: Config/DefaultGame.ini
+    tags: [commonui]
+
+  - id: lyra-user-facing-exp-base
+    type: asset
+    lane: lyra
+    layers: [core]
+    journeyOrder: 28
+    title: ULyraUserFacingExperienceDefinition
+    summary: Base playlist tile data asset — map, experience, online mode.
+    className: ULyraUserFacingExperienceDefinition
+    filePath: Source/LyraGame/GameModes/LyraUserFacingExperienceDefinition.h
+    tags: [playlist]
+
+  - id: bway-user-facing-exp
+    type: class
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 30
+    title: UBwayUserFacingExperienceDefinition
+    summary: Breakaway playlist tile — routes through hero-select staging when enabled.
+    className: UBwayUserFacingExperienceDefinition
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameModes/BwayUserFacingExperienceDefinition.h
+    callChain:
+      - CreateHostingRequest
+    tags: [playlist, breakaway]
+    docLinks:
+      - title: Hero Select Staging Setup
+        path: Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md
+
+  - id: breakaway-playlist-tile
+    type: asset
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 32
+    title: Breakaway Playlist Tile
+    summary: Primary data asset under /BreakawayCore/Playlists/ — e.g. Capture The Relic Quick Play.
+    assets:
+      - /BreakawayCore/Playlists/
+    urlParams:
+      - bRouteThroughHeroSelectStaging=true
+    tags: [playlist]
+
+  - id: common-session-subsystem
+    type: subsystem
+    lane: lyra
+    layers: [core]
+    journeyOrder: 35
+    title: UCommonSessionSubsystem
+    summary: Hosts or joins online session from playlist tile selection.
+    className: UCommonSessionSubsystem
+    callChain:
+      - HostSession
+      - JoinSession
+    tags: [session, online]
+
+  - id: create-hosting-request
+    type: event
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 36
+    title: CreateHostingRequest
+    summary: Builds travel URL with experience, map, and hero-select staging options.
+    className: ULyraUserFacingExperienceDefinition
+    filePath: Source/LyraGame/GameModes/LyraUserFacingExperienceDefinition.cpp
+    urlParams:
+      - HeroSelectStaging=1
+      - HeroSelectTargetMap
+      - HeroSelectTargetExperience
+      - Experience=
+    tags: [travel, hosting]
+
+  - id: server-travel-staging
+    type: event
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 40
+    title: ServerTravel → Staging
+    summary: Host travels to hero-select staging map with staging experience URL options.
+    urlParams:
+      - HeroSelectStaging=1
+      - Experience=B_BW_Experience_HeroSelectStaging
+    tags: [travel]
+
+  # ── Hero Select Staging ──
+  - id: l-bw-hero-staging
+    type: map
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 45
+    title: L_BW_HeroSelect_Staging
+    summary: Dedicated hero-select lobby map — no relic/match objects spawned.
+    assets:
+      - /BreakawayCore/Maps/L_BW_HeroSelect_Staging
+    tags: [map, staging]
+    docLinks:
+      - title: Hero Select Staging Setup
+        path: Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md
+
+  - id: b-bw-exp-hero-staging
+    type: experience
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 46
+    title: B_BW_Experience_HeroSelectStaging
+    summary: Minimal experience — BreakawayCore only, shared input, no match HUD/phases.
+    assets:
+      - /BreakawayCore/Experiences/B_BW_Experience_HeroSelectStaging
+    tags: [experience, staging]
+
+  - id: hero-selection-phase
+    type: component
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 50
+    title: UBwayHeroSelectionPhaseComponent
+    summary: Orchestrates hero-select phase, spawn gate, staging detection, post-lock travel.
+    className: UBwayHeroSelectionPhaseComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/HeroSystems/BwayHeroSelectionPhaseComponent.h
+    callChain:
+      - BeginPlay
+      - StartHeroSelectionPhase
+      - HandleAllPlayersReady
+      - EndPhaseAndProgressToNext
+    urlParams:
+      - HeroSelectStaging=1
+    tags: [heroselect, phase]
+    docLinks:
+      - title: Match Flow & Phases
+        path: Plugins/GameFeatures/BreakawayCore/Docs/MatchFlow_and_Phases.md
+
+  - id: hero-selection-manager
+    type: component
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 52
+    title: UBwayHeroSelectionManager
+    summary: Pick/lock rules, duplicate-hero enforcement, player registration.
+    className: UBwayHeroSelectionManager
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/HeroSystems/BwayHeroSelectionManager.h
+    callChain:
+      - StartHeroSelection
+      - RegisterPlayer
+      - OnAllPlayersReady
+    tags: [heroselect]
+
+  - id: bway-player-controller
+    type: class
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 54
+    title: ABwayPlayerController
+    summary: Hero/results UI RPCs, pre-selected hero sync, return-to-frontend.
+    className: ABwayPlayerController
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/BwayPlayerController.h
+    callChain:
+      - Client_ShowHeroSelection
+      - Client_HideHeroSelection
+      - Client_ShowResults
+      - Server_RequestReturnToFrontEnd
+    tags: [playercontroller]
+    docLinks:
+      - title: UI System
+        path: Plugins/GameFeatures/BreakawayCore/Docs/UI_System.md
+
+  - id: client-show-hero-select
+    type: event
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 55
+    title: Client_ShowHeroSelection
+    summary: Server RPC pushes hero-select widget onto CommonUI layer.
+    className: ABwayPlayerController
+    callChain:
+      - PushContentToLayer_ForPlayer
+    tags: [rpc, ui]
+
+  - id: wbp-hero-select
+    type: widget
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 56
+    title: WBP_BW_HeroSelect
+    summary: Hero pick UI — extends UBwayHeroSelectWidget with BP visuals.
+    className: UBwayHeroSelectWidget
+    assets:
+      - /BreakawayCore/UI/HeroSelect/WBP_BW_HeroSelect
+    tags: [ui, heroselect]
+    docLinks:
+      - title: Character Select Integration
+        path: Plugins/GameFeatures/BreakawayCore/Docs/CharacterSelect_Integration.md
+
+  - id: hero-registry
+    type: subsystem
+    lane: breakaway
+    layers: [core, hero]
+    journeyOrder: 53
+    title: UBwayHeroRegistry
+    summary: GameInstance registry — available heroes from loaded GF plugins.
+    className: UBwayHeroRegistry
+    callChain:
+      - GetAvailableHeroes
+    tags: [heroes, registry]
+
+  - id: bway-player-state
+    type: class
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 57
+    title: ABwayPlayerState
+    summary: Selected hero, relic flags, K/D/A, gold ASC on player.
+    className: ABwayPlayerState
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Player/BwayPlayerState.h
+    callChain:
+      - Server_SetSelectedHero
+      - Server_LockHeroSelection
+    tags: [playerstate]
+
+  - id: all-players-ready
+    type: event
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 58
+    title: OnAllPlayersReady
+    summary: All humans locked heroes — triggers seamless travel to match map.
+    className: UBwayHeroSelectionManager
+    tags: [heroselect, delegate]
+
+  - id: seamless-travel-match
+    type: event
+    lane: breakaway
+    layers: [core]
+    journeyOrder: 60
+    title: Seamless ServerTravel → Match
+    summary: Travel to target map with match experience and SkipHeroSelection=1.
+    urlParams:
+      - Experience=B_BW_Experience_CaptureTheRelic
+      - SkipHeroSelection=1
+    tags: [travel]
+
+  # ── Match Entry ──
+  - id: l-bw-devmap
+    type: map
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 65
+    title: L_BW_DevMap / L_BW_Dorado
+    summary: Match destination maps — dev map or production Dorado.
+    assets:
+      - /BreakawayCore/Maps/L_BW_DevMap
+      - /BreakawayCore/Maps/L_BW_Dorado
+    tags: [map, match]
+
+  - id: b-bw-exp-ctr
+    type: experience
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 66
+    title: B_BW_Experience_CaptureTheRelic
+    summary: Primary CTR experience — enables BreakawayCore + hero GF plugins + ActionSets.
+    assets:
+      - /BreakawayCore/Experiences/B_BW_Experience_CaptureTheRelic
+    tags: [experience, match]
+    docLinks:
+      - title: Lyra Integration
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Lyra_Integration.md
+
+  - id: breakawaycore-plugin
+    type: plugin
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 67
+    title: BreakawayCore Game Feature
+    summary: Loaded via experience — not in .uproject; ExplicitlyLoaded at runtime.
+    filePath: Plugins/GameFeatures/BreakawayCore/BreakawayCore.uplugin
+    tags: [gamefeature]
+
+  - id: shooter-core-dep
+    type: plugin
+    lane: lyra
+    layers: [match, gas]
+    journeyOrder: 68
+    title: ShooterCore (Lyra sample)
+    summary: Phase tags, HUD patterns, aim assist — dependency for CTR experience.
+    filePath: Plugins/GameFeatures/ShooterCore/ShooterCore.uplugin
+    tags: [gamefeature, lyra]
+
+  - id: breakaway-game-mode
+    type: class
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 70
+    title: ABreakawayGameMode
+    summary: Player lifecycle, team assign, hero apply, spawn deferral, match object spawn.
+    className: ABreakawayGameMode
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/BreakawayGameMode.h
+    callChain:
+      - PostLogin
+      - RestartPlayer
+      - ApplyHeroDataToNewPawn
+      - ShouldDeferPlayerRestartForHeroSelection
+    tags: [gamemode]
+    docLinks:
+      - title: Systems Index
+        path: Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md
+
+  - id: bway-game-state
+    type: class
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 72
+    title: ABwayGameState
+    summary: Team info, match delegates, hosts all match GameState components.
+    className: ABwayGameState
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayGameState.h
+    callChain:
+      - AddPlayerToTeam
+      - TransitionToPostGame
+      - ReturnToFrontEnd
+    tags: [gamestate]
+
+  - id: spawn-deferral
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 74
+    title: Spawn Gate (Hero Selection)
+    summary: Blocks RestartPlayer until hero selection completes or SkipHeroSelection set.
+    className: ABreakawayGameMode
+    urlParams:
+      - SkipHeroSelection=1
+    tags: [spawn, heroselect]
+
+  - id: post-login-team
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 76
+    title: PostLogin → Team Assign
+    summary: New player assigned to team via ABwayGameState::AddPlayerToTeam.
+    className: ABreakawayGameMode
+    tags: [teams, login]
+
+  - id: team-bridge
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 78
+    title: UBwayTeamBridgeComponent
+    summary: Syncs ABwayGameState teams (0/1) to ULyraTeamSubsystem (IDs 1/2).
+    className: UBwayTeamBridgeComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayTeamBridgeComponent.h
+    tags: [teams, lyra-bridge]
+    docLinks:
+      - title: Lyra Integration
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Lyra_Integration.md
+
+  - id: bot-creation
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 80
+    title: UBwayBotCreationComponent
+    summary: Backfills bots to 8 players; random hero assign on match (not staging).
+    className: UBwayBotCreationComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayBotCreationComponent.h
+    tags: [bots]
+
+  - id: spawn-hero-player
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 82
+    title: SpawnHeroForPlayer → RestartPlayer
+    summary: GameMode spawns pawn at team spawn tag after hero selection gate clears.
+    className: ABreakawayGameMode
+    callChain:
+      - RestartPlayer
+      - ChoosePlayerStart
+    tags: [spawn]
+
+  - id: apply-hero-data
+    type: event
+    lane: breakaway
+    layers: [match, hero]
+    journeyOrder: 84
+    title: ApplyHeroDataToNewPawn
+    summary: Applies UBwayHeroDataAsset mesh, abilities, attributes to spawned character.
+    className: ABreakawayGameMode
+    tags: [heroes, spawn]
+
+  - id: bway-character
+    type: class
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 86
+    title: ABwayCharacterWithAbilities
+    summary: In-match pawn — hero init, relic pickup, GAS abilities.
+    className: ABwayCharacterWithAbilities
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Character/BwayCharacterWithAbilities.h
+    tags: [character, pawn]
+
+  - id: spawn-point-manager
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 88
+    title: UBwaySpawnPointManagerComponent
+    summary: Runtime-added by GameMode — team spawn point selection.
+    className: UBwaySpawnPointManagerComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/SpawnSystem/BwaySpawnPointManagerComponent.h
+    tags: [spawn]
+    docLinks:
+      - title: Spawn System
+        path: Plugins/GameFeatures/BreakawayCore/Docs/SpawnSystem_README.md
+
+  # ── GAS & Phases ──
+  - id: game-phase-subsystem
+    type: subsystem
+    lane: lyra
+    layers: [gas, match]
+    journeyOrder: 90
+    title: ULyraGamePhaseSubsystem
+    summary: Phase abilities gate input and abilities via gameplay tags.
+    className: ULyraGamePhaseSubsystem
+    filePath: Source/LyraGame/AbilitySystem/Phases/LyraGamePhaseSubsystem.h
+    tags: [gas, phases]
+
+  - id: phase-warmup
+    type: asset
+    lane: breakaway
+    layers: [gas]
+    journeyOrder: 92
+    title: BW_Phase_Warmup
+    summary: Warmup phase ability — Breakaway.GamePhase.Warmup tag.
+    tags:
+      - Breakaway.GamePhase.Warmup
+    docLinks:
+      - title: Lyra Integration
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Lyra_Integration.md
+
+  - id: phase-hero-selection
+    type: asset
+    lane: breakaway
+    layers: [gas]
+    journeyOrder: 93
+    title: BW_Phase_HeroSelection
+    summary: Hero selection phase — skipped on staging (C++ starts select instead).
+    tags:
+      - Breakaway.GamePhase.HeroSelection
+
+  - id: phase-playing
+    type: asset
+    lane: breakaway
+    layers: [gas, match]
+    journeyOrder: 95
+    title: BW_Phase_Playing
+    summary: Active round phase — ShooterGame.GamePhase.Playing or Breakaway.GamePhase.Playing.
+    tags:
+      - Breakaway.GamePhase.Playing
+      - ShooterGame.GamePhase.Playing
+
+  - id: phase-postgame
+    type: asset
+    lane: breakaway
+    layers: [gas, match]
+    journeyOrder: 130
+    title: BW_Phase_PostGame
+    summary: Post-match phase — results screen, input changes.
+    tags:
+      - Breakaway.GamePhase.PostGame
+
+  # ── Round Loop ──
+  - id: round-management
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 100
+    title: UBwayRoundManagementComponent
+    summary: Round states, timer, win checks, gold awards, match end.
+    className: UBwayRoundManagementComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayRoundManagementComponent.h
+    callChain:
+      - StartRound
+      - CheckWinConditions
+      - ResetRoundState
+      - CheckMatchEnd
+    tags: [rounds]
+    docLinks:
+      - title: Match Flow & Phases
+        path: Plugins/GameFeatures/BreakawayCore/Docs/MatchFlow_and_Phases.md
+
+  - id: round-waiting
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 101
+    title: WaitingToStart
+    summary: Between rounds or pre-first-round — ERoundState.
+    tags: [rounds, state]
+
+  - id: round-active
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 102
+    title: RoundActive
+    summary: Timer running, relic in play.
+    tags: [rounds, state]
+
+  - id: round-ending
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 103
+    title: RoundEnding
+    summary: Win condition resolved, brief transition.
+    tags: [rounds, state]
+
+  - id: round-complete
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 104
+    title: RoundComplete
+    summary: Between-round planning window before next round.
+    tags: [rounds, state]
+
+  - id: relic-manager
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 106
+    title: UBwayRelicManagerComponent
+    summary: Relic spawn, reset, carrier tracking between rounds.
+    className: UBwayRelicManagerComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayRelicManagerComponent.h
+    tags: [relic]
+    docLinks:
+      - title: Relic System
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Relic_System.md
+
+  - id: relic-actor
+    type: class
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 108
+    title: ARelicActor
+    summary: World relic actor — pickup, carry, drop.
+    className: ARelicActor
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Relic/RelicActor.h
+    tags: [relic]
+
+  - id: goal-volume
+    type: class
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 110
+    title: ABwayGoalVolume
+    summary: Enemy goal — relic entry triggers OnRelicScored win condition.
+    className: ABwayGoalVolume
+    tags: [relic, objective]
+
+  - id: scoring-component
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 112
+    title: UBwayScoringComponent
+    summary: Replicated team scores — best-of-N (default 3 points).
+    className: UBwayScoringComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayScoringComponent.h
+    tags: [score]
+
+  - id: win-conditions
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 114
+    title: Win Conditions
+    summary: Goal scored, team eliminated, or timer expired (possession wins).
+    callChain:
+      - OnRelicScored
+      - CheckTeamElimination
+      - OnRoundTimerExpired
+    tags: [rounds, win]
+
+  - id: reset-round
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 116
+    title: ResetRoundState
+    summary: Destroy non-persistent buildables, reset relic, respawn players; gold persists.
+    className: UBwayRoundManagementComponent
+    tags: [rounds, reset]
+
+  - id: between-round-planning
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 118
+    title: OnBetweenRoundPlanningStarted
+    summary: Delegate hook for buildable shop / loadout UI between rounds.
+    className: UBwayRoundManagementComponent
+    tags: [rounds, ui, buildables]
+
+  - id: buildable-registry
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 120
+    title: UBwayBuildableRegistryComponent
+    summary: Match-wide buildable tracking and placement registry.
+    className: UBwayBuildableRegistryComponent
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/GameState/BwayBuildableRegistryComponent.h
+    tags: [buildables]
+    docLinks:
+      - title: Buildable System
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Buildable_System.md
+
+  - id: gold-economy
+    type: component
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 122
+    title: Gold Economy (PlayerState ASC)
+    summary: Gold on ABwayPlayerState ability system — awards from RoundManagement.
+    className: UBwayGoldAttributeSet
+    tags: [economy, gold]
+    docLinks:
+      - title: Economy / Gold
+        path: Plugins/GameFeatures/BreakawayCore/Docs/Economy_Gold.md
+
+  - id: wbp-core-hud
+    type: widget
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 98
+    title: WBP_BW_CoreHUD
+    summary: In-match HUD — health, score, timer, relic status via UBwayCoreHUDWidget.
+    className: UBwayCoreHUDWidget
+    assets:
+      - /BreakawayCore/UI/WBP_BW_CoreHUD
+    tags: [ui, hud]
+
+  - id: wbp-scoreboard
+    type: widget
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 99
+    title: WBP_BW_Scoreboard
+    summary: Tab scoreboard — K/D/A/objective from ABwayPlayerState.
+    className: UBwayScoreboardWidget
+    assets:
+      - /BreakawayCore/UI/WBP_BW_Scoreboard
+    tags: [ui]
+
+  # ── Match End & Return ──
+  - id: match-end
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 125
+    title: OnMatchEnded
+    summary: RoundManagement detects match winner (PointsToWin reached).
+    className: UBwayRoundManagementComponent
+    tags: [match, end]
+
+  - id: transition-postgame
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 128
+    title: TransitionToPostGame
+    summary: ABwayGameState switches to post-game — triggers results UI.
+    className: ABwayGameState
+    tags: [postgame]
+
+  - id: client-show-results
+    type: event
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 132
+    title: Client_ShowResults
+    summary: PlayerController RPC pushes WBP_BW_ResultsScreen with MVP formula.
+    className: ABwayPlayerController
+    tags: [ui, results]
+
+  - id: wbp-results
+    type: widget
+    lane: breakaway
+    layers: [match]
+    journeyOrder: 133
+    title: WBP_BW_ResultsScreen
+    summary: Post-match results — MVP weighted K/D/A/objective score.
+    className: UBwayResultsScreenWidget
+    assets:
+      - /BreakawayCore/UI/WBP_BW_ResultsScreen
+    tags: [ui, results]
+
+  - id: return-frontend
+    type: event
+    lane: breakaway
+    layers: [core, match]
+    journeyOrder: 135
+    title: ReturnToFrontEnd
+    summary: Server travel back to L_LyraFrontEnd after post-game.
+    className: ABwayGameState
+    assets:
+      - /Game/System/FrontEnd/Maps/L_LyraFrontEnd
+    tags: [travel, frontend]
+
+  # ── Hero Plugins ──
+  - id: hero-plugin-loader
+    type: class
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 69
+    title: UBwayHeroPluginLoader
+    summary: Scans /GameFeatures/Heroes/* — ensures plugins loaded before hero select.
+    className: UBwayHeroPluginLoader
+    callChain:
+      - LoadAllHeroPlugins
+    tags: [heroes, loader]
+    docLinks:
+      - title: Heroes README
+        path: Plugins/GameFeatures/Heroes/README.md
+
+  - id: hero-game-feature-data
+    type: asset
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 71
+    title: UBwayGameFeatureData
+    summary: Per-hero GF data asset — registers HeroDataAssets with asset system.
+    className: UBwayGameFeatureData
+    tags: [heroes, gamefeature]
+
+  - id: hero-data-asset
+    type: asset
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 85
+    title: UBwayHeroDataAsset
+    summary: Per-hero primary data — mesh, abilities, portrait, class info.
+    className: UBwayHeroDataAsset
+    assets:
+      - /BreakawayCore/Characters/Heroes/
+      - /Hero_Spartacus/Characters/Heroes/
+      - /Hero_Alona/Characters/Heroes/
+      - /Hero_Morgan/Characters/Heroes/
+      - /Hero_Rawlins/Characters/Heroes/
+    tags: [heroes, data]
+
+  - id: hero-spartacus
+    type: plugin
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 87
+    title: Hero_Spartacus (Argus)
+    summary: Spartacus hero GF — Fire Catapult, Dragon Spire buildables.
+    filePath: Plugins/GameFeatures/Heroes/Spartacus/Hero_Spartacus.uplugin
+    assets:
+      - /Hero_Spartacus/Characters/Heroes/
+    tags: [heroes, spartacus, argus]
+    docLinks:
+      - title: Spartacus Content Setup
+        path: Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md
+
+  - id: hero-alona
+    type: plugin
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 89
+    title: Hero_Alona
+    summary: Alona hero GF — Sun Shrine, Starlight buildables.
+    filePath: Plugins/GameFeatures/Heroes/Alona/Hero_Alona.uplugin
+    assets:
+      - /Hero_Alona/Characters/Heroes/
+    tags: [heroes, alona]
+    docLinks:
+      - title: Alona Content Setup
+        path: Plugins/GameFeatures/Heroes/Alona/CONTENT_SETUP.md
+
+  - id: hero-morgan
+    type: plugin
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 91
+    title: Hero_Morgan (Hexweaver)
+    summary: Morgan Le Fay hero GF — Elder Stone, Tome of Frailty buildables.
+    filePath: Plugins/GameFeatures/Heroes/Morgan/Hero_Morgan.uplugin
+    assets:
+      - /Hero_Morgan/Characters/Heroes/
+    tags: [heroes, morgan]
+    docLinks:
+      - title: Morgan Content Setup
+        path: Plugins/GameFeatures/Heroes/Morgan/CONTENT_SETUP.md
+
+  - id: hero-rawlins
+    type: plugin
+    lane: heroes
+    layers: [hero]
+    journeyOrder: 94
+    title: Hero_Rawlins (Gunslinger)
+    summary: Rawlins hero GF — Cage, Boom Box buildables.
+    filePath: Plugins/GameFeatures/Heroes/Rawlins/Hero_Rawlins.uplugin
+    assets:
+      - /Hero_Rawlins/Characters/Heroes/
+    tags: [heroes, rawlins]
+    docLinks:
+      - title: Rawlins Content Setup
+        path: Plugins/GameFeatures/Heroes/Rawlins/CONTENT_SETUP.md
+
+  - id: gas-abilities
+    type: subsystem
+    lane: breakaway
+    layers: [hero, gas]
+    journeyOrder: 97
+    title: GAS & Abilities
+    summary: UBwayGameplayAbility_Base extends Lyra abilities; granted from hero data.
+    className: UBwayGameplayAbility_Base
+    tags: [gas, abilities]
+    docLinks:
+      - title: GAS & Abilities
+        path: Plugins/GameFeatures/BreakawayCore/Docs/GAS_and_Abilities.md
+
+  # ── Dev / PIE Paths ──
+  - id: dev-pie-direct
+    type: event
+    lane: dev
+    layers: [dev]
+    journeyOrder: 65
+    title: PIE Direct Map
+    summary: PIE into L_BW_DevMap?Experience=B_BW_Experience_CaptureTheRelic — skips frontend and staging.
+    urlParams:
+      - Experience=B_BW_Experience_CaptureTheRelic
+    tags: [dev, pie]
+    docLinks:
+      - title: Hero Select Staging Setup
+        path: Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md
+
+  - id: dev-show-hero-select
+    type: event
+    lane: dev
+    layers: [dev]
+    journeyOrder: 75
+    title: ShowHeroSelect (console)
+    summary: Dev cheat — manually opens hero select UI when PIE skips staging.
+    className: UBwayCheatManager
+    callChain:
+      - ShowHeroSelect
+    tags: [dev, cheat]
+
+  - id: dev-skip-hero-selection
+    type: urlparam
+    lane: dev
+    layers: [dev]
+    journeyOrder: 61
+    title: SkipHeroSelection=1
+    summary: URL param after staging travel — skips hero UI on match map arrival.
+    urlParams:
+      - SkipHeroSelection=1
+    tags: [dev, urlparam]
+
+  - id: dev-exp-dev
+    type: experience
+    lane: dev
+    layers: [dev]
+    journeyOrder: 66
+    title: B_BW_Experience_Dev
+    summary: Dev/test experience asset for rapid iteration.
+    assets:
+      - /BreakawayCore/Experiences/B_BW_Experience_Dev
+    tags: [dev, experience]
+
+  - id: dev-no-staging-tile
+    type: asset
+    lane: dev
+    layers: [dev]
+    journeyOrder: 33
+    title: PIE Playlist Tile (no staging)
+    summary: Tile with bRouteThroughHeroSelectStaging=false — direct map travel from frontend.
+    urlParams:
+      - bRouteThroughHeroSelectStaging=false
+    tags: [dev, playlist]
+
+  - id: dev-hero-select-flow-lib
+    type: class
+    lane: dev
+    layers: [dev]
+    journeyOrder: 51
+    title: UBwayHeroSelectionFlowLibrary
+    summary: Blueprint library for hero-select flow helpers and staging detection.
+    className: UBwayHeroSelectionFlowLibrary
+    filePath: Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/HeroSystems/BwayHeroSelectionFlowLibrary.h
+    tags: [dev, blueprint]
+
+edges:
+  # Boot sequence
+  - { from: game-launch, to: l-lyra-frontend, type: sequence, label: loads default map }
+  - { from: l-lyra-frontend, to: b-lyra-game-mode, type: sequence, label: spawns game mode }
+  - { from: b-lyra-game-mode, to: lyra-experience-manager, type: calls, label: HandleMatchAssignment }
+  - { from: lyra-experience-manager, to: b-lyra-frontend-experience, type: loads, label: SetCurrentExperience }
+  - { from: lyra-experience-manager, to: lyra-asset-manager, type: loads, label: load experience assets }
+  - { from: lyra-experience-manager, to: lyra-game-feature-policy, type: loads, label: enable GF plugins }
+  - { from: b-lyra-frontend-experience, to: lyra-frontend-state, type: sequence, label: OnExperienceLoaded }
+  - { from: lyra-frontend-state, to: press-start-screen, type: sequence, label: TryShowPressStartScreen }
+  - { from: lyra-frontend-state, to: session-join, type: sequence, label: TryJoinRequestedSession }
+  - { from: lyra-frontend-state, to: main-menu-ui, type: sequence, label: TryShowMainScreen }
+  - { from: main-menu-ui, to: lyra-ui-policy, type: loads, label: PushContentToLayer }
+  - { from: main-menu-ui, to: breakaway-playlist-tile, type: sequence, label: player picks mode }
+
+  # Playlist → staging
+  - { from: breakaway-playlist-tile, to: bway-user-facing-exp, type: loads, label: tile data asset }
+  - { from: bway-user-facing-exp, to: lyra-user-facing-exp-base, type: loads, label: extends base class }
+  - { from: bway-user-facing-exp, to: create-hosting-request, type: calls, label: CreateHostingRequest }
+  - { from: create-hosting-request, to: common-session-subsystem, type: calls, label: HostSession }
+  - { from: common-session-subsystem, to: server-travel-staging, type: travels, label: ServerTravel }
+
+  # Staging hero select
+  - { from: server-travel-staging, to: l-bw-hero-staging, type: travels, label: ?Experience=HeroSelectStaging }
+  - { from: l-bw-hero-staging, to: b-bw-exp-hero-staging, type: loads, label: experience load }
+  - { from: b-bw-exp-hero-staging, to: breakawaycore-plugin, type: loads, label: GameFeaturesToEnable }
+  - { from: b-bw-exp-hero-staging, to: hero-selection-phase, type: sequence, label: experience loaded }
+  - { from: hero-selection-phase, to: hero-selection-manager, type: calls, label: StartHeroSelectionPhase }
+  - { from: hero-selection-manager, to: hero-registry, type: calls, label: GetAvailableHeroes }
+  - { from: hero-selection-phase, to: bway-player-controller, type: calls, label: show hero UI }
+  - { from: bway-player-controller, to: client-show-hero-select, type: calls, label: Client RPC }
+  - { from: client-show-hero-select, to: wbp-hero-select, type: loads, label: PushContentToLayer }
+  - { from: wbp-hero-select, to: bway-player-state, type: calls, label: Server_SetSelectedHero / Lock }
+  - { from: hero-selection-manager, to: all-players-ready, type: sequence, label: all locked }
+  - { from: all-players-ready, to: seamless-travel-match, type: travels, label: seamless ServerTravel }
+
+  # Match entry
+  - { from: seamless-travel-match, to: dev-skip-hero-selection, type: travels, label: URL option }
+  - { from: seamless-travel-match, to: l-bw-devmap, type: travels, label: target map }
+  - { from: l-bw-devmap, to: b-bw-exp-ctr, type: loads, label: ?Experience=CTR }
+  - { from: b-bw-exp-ctr, to: breakawaycore-plugin, type: loads, label: enable BreakawayCore }
+  - { from: b-bw-exp-ctr, to: shooter-core-dep, type: loads, label: enable ShooterCore }
+  - { from: b-bw-exp-ctr, to: hero-plugin-loader, type: calls, label: load hero GF plugins }
+  - { from: hero-plugin-loader, to: hero-spartacus, type: loads, label: Hero_Spartacus }
+  - { from: hero-plugin-loader, to: hero-alona, type: loads, label: Hero_Alona }
+  - { from: hero-plugin-loader, to: hero-morgan, type: loads, label: Hero_Morgan }
+  - { from: hero-plugin-loader, to: hero-rawlins, type: loads, label: Hero_Rawlins }
+  - { from: hero-spartacus, to: hero-game-feature-data, type: loads, label: register heroes }
+  - { from: hero-game-feature-data, to: hero-data-asset, type: loads, label: HeroDataAssets }
+  - { from: b-bw-exp-ctr, to: breakaway-game-mode, type: sequence, label: match begins }
+  - { from: breakaway-game-mode, to: bway-game-state, type: sequence, label: InitGameState }
+  - { from: breakaway-game-mode, to: post-login-team, type: calls, label: PostLogin }
+  - { from: post-login-team, to: bway-game-state, type: calls, label: AddPlayerToTeam }
+  - { from: bway-game-state, to: team-bridge, type: calls, label: sync teams }
+  - { from: breakaway-game-mode, to: spawn-deferral, type: calls, label: ShouldDeferPlayerRestart }
+  - { from: spawn-deferral, to: hero-selection-phase, type: calls, label: HasHeroSelectionCompleted }
+  - { from: dev-skip-hero-selection, to: spawn-deferral, type: sequence, label: skip UI gate }
+  - { from: bway-game-state, to: bot-creation, type: calls, label: fill bots to 8 }
+  - { from: spawn-deferral, to: spawn-hero-player, type: sequence, label: gate cleared }
+  - { from: spawn-hero-player, to: spawn-point-manager, type: calls, label: ChoosePlayerStart }
+  - { from: spawn-hero-player, to: apply-hero-data, type: calls, label: after spawn }
+  - { from: apply-hero-data, to: hero-data-asset, type: loads, label: read hero data }
+  - { from: apply-hero-data, to: bway-character, type: sequence, label: pawn ready }
+  - { from: apply-hero-data, to: gas-abilities, type: loads, label: grant abilities }
+
+  # GAS phases
+  - { from: b-bw-exp-ctr, to: game-phase-subsystem, type: loads, label: phase ActionSets }
+  - { from: game-phase-subsystem, to: phase-warmup, type: loads, label: start warmup }
+  - { from: phase-warmup, to: phase-playing, type: sequence, label: EndPhaseAndProgress }
+  - { from: hero-selection-phase, to: phase-hero-selection, type: loads, label: in-match path only }
+  - { from: phase-playing, to: round-management, type: sequence, label: Playing phase active }
+  - { from: phase-playing, to: wbp-core-hud, type: loads, label: push HUD }
+
+  # Round loop
+  - { from: round-management, to: round-waiting, type: sequence, label: ERoundState }
+  - { from: round-waiting, to: round-active, type: sequence, label: StartRound }
+  - { from: round-active, to: relic-manager, type: calls, label: spawn relic }
+  - { from: relic-manager, to: relic-actor, type: sequence, label: spawn ARelicActor }
+  - { from: relic-actor, to: bway-character, type: calls, label: pickup/carry }
+  - { from: relic-actor, to: goal-volume, type: sequence, label: score attempt }
+  - { from: goal-volume, to: win-conditions, type: calls, label: OnRelicScored }
+  - { from: round-active, to: win-conditions, type: calls, label: timer/elimination }
+  - { from: win-conditions, to: round-ending, type: sequence, label: resolved }
+  - { from: round-ending, to: scoring-component, type: calls, label: award point }
+  - { from: round-ending, to: round-complete, type: sequence, label: RoundComplete }
+  - { from: round-complete, to: between-round-planning, type: sequence, label: delegate fires }
+  - { from: between-round-planning, to: buildable-registry, type: calls, label: buildable shop hook }
+  - { from: between-round-planning, to: gold-economy, type: calls, label: spend gold }
+  - { from: round-complete, to: reset-round, type: calls, label: ResetRoundState }
+  - { from: reset-round, to: relic-manager, type: calls, label: reset relic }
+  - { from: reset-round, to: spawn-hero-player, type: calls, label: respawn players }
+  - { from: scoring-component, to: match-end, type: calls, label: CheckMatchEnd }
+  - { from: match-end, to: transition-postgame, type: calls, label: OnMatchEnded }
+  - { from: transition-postgame, to: phase-postgame, type: loads, label: post-game phase }
+  - { from: transition-postgame, to: client-show-results, type: calls, label: show results RPC }
+  - { from: client-show-results, to: wbp-results, type: loads, label: push widget }
+  - { from: transition-postgame, to: return-frontend, type: travels, label: ReturnToFrontEnd }
+  - { from: return-frontend, to: l-lyra-frontend, type: travels, label: ServerTravel }
+
+  # Dev paths
+  - { from: dev-pie-direct, to: l-bw-devmap, type: travels, label: PIE URL }
+  - { from: dev-pie-direct, to: b-bw-exp-ctr, type: loads, label: direct experience }
+  - { from: dev-pie-direct, to: dev-show-hero-select, type: sequence, label: manual hero select }
+  - { from: dev-show-hero-select, to: bway-player-controller, type: calls, label: cheat command }
+  - { from: dev-no-staging-tile, to: l-bw-devmap, type: travels, label: skip staging tile }
+  - { from: dev-exp-dev, to: breakaway-game-mode, type: sequence, label: dev experience }
+  - { from: dev-hero-select-flow-lib, to: hero-selection-phase, type: calls, label: BP helpers }
+
+  # Cross-cutting
+  - { from: b-lyra-game-instance, to: lyra-frontend-state, type: loads, label: owns frontend component }
+  - { from: wbp-core-hud, to: wbp-scoreboard, type: sequence, label: tab scoreboard }
+  - { from: bway-game-state, to: round-management, type: loads, label: default subobject }
+  - { from: bway-game-state, to: relic-manager, type: loads, label: default subobject }
+  - { from: bway-game-state, to: scoring-component, type: loads, label: default subobject }
+  - { from: bway-game-state, to: hero-selection-manager, type: loads, label: default subobject }
+  - { from: bway-game-state, to: hero-selection-phase, type: loads, label: default subobject }
