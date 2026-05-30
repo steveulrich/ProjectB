@@ -6,6 +6,8 @@
 
 #include "LyraUserFacingExperienceDefinition.generated.h"
 
+#define UE_API LYRAGAME_API
+
 class FString;
 class UCommonSession_HostSessionRequest;
 class UObject;
@@ -23,12 +25,13 @@ enum class ELyraUserFacingExperienceOnlineMode : uint8
 };
 
 /** Description of settings used to display experiences in the UI and start a new session */
-UCLASS(BlueprintType)
+UCLASS(BlueprintType, MinimalAPI)
 class ULyraUserFacingExperienceDefinition : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
+	UE_API ULyraUserFacingExperienceDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	/** The specific map to load */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category=Experience, meta=(AllowedTypes="Map"))
 	FPrimaryAssetId MapID;
@@ -92,5 +95,7 @@ public:
 public:
 	/** Create a request object that is used to actually start a session with these settings */
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, meta = (WorldContext = "WorldContextObject"))
-	UCommonSession_HostSessionRequest* CreateHostingRequest(const UObject* WorldContextObject) const;
+	virtual UE_API UCommonSession_HostSessionRequest* CreateHostingRequest(const UObject* WorldContextObject) const;
 };
+
+#undef UE_API
