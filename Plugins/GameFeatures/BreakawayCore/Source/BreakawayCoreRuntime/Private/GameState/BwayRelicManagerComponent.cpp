@@ -56,7 +56,6 @@ ARelicActor* UBwayRelicManagerComponent::SpawnRelic()
 
 	if (!RelicClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BwayRelicManager: No RelicClass set!"));
 		return nullptr;
 	}
 

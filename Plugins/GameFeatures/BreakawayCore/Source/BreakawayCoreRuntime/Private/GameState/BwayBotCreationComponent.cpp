@@ -1,6 +1,10 @@
 #include "GameState/BwayBotCreationComponent.h"
 
+#include "BreakawayGameMode.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
+#include "HeroSystems/BwayHeroSelectionManager.h"
 #include "GameModes/LyraGameMode.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
@@ -28,7 +32,7 @@ void UBwayBotCreationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwner()->HasAuthority())
+	if (GetOwner()->HasAuthority() && !UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
 	{
 		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UBwayBotCreationComponent::SpawnInitialBots);
 	}
@@ -36,6 +40,11 @@ void UBwayBotCreationComponent::BeginPlay()
 
 void UBwayBotCreationComponent::SpawnInitialBots()
 {
+	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return;
+	}
+
 	int32 BotsToSpawn = NumBotsToCreate;
 
 	if (bScaleBotsToTargetPlayerCount && GetWorld())
@@ -49,7 +58,9 @@ void UBwayBotCreationComponent::SpawnInitialBots()
 			}
 		}
 
-		BotsToSpawn = FMath::Max(0, TargetPlayerCount - HumanCount);
+		// Listen-server PIE creates bots before the human client connects; reserve one slot.
+		const int32 OccupiedHumanSlots = FMath::Max(HumanCount, 1);
+		BotsToSpawn = FMath::Max(0, TargetPlayerCount - OccupiedHumanSlots);
 	}
 
 	for (int32 Index = SpawnedBotList.Num(); Index < BotsToSpawn; ++Index)
@@ -60,7 +71,7 @@ void UBwayBotCreationComponent::SpawnInitialBots()
 
 void UBwayBotCreationComponent::SpawnOneBot()
 {
-	if (!BotControllerClass)
+	if (!BotControllerClass || UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
 	{
 		return;
 	}
@@ -81,9 +92,44 @@ void UBwayBotCreationComponent::SpawnOneBot()
 		NewController->PlayerState->SetPlayerName(FString::Printf(TEXT("Breakaway Bot %d"), SpawnedBotList.Num() + 1));
 	}
 
-	if (ALyraGameMode* GameMode = GetWorld()->GetAuthGameMode<ALyraGameMode>())
+	ALyraGameMode* GameMode = GetWorld()->GetAuthGameMode<ALyraGameMode>();
+	if (GameMode)
 	{
 		GameMode->GenericPlayerInitialization(NewController);
+	}
+
+	if (ABreakawayGameMode* BwayGameMode = GetWorld()->GetAuthGameMode<ABreakawayGameMode>())
+	{
+		BwayGameMode->AssignControllerToTeam(NewController);
+	}
+
+	if (!UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionWorld(this))
+	{
+		ABwayGameState* GameState = GetOwner<ABwayGameState>();
+		UBwayHeroSelectionManager* SelectionManager = GameState ? GameState->FindComponentByClass<UBwayHeroSelectionManager>() : nullptr;
+		ABwayPlayerState* BotPlayerState = NewController->GetPlayerState<ABwayPlayerState>();
+
+		if (SelectionManager && BotPlayerState)
+		{
+			if (SelectionManager->IsSelectionActive())
+			{
+				SelectionManager->RegisterPlayer(BotPlayerState);
+			}
+
+			if (!BotPlayerState->GetSelectedHeroId().IsValid() || !BotPlayerState->IsHeroLocked())
+			{
+				const bool bLockImmediately = SelectionManager->IsSelectionActive()
+					|| !UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
+				SelectionManager->AssignRandomHeroToPlayer(
+					BotPlayerState,
+					FPrimaryAssetId(),
+					bLockImmediately);
+			}
+		}
+	}
+
+	if (GameMode)
+	{
 		GameMode->RestartPlayer(NewController);
 	}
 

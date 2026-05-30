@@ -162,6 +162,25 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	void SynchronizePlayerSelectionState(APlayerState* PlayerState);
 
+	/** True while StartHeroSelection is active and EndHeroSelection has not run. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	bool IsSelectionActive() const { return bSelectionActive; }
+
+	/**
+	 * Assign a team-aware random hero, falling back to FallbackHeroId when no random pick is valid.
+	 * Optionally locks the player immediately.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	bool AssignRandomHeroToPlayer(ABwayPlayerState* PlayerState, FPrimaryAssetId FallbackHeroId, bool bLockImmediately);
+
+	/** Assign random heroes to players without a valid selection. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	void AssignRandomHeroToPlayers(bool bOnlyBots, FPrimaryAssetId FallbackHeroId, bool bLockImmediately);
+
+	/** Fill missing picks with random/fallback heroes, then lock every valid selection. Used on timeout. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	void ResolveMissingSelectionsAndLockAll(FPrimaryAssetId FallbackHeroId);
+
 	// ========== CONFIGURATION ==========
 
 	/**
@@ -230,6 +249,11 @@ private:
 
 	// Check and broadcast if all players are ready
 	void CheckAllPlayersReady();
+
+	FPrimaryAssetId ResolveFallbackHeroId(FPrimaryAssetId PreferredFallbackHeroId) const;
+	FPrimaryAssetId PickRandomHeroForTeam(int32 TeamIndex, FPrimaryAssetId FallbackHeroId) const;
+	TArray<FPrimaryAssetId> GetRegisteredHeroIds() const;
+	bool IsBotPlayerState(const ABwayPlayerState* PlayerState) const;
 
 	// Get the game state
 	ABwayGameState* GetBwayGameState() const;

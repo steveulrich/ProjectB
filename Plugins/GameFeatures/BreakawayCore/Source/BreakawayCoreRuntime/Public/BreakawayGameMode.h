@@ -66,6 +66,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Teams")
 	void AssignPlayerToTeam(APlayerController* Player);
 
+	/** Assign any controller (human or bot) to the team with fewer players */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|Teams")
+	void AssignControllerToTeam(AController* Controller);
+
 	/** Get the team with fewer players for balancing */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Teams")
 	int32 GetTeamWithFewerPlayers() const;

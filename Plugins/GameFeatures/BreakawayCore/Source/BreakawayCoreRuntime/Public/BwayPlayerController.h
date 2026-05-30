@@ -56,7 +56,7 @@ public:
 
 	/** Server receives the owning client's frontend-selected hero. */
 	UFUNCTION(Server, Reliable)
-	void Server_SubmitPreSelectedHero(FPrimaryAssetId PreSelectedHeroId);
+	void Server_SubmitPreSelectedHero(FPrimaryAssetId PreSelectedHeroId, bool bLockSelection);
 
 	/** Show hero selection UI on the owning client. */
 	UFUNCTION(Client, Reliable)

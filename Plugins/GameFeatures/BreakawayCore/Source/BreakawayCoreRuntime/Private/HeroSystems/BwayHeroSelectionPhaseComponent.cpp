@@ -1,5 +1,6 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
 #include "BwayPlayerController.h"
@@ -91,6 +92,20 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 				FTimerDelegate::CreateUObject(this, &ThisClass::StartHeroSelectionPhase));
 		}
 	}
+	else if (UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this))
+	{
+		if (ULyraExperienceManagerComponent* ExperienceManager = GetOwner()->FindComponentByClass<ULyraExperienceManagerComponent>())
+		{
+			ExperienceManager->CallOrRegister_OnExperienceLoaded_LowPriority(
+				FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::HandleDevDirectPlayExperienceLoaded));
+			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Direct editor play detected; waiting for experience load before dev hero selection"));
+		}
+		else
+		{
+			GetWorld()->GetTimerManager().SetTimerForNextTick(
+				FTimerDelegate::CreateUObject(this, &ThisClass::StartDevDirectPlayHeroSelection));
+		}
+	}
 }
 
 void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -177,13 +192,20 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		}
 	}
 
-	// Bots do not have a local hero-selection UI, so lock them immediately.
-	AssignDefaultHeroes(true);
+	// Bots do not have a local hero-selection UI, so assign and lock them immediately.
+	AssignRandomHeroes(/*bOnlyBots=*/true, /*bLockImmediately=*/true);
 
 	// Let Blueprint run cosmetic/audio/camera hooks, but always perform the C++
 	// CommonUI push as well so overrides cannot swallow the client RPC.
 	ShowHeroSelectionUI();
-	PushHeroSelectionUIToPlayers();
+	if (!ShouldSuppressAutoHeroSelectUI())
+	{
+		PushHeroSelectionUIToPlayers();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Auto hero select UI suppressed for direct editor play"));
+	}
 
 	// Broadcast event
 	OnHeroSelectionPhaseStarted.Broadcast();
@@ -223,8 +245,8 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 		// Unbind from events
 		Manager->OnAllPlayersReady.RemoveDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
 
-		// Assign default heroes to anyone who didn't select
-		AssignDefaultHeroes();
+		// Assign random/fallback heroes to anyone who didn't select
+		AssignRandomHeroes(/*bOnlyBots=*/false, /*bLockImmediately=*/true);
 
 		// End selection phase
 		Manager->EndHeroSelection();
@@ -262,8 +284,8 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 	bPhaseActive = false;
 	bHeroSelectionCompleted = true;
 
-	// Assign default heroes to everyone
-	AssignDefaultHeroes();
+	// Assign random/fallback heroes to everyone
+	AssignRandomHeroes(/*bOnlyBots=*/false, /*bLockImmediately=*/true);
 
 	// Spawn heroes immediately
 	if (!ShouldTravelToPostHeroSelectionMap())
@@ -283,6 +305,11 @@ void UBwayHeroSelectionPhaseComponent::ShowHeroSelectionUI_Implementation()
 
 void UBwayHeroSelectionPhaseComponent::PushHeroSelectionUIToPlayers()
 {
+	if (ShouldSuppressAutoHeroSelectUI())
+	{
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Pushing hero selection UI to players"));
 
 	// Base C++ implementation: ask each owning client to create its local widget.
@@ -332,9 +359,31 @@ void UBwayHeroSelectionPhaseComponent::PopHeroSelectionUIFromPlayers()
 
 void UBwayHeroSelectionPhaseComponent::HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag)
 {
+	if (ShouldTravelToPostHeroSelectionMap())
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("BwayHeroSelectionPhaseComponent: Ignoring Lyra hero-selection phase on staging map; experience load handles staging start"));
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: HeroSelection phase activated by Lyra phase system! (Tag: %s)"), *InPhaseTag.ToString());
 	
 	// Now start our hero selection logic
+	StartHeroSelectionPhase();
+}
+
+void UBwayHeroSelectionPhaseComponent::HandleDevDirectPlayExperienceLoaded(const ULyraExperienceDefinition* Experience)
+{
+	StartDevDirectPlayHeroSelection();
+}
+
+void UBwayHeroSelectionPhaseComponent::StartDevDirectPlayHeroSelection()
+{
+	if (!GetOwner()->HasAuthority() || ShouldSkipHeroSelectionPhase() || ShouldTravelToPostHeroSelectionMap() || bPhaseActive || bHeroSelectionCompleted)
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting direct editor-play hero selection (cheat-driven UI)"));
 	StartHeroSelectionPhase();
 }
 
@@ -391,15 +440,7 @@ void UBwayHeroSelectionPhaseComponent::EndPhaseAndProgressToNext()
 
 bool UBwayHeroSelectionPhaseComponent::ShouldTravelToPostHeroSelectionMap() const
 {
-	if (UWorld* World = GetWorld())
-	{
-		if (const AGameModeBase* GameMode = World->GetAuthGameMode())
-		{
-			return UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("HeroSelectStaging"));
-		}
-	}
-
-	return false;
+	return UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this);
 }
 
 bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
@@ -463,15 +504,7 @@ bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
 
 bool UBwayHeroSelectionPhaseComponent::ShouldSkipHeroSelectionPhase() const
 {
-	if (UWorld* World = GetWorld())
-	{
-		if (const AGameModeBase* GameMode = World->GetAuthGameMode())
-		{
-			return UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("SkipHeroSelection"));
-		}
-	}
-
-	return false;
+	return UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionWorld(this);
 }
 
 void UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady()
@@ -560,78 +593,48 @@ void UBwayHeroSelectionPhaseComponent::SpawnHeroForPlayer_Implementation(ABwayPl
 
 void UBwayHeroSelectionPhaseComponent::AssignDefaultHeroes(bool bOnlyBots)
 {
-	ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner());
-	if (!GameState)
-	{
-		return;
-	}
+	AssignRandomHeroes(bOnlyBots, /*bLockImmediately=*/true);
+}
 
-	UBwayHeroDataAsset* DefaultHero = nullptr;
+void UBwayHeroSelectionPhaseComponent::AssignRandomHeroes(bool bOnlyBots, bool bLockImmediately)
+{
+	if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
+	{
+		Manager->AssignRandomHeroToPlayers(bOnlyBots, ResolveFallbackHeroId(), bLockImmediately);
+	}
+}
+
+FPrimaryAssetId UBwayHeroSelectionPhaseComponent::ResolveFallbackHeroId() const
+{
 	if (!DefaultHeroData.IsNull())
 	{
-		DefaultHero = DefaultHeroData.LoadSynchronous();
+		if (UBwayHeroDataAsset* DefaultHero = DefaultHeroData.LoadSynchronous())
+		{
+			return DefaultHero->GetPrimaryAssetId();
+		}
 	}
 
-	if (!DefaultHero)
+	if (UBwayHeroRegistry* HeroRegistry = UBwayHeroRegistry::Get(this))
 	{
-		if (UBwayHeroRegistry* HeroRegistry = UBwayHeroRegistry::Get(this))
+		for (const TSoftObjectPtr<UBwayHeroDataAsset>& HeroSoftObject : HeroRegistry->GetAllHeroSoftObjects())
 		{
-			for (const TSoftObjectPtr<UBwayHeroDataAsset>& HeroSoftObject : HeroRegistry->GetAllHeroSoftObjects())
+			if (UBwayHeroDataAsset* CandidateHero = HeroRegistry->LoadHeroSync(HeroSoftObject))
 			{
-				UBwayHeroDataAsset* CandidateHero = HeroRegistry->LoadHeroSync(HeroSoftObject);
-				if (CandidateHero && CandidateHero->GetPrimaryAssetId().IsValid())
+				const FPrimaryAssetId CandidateId = CandidateHero->GetPrimaryAssetId();
+				if (CandidateId.IsValid())
 				{
-					DefaultHero = CandidateHero;
-					UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: DefaultHeroData is not configured; using %s as fallback default hero"),
-						*DefaultHero->GetPrimaryAssetId().ToString());
-					break;
+					return CandidateId;
 				}
 			}
 		}
-
-		if (!DefaultHero)
-		{
-			UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: No default hero configured and no fallback hero could be loaded"));
-			return;
-		}
 	}
 
-	// Get its PrimaryAssetId so we can assign via the standard path
-	FPrimaryAssetId DefaultHeroId = DefaultHero->GetPrimaryAssetId();
-	if (!DefaultHeroId.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: DefaultHeroData has invalid PrimaryAssetId"));
-		return;
-	}
+	return FPrimaryAssetId();
+}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Default hero is %s (%s)"),
-		*DefaultHero->DisplayName.ToString(), *DefaultHeroId.ToString());
-
-	// Assign default to anyone without a selection
-	for (APlayerState* PS : GameState->PlayerArray)
-	{
-		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
-		{
-			const bool bIsBot = Cast<ALyraPlayerBotController>(BwayPS->GetOwner()) != nullptr || BwayPS->GetPlayerController() == nullptr;
-			if (bOnlyBots && !bIsBot)
-			{
-				continue;
-			}
-
-			if (!BwayPS->GetSelectedHeroId().IsValid())
-			{
-				BwayPS->ServerSetSelectedHeroId(DefaultHeroId);
-				BwayPS->ServerLockHeroSelection();
-				if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
-				{
-					Manager->SynchronizePlayerSelectionState(BwayPS);
-				}
-
-				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Assigned default hero %s to %s"), 
-					*DefaultHero->DisplayName.ToString(), *BwayPS->GetPlayerName());
-			}
-		}
-	}
+bool UBwayHeroSelectionPhaseComponent::ShouldSuppressAutoHeroSelectUI() const
+{
+	return UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
 }
 
 UBwayHeroSelectionManager* UBwayHeroSelectionPhaseComponent::GetSelectionManager() const

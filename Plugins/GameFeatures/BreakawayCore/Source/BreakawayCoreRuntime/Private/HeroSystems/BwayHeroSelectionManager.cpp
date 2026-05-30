@@ -3,10 +3,15 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "HeroSystems/BwayHeroRegistry.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
 #include "GameFramework/PlayerState.h"
+#include "Player/LyraPlayerBotController.h"
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "Net/UnrealNetwork.h"
+#include "AIController.h"
 
 UBwayHeroSelectionManager::UBwayHeroSelectionManager(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -336,15 +341,12 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 	{
 		if (!Selection.bIsLocked)
 		{
-			// Only lock if they have a valid selection
 			if (Selection.SelectedHeroId.IsValid())
 			{
 				Selection.bIsLocked = true;
 
-				// Use authority-side lock (not the Server RPC)
 				if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
 				{
-					// Directly lock on authority side
 					BwayPS->ServerLockHeroSelection_Implementation();
 				}
 
@@ -352,7 +354,7 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Player %s has no selection — will receive default hero"),
+				UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Player %s has no selection after resolve step"),
 					Selection.PlayerState ? *Selection.PlayerState->GetPlayerName() : TEXT("Unknown"));
 			}
 		}
@@ -454,7 +456,16 @@ void UBwayHeroSelectionManager::OnSelectionTimeout()
 
 	if (bAutoLockOnTimeout)
 	{
-		ForceLockAllPlayers();
+		FPrimaryAssetId FallbackHeroId;
+		if (ABwayGameState* GameState = GetBwayGameState())
+		{
+			if (const UBwayHeroSelectionPhaseComponent* HeroSelectionPhase = GameState->HeroSelectionPhaseComponent)
+			{
+				FallbackHeroId = HeroSelectionPhase->ResolveFallbackHeroId();
+			}
+		}
+
+		ResolveMissingSelectionsAndLockAll(FallbackHeroId);
 	}
 }
 
@@ -515,6 +526,190 @@ void UBwayHeroSelectionManager::CheckAllPlayersReady()
 		OnAllPlayersReady.Broadcast();
 		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: All players ready!"));
 	}
+}
+
+bool UBwayHeroSelectionManager::AssignRandomHeroToPlayer(ABwayPlayerState* PlayerState, FPrimaryAssetId FallbackHeroId, bool bLockImmediately)
+{
+	if (!GetOwner()->HasAuthority() || !PlayerState)
+	{
+		return false;
+	}
+
+	if (PlayerState->GetSelectedHeroId().IsValid() && (!bLockImmediately || PlayerState->IsHeroLocked()))
+	{
+		return true;
+	}
+
+	const FPrimaryAssetId ResolvedFallbackHeroId = ResolveFallbackHeroId(FallbackHeroId);
+	int32 TeamIndex = -1;
+	if (ABwayGameState* GameState = GetBwayGameState())
+	{
+		TeamIndex = GameState->GetPlayerTeam(PlayerState);
+	}
+
+	const FPrimaryAssetId HeroToAssign = PlayerState->GetSelectedHeroId().IsValid()
+		? PlayerState->GetSelectedHeroId()
+		: PickRandomHeroForTeam(TeamIndex, ResolvedFallbackHeroId);
+
+	if (!HeroToAssign.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionManager: Could not assign a hero to %s"), *PlayerState->GetPlayerName());
+		return false;
+	}
+
+	if (PlayerState->GetSelectedHeroId() != HeroToAssign)
+	{
+		PlayerState->ServerSetSelectedHeroId(HeroToAssign);
+	}
+
+	if (bLockImmediately && !PlayerState->IsHeroLocked())
+	{
+		PlayerState->ServerLockHeroSelection_Implementation();
+	}
+
+	SynchronizePlayerSelectionState(PlayerState);
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Assigned hero %s to %s (Lock=%s)"),
+		*HeroToAssign.ToString(),
+		*PlayerState->GetPlayerName(),
+		bLockImmediately ? TEXT("true") : TEXT("false"));
+
+	return true;
+}
+
+void UBwayHeroSelectionManager::AssignRandomHeroToPlayers(bool bOnlyBots, FPrimaryAssetId FallbackHeroId, bool bLockImmediately)
+{
+	ABwayGameState* GameState = GetBwayGameState();
+	if (!GameState)
+	{
+		return;
+	}
+
+	for (APlayerState* PS : GameState->PlayerArray)
+	{
+		ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
+		if (!BwayPS)
+		{
+			continue;
+		}
+
+		if (bOnlyBots && !IsBotPlayerState(BwayPS))
+		{
+			continue;
+		}
+
+		if (!BwayPS->GetSelectedHeroId().IsValid() || (bLockImmediately && !BwayPS->IsHeroLocked()))
+		{
+			AssignRandomHeroToPlayer(BwayPS, FallbackHeroId, bLockImmediately);
+		}
+	}
+}
+
+void UBwayHeroSelectionManager::ResolveMissingSelectionsAndLockAll(FPrimaryAssetId FallbackHeroId)
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	const FPrimaryAssetId ResolvedFallbackHeroId = ResolveFallbackHeroId(FallbackHeroId);
+
+	for (FPlayerHeroSelectionState& Selection : PlayerSelections)
+	{
+		if (Selection.bIsLocked)
+		{
+			continue;
+		}
+
+		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState))
+		{
+			if (!BwayPS->GetSelectedHeroId().IsValid())
+			{
+				AssignRandomHeroToPlayer(BwayPS, ResolvedFallbackHeroId, /*bLockImmediately=*/false);
+			}
+		}
+	}
+
+	ForceLockAllPlayers();
+}
+
+FPrimaryAssetId UBwayHeroSelectionManager::ResolveFallbackHeroId(FPrimaryAssetId PreferredFallbackHeroId) const
+{
+	if (PreferredFallbackHeroId.IsValid())
+	{
+		return PreferredFallbackHeroId;
+	}
+
+	if (UBwayHeroRegistry* HeroRegistry = UBwayHeroRegistry::Get(this))
+	{
+		for (const TSoftObjectPtr<UBwayHeroDataAsset>& HeroSoftObject : HeroRegistry->GetAllHeroSoftObjects())
+		{
+			if (UBwayHeroDataAsset* CandidateHero = HeroRegistry->LoadHeroSync(HeroSoftObject))
+			{
+				const FPrimaryAssetId CandidateId = CandidateHero->GetPrimaryAssetId();
+				if (CandidateId.IsValid())
+				{
+					return CandidateId;
+				}
+			}
+		}
+	}
+
+	return FPrimaryAssetId();
+}
+
+FPrimaryAssetId UBwayHeroSelectionManager::PickRandomHeroForTeam(int32 TeamIndex, FPrimaryAssetId FallbackHeroId) const
+{
+	TArray<FPrimaryAssetId> AvailableHeroIds;
+	for (const FPrimaryAssetId& HeroId : GetRegisteredHeroIds())
+	{
+		if (HeroId.IsValid() && IsHeroAvailableForTeam(HeroId, TeamIndex))
+		{
+			AvailableHeroIds.Add(HeroId);
+		}
+	}
+
+	if (AvailableHeroIds.Num() > 0)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, AvailableHeroIds.Num() - 1);
+		return AvailableHeroIds[RandomIndex];
+	}
+
+	return ResolveFallbackHeroId(FallbackHeroId);
+}
+
+TArray<FPrimaryAssetId> UBwayHeroSelectionManager::GetRegisteredHeroIds() const
+{
+	TArray<FPrimaryAssetId> HeroIds;
+
+	if (UBwayHeroRegistry* HeroRegistry = UBwayHeroRegistry::Get(this))
+	{
+		for (const TSoftObjectPtr<UBwayHeroDataAsset>& HeroSoftObject : HeroRegistry->GetAllHeroSoftObjects())
+		{
+			if (UBwayHeroDataAsset* HeroData = HeroRegistry->LoadHeroSync(HeroSoftObject))
+			{
+				const FPrimaryAssetId HeroId = HeroData->GetPrimaryAssetId();
+				if (HeroId.IsValid())
+				{
+					HeroIds.AddUnique(HeroId);
+				}
+			}
+		}
+	}
+
+	return HeroIds;
+}
+
+bool UBwayHeroSelectionManager::IsBotPlayerState(const ABwayPlayerState* PlayerState) const
+{
+	if (!PlayerState)
+	{
+		return false;
+	}
+
+	return Cast<ALyraPlayerBotController>(PlayerState->GetOwner()) != nullptr
+		|| Cast<AAIController>(PlayerState->GetOwner()) != nullptr
+		|| PlayerState->GetPlayerController() == nullptr;
 }
 
 ABwayGameState* UBwayHeroSelectionManager::GetBwayGameState() const

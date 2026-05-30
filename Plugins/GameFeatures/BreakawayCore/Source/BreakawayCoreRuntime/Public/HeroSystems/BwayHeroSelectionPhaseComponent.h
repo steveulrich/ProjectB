@@ -68,6 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
 	bool ShouldBlockPlayerSpawning() const { return bBlockPlayerSpawningUntilComplete && !bHeroSelectionCompleted; }
 
+	/** PrimaryAssetId used when random team-aware selection cannot find a valid hero. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
+	FPrimaryAssetId ResolveFallbackHeroId() const;
+
 	// ========== CONFIGURATION ==========
 
 	/**
@@ -154,6 +158,7 @@ protected:
 	void HandleLyraPhaseActivated(const FGameplayTag& InPhaseTag);
 
 	void HandleExperienceLoaded(const ULyraExperienceDefinition* Experience);
+	void HandleDevDirectPlayExperienceLoaded(const ULyraExperienceDefinition* Experience);
 	
 	/** Start the next Lyra phase after hero selection is done */
 	void EndPhaseAndProgressToNext();
@@ -173,6 +178,12 @@ private:
 
 	// Assign a default hero to players who didn't select
 	void AssignDefaultHeroes(bool bOnlyBots = false);
+
+	// Assign random/fallback heroes to players who did not pick.
+	void AssignRandomHeroes(bool bOnlyBots, bool bLockImmediately);
+
+	bool ShouldSuppressAutoHeroSelectUI() const;
+	void StartDevDirectPlayHeroSelection();
 
 	// Get reference to selection manager
 	UBwayHeroSelectionManager* GetSelectionManager() const;

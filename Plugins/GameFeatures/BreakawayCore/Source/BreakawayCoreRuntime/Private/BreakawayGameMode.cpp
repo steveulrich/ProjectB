@@ -5,6 +5,8 @@
 #include "BwayPlayerState.h"
 #include "BwayPlayerController.h"
 #include "BwayCharacterWithAbilities.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameFramework/Pawn.h"
@@ -43,14 +45,21 @@ void ABreakawayGameMode::InitGameState()
 	ABwayGameState* BwayGS = GetBreakawayGameState();
 	if (BwayGS)
 	{
-		// Add spawn point manager component to game state
-		SpawnPointManager = Cast<UBwaySpawnPointManagerComponent>(
-			BwayGS->AddComponentByClass(UBwaySpawnPointManagerComponent::StaticClass(), false, FTransform::Identity, false));
-
-		if (SpawnPointManager)
+		SpawnPointManager = BwayGS->FindComponentByClass<UBwaySpawnPointManagerComponent>();
+		if (!SpawnPointManager)
 		{
-			SpawnPointManager->RegisterComponent();
-			UE_LOG(LogBreakawayGame, Log, TEXT("Spawn Point Manager added to Game State"));
+			SpawnPointManager = Cast<UBwaySpawnPointManagerComponent>(
+				BwayGS->AddComponentByClass(UBwaySpawnPointManagerComponent::StaticClass(), false, FTransform::Identity, false));
+
+			if (SpawnPointManager)
+			{
+				SpawnPointManager->RegisterComponent();
+				UE_LOG(LogBreakawayGame, Log, TEXT("Spawn Point Manager added to Game State"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogBreakawayGame, Log, TEXT("Spawn Point Manager already present on Game State"));
 		}
 
 		UE_LOG(LogBreakawayGame, Log, TEXT("Breakaway Game State initialized"));
@@ -85,24 +94,23 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 	// Assign player to a team
 	AssignPlayerToTeam(NewPlayer);
 
+	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with SkipHeroSelection — using experience DefaultPawnData"),
+			*NewPlayer->GetName());
+		return;
+	}
+
 	ABwayPlayerState* PS = NewPlayer->GetPlayerState<ABwayPlayerState>();
 	if (PS && PS->GetSelectedHeroId().IsValid())
 	{
-		UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with hero %s"), 
+		UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with hero %s"),
 			*NewPlayer->GetName(), *PS->GetSelectedHeroId().ToString());
 	}
 	else
 	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("Player %s logged in without a selected hero"), 
+		UE_LOG(LogBreakawayGame, Warning, TEXT("Player %s logged in without a selected hero"),
 			*NewPlayer->GetName());
-
-		if (UGameplayStatics::HasOption(OptionsString, TEXT("SkipHeroSelection")))
-		{
-			if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(NewPlayer))
-			{
-				BwayPC->Client_RequestPreSelectedHero();
-			}
-		}
 	}
 }
 
@@ -149,10 +157,13 @@ AActor* ABreakawayGameMode::ChoosePlayerStart_Implementation(AController* Player
 		return Super::ChoosePlayerStart_Implementation(Player);
 	}
 
-	// Determine which team the player is on
 	const int32 TeamIndex = BwayGS->GetPlayerTeam(Player->PlayerState);
-	
-	// Fallback to tag-based player start search
+	if (TeamIndex < 0)
+	{
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ChoosePlayerStart: %s has no team assignment; using default spawn"), *GetNameSafe(Player));
+		return Super::ChoosePlayerStart_Implementation(Player);
+	}
+
 	FName SpawnTag = (TeamIndex == 0) ? Team1SpawnPointTag : Team2SpawnPointTag;
 	TArray<AActor*> TeamSpawns = GetPlayerStartsWithTag(SpawnTag);
 
@@ -214,8 +225,10 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 		}
 	}
 
-	// Now apply hero data to the newly spawned pawn
-	ApplyHeroDataToNewPawn(NewPlayer);
+	if (!UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
+	{
+		ApplyHeroDataToNewPawn(NewPlayer);
+	}
 
 	UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: END for %s"), *GetNameSafe(NewPlayer));
 }
@@ -223,6 +236,11 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 {
 	if (!Controller)
+	{
+		return;
+	}
+
+	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
 	{
 		return;
 	}
@@ -287,24 +305,27 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 
 void ABreakawayGameMode::AssignPlayerToTeam(APlayerController* Player)
 {
+	AssignControllerToTeam(Player);
+}
+
+void ABreakawayGameMode::AssignControllerToTeam(AController* Controller)
+{
 	ABwayGameState* BwayGS = GetBreakawayGameState();
-	if (!BwayGS || !Player || !Player->PlayerState)
+	if (!BwayGS || !Controller || !Controller->PlayerState)
 	{
 		return;
 	}
 
-	// Check if already on a team
-	if (BwayGS->GetPlayerTeam(Player->PlayerState) >= 0)
+	if (BwayGS->GetPlayerTeam(Controller->PlayerState) >= 0)
 	{
 		return;
 	}
 
-	// Assign to team with fewer players
 	const int32 TeamIndex = GetTeamWithFewerPlayers();
-	BwayGS->AddPlayerToTeam(Player->PlayerState, TeamIndex);
+	BwayGS->AddPlayerToTeam(Controller->PlayerState, TeamIndex);
 
-	UE_LOG(LogBreakawayGame, Log, TEXT("Assigned player %s to Team %d"), 
-		*Player->GetName(), TeamIndex + 1);
+	UE_LOG(LogBreakawayGame, Log, TEXT("Assigned player %s to Team %d"),
+		*Controller->GetName(), TeamIndex + 1);
 }
 
 int32 ABreakawayGameMode::GetTeamWithFewerPlayers() const
@@ -342,6 +363,13 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 		return;
 	}
 
+	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingGameMode(this))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("Skipping initial match object spawn on hero-select staging map"));
+		bInitialGameObjectsSpawned = true;
+		return;
+	}
+
 	++InitialGameObjectSpawnAttempts;
 
 	if (!SpawnPointManager)
@@ -356,11 +384,13 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 		return;
 	}
 
-	// Relic ownership belongs to UBwayRelicManagerComponent. GameMode only kicks off
-	// initial world-object spawning.
 	if (UBwayRelicManagerComponent* RelicMgr = BwayGS->FindComponentByClass<UBwayRelicManagerComponent>())
 	{
-		if (!RelicMgr->SpawnRelic())
+		if (!RelicMgr->RelicClass)
+		{
+			UE_LOG(LogBreakawayGame, Log, TEXT("RelicClass not configured; skipping initial relic spawn"));
+		}
+		else if (!RelicMgr->SpawnRelic())
 		{
 			if (InitialGameObjectSpawnAttempts < 5)
 			{
@@ -403,7 +433,7 @@ bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AControl
 		return false;
 	}
 
-	if (UGameplayStatics::HasOption(OptionsString, TEXT("SkipHeroSelection")))
+	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
 	{
 		return false;
 	}

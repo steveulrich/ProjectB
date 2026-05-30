@@ -4,6 +4,8 @@
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
+#include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Blueprint/UserWidget.h"
 #include "CommonActivatableWidget.h"
 #include "CommonUIExtensions.h"
@@ -66,12 +68,18 @@ void ABwayPlayerController::Client_RequestPreSelectedHero_Implementation()
 
 	if (PreSelectedHeroId.IsValid())
 	{
-		Server_SubmitPreSelectedHero(PreSelectedHeroId);
+		const bool bLockSelection = !UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this);
+		Server_SubmitPreSelectedHero(PreSelectedHeroId, bLockSelection);
 	}
 }
 
-void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimaryAssetId PreSelectedHeroId)
+void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimaryAssetId PreSelectedHeroId, bool bLockSelection)
 {
+	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionWorld(this))
+	{
+		return;
+	}
+
 	if (!PreSelectedHeroId.IsValid())
 	{
 		return;
@@ -82,10 +90,21 @@ void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimary
 		if (!BwayPS->IsHeroLocked())
 		{
 			BwayPS->ServerSetSelectedHeroId(PreSelectedHeroId);
-			BwayPS->ServerLockHeroSelection();
+
+			if (bLockSelection)
+			{
+				BwayPS->ServerLockHeroSelection();
+			}
+			else if (ABwayGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+			{
+				if (UBwayHeroSelectionManager* SelectionManager = GameState->FindComponentByClass<UBwayHeroSelectionManager>())
+				{
+					SelectionManager->SynchronizePlayerSelectionState(BwayPS);
+				}
+			}
 		}
 
-		if (GetPawn())
+		if (bLockSelection && GetPawn())
 		{
 			if (ABreakawayGameMode* BreakawayGameMode = GetWorld() ? Cast<ABreakawayGameMode>(GetWorld()->GetAuthGameMode()) : nullptr)
 			{
