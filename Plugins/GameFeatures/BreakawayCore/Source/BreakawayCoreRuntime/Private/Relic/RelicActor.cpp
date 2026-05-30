@@ -521,6 +521,14 @@ void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
         return;
     }
     
+    // Release the carrier before scoring VFX so round-reset pawn destroy/restart is safe.
+    if (CurrentCarrier)
+    {
+        DetachFromCarrier();
+        CurrentCarrier = nullptr;
+        OnRep_CurrentCarrier();
+    }
+
     // Set scoring state internally
     SetRelicState(ERelicState::Scoring);
     

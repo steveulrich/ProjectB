@@ -9,6 +9,7 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
+#include "Relic/RelicActor.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/PlayerController.h"
@@ -19,6 +20,7 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
+#include "Character/LyraPawnExtensionComponent.h"
 #include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
@@ -217,10 +219,23 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 	{
 		if (APawn* RestartedPawn = PC->GetPawn())
 		{
-			// Seamless travel plus the immediate round-start restart can leave the
-			// owning client without a fresh pawn restart, so force the client path
-			// that recreates/binds the local input component.
-			PC->ClientRetryClientRestart(RestartedPawn);
+			// Remote clients: retry RPC when possession has not caught up yet.
+			// Listen-server host: possession is already correct, but ClientRetryClientRestart
+			// skips ClientRestart when GetPawn() == NewPawn — leaving input/mesh broken.
+			if (PC->IsLocalPlayerController())
+			{
+				PC->ClientRestart(RestartedPawn);
+			}
+			else
+			{
+				PC->ClientRetryClientRestart(RestartedPawn);
+			}
+
+			if (ULyraPawnExtensionComponent* PawnExtComp = ULyraPawnExtensionComponent::FindPawnExtensionComponent(RestartedPawn))
+			{
+				PawnExtComp->CheckDefaultInitialization();
+			}
+
 			RestartedPawn->ForceNetUpdate();
 		}
 	}

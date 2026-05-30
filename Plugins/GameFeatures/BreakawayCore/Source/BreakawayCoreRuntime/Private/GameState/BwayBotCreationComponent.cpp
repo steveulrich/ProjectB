@@ -6,6 +6,7 @@
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "GameModes/LyraGameMode.h"
+#include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
 #include "Player/LyraPlayerBotController.h"
@@ -32,19 +33,30 @@ void UBwayBotCreationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwner()->HasAuthority() && !UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
-	{
-		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &UBwayBotCreationComponent::SpawnInitialBots);
-	}
-}
-
-void UBwayBotCreationComponent::SpawnInitialBots()
-{
-	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	if (!GetOwner()->HasAuthority() || UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
 	{
 		return;
 	}
 
+	if (AGameStateBase* GameState = GetGameStateChecked<AGameStateBase>())
+	{
+		if (ULyraExperienceManagerComponent* ExperienceComponent = GameState->FindComponentByClass<ULyraExperienceManagerComponent>())
+		{
+			ExperienceComponent->CallOrRegister_OnExperienceLoaded(
+				FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &UBwayBotCreationComponent::OnExperienceLoaded));
+		}
+	}
+}
+
+void UBwayBotCreationComponent::OnExperienceLoaded(const ULyraExperienceDefinition* Experience)
+{
+	// Spawn bot controllers once the experience (pawn data, actions) is ready.
+	// Round start will place them at team spawns via EnsureBotsForRound.
+	SpawnMissingBots();
+}
+
+int32 UBwayBotCreationComponent::GetTargetBotCount() const
+{
 	int32 BotsToSpawn = NumBotsToCreate;
 
 	if (bScaleBotsToTargetPlayerCount && GetWorld())
@@ -63,10 +75,37 @@ void UBwayBotCreationComponent::SpawnInitialBots()
 		BotsToSpawn = FMath::Max(0, TargetPlayerCount - OccupiedHumanSlots);
 	}
 
+	return BotsToSpawn;
+}
+
+void UBwayBotCreationComponent::SpawnMissingBots()
+{
+	if (!GetOwner()->HasAuthority() || UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return;
+	}
+
+	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
+	{
+		return !IsValid(Bot);
+	});
+
+	const int32 BotsToSpawn = GetTargetBotCount();
 	for (int32 Index = SpawnedBotList.Num(); Index < BotsToSpawn; ++Index)
 	{
 		SpawnOneBot();
 	}
+}
+
+void UBwayBotCreationComponent::EnsureBotsForRound()
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	SpawnMissingBots();
+	RestartAllBots();
 }
 
 void UBwayBotCreationComponent::SpawnOneBot()
@@ -142,4 +181,47 @@ void UBwayBotCreationComponent::SpawnOneBot()
 	}
 
 	SpawnedBotList.Add(NewController);
+}
+
+void UBwayBotCreationComponent::RestartAllBots()
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	AGameModeBase* GM = GetWorld() ? GetWorld()->GetAuthGameMode() : nullptr;
+	if (!GM)
+	{
+		return;
+	}
+
+	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
+	{
+		return !IsValid(Bot);
+	});
+
+	for (AAIController* BotController : SpawnedBotList)
+	{
+		if (!BotController)
+		{
+			continue;
+		}
+
+		if (APawn* OldBotPawn = BotController->GetPawn())
+		{
+			BotController->UnPossess();
+			OldBotPawn->Destroy();
+		}
+
+		GM->RestartPlayer(BotController);
+
+		if (APawn* Pawn = BotController->GetPawn())
+		{
+			if (ULyraPawnExtensionComponent* PawnExtComponent = Pawn->FindComponentByClass<ULyraPawnExtensionComponent>())
+			{
+				PawnExtComponent->CheckDefaultInitialization();
+			}
+		}
+	}
 }

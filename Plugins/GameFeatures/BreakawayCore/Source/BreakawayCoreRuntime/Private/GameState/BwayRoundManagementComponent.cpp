@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameState/BwayBotCreationComponent.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Relic/RelicActor.h"
@@ -302,14 +303,31 @@ void UBwayRoundManagementComponent::ResetRoundState()
 		RelicMgr->ResetRelic();
 	}
 
-	// Respawn all players
-	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	// Respawn all human players (destroy first — same pattern as RespawnPlayer).
+	if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
 	{
-		if (APlayerController* PC = It->Get())
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 		{
-			if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
+			APlayerController* PC = It->Get();
+			if (!PC)
 			{
-				GM->RestartPlayer(PC);
+				continue;
+			}
+
+			if (APawn* OldPawn = PC->GetPawn())
+			{
+				PC->UnPossess();
+				OldPawn->Destroy();
+			}
+
+			GM->RestartPlayer(PC);
+		}
+
+		if (ABwayGameState* BwayGS = GetBwayGameState())
+		{
+			if (UBwayBotCreationComponent* BotCreation = BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
+			{
+				BotCreation->EnsureBotsForRound();
 			}
 		}
 	}

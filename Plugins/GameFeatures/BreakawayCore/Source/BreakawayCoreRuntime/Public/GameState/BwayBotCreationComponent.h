@@ -14,6 +14,14 @@ public:
 
 	virtual void BeginPlay() override;
 
+	/** Spawn any missing bots, then respawn all bots at team spawn points (round reset). Authority only. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
+	void EnsureBotsForRound();
+
+	/** Destroy and respawn every existing bot at team spawn points. Authority only. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
+	void RestartAllBots();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	int32 NumBotsToCreate = 7;
@@ -31,6 +39,9 @@ protected:
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<AAIController>> SpawnedBotList;
 
-	void SpawnInitialBots();
+	void OnExperienceLoaded(const class ULyraExperienceDefinition* Experience);
+
+	int32 GetTargetBotCount() const;
+	void SpawnMissingBots();
 	void SpawnOneBot();
 };
