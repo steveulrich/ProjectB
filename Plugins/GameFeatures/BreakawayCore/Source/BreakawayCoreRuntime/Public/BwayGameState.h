@@ -14,6 +14,7 @@ class UBwayHeroSelectionPhaseComponent;
 class UBwayRoundManagementComponent;
 class UBwayScoringComponent;
 class UBwayRelicManagerComponent;
+class UBwayMidfieldDividerComponent;
 class UBwayTeamBridgeComponent;
 class UBwayBuildableRegistryComponent;
 class UUserWidget;
@@ -75,6 +76,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
 	TObjectPtr<UBwayRelicManagerComponent> RelicManagerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
+	TObjectPtr<UBwayMidfieldDividerComponent> MidfieldDividerComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Match")
 	TObjectPtr<UBwayTeamBridgeComponent> TeamBridgeComponent;

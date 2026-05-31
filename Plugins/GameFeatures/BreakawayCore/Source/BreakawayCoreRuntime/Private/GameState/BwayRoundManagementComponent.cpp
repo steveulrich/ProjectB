@@ -2,13 +2,15 @@
 
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameState/BwayBotCreationComponent.h"
+#include "GameState/BwayMidfieldRulesLibrary.h"
+#include "GameState/BwayMidfieldDividerComponent.h"
+#include "GameState/BwayRelicManagerComponent.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Buildable/BuildableBase.h"
 #include "Economy/BwayGoldAttributeSet.h"
-#include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayScoringComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
@@ -125,6 +127,24 @@ void UBwayRoundManagementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 		{
 			BwayGS->OnRoundTimeChanged.Broadcast(RemainingSeconds);
 		}
+
+		if (!bSuddenDeathWarningBroadcastThisRound
+			&& SuddenDeathWarningSeconds > 0
+			&& RemainingSeconds > 0
+			&& RemainingSeconds <= SuddenDeathWarningSeconds)
+		{
+			bSuddenDeathWarningBroadcastThisRound = true;
+			OnSuddenDeathWarning.Broadcast(RemainingSeconds);
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Sudden death warning — %d seconds remaining"), RemainingSeconds);
+
+			if (ABwayGameState* BwayGS = GetBwayGameState())
+			{
+				if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
+				{
+					DividerComponent->SetSuddenDeathDividerVisible(true);
+				}
+			}
+		}
 	}
 
 	// Check if round time has expired
@@ -223,6 +243,13 @@ void UBwayRoundManagementComponent::StartRound()
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Starting Round %d"), CurrentRoundNumber + 1);
 
+	bSuddenDeathWarningBroadcastThisRound = false;
+
+	if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
+	{
+		DividerComponent->SetSuddenDeathDividerVisible(false);
+	}
+
 	ResetRoundState();
 	SetRoundState(ERoundState::RoundActive);
 
@@ -244,6 +271,11 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 	if (!BwayGS)
 	{
 		return;
+	}
+
+	if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
+	{
+		DividerComponent->SetSuddenDeathDividerVisible(false);
 	}
 
 	RemovePassiveGoldIncome();
@@ -402,20 +434,26 @@ void UBwayRoundManagementComponent::OnRoundTimerExpired()
 		return;
 	}
 
-	const int32 PossessingTeam = DetermineRelicPossessionTeam();
-	if (PossessingTeam >= 0)
+	const UBwayRelicManagerComponent* RelicMgr = GetOwner()->FindComponentByClass<UBwayRelicManagerComponent>();
+	const ARelicActor* Relic = RelicMgr ? RelicMgr->GetRelicActor() : nullptr;
+
+	const int32 LosingTeam = UBwayMidfieldRulesLibrary::GetLosingTeamAtMidfieldFromRelic(Relic, MidfieldTolerance);
+	if (LosingTeam >= 0)
 	{
-		EndRound(PossessingTeam, EBwayWinCondition::TimeExpired);
+		const int32 WinningTeam = (LosingTeam == 0) ? 1 : 0;
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Timer expired — relic in Team %d half, Team %d wins (sudden death)"),
+			LosingTeam + 1, WinningTeam + 1);
+		EndRound(WinningTeam, EBwayWinCondition::SuddenDeath);
+		return;
 	}
-	else
-	{
-		// Neutral — no winner, start new round
-		SetRoundState(ERoundState::RoundComplete);
-		FTimerHandle UnusedHandle;
-		GetWorld()->GetTimerManager().SetTimer(
-			UnusedHandle, this, &UBwayRoundManagementComponent::StartRound,
-			RoundEndDelay, false);
-	}
+
+	// Relic on midfield line with no last possessor — no winner, start a new round without scoring.
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Timer expired — relic on midfield, no winner"));
+	SetRoundState(ERoundState::RoundComplete);
+	FTimerHandle UnusedHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		UnusedHandle, this, &UBwayRoundManagementComponent::StartRound,
+		RoundEndDelay, false);
 }
 
 bool UBwayRoundManagementComponent::CheckMatchEnd() const

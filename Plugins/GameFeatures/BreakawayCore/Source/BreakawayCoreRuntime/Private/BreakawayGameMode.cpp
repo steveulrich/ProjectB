@@ -9,6 +9,7 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
+#include "GameState/BwayMidfieldDividerComponent.h"
 #include "Relic/RelicActor.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerStart.h"
@@ -427,6 +428,11 @@ void ABreakawayGameMode::SpawnInitialGameObjects()
 	// Spawn goals
 	SpawnPointManager->SpawnObjectsAtPoints(Goal1SpawnTag);
 	SpawnPointManager->SpawnObjectsAtPoints(Goal2SpawnTag);
+
+	if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
+	{
+		DividerComponent->SpawnMidfieldDivider();
+	}
 	
 	bInitialGameObjectsSpawned = true;
 	UE_LOG(LogBreakawayGame, Log, TEXT("Spawned initial game objects"));

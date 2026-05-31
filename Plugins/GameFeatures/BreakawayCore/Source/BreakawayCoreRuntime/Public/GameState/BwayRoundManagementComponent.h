@@ -39,7 +39,8 @@ enum class EBwayWinCondition : uint8
 	None			UMETA(DisplayName = "None"),
 	GoalScored		UMETA(DisplayName = "Goal Scored"),
 	TeamEliminated	UMETA(DisplayName = "Team Eliminated"),
-	TimeExpired		UMETA(DisplayName = "Time Expired - Possession")
+	TimeExpired		UMETA(DisplayName = "Time Expired - Possession (Legacy)"),
+	SuddenDeath		UMETA(DisplayName = "Sudden Death - Midfield")
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRoundStarted, int32, RoundNumber, float, RoundDuration);
@@ -48,6 +49,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMatchEnded, int32, WinningTeam, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundTimeChanged, int32, RemainingSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBetweenRoundPlanningStarted, int32, CompletedRoundNumber, float, PlanningDurationSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSuddenDeathWarning, int32, RemainingSeconds);
 
 /**
  * Component responsible for managing Breakaway round lifecycle.
@@ -173,6 +175,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	FGameplayTag PlayingPhaseTag;
 
+	/** Round time remaining (seconds) when sudden-death awareness is broadcast (log/UI hook). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config|Sudden Death", meta = (ClampMin = "0"))
+	int32 SuddenDeathWarningSeconds = 60;
+
+	/** Relic X within [-Tolerance, +Tolerance] of midfield counts as on the line (uses LastPossessingTeam). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config|Sudden Death", meta = (ClampMin = "0"))
+	float MidfieldTolerance = 1.0f;
+
 	// ========================================
 	// Events
 	// ========================================
@@ -194,6 +204,10 @@ public:
 	/** Fired after a round ends and before the next round starts (planning / buildable spend window). */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnBetweenRoundPlanningStarted OnBetweenRoundPlanningStarted;
+
+	/** Fired once per round when remaining time crosses SuddenDeathWarningSeconds (awareness only). */
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
+	FOnSuddenDeathWarning OnSuddenDeathWarning;
 
 protected:
 	virtual void BeginPlay() override;
@@ -244,4 +258,6 @@ protected:
 	TMap<TObjectPtr<AController>, FTimerHandle> RespawnTimers;
 
 	TMap<TObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;
+
+	bool bSuddenDeathWarningBroadcastThisRound = false;
 };

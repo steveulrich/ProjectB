@@ -16,6 +16,7 @@
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameState/BwayScoringComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
+#include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameState/BwayTeamBridgeComponent.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
 
@@ -31,6 +32,7 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	RoundManagementComponent = CreateDefaultSubobject<UBwayRoundManagementComponent>(TEXT("RoundManagementComponent"));
 	ScoringComponent = CreateDefaultSubobject<UBwayScoringComponent>(TEXT("ScoringComponent"));
 	RelicManagerComponent = CreateDefaultSubobject<UBwayRelicManagerComponent>(TEXT("RelicManagerComponent"));
+	MidfieldDividerComponent = CreateDefaultSubobject<UBwayMidfieldDividerComponent>(TEXT("MidfieldDividerComponent"));
 	TeamBridgeComponent = CreateDefaultSubobject<UBwayTeamBridgeComponent>(TEXT("TeamBridgeComponent"));
 	BuildableRegistryComponent = CreateDefaultSubobject<UBwayBuildableRegistryComponent>(TEXT("BuildableRegistryComponent"));
 }
