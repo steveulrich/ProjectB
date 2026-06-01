@@ -6,6 +6,25 @@ Decisions captured from design review (May 2026).
 
 ---
 
+## Progress (Section 1)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| **0** | **Done** | Humanoid dev path (`SkipHeroSelection`), C++ in `BreakawayGameMode` / `BwayBotCreationComponent` / `BwayPlayerController` |
+| **1** | **Done** | Movement sandbox — `B_BW_Experience_Dev`, teams, bots, humanoid pawn |
+| **2** | **Done** | Relic + goals spawn on DevMap |
+| **3** | **Done** | `EAS_BW_RelicPickup`, listen-server pickup |
+| **4** | **Done** | `EAS_BW_RelicThrow` |
+| **5** | **Done** | `EAS_BW_RelicPass` |
+| **6** | **Done** | Walk-in score + scoring component |
+| **7** | **Done** | Throw / pass score |
+| **8** | **Done** | Rounds, reset, `EnsureBotsForRound`, listen-server respawn fix |
+| **9** | **Done** | Sudden death at 0:00 (X-axis half), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider` |
+| **10** | **In progress** | C++ complete — editor `BB_BW_RelicBot` / `BT_BW_RelicBot` + GameState soft refs; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
+| **11** | Pending | Match flow / front-end E2E |
+
+---
+
 ## Principles
 
 | Decision | Choice |
@@ -44,7 +63,7 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7
 
 ## Step 0 — Humanoid dev path (C++ prerequisite)
 
-**Status:** C++ implemented. Editor: strip `B_BW_Experience_Dev` to Step 1 baseline (see Step 1).
+**Status:** **Complete** (May 2026).
 
 **Goal:** `SkipHeroSelection=1` means “humanoid from experience only,” not random heroes.
 
@@ -70,6 +89,8 @@ Everyone spawns via Lyra experience **`DefaultPawnData = DA_BW_PawnData_Humanoid
 # Section 1 — Core Gameplay (Humanoid)
 
 ## Step 1 — Movement sandbox
+
+**Status:** **Complete** (May 2026).
 
 **Goal:** You + 7 bots spawn, 4v4, everyone moves; nothing else.
 
@@ -107,6 +128,8 @@ Everyone spawns via Lyra experience **`DefaultPawnData = DA_BW_PawnData_Humanoid
 
 ## Step 2 — Relic & goals spawn
 
+**Status:** **Complete** (May 2026).
+
 **Goal:** Match objects exist in the world; still no player interaction required.
 
 ### Changes
@@ -131,6 +154,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 ## Step 3 — Pickup
 
+**Status:** **Complete** (May 2026).
+
 **Goal:** Player can pick up the relic.
 
 ### Changes
@@ -150,6 +175,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 ## Step 4 — Throw
 
+**Status:** **Complete** (May 2026).
+
 **Goal:** Carrier can throw the relic.
 
 ### Changes
@@ -168,6 +195,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 ## Step 5 — Pass
 
+**Status:** **Complete** (May 2026).
+
 **Goal:** Carrier can pass to a teammate.
 
 ### Changes
@@ -185,6 +214,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 ---
 
 ## Step 6 — Walk-in score
+
+**Status:** **Complete** (May 2026).
 
 **Goal:** Carry relic into **enemy** goal → round point logic fires (scoring component can be added minimally here).
 
@@ -205,6 +236,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 ## Step 7 — Throw-in score
 
+**Status:** **Complete** (May 2026).
+
 **Goal:** Thrown / passed relic crossing enemy goal plane scores.
 
 ### Pass checklist
@@ -217,6 +250,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 ---
 
 ## Step 8 — Rounds & reset
+
+**Status:** **Complete** (May 2026).
 
 **Goal:** Score ends round → everyone respawns → relic resets → new round starts.
 
@@ -241,6 +276,8 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 ## Step 9 — Sudden death (fail-safe at 0:00)
 
+**Status:** **Complete** (May 2026).
+
 Sudden death is **not** a mode change — goal and elimination work normally all round, including the final minute.
 
 - **At 60s remaining:** awareness only (delegate / log; UI in Section 2)
@@ -251,9 +288,11 @@ Sudden death is **not** a mode change — goal and elimination work normally all
 ### C++ work (real feature, not gating)
 
 1. **`EBwayWinCondition::SuddenDeath`** (+ gameplay tag)
-2. **Midfield boundary** — plane / volume on DevMap (content) + helper: `GetRelicHalf()` / `GetLosingTeamAtMidfield()`
-3. **`OnRoundTimerExpired`** — use midfield rule, not `DetermineRelicPossessionTeam()`
-4. **`OnSuddenDeathWarning`** broadcast at 60s remaining (for future UI)
+2. **Midfield rule (X-axis)** — `UBwayMidfieldRulesLibrary`; relic spawn at origin; Team 1 = −X, Team 2 = +X (no gameplay volume required)
+3. **`OnRoundTimerExpired`** — uses `GetLosingTeamAtMidfieldFromRelic`, win condition `SuddenDeath`
+4. **`OnSuddenDeathWarning`** + auto-spawned **`B_BW_MidfieldDivider`** at `(0,0,0)` (visible only during warning window)
+
+**Editor assets:** `B_BW_MidfieldDivider` (optional mesh), `MidfieldDividerComponent` on `BP_BW_GameState`.
 
 ### Pass checklist
 
@@ -267,13 +306,36 @@ Sudden death is **not** a mode change — goal and elimination work normally all
 
 ## Step 10 — Bot relic AI
 
+**Status:** **In progress** — **C++ landed** (May 2026); **editor assets + checklist** remain.
+
+**C++ (done):**
+
+- `ABwayRelicBotController` — runs configured BT after possess / round restart
+- `UBwayRelicBotLibrary` + `BwayRelicBotBlackboard` key names
+- `UBwayBTService_UpdateRelicBlackboard`
+- `UBwayBTTask_TryPickupRelic`, `UBwayBTTask_ThrowRelicAtGoal`, `UBwayBTTask_PassRelicForward`
+- `UBwayBotCreationComponent` — default `ABwayRelicBotController`, soft BT/BB refs, `ApplyRelicAIToBot` on spawn + `RestartAllBots`
+
+**Editor (you):** see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md).
+
 **Goal:** Bots play the ball — no combat, no buildables.
 
 ### Deliverables
 
-- **`BT_BW_RelicBot`** + blackboard (relic location, enemy goal, carrier, sudden-death flag)
-- Wire via **`B_BW_BotSpawner_BallMode`** (bot controller + BT)
-- Behaviors: seek pickup, walk-in score, throw at goal, pass to forward teammate, chase enemy carrier
+| Layer | Asset / type |
+|-------|----------------|
+| C++ | `ABwayRelicBotController`, `UBwayRelicBotLibrary`, `UBwayBTService_UpdateRelicBlackboard`, BT tasks (pickup / throw / pass) |
+| Content | **`BB_BW_RelicBot`**, **`BT_BW_RelicBot`**, **`BP_BW_RelicBotController`** |
+| Config | `BP_BW_GameState` → `BotCreationComponent`: controller class + soft refs to BT/BB |
+
+Experience still uses **`B_BW_BotSpawner_BallMode`** for bot count; AI assets are assigned on **`UBwayBotCreationComponent`**.
+
+### Behaviors (BT)
+
+- Seek pickup → walk-in score at enemy goal
+- Throw at enemy goal (when not in walk-in range)
+- Pass toward forward teammate
+- Chase enemy carrier (move to `RelicCarrier` blackboard key)
 
 ### Pass checklist
 
@@ -357,6 +419,7 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Related docs
 
+- [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md)
 - [Relic_System.md](./Relic_System.md)
 - [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md)
 - [Lyra_Integration.md](./Lyra_Integration.md)
@@ -367,6 +430,8 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. Implement **Step 0** C++ + strip `B_BW_Experience_Dev` to Step 1 config
-2. Recompile and run Step 1 checklist
-3. Commit when green; proceed to Step 2
+1. **Recompile** `BreakawayCoreRuntime` (Step 10 C++).
+2. Follow [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md): create `BB_BW_RelicBot`, `BT_BW_RelicBot`, optional `BP_BW_RelicBotController`; assign soft refs on **`BP_BW_GameState` → Bot Creation Component**.
+3. Confirm DevMap **Nav Mesh** covers relic and goals.
+4. Run Step 10 checklist (bot-initiated score, 3/3 cold starts).
+5. Mark Step 10 **Complete** in the progress table; commit when green; proceed to Step 11.

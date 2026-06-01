@@ -183,9 +183,13 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")
     FGameplayTag RelicTag;
 
-    // Tag applied to characters carrying the relic
+    /** Tag characters must have to pick up the relic (also granted by RequestingGameplayEffectClass). */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")
     FGameplayTag RequestingTag;
+
+    /** Same effect humans get from GA_BW_Relic_Request (e.g. GE_BW_Relic_Request). Used by bot AI when set. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Pickup")
+    TSubclassOf<class UGameplayEffect> RequestingGameplayEffectClass;
     
     // Tag applied to characters carrying the relic
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tags")

@@ -9,6 +9,9 @@
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
+#include "AI/BwayRelicBotController.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardData.h"
 #include "Player/LyraPlayerBotController.h"
 #include "TimerManager.h"
 
@@ -26,7 +29,7 @@ UBwayBotCreationComponent::UBwayBotCreationComponent(const FObjectInitializer& O
 	: Super(ObjectInitializer)
 {
 	NumBotsToCreate = 7;
-	BotControllerClass = ALyraPlayerBotController::StaticClass();
+	BotControllerClass = ABwayRelicBotController::StaticClass();
 }
 
 void UBwayBotCreationComponent::BeginPlay()
@@ -180,7 +183,26 @@ void UBwayBotCreationComponent::SpawnOneBot()
 		}
 	}
 
+	ApplyRelicAIToBot(NewController);
+
 	SpawnedBotList.Add(NewController);
+}
+
+void UBwayBotCreationComponent::ApplyRelicAIToBot(AAIController* BotController)
+{
+	if (!BotController || RelicBehaviorTreeAsset.IsNull())
+	{
+		return;
+	}
+
+	UBehaviorTree* BehaviorTree = RelicBehaviorTreeAsset.LoadSynchronous();
+	UBlackboardData* Blackboard = RelicBlackboardAsset.IsNull() ? nullptr : RelicBlackboardAsset.LoadSynchronous();
+
+	if (ABwayRelicBotController* RelicBot = Cast<ABwayRelicBotController>(BotController))
+	{
+		RelicBot->ConfigureRelicAI(BehaviorTree, Blackboard);
+		RelicBot->StartRelicBotLogic();
+	}
 }
 
 void UBwayBotCreationComponent::RestartAllBots()
@@ -223,5 +245,7 @@ void UBwayBotCreationComponent::RestartAllBots()
 				PawnExtComponent->CheckDefaultInitialization();
 			}
 		}
+
+		ApplyRelicAIToBot(BotController);
 	}
 }

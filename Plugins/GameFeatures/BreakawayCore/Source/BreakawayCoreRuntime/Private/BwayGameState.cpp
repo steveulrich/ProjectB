@@ -28,7 +28,6 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 
 	HeroSelectionManager = CreateDefaultSubobject<UBwayHeroSelectionManager>(TEXT("HeroSelectionManager"));
 	HeroSelectionPhaseComponent = CreateDefaultSubobject<UBwayHeroSelectionPhaseComponent>(TEXT("HeroSelectionPhaseComponent"));
-	CreateDefaultSubobject<UBwayBotCreationComponent>(TEXT("BotCreationComponent"));
 	RoundManagementComponent = CreateDefaultSubobject<UBwayRoundManagementComponent>(TEXT("RoundManagementComponent"));
 	ScoringComponent = CreateDefaultSubobject<UBwayScoringComponent>(TEXT("ScoringComponent"));
 	RelicManagerComponent = CreateDefaultSubobject<UBwayRelicManagerComponent>(TEXT("RelicManagerComponent"));

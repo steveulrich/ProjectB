@@ -36,6 +36,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	TSubclassOf<class AAIController> BotControllerClass;
 
+	/** Behavior tree asset for relic bots (e.g. BT_BW_RelicBot). Loaded when each bot spawns or restarts. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots|Relic AI")
+	TSoftObjectPtr<class UBehaviorTree> RelicBehaviorTreeAsset;
+
+	/** Blackboard asset paired with RelicBehaviorTreeAsset (e.g. BB_BW_RelicBot). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots|Relic AI")
+	TSoftObjectPtr<class UBlackboardData> RelicBlackboardAsset;
+
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<AAIController>> SpawnedBotList;
 
@@ -44,4 +52,5 @@ protected:
 	int32 GetTargetBotCount() const;
 	void SpawnMissingBots();
 	void SpawnOneBot();
+	void ApplyRelicAIToBot(class AAIController* BotController);
 };

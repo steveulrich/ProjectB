@@ -3,12 +3,52 @@
 #include "BwayGoalVolume.h"
 #include "Relic/RelicActor.h"
 #include "BwayGameState.h"
+#include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
+
+namespace
+{
+/** Carried relics have no collision (attached to mesh), so only the carrier pawn overlaps the goal. */
+ARelicActor* ResolveRelicForGoalOverlap(AActor* OtherActor, UWorld* World)
+{
+	if (!OtherActor || !World)
+	{
+		return nullptr;
+	}
+
+	if (ARelicActor* Relic = Cast<ARelicActor>(OtherActor))
+	{
+		return Relic;
+	}
+
+	const ABwayCharacterWithAbilities* Carrier = Cast<ABwayCharacterWithAbilities>(OtherActor);
+	if (!Carrier)
+	{
+		return nullptr;
+	}
+
+	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		if (const UBwayRelicManagerComponent* RelicMgr = GameState->RelicManagerComponent)
+		{
+			if (ARelicActor* Relic = RelicMgr->GetRelicActor())
+			{
+				if (Relic->CurrentCarrier == Carrier && Relic->GetCurrentState() == ERelicState::Carried)
+				{
+					return Relic;
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+}
 
 ABwayGoalVolume::ABwayGoalVolume()
 {
@@ -74,8 +114,8 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 		return;
 	}
 
-	// Check if the overlapping actor is the relic
-	ARelicActor* Relic = Cast<ARelicActor>(OtherActor);
+	// Thrown/dropped relic overlaps directly; carried relic overlaps via the carrier pawn.
+	ARelicActor* Relic = ResolveRelicForGoalOverlap(OtherActor, GetWorld());
 	if (!Relic)
 	{
 		return;

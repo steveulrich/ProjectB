@@ -37,9 +37,10 @@ Capture-the-Relic objective — physical ball with GAS-driven interactions.
 
 ## Scoring
 
-1. `ABwayGoalVolume` validates attacking team vs `LastPossessingTeam`
-2. 0.1s settle delay → `OnEnteredGoal` → `bHasScoredThisRound = true`
-3. Goal volume scoring cooldown from `URelicSettings::ScoringCooldown`
+1. `ABwayGoalVolume` overlap: **relic actor** (thrown/pass) or **carrier pawn** while `ERelicState::Carried` (walk-in — carried relic has no collision)
+2. Validates attacking team vs carrier / `LastPossessingTeam`
+3. 0.1s settle delay → `OnEnteredGoal` → `bHasScoredThisRound = true`
+4. Goal volume scoring cooldown from `URelicSettings::ScoringCooldown`
 4. `UBwayRoundManagementComponent::OnRelicScored` → team gold + carrier `AddObjectiveScore`
 
 ## Replication Notes
