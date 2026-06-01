@@ -20,8 +20,8 @@ Decisions captured from design review (May 2026).
 | **7** | **Done** | Throw / pass score |
 | **8** | **Done** | Rounds, reset, `EnsureBotsForRound`, listen-server respawn fix |
 | **9** | **Done** | Sudden death at 0:00 (X-axis half), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider` |
-| **10** | **In progress** | C++ complete — editor `BB_BW_RelicBot` / `BT_BW_RelicBot` + GameState soft refs; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
-| **11** | Pending | Match flow / front-end E2E |
+| **10** | **Complete** | Relic bot AI + `GE_BW_Relic_Request` pickup + carrier walk-in goal; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
+| **11** | **Ready** | Match flow / front-end E2E — **design locked** (May 2026 grill); see Step 11 below |
 
 ---
 
@@ -347,26 +347,134 @@ Experience still uses **`B_BW_BotSpawner_BallMode`** for bot count; AI assets ar
 
 ## Step 11 — Match flow (no hero staging)
 
-**Goal:** Front-end → match → results → front-end. No post-match lobby.
+**Status:** **Ready to implement** — architecture agreed in design review (May 2026).
 
-### Changes
+**Goal:** Lyra front-end → Dev match → results → front-end. No post-match lobby. **Data-driven** match phases orchestrated by **`UBwayRoundManagementComponent`** (not experience action-set phase grants).
+
+This step is larger than a content-only wiring pass. Split delivery:
+
+| Sub-step | Scope |
+|----------|--------|
+| **11a** | `UBwayMatchFlowConfig` DA, RM full orchestrator, hero-select `StartPhase` fix, experience/tile wiring, front-end pass |
+| **11b** | URL duration overrides, doc sync in [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md), remove legacy `PlayingPhaseTag` listener |
+
+---
+
+### Design decisions (locked)
+
+#### Entry: one experience, URL flags for entry point only
+
+| Path | Experience | URL / tile extras |
+|------|------------|-------------------|
+| **PIE (dev)** | `B_BW_Experience_Dev` | `SkipHeroSelection=1`, `NumBots=7` (and optional overrides below) |
+| **Front-end Dev tile** | Same experience | `UBwayUserFacingExperienceDefinition`: `bRouteThroughHeroSelectStaging=false`; `ExtraArgs` adds `SkipHeroSelection=1` (and optional `NumBots`) |
+
+Do **not** fork a second experience for menu vs PIE.
+
+#### Data: `UBwayMatchFlowConfig` (primary asset)
+
+- Holds phase ability classes (`BW_Phase_*`), phase durations, `PointsToWin`, gameplay tags, bot-related dev defaults as needed.
+- **Resolution order (layered):**
+  1. Default on **`UBwayExperienceDefinition`** (thin C++ child of `ULyraExperienceDefinition` with `MatchFlowConfig` soft ptr) — used by `B_BW_Experience_Dev`.
+  2. URL override: `MatchFlowConfig=<PrimaryAssetName>` (runtime data-driven override).
+  3. Hard fallback on RM with error log if unset.
+
+**Step 11a URL overrides:** `MatchFlowConfig`, `PointsToWin`, `SkipHeroSelection`, `NumBots`.  
+**Step 11b URL overrides:** `WarmupDuration`, `PostRoundDuration` (and similar floats).
+
+#### Orchestration: RoundManagement = brain, Lyra phases = GAS gating
+
+- **`UBwayRoundManagementComponent`** is the **only** caller of `ULyraGamePhaseSubsystem::StartPhase` during a match.
+- Remove **`BW_Phase_*` grants** from `B_BW_Experience_Dev` action sets (phases must not auto-start from experience load).
+- Deprecate RM listening for `PlayingPhaseTag` / `HandlePlayingPhaseActivated` once orchestrator lands.
+
+**Replicated match phase enum** `EBwayMatchPhase`:
+
+| Phase | Purpose |
+|-------|---------|
+| **Prematch** | Session ready, teams assigned, **no pawn spawn** |
+| **Warmup** | **Once per match** — first `RestartPlayer` / `EnsureBotsForRound` |
+| **Playing** | Round loop (`StartRound` / `EndRound`, existing `ERoundState` FSM) |
+| **PostRound** | Between rounds (replaces direct `RoundEndDelay → StartRound` timer); planning hook |
+| **PostMatch** | Match over (alias for PostGame); results + return to front-end |
+
+**Nested round state (keep `ERoundState`):** only meaningful when `EBwayMatchPhase == Playing` (plus brief round-ending substeps). UI round timer → `ERoundState`; mode / input gating → `EBwayMatchPhase`.
+
+**Phase transition timing (hybrid):** durations from `UBwayMatchFlowConfig` drive RM timers (authoritative for E2E). `StartPhase` + `PhaseEnded` may end a phase early; RM clears/advances on either path.
+
+**Match flow loop:**
+
+```
+Prematch → Warmup → Playing → PostRound → Playing → … → PostMatch
+```
+
+Warmup runs **once** (not between every round).
+
+#### Presentation: GameState = face (5=A)
+
+| Owner | Responsibility |
+|-------|----------------|
+| **RoundManagement** | `EBwayMatchPhase`, `StartPhase`, match/round transitions, `OnMatchEnded` |
+| **ABwayGameState** | `ShowResultsScreen`, `ResultsScreenWidgetClass`, `FrontEndLevel`, `ReturnToFrontEnd` — **does not** call `StartPhase` |
+| **Hook** | RM enters PostMatch → delegate / `OnEnterPostMatch(WinningTeam)` → GS shows results |
+
+#### Hero selection (9=B, 4c=Yes)
+
+- **Step 11:** No `HeroSelection` phase. Flow starts **`Prematch → Warmup`** on experience load when `SkipHeroSelection=1`.
+- **Fix:** `UBwayHeroSelectionPhaseComponent` must **not** call `EndPhaseAndProgressToNext()` on the skip path (today that starts Warmup and fights RM).
+- **Section 3:** Add `EBwayMatchPhase::HeroSelection`; component signals completion; RM enters Warmup.
+
+---
+
+### C++ deliverables (11a)
+
+| Item | Notes |
+|------|--------|
+| `UBwayMatchFlowConfig` | `UDataAsset` — phase classes, durations, `PointsToWin`, tags |
+| `UBwayExperienceDefinition` | Optional `MatchFlowConfig` default |
+| `UBwayMatchFlowRuntimeOverrides` (or equivalent) | Built at match start: config + URL parse |
+| `EBwayMatchPhase` + replication | On `UBwayRoundManagementComponent` |
+| RM orchestrator | `BeginPlay` / `OnExperienceLoaded` → `EnterPrematch()` … full chain |
+| PostRound | `EndRound` → PostRound phase → timer → `Playing` + `StartRound()` |
+| PostMatch | `CheckMatchEnd` → PostMatch → `StartPhase(PostGame)` + notify GS |
+| `BwayHeroSelectionPhaseComponent` | Skip path: no `StartPhase` |
+| `BwayUserFacingExperienceDefinition` | Append `SkipHeroSelection` (and dev `NumBots`) to `ExtraArgs` when not staging |
+
+### Content / BP deliverables (11a)
 
 | Asset | Change |
 |-------|--------|
-| `BwayUserFacingExperienceDefinition` playlist tile | `MapID = L_BW_DevMap`, `ExperienceID = B_BW_Experience_Dev`, **`bRouteThroughHeroSelectStaging = false`** |
-| Experience | Add **`BW_Phase_PostGame`**, results widget hook |
-| GameState | **`PointsToWin = 1`** for faster E2E tests |
-| Experience | **`WBP_BW_ResultsWidget`** (minimal — polish in Section 2) |
+| `DA_BW_MatchFlow_Dev` | Dev timings: `PointsToWin=1`, phase classes, `WarmupDuration`, `PostRoundDuration` (= current `RoundEndDelay`) |
+| `B_BW_Experience_Dev` | Parent → `UBwayExperienceDefinition` if needed; default `MatchFlowConfig`; **remove** phase action-set auto-grants |
+| `BP_BW_GameState` | RM no longer relies on `PlayingPhaseTag` listener; wire `PostGamePhaseAbilityClass` via config or GS for RM to read |
+| `BwayUserFacingExperienceDefinition` Dev tile | `MapID = L_BW_DevMap`, `ExperienceID = B_BW_Experience_Dev`, `bRouteThroughHeroSelectStaging = false` |
+| `WBP_BW_ResultsWidget` | Continue → `Server_RequestReturnToFrontEnd` → `ReturnToFrontEnd` |
+| Phase assets | `BW_Phase_Warmup`, `BW_Phase_Playing`, `BW_Phase_PostRound`, `BW_Phase_PostGame` referenced from config |
 
-### Pass checklist (launch from **front-end**, not PIE)
+### Pass checklist — **front-end host (10=A)**
 
-- [ ] Pick Dev playlist tile → loads DevMap humanoid match
-- [ ] No hero select UI
-- [ ] Play to match end → results screen shows winner
-- [ ] Continue → **`L_LyraFrontEnd`**
-- [ ] 3/3 full runs
+Launch from **`L_LyraFrontEnd`**, not PIE. You are **listen-server host**; bots optional.
+
+- [ ] Dev playlist tile → `L_BW_DevMap` + `B_BW_Experience_Dev`
+- [ ] No hero select UI; match enters Prematch → Warmup → round 1 without manual phase cheats
+- [ ] `PointsToWin=1` (via `DA_BW_MatchFlow_Dev` or URL) — one round win ends match
+- [ ] PostMatch: results show correct winner
+- [ ] Continue → travel to **`L_LyraFrontEnd`**
+- [ ] Log shows RM phase transitions (not duplicate `StartPhase` from hero-select component)
+- [ ] **3/3** full runs
+
+**PIE regression (same experience, not a substitute for pass):**
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=1
+```
+
+Optional URL smoke test: `MatchFlowConfig=DA_BW_MatchFlow_Dev`.
+
+**Deferred after 11a:** dedicated server + client Continue (Step 11 follow-up).
 
 ---
+
 
 # Section 2 — Match UI (before heroes)
 
@@ -411,9 +519,10 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 | Property | Steps 1–7 | Steps 8–10 | Step 11 E2E |
 |----------|-----------|------------|-------------|
-| `RoundDuration` | N/A | **90s** (fast) | **90s** or restore **180s** |
+| `RoundDuration` | N/A | **90s** (fast) | **90s** or restore **180s** — on `UBwayRoundManagementComponent` / config |
 | Sudden death warning | N/A | 60s remaining (or **30s** if using 90s rounds) | Same |
-| `PointsToWin` | N/A | 3 | **1** for flow test |
+| `PointsToWin` | N/A | 3 (PIE) | **1** on `UBwayMatchFlowConfig` or URL `PointsToWin=1` |
+| Phase durations | N/A | `RoundEndDelay` only | **`UBwayMatchFlowConfig`**: `WarmupDuration`, `PostRoundDuration` |
 
 ---
 
@@ -430,8 +539,7 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **Recompile** `BreakawayCoreRuntime` (Step 10 C++).
-2. Follow [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md): create `BB_BW_RelicBot`, `BT_BW_RelicBot`, optional `BP_BW_RelicBotController`; assign soft refs on **`BP_BW_GameState` → Bot Creation Component**.
-3. Confirm DevMap **Nav Mesh** covers relic and goals.
-4. Run Step 10 checklist (bot-initiated score, 3/3 cold starts).
-5. Mark Step 10 **Complete** in the progress table; commit when green; proceed to Step 11.
+1. Implement **Step 11a** per spec above (`UBwayMatchFlowConfig`, RM orchestrator, tile/experience wiring).
+2. Run **front-end host** checklist (3/3); keep PIE URL as regression only.
+3. **Step 11b:** URL duration overrides + update [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) to match orchestrator (remove “experience grants phases” wording).
+4. Mark Step 11 **Complete** in progress table; commit; proceed to Section 2 (Step 12 HUD).
