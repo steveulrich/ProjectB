@@ -1,6 +1,22 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# Source: LF only (MSVC C4335 if CR-only / classic Mac)
+*.cpp text eol=lf
+*.h text eol=lf
+*.hpp text eol=lf
+*.inl text eol=lf
+*.cs text eol=lf
+*.md text eol=lf
+*.mdc text eol=lf
+*.ini text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.Build.cs text eol=lf
+*.uplugin text eol=lf
+
 # Make sure Windows batch files preserve CR/LF line endings, otherwise they may not be able to execute.  Windows
 # batch files require a CR/LF for labels to work properly, otherwise they may fail when labels straddle 512-byte
 # block boundaries.  This is important when files are downloaded through a zip archive that was authored on a

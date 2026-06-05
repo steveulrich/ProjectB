@@ -1,0 +1,18 @@
+# EditorConfig: https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# MSVC accepts LF; avoids C4335 "Mac file format" (CR-only) errors.
+[*.{c,cpp,h,hpp,inl,cs,ini,md,mdc,json,yml,yaml,txt,Build.cs,uplugin}]
+end_of_line = lf
+
+[*.bat]
+end_of_line = crlf
+
+[*.{uasset,umap,udk,upk,png,jpg,wav,fbx,blend}]
+insert_final_newline = false
+trim_trailing_whitespace = false
