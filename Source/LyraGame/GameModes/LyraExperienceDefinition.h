@@ -5,6 +5,8 @@
 #include "Engine/DataAsset.h"
 #include "LyraExperienceDefinition.generated.h"
 
+#define UE_API LYRAGAME_API
+
 class UGameFeatureAction;
 class ULyraPawnData;
 class ULyraExperienceActionSet;
@@ -12,23 +14,23 @@ class ULyraExperienceActionSet;
 /**
  * Definition of an experience
  */
-UCLASS(BlueprintType, Const)
+UCLASS(BlueprintType, Const, MinimalAPI)
 class ULyraExperienceDefinition : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	ULyraExperienceDefinition();
+	UE_API ULyraExperienceDefinition();
 
 	//~UObject interface
 #if WITH_EDITOR
-	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
+	virtual UE_API EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
 #endif
 	//~End of UObject interface
 
 	//~UPrimaryDataAsset interface
 #if WITH_EDITORONLY_DATA
-	virtual void UpdateAssetBundleData() override;
+	virtual UE_API void UpdateAssetBundleData() override;
 #endif
 	//~End of UPrimaryDataAsset interface
 
@@ -50,3 +52,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
 	TArray<TObjectPtr<ULyraExperienceActionSet>> ActionSets;
 };
+
+#undef UE_API

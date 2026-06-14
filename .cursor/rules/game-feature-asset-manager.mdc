@@ -1,0 +1,69 @@
+---
+description: Game Feature plugin asset registration — avoid loading GF classes before the module is ready
+alwaysApply: true
+---
+
+# Game Feature Asset Manager Timing
+
+`UAssetManager` reads `DefaultGame.ini` **at editor/game startup**, before Game Feature plugin runtime modules (e.g. `BreakawayCoreRuntime`) are loaded. Any `AssetBaseClass` pointing at `/Script/<GameFeatureModule>.<Class>` will **ensure-fail**:
+
+```
+Failed to load class /Script/BreakawayCoreRuntime.SomeClass for Primary Asset Type ...
+```
+
+## `DefaultGame.ini` — `PrimaryAssetTypesToScan`
+
+| Module where class lives | `AssetBaseClass` to use | How type is assigned |
+|--------------------------|-------------------------|----------------------|
+| **Game Feature plugin** (`BreakawayCoreRuntime`, hero GF modules, etc.) | `/Script/Engine.PrimaryDataAsset` | Native C++ subclass overrides `GetPrimaryAssetId()` |
+| **Main game module** (`LyraGame` — always loaded at startup) | `/Script/LyraGame.<Class>` is OK | Class path or `GetPrimaryAssetId()` |
+| **Engine** | `/Script/Engine.<Class>` | As documented |
+
+```ini
+# ❌ BAD — GF module not loaded yet
+AssetBaseClass="/Script/BreakawayCoreRuntime.BwayMatchFlowConfig"
+
+# ✅ GOOD — matches HeroDataAsset pattern in this project
+PrimaryAssetType="BwayMatchFlowConfig"
+AssetBaseClass="/Script/Engine.PrimaryDataAsset"
+Directories=((Path="/BreakawayCore/MatchFlow"))
+bHasBlueprintClasses=False
+```
+
+**Required on every GF primary data asset C++ class:**
+
+```cpp
+virtual FPrimaryAssetId GetPrimaryAssetId() const override
+{
+    return FPrimaryAssetId("YourPrimaryAssetType", GetFName());
+}
+```
+
+## Playlists & user-facing experiences
+
+- Use stock **`LyraUserFacingExperienceDefinition`** as the primary asset type — **not** a custom GF playlist type.
+- Set `bHasBlueprintClasses=False` for `LyraUserFacingExperienceDefinition` scans.
+- Dev tiles: subclass **`BwayUserFacingExperienceDefinition`** in C++; register assets under `/BreakawayCore/Playlists/` via `GameFeatureData` or `DefaultGame.ini` directory scan.
+
+## Runtime loading (C++)
+
+- Do **not** synchronously `LoadSynchronous()` / `TryLoad()` GF content from `BeginPlay`, constructors, or asset-manager init paths that run **before** the experience / game feature is active.
+- Resolve GF data **after** `OnExperienceLoaded` (or equivalent), using `TSoftObjectPtr`, `FPrimaryAssetId` + `UAssetManager`, or URL overrides.
+- Hardcoded fallback paths (e.g. `/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Dev`) are acceptable **only** inside experience-loaded hooks, with a warning log if missing.
+
+## Experience assets — do not reparent
+
+- Keep `B_BW_Experience_Dev` parented to **`LyraExperienceDefinition`**. Reparenting to `UBwayExperienceDefinition` can break `DefaultPawnData` / action-set wiring (cylinder fallback pawns).
+- Attach match-flow config via **`UBwayGameFeatureAction_MatchFlowConfig`** on the experience **Actions** list instead.
+
+## Cross-DLL C++ inheritance from Lyra
+
+If a Game Feature plugin subclasses a Lyra type in another DLL (e.g. `UBwayExperienceDefinition : ULyraExperienceDefinition`), the **parent** Lyra class needs `MinimalAPI` + `UE_API` on exported virtuals — same pattern as `ULyraUserFacingExperienceDefinition`. Otherwise link errors occur in the GF module.
+
+## Checklist before adding a new primary asset type
+
+1. C++ `UPrimaryDataAsset` subclass with `GetPrimaryAssetId()` in the GF module.
+2. `DefaultGame.ini` scan uses `/Script/Engine.PrimaryDataAsset`, not the GF class path.
+3. Content lives under a dedicated mount (`/BreakawayCore/...`), listed in `Directories`.
+4. `bHasBlueprintClasses` matches reality (`False` unless BP subclasses of that native type are required).
+5. Restart editor after ini changes; verify **no** `AssetBaseClassLoaded` ensure on cold start.

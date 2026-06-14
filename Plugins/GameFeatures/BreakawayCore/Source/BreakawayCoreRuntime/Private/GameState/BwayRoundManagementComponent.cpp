@@ -1,7 +1,10 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameState/BwayBotCreationComponent.h"
+#include "GameModes/LyraExperienceManagerComponent.h"
+#include "GameModes/LyraExperienceDefinition.h"
 #include "GameState/BwayMidfieldRulesLibrary.h"
 #include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
@@ -55,6 +58,15 @@ void UBwayRoundManagementComponent::BeginPlay()
 		return;
 	}
 
+	if (AGameStateBase* GameState = GetGameStateChecked<AGameStateBase>())
+	{
+		if (ULyraExperienceManagerComponent* ExperienceComponent = GameState->FindComponentByClass<ULyraExperienceManagerComponent>())
+		{
+			ExperienceComponent->CallOrRegister_OnExperienceLoaded_HighPriority(
+				FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandleExperienceLoadedForMatchRules));
+		}
+	}
+
 	if (bAutoStartFirstRound)
 	{
 		GetWorld()->GetTimerManager().SetTimer(
@@ -87,6 +99,34 @@ void UBwayRoundManagementComponent::BeginPlay()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PlayingPhaseTag set and bAutoStartFirstRound is false - round will not auto-start"));
+	}
+}
+
+void UBwayRoundManagementComponent::SetPointsToWin(int32 InPointsToWin)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	PointsToWin = FMath::Max(1, InPointsToWin);
+}
+
+void UBwayRoundManagementComponent::HandleExperienceLoadedForMatchRules(const ULyraExperienceDefinition* Experience)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	// BotCreation applies full match rules on its own OnExperienceLoaded (after this high-priority hook).
+	// Here we only ensure PointsToWin is set early if BotCreation is absent.
+	ABwayGameState* BwayGS = GetBwayGameState();
+	if (!BwayGS || !BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
+	{
+		const FBwayResolvedMatchFlowSettings Resolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
+		UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(Resolved);
+		UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, Resolved, this, nullptr);
 	}
 }
 

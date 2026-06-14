@@ -1,0 +1,39 @@
+---
+apply: by file patterns
+patterns: **/*.{cpp,h,hpp,inl,cs,Build.cs,md,mdc,ini}
+---
+
+---
+description: C++ and text file line endings for MSVC / Unreal builds on Windows
+globs: "**/*.{cpp,h,hpp,inl,cs,Build.cs,md,mdc,ini}"
+alwaysApply: false
+---
+
+# Line endings (LF only for source)
+
+Unreal/MSVC on Windows rejects **classic Mac line endings** (bare `\r` without `\n`) with `C4335: Mac file format detected`.
+
+## When writing or editing files
+
+- Use **Unix line endings (LF)** only — never `\r` alone, never `\r\r\n`.
+- Do not use tools that insert Mac CR-only or double-CR artifacts.
+- After bulk edits, prefer rewriting whole files via the Write tool (LF) rather than patch tools that may corrupt endings.
+
+## Project enforcement
+
+- Root `.editorconfig` sets `end_of_line = lf` for `*.cpp`, `*.h`, etc.
+- `.gitattributes` sets `eol=lf` for the same extensions.
+- If C4335 appears, normalize with LF:
+
+```powershell
+python -c "from pathlib import Path; p=Path(r'PATH'); t=p.read_bytes().decode('utf-8-sig'); p.write_bytes(t.replace('\r\n','\n').replace('\r','\n').encode('utf-8'))"
+```
+
+## User settings (recommended)
+
+In VS / Cursor `settings.json`:
+
+```json
+"files.eol": "\n",
+"files.insertFinalNewline": true
+```

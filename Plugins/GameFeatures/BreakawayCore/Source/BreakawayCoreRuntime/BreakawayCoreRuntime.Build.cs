@@ -47,6 +47,7 @@ public class BreakawayCoreRuntime : ModuleRules
         
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
+				"AssetRegistry",
 				"CommonGame",
 				"CommonUser",
 				"MediaAssets",
@@ -64,5 +65,10 @@ public class BreakawayCoreRuntime : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
 	}
 }

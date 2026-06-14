@@ -1,0 +1,60 @@
+---
+apply: always
+---
+
+---
+description: Lyra-aligned modularity and data-driven coding standards
+alwaysApply: true
+---
+
+# Lyra Modularity & Data-Driven Standards
+
+Design for **composition over monoliths** and **data over hardcoded logic**, matching Lyra and this project's BreakawayCore patterns.
+
+## Modularity
+
+- **Extend Lyra first.** Subclass `ALyraGameMode`, `ALyraCharacter`, `ULyraExperienceDefinition`, etc. before introducing parallel hierarchies.
+- **Thin actors, fat components.** GameMode/Character/Controller orchestrate; gameplay logic lives on `UGameStateComponent`, `UActorComponent`, or Lyra subsystems. Do not grow `AGameMode` with round/scoring/spawn logic — extract to components (see `UBwayRoundManagementComponent`, `UBwayRelicManagerComponent`).
+- **One concern per component.** Round flow, relic state, bots, scoring, and hero selection are separate components, not one manager class.
+- **Game Feature Plugins for features.** Ship gameplay in `Plugins/GameFeatures/<Feature>/` with its own runtime module. Wire features into experiences via `GameFeaturesToEnable`, `UGameFeatureAction`, and `ULyraExperienceActionSet` — not `#include` chains across unrelated modules.
+- **Compose experiences, don't fork them.** Prefer one experience + URL/`ExtraArgs` flags over duplicate experience assets for dev vs shipping variants.
+- **Delegate via interfaces, not concrete types.** GameMode finds components with `FindComponentByClass`; components communicate through events/delegates or subsystems, not direct calls into sibling GameMode code.
+
+```cpp
+// ❌ BAD — round logic embedded in GameMode
+void ABreakawayGameMode::EndRound() { /* 200 lines */ }
+
+// ✅ GOOD — GameMode delegates to a GameStateComponent
+if (UBwayRoundManagementComponent* RM = GameState->FindComponentByClass<UBwayRoundManagementComponent>())
+{
+    RM->EndRound(WinCondition);
+}
+```
+
+## Data-Driven
+
+- **Tune in Data Assets, not C++ constants.** Durations, economy values, phase tags, pawn/hero definitions, and spawn data belong in `UPrimaryDataAsset` subclasses (`ULyraPawnData`, `UBwayHeroDataAsset`, config DAs). C++ reads data; designers edit assets.
+- **Layer overrides, keep a single source of truth.** Default on experience/config DA → URL/`ExtraArgs` override at runtime → logged hard fallback only when unset.
+- **Reference assets by identity.** Use `FPrimaryAssetId`, `TSoftObjectPtr`, and `PrimaryAssetType` — not hardcoded paths or `LoadObject` with string paths in gameplay code.
+- **Tags over enums/strings for cross-system identity.** Use `FGameplayTag` for phases, abilities, and input gating (`PlayingPhaseTag`, Lyra game phases). Enums are fine for local FSM state (`ERoundState`), not for wiring unrelated systems.
+- **Experience = wiring, not logic.** `ULyraExperienceDefinition` declares `DefaultPawnData`, enabled game features, and instanced `UGameFeatureAction`s. Avoid starting gameplay phases or spawning from experience load unless the action explicitly owns that lifecycle.
+- **Validate data in editor.** Override `IsDataValid` on primary data assets; fail loudly in PIE when required config is missing.
+
+```cpp
+// ❌ BAD — magic numbers and branchy mode checks in logic
+RoundDuration = 300.f;
+if (bDevMode) { RoundDuration = 60.f; }
+
+// ✅ GOOD — config asset + optional URL override
+RoundDuration = MatchFlowConfig->RoundDuration;
+FParse::Value(URL, TEXT("RoundDuration="), RoundDuration);
+```
+
+## When Adding New Systems
+
+1. Can an existing Lyra or Breakaway component/subsystem own this?
+2. Can behavior be driven by a new or extended `UPrimaryDataAsset`?
+3. Should this live in a Game Feature Plugin and activate through an experience action?
+4. Does GameMode only need a one-line delegate to a component?
+
+If the answer to (4) is "no, GameMode needs substantial new logic," stop and split into a component + data asset first.

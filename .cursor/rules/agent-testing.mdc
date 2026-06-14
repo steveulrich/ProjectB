@@ -1,0 +1,43 @@
+---
+description: Run automated test tiers after C++ or gameplay wiring changes.
+globs:
+  - "**/*.cpp"
+  - "**/*.h"
+  - "**/*.Build.cs"
+  - "**/BreakawayCore/**"
+  - "**/DefaultGame.ini"
+---
+
+# Agentic test ladder (ProjectB)
+
+After C++ or match-flow wiring changes, verify with scripted tiers in `Scripts/Test/`.
+
+## Tier 1 — always after C++ edits
+
+```powershell
+cd "E:\Unreal Projects\ProjectB\Scripts\Test"
+.\Run-Tier.ps1 -Tier 1
+```
+
+- Target: **`LyraEditor`** (not `ProjectBEditor`).
+- Exit 0 = compile OK. Non-zero = fix before claiming done.
+- Path check only: `.\Run-Tier.ps1 -Tier 1 -ValidateOnly`
+- Engine override: `$env:UE_ENGINE_ROOT = 'E:\Github\UnrealEngine'`
+
+Do not use MCP or in-editor Live Coding as a compile substitute.
+
+## Tier 2 / 3 — when applicable
+
+| Situation | Tier |
+|-----------|------|
+| Standalone / packaged experience regression | 2 (needs `ProjectB.exe`) |
+| Core-loop sub-step (11-1, 11-2, …) | 3 CQTest filter `Breakaway.CoreLoop.<step>` |
+
+Full design: `Plugins/GameFeatures/BreakawayCore/Docs/Agent_Testing_Ladder.md`
+
+## Reporting
+
+Include in the task summary:
+- Tier run (e.g. "Tier 1: pass, exit 0")
+- Log path if failed
+- Do not mark core-loop steps complete without the tier listed in the plan checklist

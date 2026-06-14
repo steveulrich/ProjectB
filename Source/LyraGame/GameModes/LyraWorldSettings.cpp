@@ -7,6 +7,7 @@
 #include "Logging/MessageLog.h"
 #include "LyraLogChannels.h"
 #include "Engine/AssetManager.h"
+#include "GameModes/LyraExperienceDefinition.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraWorldSettings)
 
@@ -20,7 +21,24 @@ FPrimaryAssetId ALyraWorldSettings::GetDefaultGameplayExperience() const
 	FPrimaryAssetId Result;
 	if (!DefaultGameplayExperience.IsNull())
 	{
-		Result = UAssetManager::Get().GetPrimaryAssetIdForPath(DefaultGameplayExperience.ToSoftObjectPath());
+		const FSoftObjectPath ExperiencePath = DefaultGameplayExperience.ToSoftObjectPath();
+		Result = UAssetManager::Get().GetPrimaryAssetIdForPath(ExperiencePath);
+
+		if (!Result.IsValid())
+		{
+			Result = UAssetManager::Get().GetPrimaryAssetIdForPackage(ExperiencePath.GetLongPackageFName());
+		}
+
+		// Packaged builds may not populate the path->id map for game-feature content even when
+		// the experience is registered by type+name (same fallback as Experience= URL options).
+		if (!Result.IsValid())
+		{
+			const FString AssetName = ExperiencePath.GetAssetName();
+			if (!AssetName.IsEmpty())
+			{
+				Result = FPrimaryAssetId(FPrimaryAssetType(ULyraExperienceDefinition::StaticClass()->GetFName()), FName(*AssetName));
+			}
+		}
 
 		if (!Result.IsValid())
 		{

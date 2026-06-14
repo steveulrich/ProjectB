@@ -2,6 +2,7 @@
 
 #include "LyraGameInstance.h"
 
+#include "GameModes/CustomGameConfig.h"
 #include "CommonSessionSubsystem.h"
 #include "CommonUserSubsystem.h"
 #include "Components/GameFrameworkComponentManager.h"
@@ -127,6 +128,20 @@ void ULyraGameInstance::Shutdown()
 ALyraPlayerController* ULyraGameInstance::GetPrimaryPlayerController() const
 {
 	return Cast<ALyraPlayerController>(Super::GetPrimaryPlayerController(false));
+}
+
+void ULyraGameInstance::InitializeCustomGameSettings()
+{
+	if (!CurrentCustomGameConfig)
+	{
+		CurrentCustomGameConfig = NewObject<UCustomGameConfig>(this, UCustomGameConfig::StaticClass(), NAME_None, RF_Transient);
+	}
+}
+
+UCustomGameConfig* ULyraGameInstance::GetCustomGameSettings()
+{
+	InitializeCustomGameSettings();
+	return CurrentCustomGameConfig;
 }
 
 bool ULyraGameInstance::CanJoinRequestedSession() const

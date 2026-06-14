@@ -6,6 +6,9 @@
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "GameModes/LyraGameMode.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
@@ -51,18 +54,62 @@ void UBwayBotCreationComponent::BeginPlay()
 	}
 }
 
+void UBwayBotCreationComponent::SetNumBotsOverride(int32 InNumBots)
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	NumBotsOverride = InNumBots;
+}
+
+void UBwayBotCreationComponent::ApplyMatchRulesFromExperience(const ULyraExperienceDefinition* Experience)
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	// Re-augment at experience load — PIE LastURL / server game options may not exist at InitGame.
+	if (AGameModeBase* GameMode = GetWorld() ? GetWorld()->GetAuthGameMode() : nullptr)
+	{
+		UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(GameMode);
+	}
+
+	ABwayGameState* BwayGS = GetOwner<ABwayGameState>();
+	UBwayRoundManagementComponent* RoundManagement = BwayGS ? BwayGS->FindComponentByClass<UBwayRoundManagementComponent>() : nullptr;
+
+	const FBwayResolvedMatchFlowSettings Resolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
+	UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(Resolved);
+	UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, Resolved, RoundManagement, this);
+}
+
 void UBwayBotCreationComponent::OnExperienceLoaded(const ULyraExperienceDefinition* Experience)
 {
+	ApplyMatchRulesFromExperience(Experience);
+
 	// Spawn bot controllers once the experience (pawn data, actions) is ready.
 	// Round start will place them at team spawns via EnsureBotsForRound.
 	SpawnMissingBots();
 }
 
+int32 UBwayBotCreationComponent::GetUrlNumBotsOverride(int32 CurrentDefault) const
+{
+	int32 UrlNumBots = 0;
+	if (UBwayMatchFlowLibrary::GetUrlOptionInt(this, TEXT("NumBots"), UrlNumBots))
+	{
+		return UrlNumBots;
+	}
+
+	return CurrentDefault;
+}
+
 int32 UBwayBotCreationComponent::GetTargetBotCount() const
 {
-	int32 BotsToSpawn = NumBotsToCreate;
+	int32 BotsToSpawn = NumBotsOverride >= 0 ? NumBotsOverride : NumBotsToCreate;
 
-	if (bScaleBotsToTargetPlayerCount && GetWorld())
+	if (NumBotsOverride < 0 && bScaleBotsToTargetPlayerCount && GetWorld())
 	{
 		int32 HumanCount = 0;
 		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -78,7 +125,32 @@ int32 UBwayBotCreationComponent::GetTargetBotCount() const
 		BotsToSpawn = FMath::Max(0, TargetPlayerCount - OccupiedHumanSlots);
 	}
 
-	return BotsToSpawn;
+	return GetUrlNumBotsOverride(BotsToSpawn);
+}
+
+void UBwayBotCreationComponent::TrimExcessBots(int32 TargetBotCount)
+{
+	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
+	{
+		return !IsValid(Bot);
+	});
+
+	while (SpawnedBotList.Num() > TargetBotCount)
+	{
+		AAIController* BotController = SpawnedBotList.Pop(EAllowShrinking::No);
+		if (!IsValid(BotController))
+		{
+			continue;
+		}
+
+		if (APawn* OldPawn = BotController->GetPawn())
+		{
+			BotController->UnPossess();
+			OldPawn->Destroy();
+		}
+
+		BotController->Destroy();
+	}
 }
 
 void UBwayBotCreationComponent::SpawnMissingBots()
@@ -94,6 +166,16 @@ void UBwayBotCreationComponent::SpawnMissingBots()
 	});
 
 	const int32 BotsToSpawn = GetTargetBotCount();
+	TrimExcessBots(BotsToSpawn);
+
+	UE_LOG(LogTemp, Log,
+		TEXT("BwayMatchFlow: SpawnMissingBots — target=%d override=%d default=%d scale4v4=%s current=%d"),
+		BotsToSpawn,
+		NumBotsOverride,
+		NumBotsToCreate,
+		bScaleBotsToTargetPlayerCount ? TEXT("true") : TEXT("false"),
+		SpawnedBotList.Num());
+
 	for (int32 Index = SpawnedBotList.Num(); Index < BotsToSpawn; ++Index)
 	{
 		SpawnOneBot();

@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BreakawayGameMode.h"
+#include "GameModes/BwayExperienceLibrary.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "BwayPlayerController.h"
@@ -36,9 +38,13 @@ ABreakawayGameMode::ABreakawayGameMode()
 
 void ABreakawayGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
+	UBwayExperienceLibrary::RegisterPackagedBreakawayExperiences();
+
 	Super::InitGame(MapName, Options, ErrorMessage);
-	
-	UE_LOG(LogBreakawayGame, Log, TEXT("Initializing Breakaway Game Mode"));
+
+	UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(this);
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("Initializing Breakaway Game Mode (OptionsString='%s')"), *OptionsString);
 }
 
 void ABreakawayGameMode::InitGameState()

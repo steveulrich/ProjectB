@@ -139,6 +139,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	int32 PointsToWin = 3;
 
+	/** Authority-only runtime override from UBwayMatchFlowConfig / URL (11-1+). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
+	void SetPointsToWin(int32 InPointsToWin);
+
 	/** Duration of each round in seconds */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	float RoundDuration = 180.0f;
@@ -215,6 +219,9 @@ protected:
 
 	/** Called by ULyraGamePhaseSubsystem when the Playing phase becomes active. */
 	void HandlePlayingPhaseActivated(const FGameplayTag& ActivePhaseTag);
+
+	/** High-priority experience hook: resolve and apply match rules before bots spawn (11-1). */
+	void HandleExperienceLoadedForMatchRules(const class ULyraExperienceDefinition* Experience);
 
 	/** Get the owning game state cast to ABwayGameState */
 	ABwayGameState* GetBwayGameState() const;

@@ -1,8 +1,8 @@
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 
+#include "GameModes/BwayGameplayUrlLibrary.h"
 #include "Engine/World.h"
 #include "GameFramework/GameModeBase.h"
-#include "Kismet/GameplayStatics.h"
 
 const AGameModeBase* UBwayHeroSelectionFlowLibrary::GetAuthGameMode(const UObject* WorldContextObject)
 {
@@ -16,12 +16,12 @@ const AGameModeBase* UBwayHeroSelectionFlowLibrary::GetAuthGameMode(const UObjec
 
 bool UBwayHeroSelectionFlowLibrary::HasUrlOptionForGameMode(const AGameModeBase* GameMode, FName OptionName)
 {
-	return GameMode && UGameplayStatics::HasOption(GameMode->OptionsString, OptionName.ToString());
+	return GameMode && UBwayGameplayUrlLibrary::HasGameplayUrlOption(GameMode, OptionName);
 }
 
 bool UBwayHeroSelectionFlowLibrary::HasUrlOption(const UObject* WorldContextObject, FName OptionName)
 {
-	return HasUrlOptionForGameMode(GetAuthGameMode(WorldContextObject), OptionName);
+	return UBwayGameplayUrlLibrary::HasGameplayUrlOption(WorldContextObject, OptionName);
 }
 
 bool UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingGameMode(const AGameModeBase* GameMode)

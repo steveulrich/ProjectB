@@ -288,6 +288,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "BreakawayCore",
+			"Enabled": true
+		},
+		{
 			"Name": "ShooterCore",
 			"Enabled": true
 		},
