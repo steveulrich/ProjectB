@@ -12,6 +12,7 @@
 #include "Development/BwayCheatManager.h"
 #include "GameplayTagContainer.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
+#include "GameFramework/Pawn.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayPlayerController)
 
@@ -157,6 +158,37 @@ void ABwayPlayerController::Client_HideHeroSelection_Implementation()
 		UCommonUIExtensions::PopContentFromLayer(HeroSelectionWidget);
 		HeroSelectionWidget = nullptr;
 	}
+
+	RestoreGameplayInputMode();
+}
+
+void ABwayPlayerController::RestoreGameplayInputMode()
+{
+	if (!IsLocalPlayerController())
+	{
+		return;
+	}
+
+	FInputModeGameOnly InputMode;
+	SetInputMode(InputMode);
+	SetShowMouseCursor(false);
+}
+
+void ABwayPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (!IsLocalPlayerController() || !InPawn)
+	{
+		return;
+	}
+
+	if (ResultsWidget && ResultsWidget->IsInViewport())
+	{
+		return;
+	}
+
+	RestoreGameplayInputMode();
 }
 
 void ABwayPlayerController::Client_ShowResults_Implementation(int32 WinningTeam, const TSoftClassPtr<UUserWidget>& WidgetClass)

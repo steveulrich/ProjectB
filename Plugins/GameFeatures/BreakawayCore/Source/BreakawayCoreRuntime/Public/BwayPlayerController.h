@@ -86,6 +86,13 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestReturnToFrontEnd();
 
+	/** Restores mouse capture and hides the cursor for local gameplay (e.g. after frontend UI or hero select). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|Input")
+	void RestoreGameplayInputMode();
+
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+
 private:
 	/** Active hero-selection widget pushed through Lyra's CommonUI layer stack. */
 	UPROPERTY(Transient)

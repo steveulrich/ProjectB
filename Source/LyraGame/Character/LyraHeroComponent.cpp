@@ -170,6 +170,15 @@ void ULyraHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* M
 			{
 				InitializePlayerInput(Pawn->InputComponent);
 			}
+
+			// Frontend CommonUI leaves the local PC in UI-only mode across ServerTravel.
+			// Re-capture the mouse once gameplay input is bound so mouse look works in-match.
+			if (LyraPC->IsLocalController())
+			{
+				FInputModeGameOnly InputMode;
+				LyraPC->SetInputMode(InputMode);
+				LyraPC->SetShowMouseCursor(false);
+			}
 		}
 
 		// Hook up the delegate for all pawns, in case we spectate later
