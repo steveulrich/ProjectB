@@ -56,6 +56,13 @@ class BREAKAWAYCORERUNTIME_API UBwayResultsScreenWidget : public UCommonActivata
 public:
 	UBwayResultsScreenWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	/**
+	 * Apply server-authoritative match results before display.
+	 * Called from ABwayPlayerController::Client_ShowResults — do not rely on replicated scores
+	 * being available yet when the widget is created.
+	 */
+	void ApplyAuthoritativeResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds);
+
 protected:
 	//~ UUserWidget interface
 	virtual void NativeConstruct() override;
@@ -122,5 +129,7 @@ private:
 	/** Cached results */
 	UPROPERTY()
 	FMatchResultsData CachedResults;
+
+	bool bResultsApplied = false;
 };
 

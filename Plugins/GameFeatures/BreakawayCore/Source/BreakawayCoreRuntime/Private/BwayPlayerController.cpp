@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BwayPlayerController.h"
+#include "UI/BwayResultsScreenWidget.h"
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
@@ -191,7 +192,12 @@ void ABwayPlayerController::OnPossess(APawn* InPawn)
 	RestoreGameplayInputMode();
 }
 
-void ABwayPlayerController::Client_ShowResults_Implementation(int32 WinningTeam, const TSoftClassPtr<UUserWidget>& WidgetClass)
+void ABwayPlayerController::Client_ShowResults_Implementation(
+	int32 WinningTeam,
+	int32 Team1Score,
+	int32 Team2Score,
+	int32 TotalRounds,
+	const TSoftClassPtr<UUserWidget>& WidgetClass)
 {
 	if (WidgetClass.IsNull())
 	{
@@ -219,6 +225,11 @@ void ABwayPlayerController::Client_ShowResults_Implementation(int32 WinningTeam,
 		return;
 	}
 
+	if (UBwayResultsScreenWidget* ResultsScreen = Cast<UBwayResultsScreenWidget>(ResultsWidget))
+	{
+		ResultsScreen->ApplyAuthoritativeResults(WinningTeam, Team1Score, Team2Score, TotalRounds);
+	}
+
 	ResultsWidget->AddToViewport(200);
 
 	SetShowMouseCursor(true);
@@ -226,7 +237,8 @@ void ABwayPlayerController::Client_ShowResults_Implementation(int32 WinningTeam,
 	InputMode.SetWidgetToFocus(ResultsWidget->TakeWidget());
 	SetInputMode(InputMode);
 
-	UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: Results screen shown for winning team %d"), WinningTeam + 1);
+	UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: Results screen shown — Team %d wins (%d-%d, %d rounds)"),
+		WinningTeam + 1, Team1Score, Team2Score, TotalRounds);
 }
 
 void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
@@ -238,5 +250,16 @@ void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
 			GS->ReturnToFrontEnd();
 		}
 	}
+}
+
+void ABwayPlayerController::Client_DismissResultsScreen_Implementation()
+{
+	if (ResultsWidget)
+	{
+		ResultsWidget->RemoveFromParent();
+		ResultsWidget = nullptr;
+	}
+
+	RestoreGameplayInputMode();
 }
 

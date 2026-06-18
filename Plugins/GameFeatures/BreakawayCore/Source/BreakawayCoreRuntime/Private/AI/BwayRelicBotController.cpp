@@ -3,8 +3,10 @@
 #include "AI/BwayRelicBotController.h"
 #include "AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/BlackboardData.h"
+#include "BrainComponent.h"
 #include "GameFramework/Pawn.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayRelicBotController)
@@ -32,6 +34,32 @@ void ABwayRelicBotController::ConfigureRelicAI(UBehaviorTree* InBehaviorTree, UB
 void ABwayRelicBotController::StartRelicBotLogic()
 {
 	RunRelicBehaviorTreeIfReady();
+}
+
+void ABwayRelicBotController::StopRelicBotLogic()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>(BrainComponent))
+	{
+		if (BTComp->IsRunning())
+		{
+			BTComp->StopLogic(TEXT("BwayRelicBotShutdown"));
+		}
+	}
+	else if (BrainComponent && BrainComponent->IsRunning())
+	{
+		BrainComponent->StopLogic(TEXT("BwayRelicBotShutdown"));
+	}
+}
+
+void ABwayRelicBotController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	StopRelicBotLogic();
+	Super::EndPlay(EndPlayReason);
 }
 
 void ABwayRelicBotController::OnPossess(APawn* InPawn)

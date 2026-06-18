@@ -2,6 +2,7 @@
 
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
 #include "GameState/BwayBotCreationComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameModes/LyraExperienceDefinition.h"
@@ -17,6 +18,9 @@
 #include "GameState/BwayScoringComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
+#include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "GameModes/LyraGameState.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "GameplayEffect.h"
@@ -47,6 +51,7 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundState);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
+	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentMatchPhase);
 }
 
 void UBwayRoundManagementComponent::BeginPlay()
@@ -55,6 +60,14 @@ void UBwayRoundManagementComponent::BeginPlay()
 
 	if (GetOwnerRole() != ROLE_Authority)
 	{
+		return;
+	}
+
+	if (!IsCanonicalRoundManagementInstance())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("BwayRoundManagement: Ignoring duplicate component '%s' on '%s' — orchestrator lives on canonical RoundManagementComponent"),
+			*GetName(), *GetNameSafe(GetOwner()));
 		return;
 	}
 
@@ -73,32 +86,717 @@ void UBwayRoundManagementComponent::BeginPlay()
 			PreRoundTimerHandle, this, &UBwayRoundManagementComponent::StartRound, PreRoundDelay, false);
 
 		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: First round will start in %.1f seconds (auto-start)"), PreRoundDelay);
+	}
+}
+
+void UBwayRoundManagementComponent::RegisterPlayingPhaseListener()
+{
+	if (bPlayingPhaseListenerRegistered || bOrchestratorActive)
+	{
 		return;
 	}
 
-	// Phase-driven flow: listen for the Playing phase to activate, then call StartRound().
-	if (PlayingPhaseTag.IsValid())
+	if (!PlayingPhaseTag.IsValid())
 	{
-		if (UWorld* World = GetWorld())
-		{
-			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
-			{
-				PhaseSubsystem->WhenPhaseStartsOrIsActive(
-					PlayingPhaseTag,
-					EPhaseTagMatchType::ExactMatch,
-					FLyraGamePhaseTagDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePlayingPhaseActivated));
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PlayingPhaseTag set and bAutoStartFirstRound is false - round will not auto-start"));
+		return;
+	}
 
-				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Listening for Playing phase tag: %s"), *PlayingPhaseTag.ToString());
-			}
-			else
+	if (UWorld* World = GetWorld())
+	{
+		if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
+		{
+			PhaseSubsystem->WhenPhaseStartsOrIsActive(
+				PlayingPhaseTag,
+				EPhaseTagMatchType::ExactMatch,
+				FLyraGamePhaseTagDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePlayingPhaseActivated));
+
+			bPlayingPhaseListenerRegistered = true;
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Legacy PlayingPhaseTag listener registered for %s"), *PlayingPhaseTag.ToString());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem not available - round will not auto-start"));
+		}
+	}
+}
+
+bool UBwayRoundManagementComponent::ShouldBlockPawnSpawning() const
+{
+	return bOrchestratorActive && CurrentMatchPhase == EBwayMatchPhase::Prematch;
+}
+
+void UBwayRoundManagementComponent::SetMatchPhase(EBwayMatchPhase NewPhase)
+{
+	if (GetOwnerRole() != ROLE_Authority || CurrentMatchPhase == NewPhase)
+	{
+		return;
+	}
+
+	const EBwayMatchPhase PreviousPhase = CurrentMatchPhase;
+
+	if (PreviousPhase == EBwayMatchPhase::Playing && NewPhase != EBwayMatchPhase::Playing)
+	{
+		ClearBetweenRoundTimer();
+	}
+
+	CurrentMatchPhase = NewPhase;
+	OnRep_MatchPhase();
+}
+
+void UBwayRoundManagementComponent::OnRep_MatchPhase()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Match phase -> %s"),
+		*StaticEnum<EBwayMatchPhase>()->GetNameStringByValue(static_cast<int64>(CurrentMatchPhase)));
+}
+
+TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolvePrematchPhaseAbilityClass() const
+{
+	if (ResolvedMatchFlowSettings.PrematchPhaseAbility)
+	{
+		return ResolvedMatchFlowSettings.PrematchPhaseAbility;
+	}
+
+	const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_Prematch.BW_Phase_Prematch_C")));
+	return FallbackPhaseAbilityClass.LoadSynchronous();
+}
+
+TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolveWarmupPhaseAbilityClass() const
+{
+	if (ResolvedMatchFlowSettings.WarmupPhaseAbility)
+	{
+		return ResolvedMatchFlowSettings.WarmupPhaseAbility;
+	}
+
+	const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_Warmup.BW_Phase_Warmup_C")));
+	return FallbackPhaseAbilityClass.LoadSynchronous();
+}
+
+TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolvePlayingPhaseAbilityClass() const
+{
+	if (ResolvedMatchFlowSettings.PlayingPhaseAbility)
+	{
+		return ResolvedMatchFlowSettings.PlayingPhaseAbility;
+	}
+
+	const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_Playing.BW_Phase_Playing_C")));
+	return FallbackPhaseAbilityClass.LoadSynchronous();
+}
+
+TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolvePostRoundPhaseAbilityClass() const
+{
+	if (ResolvedMatchFlowSettings.PostRoundPhaseAbility)
+	{
+		return ResolvedMatchFlowSettings.PostRoundPhaseAbility;
+	}
+
+	const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_PostRound.BW_Phase_PostRound_C")));
+	return FallbackPhaseAbilityClass.LoadSynchronous();
+}
+
+TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolvePostMatchPhaseAbilityClass() const
+{
+	if (ResolvedMatchFlowSettings.PostMatchPhaseAbility)
+	{
+		return ResolvedMatchFlowSettings.PostMatchPhaseAbility;
+	}
+
+	const TSoftClassPtr<ULyraGamePhaseAbility> FallbackPhaseAbilityClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/Experiences/Phases/BW_Phase_PostMatch.BW_Phase_PostMatch_C")));
+	return FallbackPhaseAbilityClass.LoadSynchronous();
+}
+
+bool UBwayRoundManagementComponent::IsCanonicalRoundManagementInstance() const
+{
+	if (const ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		return BwayGS->IsCanonicalRoundManagement(this);
+	}
+
+	TArray<UBwayRoundManagementComponent*> RoundManagers;
+	GetOwner()->GetComponents<UBwayRoundManagementComponent>(RoundManagers);
+	return RoundManagers.Num() <= 1 || (RoundManagers.Num() > 0 && RoundManagers[0] == this);
+}
+
+void UBwayRoundManagementComponent::EnterPrematch()
+{
+	if (GetOwnerRole() != ROLE_Authority || bOrchestratorActive)
+	{
+		return;
+	}
+
+	bOrchestratorActive = true;
+	bPrematchCompletionHandled = false;
+
+	SetMatchPhase(EBwayMatchPhase::Prematch);
+	StartPrematchPhaseAbility();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPrematch — orchestrator active; pawn spawn frozen until Warmup (11-4)"));
+}
+
+void UBwayRoundManagementComponent::StartPrematchPhaseAbility()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	// Defer one tick — high-priority OnExperienceLoaded can run before GameState ASC is ready to activate.
+	World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::StartPrematchPhaseAbilityImpl));
+}
+
+void UBwayRoundManagementComponent::StartPrematchPhaseAbilityImpl()
+{
+	UWorld* World = GetWorld();
+	ULyraGamePhaseSubsystem* PhaseSubsystem = World ? World->GetSubsystem<ULyraGamePhaseSubsystem>() : nullptr;
+	if (!PhaseSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem unavailable — prematch freeze active without GAS phase"));
+	}
+
+	if (PhaseSubsystem)
+	{
+		const TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = ResolvePrematchPhaseAbilityClass();
+		if (!PhaseAbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PrematchPhaseAbility configured — prematch freeze active without GAS phase (create BW_Phase_Prematch or set on DA_BW_MatchFlow_Dev)"));
+		}
+		else
+		{
+			if (const ULyraGamePhaseAbility* PhaseCDO = PhaseAbilityClass->GetDefaultObject<ULyraGamePhaseAbility>())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem not available - round will not auto-start"));
+				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch phase ability %s — GamePhaseTag=%s"),
+					*GetNameSafe(PhaseAbilityClass), *PhaseCDO->GetGamePhaseTag().ToString());
 			}
+
+			if (const ALyraGameState* LyraGS = World->GetGameState<ALyraGameState>())
+			{
+				if (const ULyraAbilitySystemComponent* ASC = LyraGS->GetLyraAbilitySystemComponent())
+				{
+					if (!ASC->GetOwnerActor())
+					{
+						UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: GameState ASC owner not ready for prematch StartPhase"));
+					}
+				}
+			}
+
+			PhaseSubsystem->StartPhase(
+				PhaseAbilityClass,
+				FLyraGamePhaseDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePrematchPhaseEnded));
+
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Started prematch GAS phase via %s"), *GetNameSafe(PhaseAbilityClass));
+		}
+	}
+
+	const float PrematchDuration = ResolvedMatchFlowSettings.PrematchDuration;
+	if (PrematchDuration > 0.0f && World)
+	{
+		World->GetTimerManager().SetTimer(
+			MatchPhaseTimerHandle,
+			this,
+			&UBwayRoundManagementComponent::HandlePrematchTimerExpired,
+			PrematchDuration,
+			false);
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch config timer started (%.1fs, authoritative)"), PrematchDuration);
+	}
+}
+
+void UBwayRoundManagementComponent::HandlePrematchPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility)
+{
+	if (!PhaseAbility)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: Prematch GAS phase failed to activate — waiting on config timer"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch GAS phase ended early via %s — shortening prematch"),
+		*GetNameSafe(PhaseAbility));
+	CompletePrematchPhase();
+}
+
+void UBwayRoundManagementComponent::HandlePrematchTimerExpired()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch config timer expired (authoritative)"));
+	CompletePrematchPhase();
+}
+
+void UBwayRoundManagementComponent::CompletePrematchPhase()
+{
+	if (!bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::Prematch || bPrematchCompletionHandled)
+	{
+		return;
+	}
+
+	bPrematchCompletionHandled = true;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch complete — advancing to Warmup (11-4)"));
+	EnterWarmup();
+}
+
+void UBwayRoundManagementComponent::EnterWarmup()
+{
+	if (GetOwnerRole() != ROLE_Authority || !bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::Prematch)
+	{
+		return;
+	}
+
+	bWarmupCompletionHandled = false;
+	SetMatchPhase(EBwayMatchPhase::Warmup);
+	StartWarmupPhaseAbility();
+	RestartDeferredPlayersForWarmup();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterWarmup — pawn spawn unblocked; warmup runs once per match"));
+}
+
+void UBwayRoundManagementComponent::StartWarmupPhaseAbility()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::StartWarmupPhaseAbilityImpl));
+}
+
+void UBwayRoundManagementComponent::StartWarmupPhaseAbilityImpl()
+{
+	UWorld* World = GetWorld();
+	ULyraGamePhaseSubsystem* PhaseSubsystem = World ? World->GetSubsystem<ULyraGamePhaseSubsystem>() : nullptr;
+	if (!PhaseSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem unavailable — warmup active without GAS phase"));
+	}
+
+	if (PhaseSubsystem)
+	{
+		const TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = ResolveWarmupPhaseAbilityClass();
+		if (!PhaseAbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No WarmupPhaseAbility configured — warmup active without GAS phase (set on DA_BW_MatchFlow_Dev)"));
+		}
+		else
+		{
+			if (const ULyraGamePhaseAbility* PhaseCDO = PhaseAbilityClass->GetDefaultObject<ULyraGamePhaseAbility>())
+			{
+				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Warmup phase ability %s — GamePhaseTag=%s"),
+					*GetNameSafe(PhaseAbilityClass), *PhaseCDO->GetGamePhaseTag().ToString());
+			}
+
+			PhaseSubsystem->StartPhase(
+				PhaseAbilityClass,
+				FLyraGamePhaseDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandleWarmupPhaseEnded));
+
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Started warmup GAS phase via %s"), *GetNameSafe(PhaseAbilityClass));
+		}
+	}
+
+	const float WarmupDuration = ResolvedMatchFlowSettings.WarmupDuration;
+	if (WarmupDuration > 0.0f && World)
+	{
+		World->GetTimerManager().SetTimer(
+			MatchPhaseTimerHandle,
+			this,
+			&UBwayRoundManagementComponent::HandleWarmupTimerExpired,
+			WarmupDuration,
+			false);
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Warmup config timer started (%.1fs, authoritative)"), WarmupDuration);
+	}
+}
+
+void UBwayRoundManagementComponent::HandleWarmupPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility)
+{
+	if (!PhaseAbility)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: Warmup GAS phase failed to activate — waiting on config timer"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Warmup GAS phase ended early via %s — shortening warmup"),
+		*GetNameSafe(PhaseAbility));
+	CompleteWarmupPhase();
+}
+
+void UBwayRoundManagementComponent::HandleWarmupTimerExpired()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Warmup config timer expired (authoritative)"));
+	CompleteWarmupPhase();
+}
+
+void UBwayRoundManagementComponent::CompleteWarmupPhase()
+{
+	if (!bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::Warmup || bWarmupCompletionHandled)
+	{
+		return;
+	}
+
+	bWarmupCompletionHandled = true;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Warmup complete — advancing to Playing (11-4)"));
+	EnterPlaying();
+}
+
+void UBwayRoundManagementComponent::EnterPlaying()
+{
+	if (GetOwnerRole() != ROLE_Authority || !bOrchestratorActive)
+	{
+		return;
+	}
+
+	const bool bFirstEntryFromWarmup = CurrentMatchPhase == EBwayMatchPhase::Warmup;
+	const bool bNextRoundFromPostRound = CurrentMatchPhase == EBwayMatchPhase::PostRound;
+
+	if (!bFirstEntryFromWarmup && !bNextRoundFromPostRound)
+	{
+		return;
+	}
+
+	SetMatchPhase(EBwayMatchPhase::Playing);
+
+	if (bFirstEntryFromWarmup)
+	{
+		StartPlayingPhaseAbility();
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPlaying — round FSM active (PointsToWin=%d, RoundDuration=%.0fs); subsequent rounds use PostRound loop"),
+			PointsToWin, RoundDuration);
+
+		if (CurrentRoundState == ERoundState::WaitingToStart)
+		{
+			StartRound();
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PlayingPhaseTag set and bAutoStartFirstRound is false - round will not auto-start"));
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPlaying — starting round %d after PostRound (PointsToWin=%d)"),
+			CurrentRoundNumber + 1, PointsToWin);
+		StartRound();
+	}
+}
+
+void UBwayRoundManagementComponent::StartPlayingPhaseAbility()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::StartPlayingPhaseAbilityImpl));
+}
+
+void UBwayRoundManagementComponent::StartPlayingPhaseAbilityImpl()
+{
+	UWorld* World = GetWorld();
+	ULyraGamePhaseSubsystem* PhaseSubsystem = World ? World->GetSubsystem<ULyraGamePhaseSubsystem>() : nullptr;
+	if (!PhaseSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem unavailable — playing phase active without GAS phase"));
+		return;
+	}
+
+	const TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = ResolvePlayingPhaseAbilityClass();
+	if (!PhaseAbilityClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PlayingPhaseAbility configured — playing phase active without GAS phase (set on DA_BW_MatchFlow_Dev)"));
+		return;
+	}
+
+	PhaseSubsystem->StartPhase(
+		PhaseAbilityClass,
+		FLyraGamePhaseDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePlayingPhaseEnded));
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Started playing GAS phase via %s (round timer authoritative via RoundDuration=%.0fs)"),
+		*GetNameSafe(PhaseAbilityClass), RoundDuration);
+}
+
+void UBwayRoundManagementComponent::HandlePlayingPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility)
+{
+	if (!PhaseAbility)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: Playing GAS phase failed to activate — round FSM continues on config timer"));
+		return;
+	}
+
+	if (CurrentMatchPhase == EBwayMatchPhase::Playing)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("BwayRoundManagement: Playing GAS phase ended early via %s while match phase still Playing — round FSM unchanged (11-5)"),
+			*GetNameSafe(PhaseAbility));
+	}
+}
+
+void UBwayRoundManagementComponent::EnterPostRound()
+{
+	if (GetOwnerRole() != ROLE_Authority || !bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::Playing)
+	{
+		return;
+	}
+
+	bPostRoundCompletionHandled = false;
+	SetMatchPhase(EBwayMatchPhase::PostRound);
+	StartPostRoundPhaseAbility();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPostRound — between-round pause (PostRoundDuration=%.1fs from config)"),
+		ResolvedMatchFlowSettings.PostRoundDuration);
+}
+
+void UBwayRoundManagementComponent::StartPostRoundPhaseAbility()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::StartPostRoundPhaseAbilityImpl));
+}
+
+void UBwayRoundManagementComponent::StartPostRoundPhaseAbilityImpl()
+{
+	UWorld* World = GetWorld();
+	ULyraGamePhaseSubsystem* PhaseSubsystem = World ? World->GetSubsystem<ULyraGamePhaseSubsystem>() : nullptr;
+	if (!PhaseSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem unavailable — PostRound active without GAS phase"));
+	}
+
+	if (PhaseSubsystem)
+	{
+		const TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = ResolvePostRoundPhaseAbilityClass();
+		if (!PhaseAbilityClass)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PostRoundPhaseAbility configured — PostRound active without GAS phase (set on DA_BW_MatchFlow_Dev)"));
+		}
+		else
+		{
+			if (const ULyraGamePhaseAbility* PhaseCDO = PhaseAbilityClass->GetDefaultObject<ULyraGamePhaseAbility>())
+			{
+				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound phase ability %s — GamePhaseTag=%s"),
+					*GetNameSafe(PhaseAbilityClass), *PhaseCDO->GetGamePhaseTag().ToString());
+			}
+
+			PhaseSubsystem->StartPhase(
+				PhaseAbilityClass,
+				FLyraGamePhaseDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePostRoundPhaseEnded));
+
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Started PostRound GAS phase via %s"), *GetNameSafe(PhaseAbilityClass));
+		}
+	}
+
+	const float PostRoundDuration = ResolvedMatchFlowSettings.PostRoundDuration;
+	if (PostRoundDuration > 0.0f && World)
+	{
+		World->GetTimerManager().SetTimer(
+			MatchPhaseTimerHandle,
+			this,
+			&UBwayRoundManagementComponent::HandlePostRoundTimerExpired,
+			PostRoundDuration,
+			false);
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound config timer started (%.1fs, authoritative)"), PostRoundDuration);
+	}
+}
+
+void UBwayRoundManagementComponent::HandlePostRoundPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility)
+{
+	if (!PhaseAbility)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: PostRound GAS phase failed to activate — waiting on config timer"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound GAS phase ended early via %s — shortening PostRound"),
+		*GetNameSafe(PhaseAbility));
+	CompletePostRoundPhase();
+}
+
+void UBwayRoundManagementComponent::HandlePostRoundTimerExpired()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound config timer expired (authoritative)"));
+	CompletePostRoundPhase();
+}
+
+void UBwayRoundManagementComponent::CompletePostRoundPhase()
+{
+	if (!bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::PostRound || bPostRoundCompletionHandled)
+	{
+		return;
+	}
+
+	bPostRoundCompletionHandled = true;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound complete — advancing to Playing for next round (11-6)"));
+	EnterPlaying();
+}
+
+void UBwayRoundManagementComponent::StopRoundFSM()
+{
+	RemovePassiveGoldIncome();
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
+		World->GetTimerManager().ClearTimer(BetweenRoundTimerHandle);
+		World->GetTimerManager().ClearTimer(PreRoundTimerHandle);
+
+		for (TPair<TObjectPtr<AController>, FTimerHandle>& Pair : RespawnTimers)
+		{
+			World->GetTimerManager().ClearTimer(Pair.Value);
+		}
+		RespawnTimers.Empty();
+	}
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
+		{
+			DividerComponent->SetSuddenDeathDividerVisible(false);
+		}
+	}
+
+	if (CurrentRoundState != ERoundState::RoundComplete)
+	{
+		SetRoundState(ERoundState::RoundComplete);
+	}
+}
+
+void UBwayRoundManagementComponent::EnterPostMatch()
+{
+	if (GetOwnerRole() != ROLE_Authority || !bOrchestratorActive)
+	{
+		return;
+	}
+
+	if (CurrentMatchPhase != EBwayMatchPhase::Playing)
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("BwayRoundManagement: EnterPostMatch ignored — expected Playing, got %s"),
+			*StaticEnum<EBwayMatchPhase>()->GetNameStringByValue(static_cast<int64>(CurrentMatchPhase)));
+		return;
+	}
+
+	StopRoundFSM();
+	SetMatchPhase(EBwayMatchPhase::PostMatch);
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		if (UBwayBotCreationComponent* BotCreation = BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
+		{
+			BotCreation->StopAllBotLogic();
+		}
+	}
+
+	StartPostMatchPhaseAbility();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPostMatch — round FSM stopped; PostMatch phase active (11-7)"));
+}
+
+void UBwayRoundManagementComponent::StartPostMatchPhaseAbility()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	World->GetTimerManager().SetTimerForNextTick(
+		FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::StartPostMatchPhaseAbilityImpl));
+}
+
+void UBwayRoundManagementComponent::StartPostMatchPhaseAbilityImpl()
+{
+	UWorld* World = GetWorld();
+	ULyraGamePhaseSubsystem* PhaseSubsystem = World ? World->GetSubsystem<ULyraGamePhaseSubsystem>() : nullptr;
+	if (!PhaseSubsystem)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: LyraGamePhaseSubsystem unavailable — PostMatch active without GAS phase"));
+		return;
+	}
+
+	const TSubclassOf<ULyraGamePhaseAbility> PhaseAbilityClass = ResolvePostMatchPhaseAbilityClass();
+	if (!PhaseAbilityClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: No PostMatchPhaseAbility configured — PostMatch active without GAS phase (set on DA_BW_MatchFlow_Dev)"));
+		return;
+	}
+
+	if (const ULyraGamePhaseAbility* PhaseCDO = PhaseAbilityClass->GetDefaultObject<ULyraGamePhaseAbility>())
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostMatch phase ability %s — GamePhaseTag=%s"),
+			*GetNameSafe(PhaseAbilityClass), *PhaseCDO->GetGamePhaseTag().ToString());
+	}
+
+	PhaseSubsystem->StartPhase(
+		PhaseAbilityClass,
+		FLyraGamePhaseDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePostMatchPhaseEnded));
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Started PostMatch GAS phase via %s"), *GetNameSafe(PhaseAbilityClass));
+}
+
+void UBwayRoundManagementComponent::HandlePostMatchPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility)
+{
+	if (!PhaseAbility)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: PostMatch GAS phase failed to activate"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostMatch GAS phase ended via %s — awaiting Continue / ReturnToFrontEnd"),
+		*GetNameSafe(PhaseAbility));
+}
+
+void UBwayRoundManagementComponent::RestartDeferredPlayersForWarmup()
+{
+	UWorld* World = GetWorld();
+	AGameModeBase* GM = World ? World->GetAuthGameMode() : nullptr;
+	if (!World || !GM)
+	{
+		return;
+	}
+
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (APlayerController* PC = It->Get())
+		{
+			if (!PC->GetPawn())
+			{
+				GM->RestartPlayer(PC);
+			}
+		}
+	}
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		if (UBwayBotCreationComponent* BotCreation = BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
+		{
+			BotCreation->EnsureBotsForRound();
+		}
 	}
 }
 
@@ -112,27 +810,80 @@ void UBwayRoundManagementComponent::SetPointsToWin(int32 InPointsToWin)
 	PointsToWin = FMath::Max(1, InPointsToWin);
 }
 
-void UBwayRoundManagementComponent::HandleExperienceLoadedForMatchRules(const ULyraExperienceDefinition* Experience)
+void UBwayRoundManagementComponent::SetRoundDuration(float InRoundDuration)
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
 		return;
 	}
 
+	RoundDuration = FMath::Max(1.0f, InRoundDuration);
+}
+
+bool UBwayRoundManagementComponent::IsRoundLifecycleActive() const
+{
+	if (!bOrchestratorActive)
+	{
+		return true;
+	}
+
+	return CurrentMatchPhase == EBwayMatchPhase::Playing;
+}
+
+void UBwayRoundManagementComponent::ClearBetweenRoundTimer()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(BetweenRoundTimerHandle);
+	}
+}
+
+void UBwayRoundManagementComponent::HandleExperienceLoadedForMatchRules(const ULyraExperienceDefinition* Experience)
+{
+	if (GetOwnerRole() != ROLE_Authority || !IsCanonicalRoundManagementInstance())
+	{
+		return;
+	}
+
+	if (bMatchFlowExperienceHandled)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("BwayRoundManagement: Match-flow experience hook already handled — skipping duplicate"));
+		return;
+	}
+
+	bMatchFlowExperienceHandled = true;
+
+	if (AGameModeBase* GameMode = GetWorld() ? GetWorld()->GetAuthGameMode() : nullptr)
+	{
+		UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(GameMode);
+	}
+
+	ResolvedMatchFlowSettings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
+	UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(ResolvedMatchFlowSettings);
+
 	// BotCreation applies full match rules on its own OnExperienceLoaded (after this high-priority hook).
-	// Here we only ensure PointsToWin is set early if BotCreation is absent.
+	// Here we only ensure playing FSM settings are set early if BotCreation is absent.
 	ABwayGameState* BwayGS = GetBwayGameState();
 	if (!BwayGS || !BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
 	{
-		const FBwayResolvedMatchFlowSettings Resolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
-		UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(Resolved);
-		UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, Resolved, this, nullptr);
+		UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, ResolvedMatchFlowSettings, this, nullptr);
+	}
+
+	if (ResolvedMatchFlowSettings.bOrchestrateMatchFlow)
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: bOrchestrateMatchFlow=true — RM owns StartPhase; legacy PlayingPhaseTag listener disabled"));
+		EnterPrematch();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: bOrchestrateMatchFlow=false — using legacy PlayingPhaseTag listener"));
+		RegisterPlayingPhaseListener();
 	}
 }
 
 void UBwayRoundManagementComponent::HandlePlayingPhaseActivated(const FGameplayTag& ActivePhaseTag)
 {
-	if (GetOwnerRole() != ROLE_Authority)
+	if (GetOwnerRole() != ROLE_Authority || bOrchestratorActive)
 	{
 		return;
 	}
@@ -150,7 +901,7 @@ void UBwayRoundManagementComponent::TickComponent(float DeltaTime, ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (GetOwnerRole() != ROLE_Authority || CurrentRoundState != ERoundState::RoundActive)
+	if (GetOwnerRole() != ROLE_Authority || !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
@@ -274,6 +1025,14 @@ int32 UBwayRoundManagementComponent::GetRoundTimeRemaining() const
 
 void UBwayRoundManagementComponent::StartRound()
 {
+	if (!IsRoundLifecycleActive())
+	{
+		UE_LOG(LogTemp, Warning,
+			TEXT("BwayRoundManagement: StartRound ignored — orchestrator phase is %s (expected Playing)"),
+			*StaticEnum<EBwayMatchPhase>()->GetNameStringByValue(static_cast<int64>(CurrentMatchPhase)));
+		return;
+	}
+
 	ABwayGameState* BwayGS = GetBwayGameState();
 	if (!BwayGS)
 	{
@@ -307,6 +1066,12 @@ void UBwayRoundManagementComponent::StartRound()
 
 void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinCondition WinCondition)
 {
+	if (!IsRoundLifecycleActive())
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("BwayRoundManagement: EndRound ignored — not in Playing match phase"));
+		return;
+	}
+
 	ABwayGameState* BwayGS = GetBwayGameState();
 	if (!BwayGS)
 	{
@@ -341,20 +1106,33 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Match Over! Team %d wins!"), WinningTeam + 1);
 		SetRoundState(ERoundState::RoundComplete);
 
-		// Broadcast match-end to any listeners (GameState uses this for PostGame)
+		// Broadcast match-end to listeners (GameState shows results; RM enters PostMatch below).
 		OnMatchEnded.Broadcast(WinningTeam, CurrentRoundNumber);
+
+		if (bOrchestratorActive)
+		{
+			EnterPostMatch();
+		}
 		return;
 	}
 
 	SetRoundState(ERoundState::RoundComplete);
 
-	OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, RoundEndDelay);
+	if (bOrchestratorActive)
+	{
+		const float PostRoundDuration = ResolvedMatchFlowSettings.PostRoundDuration;
+		OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, PostRoundDuration);
+		EnterPostRound();
+	}
+	else
+	{
+		OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, RoundEndDelay);
 
-	// Schedule next round
-	FTimerHandle UnusedHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		UnusedHandle, this, &UBwayRoundManagementComponent::StartRound, 
-		RoundEndDelay, false);
+		ClearBetweenRoundTimer();
+		GetWorld()->GetTimerManager().SetTimer(
+			BetweenRoundTimerHandle, this, &UBwayRoundManagementComponent::StartRound,
+			RoundEndDelay, false);
+	}
 }
 
 void UBwayRoundManagementComponent::ResetRoundState()
@@ -411,7 +1189,7 @@ void UBwayRoundManagementComponent::ResetRoundState()
 
 void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
 {
-	if (CurrentRoundState != ERoundState::RoundActive)
+	if (!IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
@@ -449,7 +1227,7 @@ void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
 void UBwayRoundManagementComponent::CheckTeamElimination()
 {
 	ABwayGameState* BwayGS = GetBwayGameState();
-	if (!BwayGS || CurrentRoundState != ERoundState::RoundActive)
+	if (!BwayGS || !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
@@ -469,7 +1247,7 @@ void UBwayRoundManagementComponent::CheckTeamElimination()
 
 void UBwayRoundManagementComponent::OnRoundTimerExpired()
 {
-	if (CurrentRoundState != ERoundState::RoundActive)
+	if (!IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
@@ -490,10 +1268,18 @@ void UBwayRoundManagementComponent::OnRoundTimerExpired()
 	// Relic on midfield line with no last possessor — no winner, start a new round without scoring.
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Timer expired — relic on midfield, no winner"));
 	SetRoundState(ERoundState::RoundComplete);
-	FTimerHandle UnusedHandle;
-	GetWorld()->GetTimerManager().SetTimer(
-		UnusedHandle, this, &UBwayRoundManagementComponent::StartRound,
-		RoundEndDelay, false);
+
+	if (bOrchestratorActive)
+	{
+		EnterPostRound();
+	}
+	else
+	{
+		ClearBetweenRoundTimer();
+		GetWorld()->GetTimerManager().SetTimer(
+			BetweenRoundTimerHandle, this, &UBwayRoundManagementComponent::StartRound,
+			RoundEndDelay, false);
+	}
 }
 
 bool UBwayRoundManagementComponent::CheckMatchEnd() const

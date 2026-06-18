@@ -13,8 +13,10 @@
 #include "GameFramework/PlayerState.h"
 #include "Character/LyraPawnExtensionComponent.h"
 #include "AI/BwayRelicBotController.h"
+#include "AIController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
+#include "BrainComponent.h"
 #include "Player/LyraPlayerBotController.h"
 #include "TimerManager.h"
 
@@ -78,7 +80,7 @@ void UBwayBotCreationComponent::ApplyMatchRulesFromExperience(const ULyraExperie
 	}
 
 	ABwayGameState* BwayGS = GetOwner<ABwayGameState>();
-	UBwayRoundManagementComponent* RoundManagement = BwayGS ? BwayGS->FindComponentByClass<UBwayRoundManagementComponent>() : nullptr;
+	UBwayRoundManagementComponent* RoundManagement = BwayGS ? BwayGS->GetRoundManagement() : nullptr;
 
 	const FBwayResolvedMatchFlowSettings Resolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
 	UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(Resolved);
@@ -277,6 +279,14 @@ void UBwayBotCreationComponent::ApplyRelicAIToBot(AAIController* BotController)
 		return;
 	}
 
+	int32 DisableRelicBotAI = 0;
+	if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionInt(this, TEXT("DisableRelicBotAI"), DisableRelicBotAI)
+		&& DisableRelicBotAI != 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayBotCreation: DisableRelicBotAI=1 — skipping relic BT for %s"), *GetNameSafe(BotController));
+		return;
+	}
+
 	UBehaviorTree* BehaviorTree = RelicBehaviorTreeAsset.LoadSynchronous();
 	UBlackboardData* Blackboard = RelicBlackboardAsset.IsNull() ? nullptr : RelicBlackboardAsset.LoadSynchronous();
 
@@ -330,4 +340,70 @@ void UBwayBotCreationComponent::RestartAllBots()
 
 		ApplyRelicAIToBot(BotController);
 	}
+}
+
+void UBwayBotCreationComponent::StopAllBotLogic()
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
+	{
+		return !IsValid(Bot);
+	});
+
+	for (AAIController* BotController : SpawnedBotList)
+	{
+		if (!BotController)
+		{
+			continue;
+		}
+
+		if (ABwayRelicBotController* RelicBot = Cast<ABwayRelicBotController>(BotController))
+		{
+			RelicBot->StopRelicBotLogic();
+		}
+		else if (UBrainComponent* Brain = BotController->GetBrainComponent())
+		{
+			if (Brain->IsRunning())
+			{
+				Brain->StopLogic(TEXT("MatchEnded"));
+			}
+		}
+	}
+}
+
+void UBwayBotCreationComponent::ShutdownAllBotsForTravel()
+{
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	StopAllBotLogic();
+
+	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
+	{
+		return !IsValid(Bot);
+	});
+
+	for (AAIController* BotController : SpawnedBotList)
+	{
+		if (!BotController)
+		{
+			continue;
+		}
+
+		if (APawn* BotPawn = BotController->GetPawn())
+		{
+			BotController->UnPossess();
+			BotPawn->Destroy();
+		}
+
+		BotController->Destroy();
+	}
+
+	SpawnedBotList.Empty();
 }

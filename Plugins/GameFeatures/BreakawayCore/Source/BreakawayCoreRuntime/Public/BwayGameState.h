@@ -118,6 +118,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
 	UBwayRoundManagementComponent* GetRoundManagement() const;
 
+	/** Only the C++ default RoundManagementComponent may run match-flow orchestration. */
+	bool IsCanonicalRoundManagement(const UBwayRoundManagementComponent* Component) const;
+
 	/** Get the current round state (delegates to RoundManagementComponent) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
 	ERoundState GetCurrentRoundState() const;
@@ -151,8 +154,7 @@ public:
 	// ========================================
 
 	/**
-	 * Transition to the PostGame phase after a match ends.
-	 * Shows the results screen widget to all players.
+	 * Show the post-match results screen (presentation only — PostMatch GAS phase is owned by RoundManagement).
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Match Flow")
 	void TransitionToPostGame(int32 WinningTeam);
@@ -176,10 +178,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	int32 MaxPlayersPerTeam = 4;
 
-	/**
-	 * Phase ability class for the PostGame phase (end-of-match results screen).
-	 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	/** @deprecated PostMatch phase ability is configured on UBwayMatchFlowConfig and started by RoundManagement. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow", meta = (DeprecatedProperty, DeprecationMessage = "Use DA_BW_MatchFlow_Dev PostMatchPhaseAbility instead"))
 	TSubclassOf<ULyraGamePhaseAbility> PostGamePhaseAbilityClass;
 
 	/**
@@ -191,6 +191,7 @@ public:
 
 	/**
 	 * Map to load when returning to lobby / front-end.
+	 * Optional override for 11-8+; 11-7 always travels to L_LyraFrontEnd unless this points there too.
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
 	TSoftObjectPtr<UWorld> FrontEndLevel;

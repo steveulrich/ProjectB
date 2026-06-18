@@ -9,6 +9,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayMidfieldDividerComponent.h"
@@ -81,6 +82,8 @@ void ABreakawayGameMode::BeginPlay()
 
 	UE_LOG(LogBreakawayGame, Warning, TEXT("Breakaway GameMode Loaded"));
 
+	RefreshGameplayUrlOptions();
+
 	// Initialize spawn point tags
 	InitializeSpawnPointTags();
 
@@ -91,8 +94,20 @@ void ABreakawayGameMode::BeginPlay()
 	bGameInitialized = true;
 }
 
+void ABreakawayGameMode::RefreshGameplayUrlOptions()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(this);
+}
+
 void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 {
+	RefreshGameplayUrlOptions();
+
 	Super::PostLogin(NewPlayer);
 
 	if (!NewPlayer)
@@ -125,6 +140,12 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 
 void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
+	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: deferring spawn for %s until match flow leaves Prematch"), *GetNameSafe(NewPlayer));
+		return;
+	}
+
 	if (ShouldDeferPlayerRestartForHeroSelection(NewPlayer))
 	{
 		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: deferring spawn for %s until hero selection completes"), *GetNameSafe(NewPlayer));
@@ -150,6 +171,11 @@ void ABreakawayGameMode::Logout(AController* Exiting)
 
 bool ABreakawayGameMode::ControllerCanRestart(AController* Controller)
 {
+	if (ShouldDeferPlayerRestartForMatchFlow(Controller))
+	{
+		return false;
+	}
+
 	if (ShouldDeferPlayerRestartForHeroSelection(Controller))
 	{
 		return false;
@@ -196,6 +222,12 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 		FTimerDelegate RestartDelegate;
 		RestartDelegate.BindUObject(this, &ThisClass::RestartPlayer, NewPlayer);
 		GetWorldTimerManager().SetTimerForNextTick(RestartDelegate);
+		return;
+	}
+
+	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: deferring spawn for %s until match flow leaves Prematch"), *GetNameSafe(NewPlayer));
 		return;
 	}
 
@@ -468,6 +500,18 @@ bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AControl
 	const ABwayGameState* BwayGS = GetBreakawayGameState();
 	const UBwayHeroSelectionPhaseComponent* HeroSelectionPhase = BwayGS ? BwayGS->HeroSelectionPhaseComponent : nullptr;
 	return HeroSelectionPhase && HeroSelectionPhase->ShouldBlockPlayerSpawning();
+}
+
+bool ABreakawayGameMode::ShouldDeferPlayerRestartForMatchFlow(const AController* Controller) const
+{
+	if (!Controller)
+	{
+		return false;
+	}
+
+	const ABwayGameState* BwayGS = GetBreakawayGameState();
+	const UBwayRoundManagementComponent* RoundManagement = BwayGS ? BwayGS->GetRoundManagement() : nullptr;
+	return RoundManagement && RoundManagement->ShouldBlockPawnSpawning();
 }
 
 TArray<AActor*> ABreakawayGameMode::GetPlayerStartsWithTag(const FName& Tag) const

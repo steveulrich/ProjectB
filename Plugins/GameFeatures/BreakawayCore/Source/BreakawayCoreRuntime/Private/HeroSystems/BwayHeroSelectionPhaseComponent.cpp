@@ -75,7 +75,7 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 	if (ShouldSkipHeroSelectionPhase())
 	{
 		bHeroSelectionCompleted = true;
-		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: SkipHeroSelection URL option found; hero select UI will not be shown"));
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: SkipHeroSelection active — marking hero selection complete; phase progression deferred to RoundManagement"));
 	}
 	else if (ShouldTravelToPostHeroSelectionMap())
 	{
@@ -135,8 +135,7 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 	if (ShouldSkipHeroSelectionPhase())
 	{
 		bHeroSelectionCompleted = true;
-		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection phase start ignored because SkipHeroSelection is set"));
-		EndPhaseAndProgressToNext();
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: SkipHeroSelection active — ignoring hero selection phase start; not calling EndPhaseAndProgressToNext (RoundManagement owns phase flow)"));
 		return;
 	}
 

@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
+#include "GameModes/BwayMatchPhaseTypes.h"
 #include "GameplayEffectTypes.h"
 #include "GameplayTagContainer.h"
 #include "Net/UnrealNetwork.h"
@@ -14,6 +16,7 @@ class UBwaySpawnPointManagerComponent;
 class AController;
 class APlayerState;
 class UAbilitySystemComponent;
+class ULyraGamePhaseAbility;
 
 // Forward declare the round state enum so GameState.h can reference it
 // (GameState.h includes this header)
@@ -132,6 +135,38 @@ public:
 	int32 GetRoundTimeRemaining() const;
 
 	// ========================================
+	// Match Flow Orchestration (11-3+)
+	// ========================================
+
+	/** Current top-level match phase (replicated). */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	EBwayMatchPhase GetCurrentMatchPhase() const { return CurrentMatchPhase; }
+
+	/** True when RM orchestrator owns phase flow and pawn spawn should stay frozen. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	bool ShouldBlockPawnSpawning() const;
+
+	/** True when bOrchestrateMatchFlow was honored on experience load. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	bool IsOrchestratingMatchFlow() const { return bOrchestratorActive; }
+
+	/** Begin match at Prematch — sole StartPhase entry for orchestrated flow (11-3). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
+	void EnterPrematch();
+
+	/** Advance to Warmup once per match — spawns pawns, starts warmup GAS phase + timer (11-4). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
+	void EnterWarmup();
+
+	/** Advance to Playing — starts playing GAS phase and round 1 FSM (11-4). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
+	void EnterPlaying();
+
+	/** Between-round pause after EndRound when match continues (11-6). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
+	void EnterPostRound();
+
+	// ========================================
 	// Configuration
 	// ========================================
 
@@ -142,6 +177,10 @@ public:
 	/** Authority-only runtime override from UBwayMatchFlowConfig / URL (11-1+). */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
 	void SetPointsToWin(int32 InPointsToWin);
+
+	/** Authority-only runtime override from UBwayMatchFlowConfig (11-5). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
+	void SetRoundDuration(float InRoundDuration);
 
 	/** Duration of each round in seconds */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
@@ -220,8 +259,77 @@ protected:
 	/** Called by ULyraGamePhaseSubsystem when the Playing phase becomes active. */
 	void HandlePlayingPhaseActivated(const FGameplayTag& ActivePhaseTag);
 
-	/** High-priority experience hook: resolve and apply match rules before bots spawn (11-1). */
+	/** High-priority experience hook: resolve config and start orchestrator or legacy listener (11-1 / 11-3). */
 	void HandleExperienceLoadedForMatchRules(const class ULyraExperienceDefinition* Experience);
+
+	void RegisterPlayingPhaseListener();
+
+	void SetMatchPhase(EBwayMatchPhase NewPhase);
+
+	void StartPrematchPhaseAbility();
+
+	void StartPrematchPhaseAbilityImpl();
+
+	void HandlePrematchPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility);
+
+	void HandlePrematchTimerExpired();
+
+	void CompletePrematchPhase();
+
+	void StartWarmupPhaseAbility();
+
+	void StartWarmupPhaseAbilityImpl();
+
+	void HandleWarmupPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility);
+
+	void HandleWarmupTimerExpired();
+
+	void CompleteWarmupPhase();
+
+	void StartPlayingPhaseAbility();
+
+	void StartPlayingPhaseAbilityImpl();
+
+	void HandlePlayingPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility);
+
+	void EnterPostMatch();
+
+	void StopRoundFSM();
+
+	void StartPostMatchPhaseAbility();
+
+	void StartPostMatchPhaseAbilityImpl();
+
+	void HandlePostMatchPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility);
+
+	void StartPostRoundPhaseAbility();
+
+	void StartPostRoundPhaseAbilityImpl();
+
+	void HandlePostRoundPhaseEnded(const ULyraGamePhaseAbility* PhaseAbility);
+
+	void HandlePostRoundTimerExpired();
+
+	void CompletePostRoundPhase();
+
+	void RestartDeferredPlayersForWarmup();
+
+	/** True when ERoundState FSM (timer, EndRound, sudden death) may run. */
+	bool IsRoundLifecycleActive() const;
+
+	void ClearBetweenRoundTimer();
+
+	bool IsCanonicalRoundManagementInstance() const;
+
+	TSubclassOf<ULyraGamePhaseAbility> ResolvePrematchPhaseAbilityClass() const;
+
+	TSubclassOf<ULyraGamePhaseAbility> ResolveWarmupPhaseAbilityClass() const;
+
+	TSubclassOf<ULyraGamePhaseAbility> ResolvePlayingPhaseAbilityClass() const;
+
+	TSubclassOf<ULyraGamePhaseAbility> ResolvePostRoundPhaseAbilityClass() const;
+
+	TSubclassOf<ULyraGamePhaseAbility> ResolvePostMatchPhaseAbilityClass() const;
 
 	/** Get the owning game state cast to ABwayGameState */
 	ABwayGameState* GetBwayGameState() const;
@@ -254,6 +362,35 @@ protected:
 	/** Current round number */
 	UPROPERTY(Replicated)
 	int32 CurrentRoundNumber = 0;
+
+	/** Top-level match phase owned by RM orchestrator (11-3+). */
+	UPROPERTY(ReplicatedUsing = OnRep_MatchPhase)
+	EBwayMatchPhase CurrentMatchPhase = EBwayMatchPhase::None;
+
+	UFUNCTION()
+	void OnRep_MatchPhase();
+
+	/** Resolved match-flow settings cached on experience load when orchestrator may run. */
+	FBwayResolvedMatchFlowSettings ResolvedMatchFlowSettings;
+
+	/** When true, RM is the sole StartPhase caller and legacy PlayingPhaseTag listener is inactive. */
+	bool bOrchestratorActive = false;
+
+	bool bPlayingPhaseListenerRegistered = false;
+
+	bool bPrematchCompletionHandled = false;
+
+	bool bWarmupCompletionHandled = false;
+
+	bool bPostRoundCompletionHandled = false;
+
+	/** Guards against duplicate experience-load handling on the canonical component. */
+	bool bMatchFlowExperienceHandled = false;
+
+	FTimerHandle MatchPhaseTimerHandle;
+
+	/** Legacy delay between rounds when bOrchestrateMatchFlow is false; orchestrated flow uses PostRoundDuration (11-6). */
+	FTimerHandle BetweenRoundTimerHandle;
 
 	/** Last time we broadcast the round time update */
 	float LastRoundTimeUpdateBroadcast = 0.0f;

@@ -107,6 +107,7 @@ void CopyConfigToResolved(const UBwayMatchFlowConfig* BaseConfig, FBwayResolvedM
 	Resolved.PrematchDuration = BaseConfig->PrematchDuration;
 	Resolved.WarmupDuration = BaseConfig->WarmupDuration;
 	Resolved.PostRoundDuration = BaseConfig->PostRoundDuration;
+	Resolved.PrematchPhaseAbility = BaseConfig->PrematchPhaseAbility;
 	Resolved.WarmupPhaseAbility = BaseConfig->WarmupPhaseAbility;
 	Resolved.PlayingPhaseAbility = BaseConfig->PlayingPhaseAbility;
 	Resolved.PostRoundPhaseAbility = BaseConfig->PostRoundPhaseAbility;
@@ -216,6 +217,7 @@ void UBwayMatchFlowLibrary::ApplyMatchRulesOnly(
 	if (RoundManagement)
 	{
 		RoundManagement->SetPointsToWin(Settings.PointsToWin);
+		RoundManagement->SetRoundDuration(Settings.RoundDuration);
 	}
 
 	if (BotCreation && Settings.NumBotsOverride >= 0)
@@ -231,9 +233,11 @@ void UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(const FBwayResolvedMatc
 		: TEXT("default (use DA DefaultNumBots or BotCreation scaling)");
 
 	UE_LOG(LogTemp, Log,
-		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d NumBots=%s bOrchestrate=%s (11-1: rules only)"),
+		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s PrematchDuration=%.1fs"),
 		*Settings.ConfigAssetName.ToString(),
 		Settings.PointsToWin,
+		Settings.RoundDuration,
 		*NumBotsText,
-		Settings.bOrchestrateMatchFlow ? TEXT("true") : TEXT("false"));
+		Settings.bOrchestrateMatchFlow ? TEXT("true") : TEXT("false"),
+		Settings.PrematchDuration);
 }

@@ -30,6 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
 	void StartRelicBotLogic();
 
+	/** Stop behavior-tree logic before match travel / teardown (prevents BT aux-node crash on GC). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
+	void StopRelicBotLogic();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Relic Bot")
 	TObjectPtr<UBehaviorTree> RelicBehaviorTree;
 
@@ -37,6 +41,7 @@ public:
 	TObjectPtr<UBlackboardData> RelicBlackboard;
 
 protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnPossess(APawn* InPawn) override;
 
 	void RunRelicBehaviorTreeIfReady();

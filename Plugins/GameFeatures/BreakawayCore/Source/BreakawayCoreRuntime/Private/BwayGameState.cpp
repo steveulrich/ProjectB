@@ -9,8 +9,6 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "GameState/BwayBotCreationComponent.h"
-#include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
-#include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameState/BwayRoundManagementComponent.h"
@@ -19,6 +17,10 @@
 #include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameState/BwayTeamBridgeComponent.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
+#include "CommonSessionSubsystem.h"
+
+#include "Engine/Engine.h"
+#include "Engine/World.h"
 
 ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -52,7 +54,7 @@ void ABwayGameState::PostInitializeComponents()
 		InitializeTeams();
 	}
 
-	// Listen for match end to transition to PostGame
+	// Listen for match end — presentation only (PostMatch GAS phase owned by RoundManagement).
 	if (RoundManagementComponent)
 	{
 		RoundManagementComponent->OnMatchEnded.AddDynamic(this, &ABwayGameState::HandleMatchEnded);
@@ -217,6 +219,11 @@ UBwayRoundManagementComponent* ABwayGameState::GetRoundManagement() const
 	return RoundManagementComponent;
 }
 
+bool ABwayGameState::IsCanonicalRoundManagement(const UBwayRoundManagementComponent* Component) const
+{
+	return Component != nullptr && RoundManagementComponent == Component;
+}
+
 ERoundState ABwayGameState::GetCurrentRoundState() const
 {
 	if (const UBwayRoundManagementComponent* RoundMgmt = GetRoundManagement())
@@ -307,12 +314,12 @@ void ABwayGameState::HandleMatchEnded(int32 WinningTeam, int32 TotalRounds)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("BwayGameState: MATCH ENDED — Team %d wins! Transitioning to PostGame."), WinningTeam + 1);
+	UE_LOG(LogTemp, Warning, TEXT("BwayGameState: MATCH ENDED — Team %d wins after %d round(s). Showing results."),
+		WinningTeam + 1, TotalRounds);
 
-	// Broadcast match state change
 	OnMatchStateChanged.Broadcast(FName("MatchComplete"));
 
-	TransitionToPostGame(WinningTeam);
+	ShowResultsScreen(WinningTeam);
 }
 
 void ABwayGameState::TransitionToPostGame(int32 WinningTeam)
@@ -322,27 +329,7 @@ void ABwayGameState::TransitionToPostGame(int32 WinningTeam)
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Transitioning to PostGame phase"));
-
-	// Start PostGame phase via Lyra
-	if (PostGamePhaseAbilityClass)
-	{
-		if (UWorld* World = GetWorld())
-		{
-			if (ULyraGamePhaseSubsystem* PhaseSubsystem = World->GetSubsystem<ULyraGamePhaseSubsystem>())
-			{
-				PhaseSubsystem->StartPhase(PostGamePhaseAbilityClass);
-				UE_LOG(LogTemp, Log, TEXT("BwayGameState: Started PostGame phase via %s"),
-					*PostGamePhaseAbilityClass->GetName());
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: PostGamePhaseAbilityClass is not set!"));
-	}
-
-	// Show results screen to all players
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: TransitionToPostGame — presentation only (PostMatch phase owned by RoundManagement)"));
 	ShowResultsScreen(WinningTeam);
 }
 
@@ -356,12 +343,23 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 		return;
 	}
 
+	int32 Team1Score = 0;
+	int32 Team2Score = 0;
+	if (UBwayScoringComponent* Scoring = FindComponentByClass<UBwayScoringComponent>())
+	{
+		Team1Score = Scoring->GetTeamScore(0);
+		Team2Score = Scoring->GetTeamScore(1);
+	}
+
+	const int32 TotalRounds = GetCurrentRoundNumber();
+
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
 		{
-			BwayPC->Client_ShowResults(WinningTeam, ResultsScreenWidgetClass);
-			UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent results screen RPC to %s"), *BwayPC->GetName());
+			BwayPC->Client_ShowResults(WinningTeam, Team1Score, Team2Score, TotalRounds, ResultsScreenWidgetClass);
+			UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent results screen RPC to %s (%d-%d)"),
+				*BwayPC->GetName(), Team1Score, Team2Score);
 		}
 	}
 }
@@ -376,22 +374,69 @@ void ABwayGameState::ReturnToFrontEnd()
 		return;
 	}
 
-	// Prefer the FrontEndLevel set on the BP defaults; fall back to the Lyra frontend map
-	// so the FE -> Match -> FE loop always works even if content hasn't wired an override yet.
-	FString TravelURL;
-	if (!FrontEndLevel.IsNull())
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		TravelURL = FrontEndLevel.GetLongPackageName();
-	}
-	else
-	{
-		TravelURL = TEXT("/Game/System/FrontEnd/Maps/L_LyraFrontEnd");
-		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: FrontEndLevel not set; falling back to Lyra frontend map %s"), *TravelURL);
+		return;
 	}
 
-	if (UWorld* World = GetWorld())
+	if (UBwayBotCreationComponent* BotCreation = FindComponentByClass<UBwayBotCreationComponent>())
 	{
-		World->ServerTravel(TravelURL + TEXT("?listen"), true);
-		UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
+		BotCreation->ShutdownAllBotsForTravel();
 	}
+
+	if (UGameInstance* GameInstance = World->GetGameInstance())
+	{
+		if (UCommonSessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<UCommonSessionSubsystem>())
+		{
+			SessionSubsystem->CleanUpSessions();
+		}
+	}
+
+	// 11-7 canonical target is Lyra front-end with its menu experience.
+	static const TCHAR* LyraFrontEndMap = TEXT("/Game/System/FrontEnd/Maps/L_LyraFrontEnd");
+	static const TCHAR* LyraFrontEndExperience = TEXT("B_LyraFrontEnd_Experience");
+
+	FString MapPath = LyraFrontEndMap;
+	if (!FrontEndLevel.IsNull())
+	{
+		const FString OverridePath = FrontEndLevel.GetLongPackageName();
+		if (OverridePath.Contains(TEXT("L_LyraFrontEnd")))
+		{
+			MapPath = OverridePath;
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning,
+				TEXT("BwayGameState: FrontEndLevel '%s' ignored for 11-7 — travelling to Lyra front-end %s"),
+				*OverridePath, LyraFrontEndMap);
+		}
+	}
+
+	const FString PieTravelOptions = FString::Printf(TEXT("Experience=%s"), LyraFrontEndExperience);
+	const FString ServerTravelOptions = FString::Printf(TEXT("listen?Experience=%s"), LyraFrontEndExperience);
+
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
+		{
+			BwayPC->Client_DismissResultsScreen();
+		}
+	}
+
+#if WITH_EDITOR
+	// PIE: OpenLevel reloads the session in-process — avoids PendingNetGame reconnect to the old listen port.
+	if (World->WorldType == EWorldType::PIE)
+	{
+		UGameplayStatics::OpenLevel(World, FName(*MapPath), /*bAbsolute=*/true, PieTravelOptions);
+		UE_LOG(LogTemp, Log, TEXT("BwayGameState: OpenLevel (PIE WorldType, NetMode=%d) to %s?%s"),
+			static_cast<int32>(World->GetNetMode()), *MapPath, *PieTravelOptions);
+		return;
+	}
+#endif
+
+	// Packaged / dedicated server: hard ServerTravel with listen (full context switch back to menu).
+	const FString TravelURL = FString::Printf(TEXT("%s?%s"), *MapPath, *ServerTravelOptions);
+	World->ServerTravel(TravelURL, /*bAbsolute=*/true, /*bShouldSkipGameNotify=*/false);
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
 }

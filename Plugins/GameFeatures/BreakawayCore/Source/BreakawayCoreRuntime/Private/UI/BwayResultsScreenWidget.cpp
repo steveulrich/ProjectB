@@ -20,11 +20,49 @@ UBwayResultsScreenWidget::UBwayResultsScreenWidget(const FObjectInitializer& Obj
 void UBwayResultsScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	// Authoritative results are applied via ApplyAuthoritativeResults from Client_ShowResults.
+}
 
-	// Build results data
-	CachedResults = GetMatchResults();
-	
-	// Notify Blueprint
+void UBwayResultsScreenWidget::ApplyAuthoritativeResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds)
+{
+	if (bResultsApplied)
+	{
+		return;
+	}
+
+	CachedResults.WinningTeam = WinningTeam;
+	CachedResults.Team1Score = Team1Score;
+	CachedResults.Team2Score = Team2Score;
+	CachedResults.TotalRounds = TotalRounds;
+
+	if (WinningTeam == 0)
+	{
+		CachedResults.WinnerText = NSLOCTEXT("Results", "Team1Wins", "TEAM 1 WINS!");
+	}
+	else if (WinningTeam == 1)
+	{
+		CachedResults.WinnerText = NSLOCTEXT("Results", "Team2Wins", "TEAM 2 WINS!");
+	}
+	else
+	{
+		CachedResults.WinnerText = NSLOCTEXT("Results", "Draw", "DRAW!");
+	}
+
+	if (APlayerController* PC = GetOwningPlayer())
+	{
+		if (ABwayGameState* GameState = GetBwayGameState())
+		{
+			if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
+			{
+				const int32 LocalTeam = GameState->GetPlayerTeam(PS);
+				CachedResults.bLocalPlayerWon = (WinningTeam >= 0 && LocalTeam == WinningTeam);
+			}
+		}
+	}
+
+	DetermineMVP(CachedResults);
+
+	bResultsApplied = true;
 	OnResultsReady(CachedResults);
 }
 

@@ -12,6 +12,7 @@ class ARelicActor;
 class ABwayCharacterWithAbilities;
 class ABwayPlayerState;
 class UBwaySpawnPointManagerComponent;
+class UBwayRoundManagementComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogBreakawayGame, Log, All);
 
@@ -119,4 +120,10 @@ protected:
 
 	/** True while the Hero Selection phase owns the initial spawn gate. */
 	bool ShouldDeferPlayerRestartForHeroSelection(const AController* Controller) const;
+
+	/** True while RM orchestrator holds the match at Prematch (11-3+). */
+	bool ShouldDeferPlayerRestartForMatchFlow(const AController* Controller) const;
+
+	/** Re-merge PIE / editor URL options onto authority GameMode (listen-server safe). */
+	void RefreshGameplayUrlOptions();
 };

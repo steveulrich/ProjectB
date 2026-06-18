@@ -21,7 +21,7 @@ Decisions captured from design review (May 2026).
 | **8** | **Done** | Rounds, reset, `EnsureBotsForRound`, listen-server respawn fix |
 | **9** | **Done** | Sudden death at 0:00 (X-axis half), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider` |
 | **10** | **Complete** | Relic bot AI + `GE_BW_Relic_Request` pickup + carrier walk-in goal; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
-| **11** | **In progress** | Match entry (11-MM) + in-match flow (11-1 done; 11-2→11b deferred behind 11-MM-4) |
+| **11** | **In progress** | **11-1–11-7 done** (match-flow config + RM phase FSM through PostMatch/results → Lyra front-end); **11-8** (front-end E2E) + **11b** open |
 
 ---
 
@@ -347,12 +347,12 @@ Experience still uses **`B_BW_BotSpawner_BallMode`** for bot count; AI assets ar
 
 ## Step 11 — Match entry + in-match flow
 
-**Status:** **In progress** — split into two tracks (June 2026 redesign).
+**Status:** **In progress** — Part B **11-1–11-7 complete**; Part A **11-MM-1–4** landed; **11-8** + **11b** open.
 
 | Track | Scope | Status |
 |-------|-------|--------|
-| **Part A — Matchmaking entry** (`11-MM-1` → `11-MM-4`) | Front-end queue → mock/backend → `UCommonSessionSubsystem` travel | **11-MM-1** C++ landed |
-| **Part B — In-match orchestration** (`11-1` → `11b`) | `UBwayMatchFlowConfig` + `UBwayRoundManagementComponent` phase FSM | **11-1** C++ landed; checklist open |
+| **Part A — Matchmaking entry** (`11-MM-1` → `11-MM-4`) | Front-end queue → mock/backend → `UCommonSessionSubsystem` travel | **11-MM-1–4** C++ landed; editor checklists open |
+| **Part B — In-match orchestration** (`11-1` → `11b`) | `UBwayMatchFlowConfig` + `UBwayRoundManagementComponent` phase FSM | **11-1–11-7 done**; **11-8** + **11b** open |
 
 **Goal:** Lyra front-end → queue or custom lobby → dev match → results → front-end. Entry is **data-driven** via `UMatchmakingGoalDefinition` / `UCustomGameConfig`; in-match phases remain **`UBwayRoundManagementComponent`** (not experience action-set grants).
 
@@ -568,9 +568,9 @@ Swap `PointsToWin=1` for **11-1**, **11-7**, **11-8**.
 
 ---
 
-### 11-1 — Config + match rules (current)
+### 11-1 — Config + match rules
 
-**Status:** C++ **implemented**; content wiring + PIE/standalone pass checklist **open**.
+**Status:** **Complete** (C++ + content + PIE pass).
 
 #### C++ (landed)
 
@@ -625,13 +625,122 @@ After **full repackage** (not incremental from an old cook):
 
 #### Pass checklist
 
-- [ ] Log: `BwayMatchFlow: Resolved config 'DA_BW_MatchFlow_Dev' — PointsToWin=1 NumBots=3 …`
-- [ ] Log: experience `B_BW_Experience_Dev` (not `B_LyraDefaultExperience`)
-- [ ] Match ends after **1** round win
-- [ ] **3** bots spawn (humanoid, `SkipHeroSelection=1`)
-- [ ] Relic / bot scoring still works (Step 10 baseline)
-- [ ] **3/3** cold-start PIE runs
-- [ ] **1/1** standalone run on `L_BW_DevMap` with correct experience + pawns
+- [x] Log: `BwayMatchFlow: Resolved config 'DA_BW_MatchFlow_Dev' — PointsToWin=1 NumBots=3 …`
+- [x] Log: experience `B_BW_Experience_Dev` (not `B_LyraDefaultExperience`)
+- [x] Match ends after **1** round win
+- [x] **3** bots spawn (humanoid, `SkipHeroSelection=1`)
+- [x] Relic / bot scoring still works (Step 10 baseline)
+- [x] **3/3** cold-start PIE runs
+- [ ] **1/1** standalone run on `L_BW_DevMap` with correct experience + pawns (deferred to packaging pass)
+
+---
+
+### 11-2 — Hero skip de-conflict
+
+**Status:** **Complete** (C++).
+
+Skip path in `UBwayHeroSelectionPhaseComponent` sets `bHeroSelectionCompleted = true` and returns without `EndPhaseAndProgressToNext()`.
+
+---
+
+### 11-3 — Prematch freeze
+
+**Status:** **Complete** (C++ + content + PIE pass).
+
+#### C++ (landed)
+
+| Type | Path | Notes |
+|------|------|-------|
+| `EBwayMatchPhase` | `GameModes/BwayMatchPhaseTypes.h` | `Prematch`, `Warmup`, `Playing`, `PostRound`, `PostMatch` (HeroSelection deferred to Section 3) |
+| RM orchestrator | `BwayRoundManagementComponent.*` | High-priority experience hook → `EnterPrematch()` when `bOrchestrateMatchFlow`; sole `StartPhase` caller |
+| Pawn freeze | `BreakawayGameMode.*` | `ShouldDeferPlayerRestartForMatchFlow` while `CurrentMatchPhase == Prematch` |
+| Config | `BwayMatchFlowConfig` / `BwayMatchFlowLibrary` | `PrematchPhaseAbility`, `PrematchDuration` resolved and cached on RM |
+
+#### Behavior (11-3 scope)
+
+- On experience load (high-priority hook), RM resolves `UBwayMatchFlowConfig` and honors `bOrchestrateMatchFlow`.
+- When orchestrating: `EnterPrematch()` sets replicated `EBwayMatchPhase::Prematch`, starts prematch GAS phase + config timer (hybrid: timer authoritative; GAS `PhaseEnded` may shorten).
+- **No** `StartRound()`, **no** pawns (human or bot) until **11-4** `EnterWarmup()`.
+- Legacy `PlayingPhaseTag` listener registers **only** when `bOrchestrateMatchFlow=false`.
+- Prematch completion logs hold message; does **not** advance to Warmup yet (**11-4**).
+
+#### Content (editor, after compile)
+
+1. Confirm **`DA_BW_MatchFlow_Dev`**: `bOrchestrateMatchFlow = true`, `PrematchDuration` tuned (default 1s OK for smoke test).
+2. Open **`B_BW_Experience_Dev`** — parent stays **`LyraExperienceDefinition`**.
+3. **Remove auto-granted phase abilities** from experience **Actions** and any linked action sets (otherwise experience still starts Warmup/Playing outside RM):
+   - Remove **`BW_Phase_Warmup`** grant actions
+   - Remove **`BW_Phase_HeroSelection`** grant actions (dev uses `SkipHeroSelection=1`)
+   - Remove **`BW_Phase_Playing`** grant actions
+   - Remove **`BW_Phase_PostRound`** / **`BW_Phase_PostGame`** grant actions if present
+   - Keep **`BwayGameFeatureAction_MatchFlowConfig`** → `DA_BW_MatchFlow_Dev`
+   - Keep gameplay action sets (relic, scoring, bots, input) unchanged
+4. **Create** content **`BW_Phase_Prematch`** under `/BreakawayCore/Experiences/Phases/` (parent `LyraGamePhaseAbility`, tag `Breakaway.GamePhase.Prematch`) and assign on `DA_BW_MatchFlow_Dev` → `PrematchPhaseAbility`. Prematch freeze works without it (timer-only), but GAS phase start requires this asset.
+
+#### PIE URL
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=3&PointsToWin=1
+```
+
+#### Pass checklist
+
+- [x] Log: `BwayRoundManagement: Match phase -> Prematch` (or `EBwayMatchPhase::Prematch`)
+- [x] Log: `EnterPrematch — orchestrator active; pawn spawn frozen`
+- [x] Log: **no** `BwayRoundManagement: Starting Round` / `StartRound()`
+- [x] Log: **no** duplicate Warmup from experience auto-grants (after content step 3)
+- [x] No player or bot pawns in world during Prematch
+- [x] Relic + goals still spawn (match objects only)
+- [x] `PointsToWin=1` / `NumBots=3` still resolved (11-1 rules)
+- [x] **3/3** cold-start PIE runs
+- [x] Tier 1 compile pass
+
+---
+
+### 11-4 — Warmup → Playing
+
+**Status:** **Complete**.
+
+RM orchestrator advances Prematch → Warmup (once) → Playing; legacy `PlayingPhaseTag` listener disabled when `bOrchestrateMatchFlow=true`. Pawns spawn on Warmup; round 1 starts in Playing. Verified with `PointsToWin=3&NumBots=7`.
+
+---
+
+### 11-5 — Playing FSM
+
+**Status:** **Complete**.
+
+Round timer, `EndRound`, sudden death, and score updates run inside **Playing** while RM owns match phase. Step 10 relic/bot scoring regression passes under orchestrator.
+
+---
+
+### 11-6 — PostRound loop
+
+**Status:** **Complete**.
+
+Multi-round matches (`PointsToWin=3`) log **PostRound** between rounds; PostRound timer advances back to Playing until match win threshold.
+
+---
+
+### 11-7 — PostMatch + results
+
+**Status:** **Complete** (PIE pass).
+
+| Piece | Notes |
+|-------|-------|
+| RM `EnterPostMatch()` | Stops round FSM, sets `PostMatch`, starts `BW_Phase_PostMatch`, stops bot logic |
+| `ABwayGameState` | Presentation only — `ShowResultsScreen()` / `ReturnToFrontEnd()`; **no** `StartPhase` |
+| Results widget | Authoritative scores via `Client_ShowResults` + `ApplyAuthoritativeResults` |
+| `ReturnToFrontEnd()` | PIE: `OpenLevel` → `L_LyraFrontEnd?Experience=B_LyraFrontEnd_Experience`; bot shutdown before travel |
+| Content | `BW_Phase_PostMatch` replaces `BW_Phase_PostGame`; `Breakaway.GamePhase.PostMatch` tag |
+
+**PIE URL:** `L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=1`
+
+**Pass checklist:**
+
+- [x] One round win → results screen shows correct team score (not 0-0)
+- [x] Continue → `L_LyraFrontEnd` loads Lyra front-end experience
+- [x] No BT aux-node crash on return (bots stopped/shutdown before travel)
+- [x] Tier 1 compile pass
 
 ---
 
@@ -707,8 +816,7 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **Recompile** after **11-MM-1/2** C++; restart editor (ini scan).
-2. Create **`GM_QuickPlay_5v5`** / **`GM_Brawl_6v6`** (set **`MapID = L_BW_DevMap`**); wire front-end button → `Log Matchmaking Goal`.
-3. Pass **11-MM-1** checklist; test **11-MM-2** menu persistence; proceed **11-MM-3 → 11-MM-4**.
-4. Finish **11-1** content wiring + PIE/standalone checklist in parallel if not done.
-5. After **11-MM-4**, resume **11-2 → … → 11-8 → 11b**; mark Step 11 **Complete**; proceed to Section 2 (Step 12 HUD).
+1. **11-8** — front-end E2E: queue/custom tile → match → results → menu (**3/3** cold starts).
+2. **11b** — URL duration overrides (`WarmupDuration`, `PostRoundDuration`, …); sync [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md).
+3. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.
+4. After **11-8** + **11b**, mark Step 11 **Complete**; proceed to Section 2 (Step 12 HUD).

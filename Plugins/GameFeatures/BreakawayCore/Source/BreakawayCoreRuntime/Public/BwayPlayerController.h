@@ -77,7 +77,7 @@ public:
 	 * server also see their results screen.
 	 */
 	UFUNCTION(Client, Reliable)
-	void Client_ShowResults(int32 WinningTeam, const TSoftClassPtr<UUserWidget>& WidgetClass);
+	void Client_ShowResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds, const TSoftClassPtr<UUserWidget>& WidgetClass);
 
 	/**
 	 * Requests the server to return all clients to the front-end map.
@@ -85,6 +85,10 @@ public:
 	 */
 	UFUNCTION(Server, Reliable)
 	void Server_RequestReturnToFrontEnd();
+
+	/** Remove the results widget and restore gameplay input before front-end travel. */
+	UFUNCTION(Client, Reliable)
+	void Client_DismissResultsScreen();
 
 	/** Restores mouse capture and hides the cursor for local gameplay (e.g. after frontend UI or hero select). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Input")

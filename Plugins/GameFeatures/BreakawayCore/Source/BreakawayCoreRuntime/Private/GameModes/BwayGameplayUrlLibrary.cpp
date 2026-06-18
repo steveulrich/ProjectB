@@ -9,7 +9,9 @@
 #include "Misc/CommandLine.h"
 
 #if WITH_EDITOR
+#include "Editor/EditorEngine.h"
 #include "Settings/LevelEditorPlaySettings.h"
+#include "UnrealEdGlobals.h"
 #endif
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayUrlLibrary)
@@ -32,6 +34,7 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("SkipHeroSelection"),
 		TEXT("Experience"),
 		TEXT("MatchFlowConfig"),
+		TEXT("DisableRelicBotAI"),
 		TEXT("HeroSelectStaging"),
 		TEXT("HeroSelectTargetMap"),
 		TEXT("HeroSelectTargetExperience"),
@@ -47,6 +50,150 @@ void AddSourceIfNonEmpty(TArray<FNamedOptionSource>& OutSources, const FString& 
 	}
 }
 
+/** Extract ?Key=Value&... from map?options, bare options, or ?options fragments. */
+FString ExtractOptionsQuery(const FString& Value)
+{
+	if (Value.IsEmpty())
+	{
+		return FString();
+	}
+
+	const FString Trimmed = Value.TrimStartAndEnd();
+
+	const int32 QueryStart = Trimmed.Find(TEXT("?"));
+	if (QueryStart != INDEX_NONE)
+	{
+		return Trimmed.Mid(QueryStart);
+	}
+
+	if (Trimmed.Contains(TEXT("=")))
+	{
+		return FString::Printf(TEXT("?%s"), *Trimmed);
+	}
+
+	return Trimmed;
+}
+
+FString NormalizeOptionsFragment(const FString& Value)
+{
+	return ExtractOptionsQuery(Value);
+}
+
+/** Parse key=value pairs from a URL fragment, ?options, or bare options. */
+void ParseOptionsStringToMap(const FString& OptionsFragment, TMap<FString, FString>& OutMap)
+{
+	if (OptionsFragment.IsEmpty())
+	{
+		return;
+	}
+
+	FString OptionsPart = OptionsFragment;
+
+	const int32 QueryStart = OptionsFragment.Find(TEXT("?"));
+	if (QueryStart != INDEX_NONE)
+	{
+		OptionsPart = OptionsFragment.Mid(QueryStart + 1);
+	}
+	else if (!OptionsFragment.Contains(TEXT("=")))
+	{
+		return;
+	}
+
+	// PIE URLs sometimes use multiple ? separators (e.g. ?PktEmulationProfile=Average?Listen).
+	OptionsPart.ReplaceInline(TEXT("?"), TEXT("&"));
+
+	TArray<FString> Tokens;
+	OptionsPart.ParseIntoArray(Tokens, TEXT("&"), true);
+
+	for (const FString& Token : Tokens)
+	{
+		if (Token.IsEmpty())
+		{
+			continue;
+		}
+
+		FString Key;
+		FString Value;
+		if (Token.Split(TEXT("="), &Key, &Value))
+		{
+			OutMap.Add(Key, Value);
+		}
+		else
+		{
+			OutMap.Add(Token, TEXT("1"));
+		}
+	}
+}
+
+FString BuildOptionsStringFromMap(const TMap<FString, FString>& OptionsMap)
+{
+	if (OptionsMap.Num() == 0)
+	{
+		return FString();
+	}
+
+	FString Result;
+	for (const TPair<FString, FString>& Pair : OptionsMap)
+	{
+		if (!Result.IsEmpty())
+		{
+			Result += TEXT("&");
+		}
+		else
+		{
+			Result += TEXT("?");
+		}
+
+		Result += FString::Printf(TEXT("%s=%s"), *Pair.Key, *Pair.Value);
+	}
+
+	return Result;
+}
+
+bool TryFindOptionInSource(const FNamedOptionSource& Source, const FString& Key, FString& OutValue)
+{
+	TMap<FString, FString> SourceMap;
+	ParseOptionsStringToMap(Source.Value, SourceMap);
+	if (const FString* Found = SourceMap.Find(Key))
+	{
+		OutValue = *Found;
+		return !OutValue.IsEmpty();
+	}
+
+	return false;
+}
+
+#if WITH_EDITOR
+UWorld* FindPieAuthorityWorld()
+{
+	if (!GEngine)
+	{
+		return nullptr;
+	}
+
+	UWorld* BestWorld = nullptr;
+	for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
+	{
+		if (WorldContext.WorldType != EWorldType::PIE || !WorldContext.World())
+		{
+			continue;
+		}
+
+		if (WorldContext.RunAsDedicated)
+		{
+			return WorldContext.World();
+		}
+
+		if (!BestWorld || WorldContext.World()->GetNetMode() < BestWorld->GetNetMode())
+		{
+			BestWorld = WorldContext.World();
+		}
+	}
+
+	return BestWorld;
+}
+#endif
+
 void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOptionSource>& OutSources)
 {
 	OutSources.Reset();
@@ -55,59 +202,83 @@ void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOp
 		? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull)
 		: nullptr;
 
-	if (const AGameModeBase* GameMode = World ? World->GetAuthGameMode() : nullptr)
+#if WITH_EDITOR
+	// Highest priority: toolbar / play URL the user typed in the editor.
+	if (GEditor && !GEditor->UserEditedPlayWorldURL.IsEmpty())
 	{
-		AddSourceIfNonEmpty(OutSources, TEXT("GameMode.OptionsString"), GameMode->OptionsString);
+		const FString Normalized = NormalizeOptionsFragment(GEditor->UserEditedPlayWorldURL);
+		AddSourceIfNonEmpty(OutSources, TEXT("Editor.UserEditedPlayWorldURL"), Normalized);
 	}
+
+	if (const ULevelEditorPlaySettings* PlaySettings = GetDefault<ULevelEditorPlaySettings>())
+	{
+		FString AdditionalServerGameOptions;
+		if (PlaySettings->GetAdditionalServerGameOptions(AdditionalServerGameOptions))
+		{
+			const FString Normalized = NormalizeOptionsFragment(AdditionalServerGameOptions);
+			if (!AdditionalServerGameOptions.Equals(Normalized, ESearchCase::CaseSensitive))
+			{
+				UE_LOG(LogBwayGameplayUrl, Log,
+					TEXT("Normalized Editor.AdditionalServerGameOptions: raw='%s' -> '%s' (use ?Options only; map belongs in Server Map Name Override)"),
+					*AdditionalServerGameOptions, *Normalized);
+			}
+			AddSourceIfNonEmpty(OutSources, TEXT("Editor.AdditionalServerGameOptions"), Normalized);
+		}
+
+		AddSourceIfNonEmpty(OutSources, TEXT("Editor.AdditionalLaunchParameters"), NormalizeOptionsFragment(PlaySettings->AdditionalLaunchParameters));
+	}
+
+	if (GEngine)
+	{
+		if (UWorld* AuthorityPieWorld = FindPieAuthorityWorld())
+		{
+			if (const FWorldContext* AuthorityContext = GEngine->GetWorldContextFromWorld(AuthorityPieWorld))
+			{
+				AddSourceIfNonEmpty(OutSources, TEXT("PIE.LastURL[Authority]"), AuthorityContext->LastURL.ToString());
+			}
+		}
+
+		for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
+		{
+			if (WorldContext.WorldType != EWorldType::PIE || !WorldContext.World())
+			{
+				continue;
+			}
+
+			const FString PieLastUrl = WorldContext.LastURL.ToString();
+			if (PieLastUrl.IsEmpty())
+			{
+				continue;
+			}
+
+			const FString Label = FString::Printf(
+				TEXT("PIE.LastURL[%s]"),
+				WorldContext.World() == World ? TEXT("Current") : *WorldContext.World()->GetName());
+			AddSourceIfNonEmpty(OutSources, Label, PieLastUrl);
+		}
+	}
+#endif
 
 	if (World)
 	{
-		AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
-
 		if (GEngine)
 		{
 			if (const FWorldContext* WorldContext = GEngine->GetWorldContextFromWorld(World))
 			{
 				AddSourceIfNonEmpty(OutSources, TEXT("WorldContext.LastURL"), WorldContext->LastURL.ToString());
 			}
-
-#if WITH_EDITOR
-			for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
-			{
-				if (WorldContext.WorldType != EWorldType::PIE || !WorldContext.World())
-				{
-					continue;
-				}
-
-				const FString PieLastUrl = WorldContext.LastURL.ToString();
-				if (PieLastUrl.IsEmpty())
-				{
-					continue;
-				}
-
-				const FString Label = FString::Printf(
-					TEXT("PIE.LastURL[%s]"),
-					WorldContext.World() == World ? TEXT("Current") : *WorldContext.World()->GetName());
-				AddSourceIfNonEmpty(OutSources, Label, PieLastUrl);
-			}
-#endif
 		}
-	}
 
-#if WITH_EDITOR
-	if (const ULevelEditorPlaySettings* PlaySettings = GetDefault<ULevelEditorPlaySettings>())
-	{
-		AddSourceIfNonEmpty(OutSources, TEXT("Editor.AdditionalLaunchParameters"), PlaySettings->AdditionalLaunchParameters);
-
-		FString AdditionalServerGameOptions;
-		if (PlaySettings->GetAdditionalServerGameOptions(AdditionalServerGameOptions))
-		{
-			AddSourceIfNonEmpty(OutSources, TEXT("Editor.AdditionalServerGameOptions"), AdditionalServerGameOptions);
-		}
+		AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
 	}
-#endif
 
 	AddSourceIfNonEmpty(OutSources, TEXT("CommandLine"), FCommandLine::Get());
+
+	// Lowest priority: whatever InitGame already captured (often empty/partial on listen-server authority).
+	if (const AGameModeBase* GameMode = World ? World->GetAuthGameMode() : nullptr)
+	{
+		AddSourceIfNonEmpty(OutSources, TEXT("GameMode.OptionsString"), GameMode->OptionsString);
+	}
 }
 
 void LogOptionSourcesDiagnostic(const UObject* WorldContextObject, const TCHAR* Context)
@@ -127,9 +298,9 @@ void LogOptionSourcesDiagnostic(const UObject* WorldContextObject, const TCHAR* 
 		bool bFound = false;
 		for (const FNamedOptionSource& Source : Sources)
 		{
-			if (UGameplayStatics::HasOption(Source.Value, Key))
+			FString Value;
+			if (TryFindOptionInSource(Source, Key, Value))
 			{
-				const FString Value = UGameplayStatics::ParseOption(Source.Value, Key);
 				UE_LOG(LogBwayGameplayUrl, Log, TEXT("  -> %s=%s (from %s)"), *Key, *Value, *Source.Label);
 				bFound = true;
 				break;
@@ -143,6 +314,48 @@ void LogOptionSourcesDiagnostic(const UObject* WorldContextObject, const TCHAR* 
 	}
 }
 
+void ApplyPriorityGameplayOptions(FString& OptionsString, const TArray<FNamedOptionSource>& Sources)
+{
+	TMap<FString, FString> MergedOptions;
+	ParseOptionsStringToMap(OptionsString, MergedOptions);
+
+	TMap<FString, FString> GameplayOverrides;
+
+	for (const FNamedOptionSource& Source : Sources)
+	{
+		if (Source.Label == TEXT("GameMode.OptionsString"))
+		{
+			continue;
+		}
+
+		TMap<FString, FString> SourceMap;
+		ParseOptionsStringToMap(Source.Value, SourceMap);
+
+		for (const FName& OptionName : GetKnownGameplayOptionKeys())
+		{
+			const FString Key = OptionName.ToString();
+			if (GameplayOverrides.Contains(Key))
+			{
+				continue;
+			}
+
+			if (const FString* FoundValue = SourceMap.Find(Key))
+			{
+				const FString ResolvedValue = *FoundValue;
+				GameplayOverrides.Add(Key, ResolvedValue);
+				UE_LOG(LogBwayGameplayUrl, Log, TEXT("Augment: applied %s=%s from %s"), *Key, *ResolvedValue, *Source.Label);
+			}
+		}
+	}
+
+	for (const TPair<FString, FString>& Pair : GameplayOverrides)
+	{
+		MergedOptions.Add(Pair.Key, Pair.Value);
+	}
+
+	OptionsString = BuildOptionsStringFromMap(MergedOptions);
+}
+
 bool TryGetOptionFromSources(
 	const TArray<FNamedOptionSource>& Sources,
 	FName OptionName,
@@ -152,9 +365,10 @@ bool TryGetOptionFromSources(
 	const FString Key = OptionName.ToString();
 	for (const FNamedOptionSource& Source : Sources)
 	{
-		if (UGameplayStatics::HasOption(Source.Value, Key))
+		FString Value;
+		if (TryFindOptionInSource(Source, Key, Value))
 		{
-			OutValue = UGameplayStatics::GetIntOption(Source.Value, Key, 0);
+			OutValue = FCString::Atoi(*Value);
 			if (OutSourceLabel)
 			{
 				*OutSourceLabel = Source.Label;
@@ -175,17 +389,15 @@ bool TryGetStringOptionFromSources(
 	const FString Key = OptionName.ToString();
 	for (const FNamedOptionSource& Source : Sources)
 	{
-		if (UGameplayStatics::HasOption(Source.Value, Key))
+		FString Value;
+		if (TryFindOptionInSource(Source, Key, Value))
 		{
-			OutValue = UGameplayStatics::ParseOption(Source.Value, Key);
-			if (!OutValue.IsEmpty())
+			OutValue = Value;
+			if (OutSourceLabel)
 			{
-				if (OutSourceLabel)
-				{
-					*OutSourceLabel = Source.Label;
-				}
-				return true;
+				*OutSourceLabel = Source.Label;
 			}
+			return true;
 		}
 	}
 
@@ -216,25 +428,29 @@ void UBwayGameplayUrlLibrary::AppendMissingOptionsFromUrlSource(FString& Options
 		return;
 	}
 
+	TMap<FString, FString> MergedOptions;
+	BwayGameplayUrl::ParseOptionsStringToMap(OptionsString, MergedOptions);
+
+	TMap<FString, FString> SourceMap;
+	BwayGameplayUrl::ParseOptionsStringToMap(UrlSource, SourceMap);
+
 	for (const FName& OptionName : BwayGameplayUrl::GetKnownGameplayOptionKeys())
 	{
 		const FString Key = OptionName.ToString();
-		if (UGameplayStatics::HasOption(OptionsString, Key))
+		if (MergedOptions.Contains(Key))
 		{
 			continue;
 		}
 
-		if (UGameplayStatics::HasOption(UrlSource, Key))
+		if (const FString* FoundValue = SourceMap.Find(Key))
 		{
-			const FString Value = UGameplayStatics::ParseOption(UrlSource, Key);
-			if (!Value.IsEmpty())
-			{
-				OptionsString += OptionsString.IsEmpty() ? TEXT("?") : TEXT("&");
-				OptionsString += FString::Printf(TEXT("%s=%s"), *Key, *Value);
-				UE_LOG(LogBwayGameplayUrl, Log, TEXT("Augment: appended %s=%s from source fragment"), *Key, *Value);
-			}
+			const FString ResolvedValue = *FoundValue;
+			MergedOptions.Add(Key, ResolvedValue);
+			UE_LOG(LogBwayGameplayUrl, Log, TEXT("Augment: appended %s=%s from source fragment"), *Key, *ResolvedValue);
 		}
 	}
+
+	OptionsString = BwayGameplayUrl::BuildOptionsStringFromMap(MergedOptions);
 }
 
 void UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(AGameModeBase* GameMode)
@@ -248,14 +464,7 @@ void UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(AGameModeBase* GameMo
 
 	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
 	BwayGameplayUrl::GatherNamedOptionSources(GameMode, Sources);
-
-	for (const BwayGameplayUrl::FNamedOptionSource& Source : Sources)
-	{
-		if (Source.Label != TEXT("GameMode.OptionsString"))
-		{
-			AppendMissingOptionsFromUrlSource(GameMode->OptionsString, Source.Value);
-		}
-	}
+	BwayGameplayUrl::ApplyPriorityGameplayOptions(GameMode->OptionsString, Sources);
 
 	UE_LOG(LogBwayGameplayUrl, Log,
 		TEXT("AugmentGameModeOptionsString: before='%s' after='%s'"),
@@ -265,13 +474,14 @@ void UBwayGameplayUrlLibrary::AugmentGameModeOptionsString(AGameModeBase* GameMo
 
 bool UBwayGameplayUrlLibrary::HasGameplayUrlOption(const UObject* WorldContextObject, FName OptionName)
 {
-	TArray<FString> Sources;
-	BwayGameplayUrl::GatherOptionSources(WorldContextObject, Sources);
+	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
+	BwayGameplayUrl::GatherNamedOptionSources(WorldContextObject, Sources);
 
+	FString Value;
 	const FString Key = OptionName.ToString();
-	for (const FString& Source : Sources)
+	for (const BwayGameplayUrl::FNamedOptionSource& Source : Sources)
 	{
-		if (UGameplayStatics::HasOption(Source, Key))
+		if (BwayGameplayUrl::TryFindOptionInSource(Source, Key, Value))
 		{
 			return true;
 		}

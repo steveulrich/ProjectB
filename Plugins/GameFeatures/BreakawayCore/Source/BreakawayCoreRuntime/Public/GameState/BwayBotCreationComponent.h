@@ -26,6 +26,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
 	void RestartAllBots();
 
+	/** Stop bot AI and destroy bot pawns before server travel (prevents BT cleanup crash). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
+	void ShutdownAllBotsForTravel();
+
+	/** Stop relic behavior trees when the match ends (PostMatch freeze). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
+	void StopAllBotLogic();
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	int32 NumBotsToCreate = 7;

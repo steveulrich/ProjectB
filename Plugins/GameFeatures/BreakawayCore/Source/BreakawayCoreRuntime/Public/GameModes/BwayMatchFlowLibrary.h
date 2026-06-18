@@ -40,6 +40,9 @@ struct FBwayResolvedMatchFlowSettings
 	float PostRoundDuration = 5.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	TSubclassOf<class ULyraGamePhaseAbility> PrematchPhaseAbility;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
 	TSubclassOf<class ULyraGamePhaseAbility> WarmupPhaseAbility;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
@@ -75,7 +78,7 @@ public:
 		const UBwayMatchFlowConfig* FallbackConfig,
 		const ULyraExperienceDefinition* LoadedExperience = nullptr);
 
-	/** 11-1: apply PointsToWin and NumBots only. Phase/orchestrator fields are resolved but not applied yet. */
+	/** Apply match rules on RM / BotCreation: PointsToWin, RoundDuration (11-5), NumBots. */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Match Flow", meta = (WorldContext = "WorldContextObject"))
 	static void ApplyMatchRulesOnly(
 		const UObject* WorldContextObject,
