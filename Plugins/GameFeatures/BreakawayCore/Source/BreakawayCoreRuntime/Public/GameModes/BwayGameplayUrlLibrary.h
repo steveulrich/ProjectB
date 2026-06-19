@@ -44,4 +44,14 @@ public:
 		FName OptionName,
 		int32& OutValue,
 		FString& OutSourceLabel);
+
+	UFUNCTION(BlueprintPure, Category = "Breakaway|URL", meta = (WorldContext = "WorldContextObject"))
+	static bool TryGetGameplayUrlOptionFloat(const UObject* WorldContextObject, FName OptionName, float& OutValue);
+
+	/** Like TryGetGameplayUrlOptionFloat but returns which source label matched (first wins). */
+	static bool TryGetGameplayUrlOptionFloatWithSource(
+		const UObject* WorldContextObject,
+		FName OptionName,
+		float& OutValue,
+		FString& OutSourceLabel);
 };

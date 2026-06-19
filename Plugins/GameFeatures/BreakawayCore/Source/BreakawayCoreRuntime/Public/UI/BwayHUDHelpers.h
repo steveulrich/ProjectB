@@ -89,6 +89,32 @@ public:
 		UTexture2D* EmptySlotTexture = nullptr,
 		FLinearColor DeadPlayerTint = FLinearColor(0.3f, 0.3f, 0.3f, 1.0f));
 
+	/** Local player's authoritative game team (0/1), or -1 for spectator/unassigned. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|HUD", meta = (WorldContext = "WorldContextObject"))
+	static int32 GetLocalPlayerTeamForHUD(const UObject* WorldContextObject);
+
+	/** Map display slot (0 = left, 1 = right) to authoritative game team index. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|HUD")
+	static int32 MapDisplaySlotToGameTeam(int32 DisplaySlotIndex, int32 LocalPlayerTeamIndex);
+
+	/** HUD data for a display column (left = friendly when local team is assigned). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|HUD", meta = (WorldContext = "WorldContextObject"))
+	static bool GetTeamPlayerHUDDataForDisplaySlot(
+		const UObject* WorldContextObject,
+		int32 DisplaySlotIndex,
+		int32 LocalPlayerTeamIndex,
+		TArray<FTeamPlayerHUDData>& OutPlayerData);
+
+	/** Update portrait images for a display column (left = friendly when local team is assigned). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|HUD", meta = (WorldContext = "WorldContextObject"))
+	static void UpdateTeamPortraitsForDisplaySlot(
+		const UObject* WorldContextObject,
+		int32 DisplaySlotIndex,
+		int32 LocalPlayerTeamIndex,
+		const TArray<UImage*>& PortraitImages,
+		UTexture2D* EmptySlotTexture = nullptr,
+		FLinearColor DeadPlayerTint = FLinearColor(0.3f, 0.3f, 0.3f, 1.0f));
+
 	/**
 	 * Get the hero data asset for a specific player
 	 * 

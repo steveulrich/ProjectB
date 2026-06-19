@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayHUDHelpers.h"
+#include "UI/BwayMatchHUDWidgetBase.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
@@ -8,6 +9,7 @@
 #include "Components/Image.h"
 #include "Engine/Texture2D.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHUDHelpers)
@@ -170,6 +172,43 @@ void UBwayHUDHelpers::UpdateTeamPortraits(
 			}
 		}
 	}
+}
+
+int32 UBwayHUDHelpers::GetLocalPlayerTeamForHUD(const UObject* WorldContextObject)
+{
+	if (const APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject, 0))
+	{
+		return UBwayMatchHUDWidgetBase::GetLocalPlayerTeamForPlayerController(PC);
+	}
+
+	return -1;
+}
+
+int32 UBwayHUDHelpers::MapDisplaySlotToGameTeam(const int32 DisplaySlotIndex, const int32 LocalPlayerTeamIndex)
+{
+	return UBwayMatchHUDWidgetBase::MapDisplaySlotToGameTeam(DisplaySlotIndex, LocalPlayerTeamIndex);
+}
+
+bool UBwayHUDHelpers::GetTeamPlayerHUDDataForDisplaySlot(
+	const UObject* WorldContextObject,
+	const int32 DisplaySlotIndex,
+	const int32 LocalPlayerTeamIndex,
+	TArray<FTeamPlayerHUDData>& OutPlayerData)
+{
+	const int32 GameTeamIndex = MapDisplaySlotToGameTeam(DisplaySlotIndex, LocalPlayerTeamIndex);
+	return GetTeamPlayerHUDData(WorldContextObject, GameTeamIndex, OutPlayerData);
+}
+
+void UBwayHUDHelpers::UpdateTeamPortraitsForDisplaySlot(
+	const UObject* WorldContextObject,
+	const int32 DisplaySlotIndex,
+	const int32 LocalPlayerTeamIndex,
+	const TArray<UImage*>& PortraitImages,
+	UTexture2D* EmptySlotTexture,
+	FLinearColor DeadPlayerTint)
+{
+	const int32 GameTeamIndex = MapDisplaySlotToGameTeam(DisplaySlotIndex, LocalPlayerTeamIndex);
+	UpdateTeamPortraits(WorldContextObject, GameTeamIndex, PortraitImages, EmptySlotTexture, DeadPlayerTint);
 }
 
 const UBwayHeroDataAsset* UBwayHUDHelpers::GetPlayerHeroData(const ABwayPlayerState* PlayerState)

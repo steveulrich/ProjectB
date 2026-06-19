@@ -1,13 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayCoreHUDWidget.h"
+#include "UI/BwayMatchHUDWidgetBase.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "GameState/BwayScoringComponent.h"
-#include "GameState/BwayRelicManagerComponent.h"
 #include "Character/LyraHealthComponent.h"
-#include "AbilitySystem/LyraAbilitySystemComponent.h"
-#include "Relic/RelicActor.h"
 #include "GameFramework/PlayerController.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCoreHUDWidget)
@@ -20,6 +18,9 @@ UBwayCoreHUDWidget::UBwayCoreHUDWidget(const FObjectInitializer& ObjectInitializ
 void UBwayCoreHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	LastRelicPossessingTeam = GetRelicPossessingTeam();
+	bLastRelicCarried = IsRelicCarried();
 
 	BindToGameState();
 	BindToHealthComponent();
@@ -46,6 +47,25 @@ void UBwayCoreHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 	if (!bBoundToHealth || !CachedHealthComponent.IsValid())
 	{
 		BindToHealthComponent();
+	}
+
+	// Poll relic possession (replicated state; no client-safe delegate today)
+	if (RelicPollInterval > 0.0f)
+	{
+		TimeSinceLastRelicPoll += InDeltaTime;
+		if (TimeSinceLastRelicPoll >= RelicPollInterval)
+		{
+			TimeSinceLastRelicPoll = 0.0f;
+
+			const int32 TeamIndex = GetRelicPossessingTeam();
+			const bool bIsCarried = IsRelicCarried();
+			if (TeamIndex != LastRelicPossessingTeam || bIsCarried != bLastRelicCarried)
+			{
+				LastRelicPossessingTeam = TeamIndex;
+				bLastRelicCarried = bIsCarried;
+				OnRelicPossessionChanged(TeamIndex, bIsCarried);
+			}
+		}
 	}
 }
 
@@ -80,64 +100,29 @@ float UBwayCoreHUDWidget::GetMaxHealth() const
 
 int32 UBwayCoreHUDWidget::GetTeam1Score() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
-		{
-			return Scoring->GetTeamScore(0);
-		}
-	}
-	return 0;
+	const int32 LocalTeam = GetLocalPlayerTeam();
+	return UBwayMatchHUDWidgetBase::GetDisplayTeamScore(GetWorld(), 0, LocalTeam);
 }
 
 int32 UBwayCoreHUDWidget::GetTeam2Score() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
-		{
-			return Scoring->GetTeamScore(1);
-		}
-	}
-	return 0;
+	const int32 LocalTeam = GetLocalPlayerTeam();
+	return UBwayMatchHUDWidgetBase::GetDisplayTeamScore(GetWorld(), 1, LocalTeam);
 }
 
 int32 UBwayCoreHUDWidget::GetLocalPlayerTeam() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (APlayerController* PC = GetOwningPlayer())
-		{
-			if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
-			{
-				return GameState->GetPlayerTeam(PS);
-			}
-		}
-	}
-	return -1;
+	return UBwayMatchHUDWidgetBase::GetLocalPlayerTeamForWidget(this);
 }
 
 int32 UBwayCoreHUDWidget::GetRoundTimeRemaining() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		return GameState->GetRoundTimeRemaining();
-	}
-	return 0;
+	return UBwayMatchHUDWidgetBase::GetRoundTimeRemainingFromWorld(GetWorld());
 }
 
 FText UBwayCoreHUDWidget::GetRoundTimeFormatted() const
 {
-	const int32 TotalSeconds = GetRoundTimeRemaining();
-	const int32 Minutes = TotalSeconds / 60;
-	const int32 Seconds = TotalSeconds % 60;
-	
-	return FText::Format(
-		NSLOCTEXT("HUD", "TimeFormat", "{0}:{1}"),
-		FText::AsNumber(Minutes),
-		FText::Format(NSLOCTEXT("HUD", "SecondsFormat", "{0}"), 
-			FText::FromString(FString::Printf(TEXT("%02d"), Seconds)))
-	);
+	return UBwayMatchHUDWidgetBase::FormatRoundTime(GetRoundTimeRemaining());
 }
 
 int32 UBwayCoreHUDWidget::GetCurrentRoundNumber() const
@@ -151,29 +136,12 @@ int32 UBwayCoreHUDWidget::GetCurrentRoundNumber() const
 
 int32 UBwayCoreHUDWidget::GetRelicPossessingTeam() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
-		{
-			return RelicMgr->GetRelicPossessingTeam();
-		}
-	}
-	return -1;
+	return UBwayMatchHUDWidgetBase::GetDisplayRelicPossessingTeam(GetWorld(), GetLocalPlayerTeam());
 }
 
 bool UBwayCoreHUDWidget::IsRelicCarried() const
 {
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (UBwayRelicManagerComponent* RelicMgr = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
-		{
-			if (ARelicActor* Relic = RelicMgr->GetRelicActor())
-			{
-				return Relic->GetCurrentState() == ERelicState::Carried;
-			}
-		}
-	}
-	return false;
+	return UBwayMatchHUDWidgetBase::IsRelicCarriedInWorld(GetWorld());
 }
 
 // ========== INTERNAL ==========
@@ -271,18 +239,7 @@ void UBwayCoreHUDWidget::HandleHealthChanged(ULyraHealthComponent* HealthComp, f
 
 void UBwayCoreHUDWidget::HandleScoreChanged(int32 TeamIndex, int32 NewScore)
 {
-	// Fetch both team scores from the ScoringComponent to maintain the OnScoreChanged(T1, T2) BP event
-	int32 Team1Score = 0;
-	int32 Team2Score = 0;
-	if (ABwayGameState* GameState = GetBwayGameState())
-	{
-		if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
-		{
-			Team1Score = Scoring->GetTeamScore(0);
-			Team2Score = Scoring->GetTeamScore(1);
-		}
-	}
-	OnScoreChanged(Team1Score, Team2Score);
+	OnScoreChanged(GetTeam1Score(), GetTeam2Score());
 }
 
 void UBwayCoreHUDWidget::HandleRoundTimeChanged(int32 SecondsRemaining)

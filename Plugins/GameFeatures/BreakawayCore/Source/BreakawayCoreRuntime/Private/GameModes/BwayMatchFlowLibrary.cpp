@@ -170,6 +170,10 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 
 	const int32 DaPointsToWin = Resolved.PointsToWin;
 	const int32 DaNumBots = Resolved.NumBotsOverride;
+	const float DaPrematchDuration = Resolved.PrematchDuration;
+	const float DaWarmupDuration = Resolved.WarmupDuration;
+	const float DaPostRoundDuration = Resolved.PostRoundDuration;
+	const float DaRoundDuration = Resolved.RoundDuration;
 
 	if (!BaseConfig)
 	{
@@ -205,6 +209,26 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 			DaNumBots);
 	}
 
+	auto ApplyDurationUrlOverride = [&](const TCHAR* OptionName, float& OutDuration, float DaDefault)
+	{
+		float UrlDuration = 0.0f;
+		if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloatWithSource(WorldContextObject, OptionName, UrlDuration, UrlSourceLabel))
+		{
+			OutDuration = FMath::Max(0.0f, UrlDuration);
+			UE_LOG(LogTemp, Log, TEXT("BwayMatchFlow: %s=%.1fs (URL override from %s, DA default was %.1fs)"),
+				OptionName, OutDuration, *UrlSourceLabel, DaDefault);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("BwayMatchFlow: %s=%.1fs (DA/config default — no URL override)"), OptionName, OutDuration);
+		}
+	};
+
+	ApplyDurationUrlOverride(TEXT("PrematchDuration"), Resolved.PrematchDuration, DaPrematchDuration);
+	ApplyDurationUrlOverride(TEXT("WarmupDuration"), Resolved.WarmupDuration, DaWarmupDuration);
+	ApplyDurationUrlOverride(TEXT("PostRoundDuration"), Resolved.PostRoundDuration, DaPostRoundDuration);
+	ApplyDurationUrlOverride(TEXT("RoundDuration"), Resolved.RoundDuration, DaRoundDuration);
+
 	return Resolved;
 }
 
@@ -233,11 +257,13 @@ void UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(const FBwayResolvedMatc
 		: TEXT("default (use DA DefaultNumBots or BotCreation scaling)");
 
 	UE_LOG(LogTemp, Log,
-		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s PrematchDuration=%.1fs"),
+		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s Prematch=%.1fs Warmup=%.1fs PostRound=%.1fs"),
 		*Settings.ConfigAssetName.ToString(),
 		Settings.PointsToWin,
 		Settings.RoundDuration,
 		*NumBotsText,
 		Settings.bOrchestrateMatchFlow ? TEXT("true") : TEXT("false"),
-		Settings.PrematchDuration);
+		Settings.PrematchDuration,
+		Settings.WarmupDuration,
+		Settings.PostRoundDuration);
 }

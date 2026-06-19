@@ -21,7 +21,7 @@ Decisions captured from design review (May 2026).
 | **8** | **Done** | Rounds, reset, `EnsureBotsForRound`, listen-server respawn fix |
 | **9** | **Done** | Sudden death at 0:00 (X-axis half), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider` |
 | **10** | **Complete** | Relic bot AI + `GE_BW_Relic_Request` pickup + carrier walk-in goal; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
-| **11** | **In progress** | **11-1–11-7 done** (match-flow config + RM phase FSM through PostMatch/results → Lyra front-end); **11-8** (front-end E2E) + **11b** open |
+| **11** | **Complete** | Match-flow config + RM phase FSM (11-1–11-7), URL duration overrides (11b); front-end E2E (11-8) deferred |
 
 ---
 
@@ -347,12 +347,12 @@ Experience still uses **`B_BW_BotSpawner_BallMode`** for bot count; AI assets ar
 
 ## Step 11 — Match entry + in-match flow
 
-**Status:** **In progress** — Part B **11-1–11-7 complete**; Part A **11-MM-1–4** landed; **11-8** + **11b** open.
+**Status:** **Complete** — Part B **11-1–11-7 + 11b** done; Part A **11-MM-1–4** landed; **11-8** (front-end E2E) deferred.
 
 | Track | Scope | Status |
 |-------|-------|--------|
 | **Part A — Matchmaking entry** (`11-MM-1` → `11-MM-4`) | Front-end queue → mock/backend → `UCommonSessionSubsystem` travel | **11-MM-1–4** C++ landed; editor checklists open |
-| **Part B — In-match orchestration** (`11-1` → `11b`) | `UBwayMatchFlowConfig` + `UBwayRoundManagementComponent` phase FSM | **11-1–11-7 done**; **11-8** + **11b** open |
+| **Part B — In-match orchestration** (`11-1` → `11b`) | `UBwayMatchFlowConfig` + `UBwayRoundManagementComponent` phase FSM | **Complete** (11-1–11-7 + 11b) |
 
 **Goal:** Lyra front-end → queue or custom lobby → dev match → results → front-end. Entry is **data-driven** via `UMatchmakingGoalDefinition` / `UCustomGameConfig`; in-match phases remain **`UBwayRoundManagementComponent`** (not experience action-set grants).
 
@@ -522,7 +522,7 @@ Do **not** fork a second experience for menu vs PIE.
   3. `UBwayExperienceDefinition::MatchFlowConfig` soft ptr (only if experience is reparented — **avoid**)
   4. Hard fallback: `/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Dev`
 
-- **URL overrides** (read via `UBwayGameplayUrlLibrary` after `BreakawayGameMode::InitGame` augment): `PointsToWin`, `NumBots`, `MatchFlowConfig` from **11-1**; duration overrides (`WarmupDuration`, `PostRoundDuration`, …) in **11b**.
+- **URL overrides** (read via `UBwayGameplayUrlLibrary` after `BreakawayGameMode::InitGame` augment): `PointsToWin`, `NumBots`, `MatchFlowConfig` (**11-1**); `PrematchDuration`, `WarmupDuration`, `PostRoundDuration`, `RoundDuration` (**11b**). See [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md).
 - **`NumBots`:** URL wins when present; else `DA_BW_MatchFlow_Dev` `DefaultNumBots`; else BotCreation scaling (`NumBotsOverride = -1`).
 
 #### Orchestration (11-3+): RoundManagement = brain
@@ -752,17 +752,527 @@ Full menu → queue/custom → match → results → menu. Queue path uses **`UM
 
 ---
 
+### 11b — Polish (URL duration overrides + docs)
+
+**Status:** **Complete** (C++ + docs + Tier 1 compile pass).
+
+#### C++ (landed)
+
+| Type | Path | Notes |
+|------|------|-------|
+| Duration URL keys | `BwayGameplayUrlLibrary.cpp` | `PrematchDuration`, `WarmupDuration`, `PostRoundDuration`, `RoundDuration` in known gameplay keys |
+| Float URL getter | `BwayGameplayUrlLibrary.*` | `TryGetGameplayUrlOptionFloat` / `WithSource` |
+| Resolve overrides | `BwayMatchFlowLibrary.cpp` | Duration URL overrides applied after config copy; logged with source label |
+| RM timers | `BwayRoundManagementComponent.*` | Unchanged — reads `ResolvedMatchFlowSettings` (already wired in 11-3–11-6) |
+
+#### PIE URL (duration override smoke test)
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&WarmupDuration=5&PostRoundDuration=3
+```
+
+#### Pass checklist
+
+- [x] Log: `BwayMatchFlow: WarmupDuration=5.0s (URL override from …)`
+- [x] Log: `BwayMatchFlow: PostRoundDuration=3.0s (URL override from …)`
+- [x] Log: `Warmup config timer started (5.0s, authoritative)` / `PostRound config timer started (3.0s, authoritative)`
+- [x] [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) synced with code
+- [x] Tier 1 compile pass
+
+---
+
 
 # Section 2 — Match UI (before heroes)
 
-No production HUD in Section 1. Add widgets **one at a time** to `B_BW_Experience_Dev`; same bulletproof bar.
+No production HUD in Section 1. Add widgets **one at a time** to `B_BW_Experience_Dev`; same bulletproof bar as Section 1 (**3/3 cold-start PIE**, **Listen Server** from Step 12).
+
+Reference layouts (Breakaway target): top-center **timer + team scores + round-win pips**; **team portrait rows** (4v4); center **relic/carrier status**; bottom **health** (ability bar stubbed until Section 3); post-match **VICTORY/DEFEAT** stats table with **Return to Lobby**.
+
+---
+
+## Progress (Section 2)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| **12** | **In progress** | C++ slot widgets landed (`12-0`); editor BP + action set open |
+| **13** | **Not started** | Relic status widget |
+| **14** | **Not started** | `WBP_BW_CoreHUD` shell — see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) |
+| **15** | **Not started** | Between-round planning stub |
+| **16** | **Not started** | Results polish + sudden-death banner |
+
+---
+
+## Section 2 principles
+
+| Decision | Choice |
+|----------|--------|
+| Test harness | PIE on `L_BW_DevMap`, **`B_BW_Experience_Dev`**, `SkipHeroSelection=1` |
+| Net mode | **Listen Server** from Step 12 onward |
+| HUD injection | Lyra **`UGameFeatureAction_AddWidgets`** + ShooterCore layout (Steps 12–13 slot widgets) → CoreHUD layout (Step 14) |
+| Widget logic | C++ slot bases (`UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget`); BP = layout/styling only |
+| Experience parent | **`LyraExperienceDefinition`** — do not reparent |
+| Pawn | **`DA_BW_PawnData_Humanoid`** — no hero select UI |
+| Bulletproof bar | Pass Criteria Template + **3/3 cold starts** per step |
+
+**Standard PIE URL (Section 2 multi-round):**
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
+```
+
+**Experience baseline entering Section 2** (Section 1 / Step 11 complete):
+
+| Present on `B_BW_Experience_Dev` | Absent until Section 2 |
+|----------------------------------|------------------------|
+| `LAS_BW_SharedInput`, teams, bots, relic pickup/throw/pass action sets | `LAS_ShooterGame_StandardHUD` (Step 12) |
+| `BwayGameFeatureAction_MatchFlowConfig` → `DA_BW_MatchFlow_Dev` | `B_BW_CaptureTheRelic_Scoring` widget injection (Step 12) |
+| Gameplay phases via RM orchestrator (no auto `BW_Phase_*` grants) | Match HUD widgets |
+| `BP_BW_GameState` with Scoring, RelicManager, RoundManagement | `ResultsScreenWidgetClass` polish (Step 16) |
+
+---
+
+## Related docs (Section 2)
+
+- [MatchUI_Setup.md](./MatchUI_Setup.md) — Steps 12–13 editor tutorials
+- [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) — Step 14 layout
+- [UI_System.md](./UI_System.md) — C++ widget bases
+- [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) — PostRound, PostMatch, URL overrides
+- [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) — tutorial format reference
+- [BLUEPRINT_INTEGRATION_GUIDE.md](../../../AI_Planning/BLUEPRINT_INTEGRATION_GUIDE.md) — Phases 2–5 HUD patterns
+- [BLUEPRINT_ASSET_AUDIT.md](../../../AI_Planning/BLUEPRINT_ASSET_AUDIT.md) — asset paths under `/BreakawayCore/UI/Match/`
+
+---
+
+## C++ gaps (documented — optional fixes)
+
+| Gap | Steps affected | Substep | Workaround |
+|-----|----------------|---------|------------|
+| `OnRoundTimeChanged` / `OnSuddenDeathWarning` authority-only broadcast | 14–16 | 14-3, 15-2, 16-3 | Poll `GetRoundTimeRemaining()` on clients (score widget C++ already polls timer) |
+| Extended results stats (damage, healing, gold, fumbles) not on `ABwayPlayerState` | 16 | 16-1 | Show K/D/A/Objective only; hide or `"—"` extended rows |
+
+**Resolved in C++ (May 2026):**
+
+- Score/relic slot widgets — `UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget` (shared `UBwayMatchHUDWidgetBase`)
+- `OnRelicPossessionChanged` in `UBwayCoreHUDWidget` — 0.25s poll via shared relic helpers
+
+---
+
+## Step 12 — Score widget
+
+**Status:** **Not started**.
+
+**Goal:** Team round-win scores visible in HUD and updating on each round win.
+
+**Prerequisites:** Step **11** pass (3/3) — especially **11-5** (Playing FSM), **11-6** (PostRound loop), scoring component wired.
+
+**Architecture note:**
+
+| Layer | Owner |
+|-------|-------|
+| **Data** | `UBwayScoringComponent` on `BP_BW_GameState` — `OnTeamScoreChanged`; clients refresh via `OnRep_Scores` |
+| **Layout host** | `LAS_ShooterGame_StandardHUD` — Lyra HUD layout with extension slots |
+| **Injection** | `B_BW_CaptureTheRelic_Scoring` → `UGameFeatureAction_AddWidgets` → slot `HUD.Slot.TeamScore` |
+| **Display** | `W_BW_CaptureTheRelic_ScoreWidget` — Blueprint child of **`UBwayCaptureTheRelicScoreWidget`** |
+
+Reference: `/ShooterCore/Elimination/UI/W_ScoreWidget_Elimination` (layout only). Editor steps: [MatchUI_Setup.md](./MatchUI_Setup.md).
+
+### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **12-0** | [C++] | **`UBwayMatchHUDWidgetBase`**, **`UBwayCaptureTheRelicScoreWidget`** — score/timer binding extracted from CoreHUD |
+| **12-1** | [Editor] | Inspect ShooterCore reference widgets; note `HUD.Slot.TeamScore` in `LAS_ShooterGame_StandardHUD` |
+| **12-2** | [Editor] | Configure `B_BW_CaptureTheRelic_Scoring` → **Add Widgets** → `W_BW_CaptureTheRelic_ScoreWidget` → `HUD.Slot.TeamScore` |
+| **12-3** | [Editor] | Create `W_BW_CaptureTheRelic_ScoreWidget` BP (parent **`BwayCaptureTheRelicScoreWidget`**) — UMG layout + BindWidget names only |
+| **12-4** | [Editor] | Add `LAS_ShooterGame_StandardHUD` + `B_BW_CaptureTheRelic_Scoring` to `B_BW_Experience_Dev` ActionSets |
+| **12-5** | [PIE] | Pass checklist (3/3 cold starts) |
+
+### Experience changes (`B_BW_Experience_Dev`)
+
+| Add | Purpose |
+|-----|---------|
+| `LAS_ShooterGame_StandardHUD` | HUD layout + extension slots |
+| `B_BW_CaptureTheRelic_Scoring` | Injects score widget |
+
+| Remove / omit | |
+|---------------|--|
+| Relic status widget row in scoring set | Step 13 |
+| `WBP_BW_CoreHUD` layout | Step 14 |
+
+### PIE URL
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
+```
+
+**PIE:** 1 player, **Listen Server**.
+
+### Pass checklist
+
+- [ ] Documented experience action sets match table above
+- [ ] Team 1 and Team 2 scores visible at **0–0** on match start
+- [ ] Score a round → winning team digit increments before PostRound overlay
+- [ ] **3/3** cold-start PIE runs (Listen Server)
+- [ ] No unexpected `Error` in Output Log
+- [ ] Regression: relic pickup/throw/score, bot AI, Step 11 phase flow (Prematch → Warmup → Playing → PostRound)
+
+### Regression
+
+Section 1: pickup, throw, pass, walk-in/throw score, round reset, sudden death midfield rule, bot-initiated score, match-flow URL overrides (`WarmupDuration`, `PostRoundDuration`).
+
+### Git discipline
+
+`core-loop: step 12 passed (score widget)`
+
+### Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| No HUD | `LAS_ShooterGame_StandardHUD` on experience; cold-start editor |
+| Widget missing | Scoring action set on experience; Slot ID = `HUD.Slot.TeamScore` |
+| Scores stuck at 0 | Recompile C++; BP parent = `BwayCaptureTheRelicScoreWidget`; BindWidget names `Text_Team1Score` / `Text_Team2Score` |
+| Wrong/overlapping score UI | Only one widget registered to `HUD.Slot.TeamScore` |
+
+---
+
+## Step 13 — Relic status widget
+
+**Status:** **Not started**.
+
+**Goal:** Relic possession state (Neutral / Team 1 / Team 2 / carrier name) correct on client during pickup, throw, and pass.
+
+**Prerequisites:** Step **12** pass (3/3).
+
+**Architecture note:**
+
+| Layer | Owner |
+|-------|-------|
+| **Data** | `UBwayRelicManagerComponent` — `GetRelicPossessingTeam()` (replicated); `ARelicActor::CurrentCarrier` for carrier name |
+| **Injection** | Same `B_BW_CaptureTheRelic_Scoring` action — slot `HUD.Slot.ModeStatus` |
+| **Display** | `W_BW_RelicStatusWidget` — Blueprint child of **`UBwayRelicStatusWidget`** |
+
+**Binding:** C++ polls `GetRelicPossessingTeam()` + carrier name every **0.25s** (client-safe). No Blueprint Event Graph required for pass.
+
+Editor steps: [MatchUI_Setup.md](./MatchUI_Setup.md) section 3.
+
+### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **13-0** | [C++] | **`UBwayRelicStatusWidget`** — relic poll + BindWidget status/carrier text |
+| **13-1** | [Editor] | Create `W_BW_RelicStatusWidget` BP (parent **`BwayRelicStatusWidget`**) — layout + BindWidget names |
+| **13-2** | [Editor] | Add second **Widgets** row to `B_BW_CaptureTheRelic_Scoring` → `HUD.Slot.ModeStatus` |
+| **13-3** | [PIE] | Listen server: pickup / throw / pass update UI |
+
+### Experience changes
+
+| Add / change | Purpose |
+|--------------|---------|
+| `B_BW_CaptureTheRelic_Scoring` | Add `W_BW_RelicStatusWidget` → `HUD.Slot.ModeStatus` |
+
+No other experience ActionSet changes.
+
+### PIE URL
+
+Same as Step 12.
+
+### Pass checklist
+
+- [ ] Documented scoring set has both TeamScore and ModeStatus rows
+- [ ] Round start shows **NEUTRAL** (or equivalent)
+- [ ] Pickup → correct team label + carrier player name
+- [ ] Throw / drop → returns to neutral
+- [ ] Pass to teammate → new carrier name
+- [ ] **3/3** cold-start Listen Server runs
+- [ ] Regression: Step 12 scores still update on round win
+
+### Regression
+
+Step 12 score widget; Section 1 relic gameplay.
+
+### Git discipline
+
+`core-loop: step 13 passed (relic status widget)`
+
+### Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| Always NEUTRAL | BP parent = `BwayRelicStatusWidget`; `RelicManager` on GameState; Listen Server PIE |
+| Carrier name blank | Read `CurrentCarrier` → `PlayerState` → `GetPlayerName` |
+| Updates on host only | Recompile — C++ poll should run on all clients |
+| Widget off-screen | Slot ID = `HUD.Slot.ModeStatus` |
+
+---
+
+## Step 14 — Core HUD shell
+
+**Status:** **Not started**.
+
+**Goal:** Single `WBP_BW_CoreHUD` provides top bar (scores, timer, round #), team portraits, health, and relic status — composes or replaces Steps 12–13 standalone widgets.
+
+**Prerequisites:** Step **13** pass (3/3).
+
+**Architecture note:**
+
+| Layer | Owner |
+|-------|-------|
+| **Data** | `UBwayCoreHUDWidget` getters + BP events (`OnScoreChanged`, `OnRoundTimeUpdated`, `OnHealthChanged`, …) |
+| **Team rows** | `UBwayHUDHelpers::GetTeamPlayerHUDData` / `UpdateTeamPortraits` |
+| **Display** | `WBP_BW_CoreHUD` parent **`UBwayCoreHUDWidget`** at `/BreakawayCore/UI/Match/` |
+
+Layout tutorial: [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md).
+
+### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **14-0** | [C++] optional | Wire `RelicManager` → `OnRelicPossessionChanged` in `BwayCoreHUDWidget.cpp`; Tier 1 compile |
+| **14-1** | [Editor] | Create `WBP_BW_CoreHUD` parented to `UBwayCoreHUDWidget` |
+| **14-2** | [Editor] | Layout: top bar, team portrait rows, bottom health, relic cluster (see CoreHUD_Layout_Setup.md) |
+| **14-3** | [Editor + BP] | Implement `OnScoreChanged`, `OnRoundTimeUpdated`, `OnRoundStateChanged`, `OnHealthChanged`; Tick fallback for timer on clients |
+| **14-4** | [Editor] | Inject CoreHUD via **Add Widgets → Layout** (`Lyra.HUD.PlayerHUD`); remove standalone 12–13 slot rows from scoring set |
+| **14-5** | [PIE] | Pass checklist + regression 12–13 behavior via shell |
+
+### Experience changes
+
+| Add | Purpose |
+|-----|---------|
+| `B_BW_CoreHUD_Layout` (new action set) or Layout row on HUD action set | Injects `WBP_BW_CoreHUD` as full layout |
+
+| Remove | Purpose |
+|--------|---------|
+| `W_BW_CaptureTheRelic_ScoreWidget` slot row | Avoid duplicate scores |
+| `W_BW_RelicStatusWidget` slot row | Avoid duplicate relic UI |
+| *(optional)* `LAS_ShooterGame_StandardHUD` | If custom `LAS_BW_MatchHUD_Dev` replaces Shooter layout entirely |
+
+### PIE URL
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
+```
+
+### Pass checklist
+
+- [ ] Documented experience matches layout injection table
+- [ ] Timer counts down **MM:SS** during active round
+- [ ] Team scores and round number visible
+- [ ] Team portrait row populated (placeholder portraits OK)
+- [ ] Health bar tracks damage / respawn
+- [ ] Relic status matches Step 13 behavior
+- [ ] No duplicate score/relic widgets
+- [ ] **3/3** cold-start Listen Server runs
+- [ ] Regression: scoring, relic AI, match phases
+
+### Regression
+
+Steps 12–13 behavior (via CoreHUD, not standalone widgets); Section 1 gameplay.
+
+### Git discipline
+
+`core-loop: step 14 passed (core HUD shell)`
+
+### Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| Double HUD elements | Remove Step 12–13 slot rows from scoring set |
+| Timer frozen on client | Add 1s Tick poll using `GetRoundTimeFormatted()` |
+| Health bar empty | Humanoid pawn spawned; health component present |
+| Relic text stale | 0.25s poll or complete 14-0 C++ bind |
+
+---
+
+## Step 15 — Between-round planning stub
+
+**Status:** **Not started**.
+
+**Goal:** Minimal overlay during **PostRound** / `OnBetweenRoundPlanningStarted`; dismisses when next round (**Playing**) resumes.
+
+**Prerequisites:** Step **14** pass (3/3).
+
+**Architecture note:**
+
+| Layer | Owner |
+|-------|-------|
+| **Data** | `UBwayRoundManagementComponent::OnBetweenRoundPlanningStarted(CompletedRoundNumber, PlanningDurationSeconds)`; `GetCurrentMatchPhase() == PostRound` |
+| **Display** | `WBP_BW_BetweenRoundPlanning` — owned by CoreHUD (viewport overlay or child widget) |
+
+Stub OK: title + countdown text only — no buildable shop until Section 3+.
+
+### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **15-1** | [Editor] | Create `WBP_BW_BetweenRoundPlanning` at `/BreakawayCore/UI/Match/` — title `"Between Rounds"`, countdown `Text`, semi-transparent background |
+| **15-2** | [Editor + BP] | On `WBP_BW_CoreHUD` Construct: get RM → bind `OnBetweenRoundPlanningStarted` → show overlay + start countdown; poll `GetCurrentMatchPhase()` → hide when `Playing` |
+| **15-3** | [Editor] | No new experience action set — overlay spawned/managed from CoreHUD |
+| **15-4** | [PIE] | Short PostRound URL test |
+
+### Experience changes
+
+No ActionSet changes. Overlay wired from CoreHUD Event Graph.
+
+### PIE URL
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&PostRoundDuration=3&WarmupDuration=5
+```
+
+Use `PointsToWin=3` so PostRound loop runs between rounds.
+
+### Pass checklist
+
+- [ ] Overlay appears after round win, before next round starts
+- [ ] Countdown roughly matches `PostRoundDuration` (URL or config)
+- [ ] Overlay hidden when Playing resumes
+- [ ] Gameplay input not permanently blocked (stub — no `UIOnly` input mode)
+- [ ] **3/3** cold-start runs
+- [ ] Regression: Steps 12–14 HUD still correct during rounds
+
+### Regression
+
+In-round HUD (Step 14); multi-round flow (Step 11-6).
+
+### Git discipline
+
+`core-loop: step 15 passed (between-round stub)`
+
+### Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| Never appears | Bound to RM delegate; use `PointsToWin=3`; verify PostRound in log |
+| Stuck visible | Poll `GetCurrentMatchPhase()`; hide when not `PostRound` |
+| Wrong duration | URL `PostRoundDuration=3`; config `DA_BW_MatchFlow_Dev` |
+| Skips PostRound | `PointsToWin=1` ends match — use 3 for this step |
+
+---
+
+## Step 16 — Results + sudden death polish
+
+**Status:** **Not started**.
+
+**Goal:** Full match outcome readable without log spelunking; sudden-death awareness banner at ≤60s remaining.
+
+**Prerequisites:** Step **15** pass (3/3).
+
+**Architecture note:**
+
+| Layer | Owner |
+|-------|-------|
+| **Results data** | `ABwayGameState::ShowResultsScreen` → `Client_ShowResults` → `UBwayResultsScreenWidget::ApplyAuthoritativeResults` |
+| **Per-player stats** | `ABwayPlayerState` — K/D/A/Objective only (extended screenshot columns deferred) |
+| **Sudden death** | `UBwayRoundManagementComponent::OnSuddenDeathWarning` at `SuddenDeathWarningSeconds` (default **60**); optional sync with midfield divider visibility (Step 9 C++) |
+| **Display** | `WBP_BW_ResultsWidget` at `/BreakawayCore/UI/`; sudden-death banner on `WBP_BW_CoreHUD` |
+
+**Asset naming:** use existing `WBP_BW_ResultsWidget` (not `WBP_BW_ResultsScreen`).
+
+### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **16-1** | [Editor] | Polish `WBP_BW_ResultsWidget` (parent `UBwayResultsScreenWidget`) — VICTORY/DEFEAT header, round-win pips, team stat rows (K/D/A/Objective), MVP block, Return to Lobby / Play Again buttons |
+| **16-2** | [Editor] | `BP_BW_GameState` → **Results Screen Widget Class** = `WBP_BW_ResultsWidget` |
+| **16-3** | [Editor + BP] | On CoreHUD: bind RM `OnSuddenDeathWarning` + poll `GetRoundTimeRemaining() <= 60` fallback; show/hide `Border_SuddenDeathBanner` |
+| **16-4** | [PIE] | `PointsToWin=1` full match → results → Return to Lobby; **3/3** cold starts |
+| **16-5** | [PIE] | Regression Steps 12–15 |
+
+#### Results layout (Phase 1 — humanoid dev)
+
+Mirror reference screenshot structure where data exists:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  DEFEAT / VICTORY                    MATCH TIME (optional)  │
+│  [round-win pips: blue vs grey hexes]                       │
+├─────────────────────────────────────────────────────────────┤
+│  MY TEAM          │  STAT LABEL  │  OPPONENT TEAM           │
+│  portraits+names  │  K / D / A   │  portraits+names         │
+│                   │  OBJECTIVE   │                          │
+│                   │  (damage, healing, gold → "—" or hide) │
+├─────────────────────────────────────────────────────────────┤
+│  MVP: [name]                                                │
+│  [ PLAY AGAIN ]              [ RETURN TO LOBBY ]            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**OnResultsReady (Results):**
+
+```
+Event OnResultsReady (Results)
+  → If Results.bLocalPlayerWon → Header = "VICTORY!" else "DEFEAT"
+  → Set final score from Results.Team1Score / Team2Score
+  → Populate player rows from GameState PlayerArray → Cast Bway Player State
+  → K/D/A/Objective from getters; extended rows = "—" or collapsed
+  → Set MVP text from Results.MVPPlayerName
+  → Return to Lobby button → Call ReturnToLobby()
+  → Play Again button → Call PlayAgain()
+```
+
+Populate player rows by iterating `Get Game State → Player Array`, filter by team via `Bway Game State → Get Player Team`.
+
+### Experience changes
+
+| Change | Asset |
+|--------|-------|
+| Set **Results Screen Widget Class** | `BP_BW_GameState` |
+
+No ActionSet changes.
+
+### PIE URL
+
+**Full match / results:**
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=1&RoundDuration=90
+```
+
+**Sudden-death banner smoke test** (optional — let round run to ≤60s without scoring):
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
+```
+
+### Pass checklist
+
+- [ ] `BP_BW_GameState` → `ResultsScreenWidgetClass` = `WBP_BW_ResultsWidget`
+- [ ] One round win at `PointsToWin=1` → results shows correct scores (**not 0–0**)
+- [ ] VICTORY/DEFEAT reflects local team outcome
+- [ ] **Return to Lobby** → `L_LyraFrontEnd` (Step 11-7 behavior)
+- [ ] Sudden-death banner visible at ≤60s (or configured `SuddenDeathWarningSeconds` on RM)
+- [ ] Match readable without Output Log filtering
+- [ ] **3/3** cold-start full-match runs
+- [ ] Regression: Steps 12–15 still pass
+
+### Regression
+
+All Section 2 steps; Step 11-7 results RPC + front-end return; Section 1 sudden death midfield rule at 0:00.
+
+### Git discipline
+
+`core-loop: step 16 passed (results + sudden death UI)`
+
+### Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| Results 0–0 | Widget parent = `UBwayResultsScreenWidget`; `ApplyAuthoritativeResults` path via `Client_ShowResults` |
+| No results screen | `ResultsScreenWidgetClass` set on `BP_BW_GameState`; match reached PostMatch |
+| Return to Lobby fails | `ReturnToLobby()` on results widget → `Server_RequestReturnToFrontEnd` |
+| No sudden-death banner | RM `SuddenDeathWarningSeconds` > 0; round reaches ≤60s; bind on CoreHUD |
+| Extended stat columns empty | Expected — only K/D/A/Objective tracked on `ABwayPlayerState` today |
+
+---
+
+## Section 2 summary
 
 | Step | Add to experience | Pass when |
 |------|-------------------|-----------|
-| **12** | `W_BW_CaptureTheRelic_ScoreWidget` + scoring set | Team scores visible; updates on round win |
-| **13** | `W_BW_RelicStatusWidget` | Carrier / state correct |
-| **14** | `WBP_BW_CoreHUD` shell | Layout, teams, round timer |
-| **15** | Between-round planning UI (stub OK) | Planning phase shows / dismisses |
+| **12** | `W_BW_CaptureTheRelic_ScoreWidget` + `B_BW_CaptureTheRelic_Scoring` + `LAS_ShooterGame_StandardHUD` | Team scores visible; updates on round win |
+| **13** | `W_BW_RelicStatusWidget` (via scoring set) | Carrier / possession state correct on client |
+| **14** | `WBP_BW_CoreHUD` shell | Layout: teams, round timer, health; composes or replaces 12–13 |
+| **15** | Between-round planning UI (stub, CoreHUD-owned) | Shows on PostRound / `OnBetweenRoundPlanningStarted`; dismisses when Playing resumes |
 | **16** | Polish `WBP_BW_ResultsWidget` + sudden-death warning at 60s | Full match readable without log spelunking |
 
 ---
@@ -805,9 +1315,12 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Related docs
 
+- [MatchUI_Setup.md](./MatchUI_Setup.md) — Section 2 Steps 12–13
+- [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) — Section 2 Step 14
 - [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md)
 - [Relic_System.md](./Relic_System.md)
 - [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md)
+- [UI_System.md](./UI_System.md)
 - [Lyra_Integration.md](./Lyra_Integration.md)
 - [HeroSelect_Staging_Setup.md](./HeroSelect_Staging_Setup.md) (paused until Section 3)
 - [SYSTEMS_INDEX.md](./SYSTEMS_INDEX.md)
@@ -816,7 +1329,6 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **11-8** — front-end E2E: queue/custom tile → match → results → menu (**3/3** cold starts).
-2. **11b** — URL duration overrides (`WarmupDuration`, `PostRoundDuration`, …); sync [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md).
+1. **Section 2 Step 12-1** — Inspect ShooterCore reference widgets (`W_ScoreWidget_Elimination`, `W_CPScoreWidget`) for AddWidgets slot tags; see [MatchUI_Setup.md](./MatchUI_Setup.md).
+2. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
 3. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.
-4. After **11-8** + **11b**, mark Step 11 **Complete**; proceed to Section 2 (Step 12 HUD).

@@ -1,0 +1,195 @@
+[
+  {
+    "step": "blueprint_read",
+    "result": {
+      "success": true,
+      "path": "/BreakawayCore/UI/Match/W_BW_CaptureTheRelic_ScoreWidget",
+      "className": "W_BW_CaptureTheRelic_ScoreWidget",
+      "parentClass": "BwayCaptureTheRelicScoreWidget",
+      "components": []
+    }
+  },
+  {
+    "step": "move_Team2Pips",
+    "result": {
+      "success": true,
+      "widgetName": "Team2Pips",
+      "oldParent": "ScoreRow",
+      "newParent": "Team2Column"
+    }
+  },
+  {
+    "step": "cdo_bShowRoundTimer",
+    "result": {
+      "success": true,
+      "path": "/BreakawayCore/UI/Match/W_BW_CaptureTheRelic_ScoreWidget",
+      "propertyName": "bShowRoundTimer",
+      "value": "true"
+    }
+  },
+  {
+    "step": "cdo_TimerPollInterval",
+    "result": {
+      "success": true,
+      "path": "/BreakawayCore/UI/Match/W_BW_CaptureTheRelic_ScoreWidget",
+      "propertyName": "TimerPollInterval",
+      "value": "1.0"
+    }
+  },
+  {
+    "step": "details_Text_Team1Score",
+    "result": {
+      "success": true,
+      "properties": {
+        "name": "Text_Team1Score",
+        "class": "TextBlock",
+        "isVisible": false,
+        "text": "0",
+        "widgetType": "TextBlock",
+        "fontFamily": "Roboto",
+        "fontSize": 52,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "parentName": "Team1Column",
+        "parentClass": "VerticalBox"
+      }
+    }
+  },
+  {
+    "step": "details_Text_Team2Score",
+    "result": {
+      "success": true,
+      "properties": {
+        "name": "Text_Team2Score",
+        "class": "TextBlock",
+        "isVisible": false,
+        "text": "0",
+        "widgetType": "TextBlock",
+        "fontFamily": "Roboto",
+        "fontSize": 52,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "parentName": "Team2Column",
+        "parentClass": "VerticalBox"
+      }
+    }
+  },
+  {
+    "step": "details_Text_Timer",
+    "result": {
+      "success": true,
+      "properties": {
+        "name": "Text_Timer",
+        "class": "TextBlock",
+        "isVisible": false,
+        "text": "1:30",
+        "widgetType": "TextBlock",
+        "fontFamily": "Roboto",
+        "fontSize": 24,
+        "color": {
+          "r": 1,
+          "g": 1,
+          "b": 1,
+          "a": 1
+        },
+        "parentName": "RootVBox",
+        "parentClass": "VerticalBox"
+      }
+    }
+  },
+  {
+    "step": "compile",
+    "result": {
+      "success": true,
+      "path": "/BreakawayCore/UI/Match/W_BW_CaptureTheRelic_ScoreWidget"
+    }
+  },
+  {
+    "step": "after_tree",
+    "result": {
+      "success": true,
+      "widgetTree": {
+        "name": "RootSizeBox",
+        "class": "SizeBox",
+        "isVisible": false,
+        "children": [
+          {
+            "name": "RootVBox",
+            "class": "VerticalBox",
+            "isVisible": false,
+            "children": [
+              {
+                "name": "Text_Timer",
+                "class": "TextBlock",
+                "isVisible": false
+              },
+              {
+                "name": "ScoreRow",
+                "class": "HorizontalBox",
+                "isVisible": false,
+                "children": [
+                  {
+                    "name": "Team1Column",
+                    "class": "VerticalBox",
+                    "isVisible": false,
+                    "children": [
+                      {
+                        "name": "Text_Team1Score",
+                        "class": "TextBlock",
+                        "isVisible": false
+                      },
+                      {
+                        "name": "Team1Pips",
+                        "class": "HorizontalBox",
+                        "isVisible": false,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Image_CenterRelicIcon",
+                    "class": "Image",
+                    "isVisible": false
+                  },
+                  {
+                    "name": "Team2Column",
+                    "class": "VerticalBox",
+                    "isVisible": false,
+                    "children": [
+                      {
+                        "name": "Text_Team2Score",
+                        "class": "TextBlock",
+                        "isVisible": false
+                      },
+                      {
+                        "name": "Team2Pips",
+                        "class": "HorizontalBox",
+                        "isVisible": false,
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "step": "save",
+    "result": {
+      "success": true,
+      "path": "/BreakawayCore/UI/Match/W_BW_CaptureTheRelic_ScoreWidget"
+    }
+  }
+]

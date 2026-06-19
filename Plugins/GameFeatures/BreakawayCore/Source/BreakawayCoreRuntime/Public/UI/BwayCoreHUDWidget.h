@@ -47,15 +47,15 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Health")
 	float GetMaxHealth() const;
 
-	/** Get the team 1 score */
+	/** Display-column score for the left side (local/friendly team when assigned). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Score")
 	int32 GetTeam1Score() const;
 
-	/** Get the team 2 score */
+	/** Display-column score for the right side (enemy team when local player is assigned). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Score")
 	int32 GetTeam2Score() const;
 
-	/** Get the local player's team index (0 or 1, -1 if unknown) */
+	/** Authoritative game team for the local player (0 or 1, -1 if spectator/unassigned). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Score")
 	int32 GetLocalPlayerTeam() const;
 
@@ -71,7 +71,7 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Timer")
 	int32 GetCurrentRoundNumber() const;
 
-	/** Get which team currently possesses the relic (-1 = neutral) */
+	/** Relic possessing team in display slot space (0 = left/friendly, 1 = right/enemy, -1 = neutral). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Relic")
 	int32 GetRelicPossessingTeam() const;
 
@@ -85,7 +85,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnHealthChanged(float NewHealth, float MaxHealth, float HealthPercent);
 
-	/** Called when team scores change */
+	/** Called when display-column scores change (Team1 = left/friendly). */
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnScoreChanged(int32 Team1Score, int32 Team2Score);
 
@@ -97,7 +97,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnRoundStateChanged(FName NewState);
 
-	/** Called when relic possession changes */
+	/** Called when relic possession changes. TeamIndex is display slot (0 = left/friendly). */
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnRelicPossessionChanged(int32 TeamIndex, bool bIsCarried);
 
@@ -153,5 +153,13 @@ private:
 
 	/** Last known health for change detection */
 	float LastKnownHealth = -1.0f;
+
+	/** Relic poll state for OnRelicPossessionChanged */
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Relic")
+	float RelicPollInterval = 0.25f;
+
+	float TimeSinceLastRelicPoll = 0.0f;
+	int32 LastRelicPossessingTeam = INDEX_NONE;
+	bool bLastRelicCarried = false;
 };
 

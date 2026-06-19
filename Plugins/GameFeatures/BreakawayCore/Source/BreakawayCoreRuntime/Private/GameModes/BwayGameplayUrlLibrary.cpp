@@ -7,6 +7,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 
 #if WITH_EDITOR
 #include "Editor/EditorEngine.h"
@@ -34,6 +35,10 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("SkipHeroSelection"),
 		TEXT("Experience"),
 		TEXT("MatchFlowConfig"),
+		TEXT("PrematchDuration"),
+		TEXT("WarmupDuration"),
+		TEXT("PostRoundDuration"),
+		TEXT("RoundDuration"),
 		TEXT("DisableRelicBotAI"),
 		TEXT("HeroSelectStaging"),
 		TEXT("HeroSelectTargetMap"),
@@ -380,6 +385,29 @@ bool TryGetOptionFromSources(
 	return false;
 }
 
+bool TryGetFloatOptionFromSources(
+	const TArray<FNamedOptionSource>& Sources,
+	FName OptionName,
+	float& OutValue,
+	FString* OutSourceLabel)
+{
+	const FString Key = OptionName.ToString();
+	for (const FNamedOptionSource& Source : Sources)
+	{
+		FString Value;
+		if (TryFindOptionInSource(Source, Key, Value) && LexTryParseString(OutValue, *Value))
+		{
+			if (OutSourceLabel)
+			{
+				*OutSourceLabel = Source.Label;
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool TryGetStringOptionFromSources(
 	const TArray<FNamedOptionSource>& Sources,
 	FName OptionName,
@@ -513,4 +541,22 @@ bool UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionIntWithSource(
 	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
 	BwayGameplayUrl::GatherNamedOptionSources(WorldContextObject, Sources);
 	return BwayGameplayUrl::TryGetOptionFromSources(Sources, OptionName, OutValue, &OutSourceLabel);
+}
+
+bool UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloat(const UObject* WorldContextObject, FName OptionName, float& OutValue)
+{
+	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
+	BwayGameplayUrl::GatherNamedOptionSources(WorldContextObject, Sources);
+	return BwayGameplayUrl::TryGetFloatOptionFromSources(Sources, OptionName, OutValue, nullptr);
+}
+
+bool UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloatWithSource(
+	const UObject* WorldContextObject,
+	FName OptionName,
+	float& OutValue,
+	FString& OutSourceLabel)
+{
+	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
+	BwayGameplayUrl::GatherNamedOptionSources(WorldContextObject, Sources);
+	return BwayGameplayUrl::TryGetFloatOptionFromSources(Sources, OptionName, OutValue, &OutSourceLabel);
 }
