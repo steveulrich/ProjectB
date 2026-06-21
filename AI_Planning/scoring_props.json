@@ -1,0 +1,260 @@
+{
+  "success": true,
+  "path": "/BreakawayCore/GameModes/BallMode/B_BW_CaptureTheRelic_Scoring",
+  "className": "Blueprint",
+  "propertyCount": 63,
+  "properties": [
+    {
+      "name": "ParentClass",
+      "type": "TSubclassOf<UObject>"
+    },
+    {
+      "name": "BlueprintType",
+      "type": "TEnumAsByte<EBlueprintType>"
+    },
+    {
+      "name": "bRecompileOnLoad",
+      "type": "uint8"
+    },
+    {
+      "name": "bHasBeenRegenerated",
+      "type": "uint8"
+    },
+    {
+      "name": "bIsRegeneratingOnLoad",
+      "type": "uint8"
+    },
+    {
+      "name": "bBeingCompiled",
+      "type": "uint8"
+    },
+    {
+      "name": "bIsNewlyCreated",
+      "type": "uint8"
+    },
+    {
+      "name": "bForceFullEditor",
+      "type": "uint8"
+    },
+    {
+      "name": "bQueuedForCompilation",
+      "type": "uint8"
+    },
+    {
+      "name": "bRunConstructionScriptOnDrag",
+      "type": "uint8"
+    },
+    {
+      "name": "bRunConstructionScriptInSequencer",
+      "type": "uint8"
+    },
+    {
+      "name": "bGenerateConstClass",
+      "type": "uint8"
+    },
+    {
+      "name": "bGenerateAbstractClass",
+      "type": "uint8"
+    },
+    {
+      "name": "bDisplayCompilePIEWarning",
+      "type": "uint8"
+    },
+    {
+      "name": "bDeprecate",
+      "type": "uint8"
+    },
+    {
+      "name": "bDuplicatingReadOnly",
+      "type": "uint8"
+    },
+    {
+      "name": "ShouldCookPropertyGuidsValue",
+      "type": "EShouldCookBlueprintPropertyGuids"
+    },
+    {
+      "name": "CompileMode",
+      "type": "EBlueprintCompileMode"
+    },
+    {
+      "name": "Status",
+      "type": "TEnumAsByte<EBlueprintStatus>"
+    },
+    {
+      "name": "BlueprintDisplayName",
+      "type": "FString"
+    },
+    {
+      "name": "BlueprintDescription",
+      "type": "FString"
+    },
+    {
+      "name": "BlueprintNamespace",
+      "type": "FString"
+    },
+    {
+      "name": "BlueprintCategory",
+      "type": "FString"
+    },
+    {
+      "name": "HideCategories",
+      "type": "TArray"
+    },
+    {
+      "name": "BlueprintSystemVersion",
+      "type": "int32"
+    },
+    {
+      "name": "SimpleConstructionScript",
+      "type": "TObjectPtr<USimpleConstructionScript>"
+    },
+    {
+      "name": "UbergraphPages",
+      "type": "TArray"
+    },
+    {
+      "name": "FunctionGraphs",
+      "type": "TArray"
+    },
+    {
+      "name": "DelegateSignatureGraphs",
+      "type": "TArray"
+    },
+    {
+      "name": "MacroGraphs",
+      "type": "TArray"
+    },
+    {
+      "name": "IntermediateGeneratedGraphs",
+      "type": "TArray"
+    },
+    {
+      "name": "EventGraphs",
+      "type": "TArray"
+    },
+    {
+      "name": "PRIVATE_CachedMacroInfo",
+      "type": "TMap"
+    },
+    {
+      "name": "ComponentTemplates",
+      "type": "TArray"
+    },
+    {
+      "name": "Timelines",
+      "type": "TArray"
+    },
+    {
+      "name": "ComponentClassOverrides",
+      "type": "TArray"
+    },
+    {
+      "name": "InheritableComponentHandler",
+      "type": "TObjectPtr<UInheritableComponentHandler>"
+    },
+    {
+      "name": "NewVariables",
+      "type": "TArray"
+    },
+    {
+      "name": "GeneratedVariables",
+      "type": "TArray"
+    },
+    {
+      "name": "CategorySorting",
+      "type": "TArray"
+    },
+    {
+      "name": "ImportedNamespaces",
+      "type": "TSet"
+    },
+    {
+      "name": "ImplementedInterfaces",
+      "type": "TArray"
+    },
+    {
+      "name": "LastEditedDocuments",
+      "type": "TArray"
+    },
+    {
+      "name": "Bookmarks",
+      "type": "TMap"
+    },
+    {
+      "name": "BookmarkNodes",
+      "type": "TArray"
+    },
+    {
+      "name": "Breakpoints",
+      "type": "TArray"
+    },
+    {
+      "name": "WatchedPins",
+      "type": "TArray"
+    },
+    {
+      "name": "DeprecatedPinWatches",
+      "type": "TArray"
+    },
+    {
+      "name": "ComponentTemplateNameIndex",
+      "type": "TMap"
+    },
+    {
+      "name": "OldToNewComponentTemplateNames",
+      "type": "TMap"
+    },
+    {
+      "name": "Extensions",
+      "type": "TArray"
+    },
+    {
+      "name": "ThumbnailInfo",
+      "type": "TObjectPtr<UThumbnailInfo>"
+    },
+    {
+      "name": "CrcLastCompiledCDO",
+      "type": "uint32"
+    },
+    {
+      "name": "CrcLastCompiledSignature",
+      "type": "uint32"
+    },
+    {
+      "name": "bCachedDependenciesUpToDate",
+      "type": "bool"
+    },
+    {
+      "name": "CachedDependencies",
+      "type": "TSet"
+    },
+    {
+      "name": "CachedDependents",
+      "type": "TSet"
+    },
+    {
+      "name": "CachedUDSDependencies",
+      "type": "TSet"
+    },
+    {
+      "name": "OriginalClass",
+      "type": "TObjectPtr<UClass>"
+    },
+    {
+      "name": "SkeletonGeneratedClass",
+      "type": "TSubclassOf<UObject>"
+    },
+    {
+      "name": "GeneratedClass",
+      "type": "TSubclassOf<UObject>"
+    },
+    {
+      "name": "bLegacyNeedToPurgeSkelRefs",
+      "type": "bool"
+    },
+    {
+      "name": "BlueprintGuid",
+      "type": "FGuid"
+    }
+  ]
+}

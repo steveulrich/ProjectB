@@ -6,19 +6,21 @@
 #include "CommonActivatableWidget.h"
 #include "BwayCoreHUDWidget.generated.h"
 
+class UImage;
+class UProgressBar;
+class UTextBlock;
+class UTexture2D;
 class ULyraHealthComponent;
-class ULyraAbilitySystemComponent;
 class ABwayGameState;
-class ABwayPlayerState;
 
 /**
  * UBwayCoreHUDWidget
- * 
- * The main gameplay HUD widget for Breakaway.
- * Provides health, ability, score, and timer display integration.
- * Designed to be extended in Blueprint for visual implementation.
+ *
+ * DEPRECATED (Section 2 pivot): Prefer Lyra slot composition — `UBwayCaptureTheRelicScoreWidget`,
+ * `UBwayRelicStatusWidget`, `UBwayHealthHUDWidget`, `UBwayTeamPortraitsHUDWidget` injected via
+ * `UGameFeatureAction_AddWidgets` on `EAS_BW_CaptureTheRelic`. Kept for reference / optional overlay use.
  */
-UCLASS(Abstract, Blueprintable, meta = (DisplayName = "Breakaway Core HUD"))
+UCLASS(Abstract, Blueprintable, meta = (DisplayName = "Breakaway Core HUD (Deprecated)"))
 class BREAKAWAYCORERUNTIME_API UBwayCoreHUDWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
@@ -109,6 +111,73 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnLocalPlayerRespawned();
 
+	/** Optional named bindings — auto-updated when present in the widget tree. */
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_Team1Score;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_Team2Score;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_Timer;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_RoundLabel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_RelicStatus;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_CarrierName;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UProgressBar> Progress_Health;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_HealthValues;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team1_Portrait_1;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team1_Portrait_2;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team1_Portrait_3;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team1_Portrait_4;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team2_Portrait_1;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team2_Portrait_2;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team2_Portrait_3;
+
+	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UImage> Team2_Portrait_4;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")
+	float TimerPollInterval = 1.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
+	float PortraitRefreshInterval = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
+	TObjectPtr<UTexture2D> EmptyPortraitTexture = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Relic")
+	FText NeutralStatusText = NSLOCTEXT("BwayCoreHUD", "Neutral", "NEUTRAL");
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Relic")
+	FText Team1StatusText = NSLOCTEXT("BwayCoreHUD", "Team1", "TEAM 1 POSSESSION");
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Relic")
+	FText Team2StatusText = NSLOCTEXT("BwayCoreHUD", "Team2", "TEAM 2 POSSESSION");
+
 private:
 	/** Bind to game state delegates */
 	void BindToGameState();
@@ -159,7 +228,22 @@ private:
 	float RelicPollInterval = 0.25f;
 
 	float TimeSinceLastRelicPoll = 0.0f;
+	float TimeSinceLastTimerPoll = 0.0f;
+	float TimeSinceLastPortraitRefresh = 0.0f;
 	int32 LastRelicPossessingTeam = INDEX_NONE;
 	bool bLastRelicCarried = false;
+
+	void RefreshAllDisplay();
+	void RefreshScoreDisplay();
+	void RefreshTimerDisplay();
+	void RefreshRoundLabel();
+	void RefreshRelicDisplay(int32 DisplayPossessingTeam, bool bIsCarried);
+	void RefreshHealthDisplay(float NewHealth, float MaxHealth, float HealthPercent);
+	void RefreshTeamPortraits();
+
+	FText BuildRelicStatusText(int32 DisplayPossessingTeam) const;
+	void UpdateBoundScoreTexts(int32 Team1Score, int32 Team2Score);
+	void UpdateBoundTimerText(int32 SecondsRemaining);
+	TArray<UImage*> GetTeamPortraitImages(int32 DisplaySlotIndex) const;
 };
 

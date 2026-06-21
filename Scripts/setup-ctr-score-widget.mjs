@@ -94,6 +94,7 @@ async function main() {
   const steps = [
     ['SizeBox', 'RootSizeBox', null],
     ['VerticalBox', 'RootVBox', 'RootSizeBox'],
+    ['TextBlock', 'Text_RoundLabel', 'RootVBox'],
     ['TextBlock', 'Text_Timer', 'RootVBox'],
     ['HorizontalBox', 'ScoreRow', 'RootVBox'],
     ['VerticalBox', 'Team1Column', 'ScoreRow'],
@@ -130,6 +131,23 @@ async function main() {
   log.push({
     step: 'ScoreRow_slot',
     result: await setProp(client, 'ScoreRow', 'slot.hAlign', 'center'),
+  });
+
+  // Round label
+  for (const [prop, val] of [
+    ['text', 'ROUND 1'],
+    ['fontSize', '20'],
+    ['ColorAndOpacity', '(R=0.800000,G=0.800000,B=0.800000,A=1.000000)'],
+    ['Justification', 'ETextJustify::Center'],
+  ]) {
+    log.push({
+      step: `Text_RoundLabel_${prop}`,
+      result: await setProp(client, 'Text_RoundLabel', prop, val),
+    });
+  }
+  log.push({
+    step: 'Text_RoundLabel_slot',
+    result: await setProp(client, 'Text_RoundLabel', 'slot.hAlign', 'center'),
   });
 
   // Timer text defaults

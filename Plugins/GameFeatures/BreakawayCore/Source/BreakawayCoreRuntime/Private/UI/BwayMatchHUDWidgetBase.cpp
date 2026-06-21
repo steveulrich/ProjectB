@@ -222,6 +222,21 @@ int32 UBwayMatchHUDWidgetBase::GetDisplayRelicPossessingTeam(const UWorld* World
 	return MapGameTeamToDisplaySlot(GameTeamIndex, LocalPlayerTeamIndex);
 }
 
+int32 UBwayMatchHUDWidgetBase::GetCurrentRoundNumberFromWorld(const UWorld* World)
+{
+	if (!World)
+	{
+		return 0;
+	}
+
+	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		return GameState->GetCurrentRoundNumber();
+	}
+
+	return 0;
+}
+
 void UBwayMatchHUDWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -287,6 +302,7 @@ void UBwayMatchHUDWidgetBase::BindToMatchData()
 		}
 
 		GameState->OnRoundTimeChanged.AddDynamic(this, &UBwayMatchHUDWidgetBase::HandleRoundTimeChanged);
+		GameState->OnRoundStateChanged.AddDynamic(this, &UBwayMatchHUDWidgetBase::HandleRoundStateChanged);
 		bBoundToMatchData = true;
 	}
 }
@@ -306,6 +322,7 @@ void UBwayMatchHUDWidgetBase::UnbindFromMatchData()
 	if (CachedGameState.IsValid())
 	{
 		CachedGameState->OnRoundTimeChanged.RemoveDynamic(this, &UBwayMatchHUDWidgetBase::HandleRoundTimeChanged);
+		CachedGameState->OnRoundStateChanged.RemoveDynamic(this, &UBwayMatchHUDWidgetBase::HandleRoundStateChanged);
 	}
 
 	CachedScoringComponent.Reset();
@@ -321,4 +338,9 @@ void UBwayMatchHUDWidgetBase::HandleTeamScoreChanged(int32 TeamIndex, int32 NewS
 void UBwayMatchHUDWidgetBase::HandleRoundTimeChanged(int32 SecondsRemaining)
 {
 	NotifyRoundTimeChanged(SecondsRemaining);
+}
+
+void UBwayMatchHUDWidgetBase::HandleRoundStateChanged(FName NewState)
+{
+	NotifyRoundStateChanged(NewState);
 }

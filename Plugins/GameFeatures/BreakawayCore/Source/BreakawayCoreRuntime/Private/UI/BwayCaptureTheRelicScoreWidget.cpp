@@ -16,6 +16,7 @@ void UBwayCaptureTheRelicScoreWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	RefreshScoreDisplay();
+	RefreshRoundLabelDisplay();
 
 	if (bShowRoundTimer)
 	{
@@ -74,6 +75,27 @@ void UBwayCaptureTheRelicScoreWidget::NotifyRoundTimeChanged(int32 SecondsRemain
 	{
 		UpdateBoundTimerText(SecondsRemaining);
 		OnRoundTimeUpdated(SecondsRemaining, FormatRoundTime(SecondsRemaining));
+	}
+}
+
+void UBwayCaptureTheRelicScoreWidget::NotifyRoundStateChanged(FName NewState)
+{
+	RefreshRoundLabelDisplay();
+}
+
+void UBwayCaptureTheRelicScoreWidget::RefreshRoundLabelDisplay()
+{
+	UpdateBoundRoundLabelText();
+}
+
+void UBwayCaptureTheRelicScoreWidget::UpdateBoundRoundLabelText()
+{
+	if (Text_RoundLabel)
+	{
+		const int32 RoundNumber = FMath::Max(GetCurrentRoundNumberFromWorld(GetWorld()), 1);
+		Text_RoundLabel->SetText(FText::Format(
+			NSLOCTEXT("BwayCTRScore", "RoundLabel", "ROUND {0}"),
+			FText::AsNumber(RoundNumber)));
 	}
 }
 

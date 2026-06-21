@@ -794,9 +794,9 @@ Reference layouts (Breakaway target): top-center **timer + team scores + round-w
 
 | Step | Status | Notes |
 |------|--------|-------|
-| **12** | **In progress** | C++ slot widgets landed (`12-0`); editor BP + action set open |
-| **13** | **Not started** | Relic status widget |
-| **14** | **Not started** | `WBP_BW_CoreHUD` shell — see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) |
+| **12** | **Complete** | Score slot widget C++ + `W_BW_CaptureTheRelic_ScoreWidget` UMG; experience wired; **local-team-left** display remap on `UBwayMatchHUDWidgetBase` |
+| **13** | **In progress** | C++ + `W_BW_RelicStatusWidget`; EAS slot row restore via pivot script |
+| **14** | **In progress** | Slot composition pivot — health + portraits slots; see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) |
 | **15** | **Not started** | Between-round planning stub |
 | **16** | **Not started** | Results polish + sudden-death banner |
 
@@ -808,8 +808,9 @@ Reference layouts (Breakaway target): top-center **timer + team scores + round-w
 |----------|--------|
 | Test harness | PIE on `L_BW_DevMap`, **`B_BW_Experience_Dev`**, `SkipHeroSelection=1` |
 | Net mode | **Listen Server** from Step 12 onward |
-| HUD injection | Lyra **`UGameFeatureAction_AddWidgets`** + ShooterCore layout (Steps 12–13 slot widgets) → CoreHUD layout (Step 14) |
-| Widget logic | C++ slot bases (`UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget`); BP = layout/styling only |
+| HUD injection | Lyra **`UGameFeatureAction_AddWidgets`** on **`EAS_BW_CaptureTheRelic`** + ShooterCore-style layout (`LAS_BW_MatchHUD_Dev` or `LAS_ShooterGame_StandardHUD`) |
+| Widget logic | C++ slot bases (`UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget`, `UBwayHealthHUDWidget`, `UBwayTeamPortraitsHUDWidget`); BP = layout/styling only |
+| Display perspective | **Local team always left** — UI remaps authoritative game teams 0/1 to display columns via `UBwayMatchHUDWidgetBase`; spectators see world order (no swap) |
 | Experience parent | **`LyraExperienceDefinition`** — do not reparent |
 | Pawn | **`DA_BW_PawnData_Humanoid`** — no hero select UI |
 | Bulletproof bar | Pass Criteria Template + **3/3 cold starts** per step |
@@ -820,21 +821,23 @@ Reference layouts (Breakaway target): top-center **timer + team scores + round-w
 L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
 ```
 
-**Experience baseline entering Section 2** (Section 1 / Step 11 complete):
+**Experience baseline after Step 12** (Section 1 / Step 11 + Step 12 complete):
 
-| Present on `B_BW_Experience_Dev` | Absent until Section 2 |
-|----------------------------------|------------------------|
-| `LAS_BW_SharedInput`, teams, bots, relic pickup/throw/pass action sets | `LAS_ShooterGame_StandardHUD` (Step 12) |
-| `BwayGameFeatureAction_MatchFlowConfig` → `DA_BW_MatchFlow_Dev` | `B_BW_CaptureTheRelic_Scoring` widget injection (Step 12) |
-| Gameplay phases via RM orchestrator (no auto `BW_Phase_*` grants) | Match HUD widgets |
-| `BP_BW_GameState` with Scoring, RelicManager, RoundManagement | `ResultsScreenWidgetClass` polish (Step 16) |
+| Present on `B_BW_Experience_Dev` | Absent until later Section 2 steps |
+|----------------------------------|-------------------------------------|
+| `LAS_BW_SharedInput`, teams, bots, relic pickup/throw/pass action sets | Between-round planning UI (Step 15) |
+| `BwayGameFeatureAction_MatchFlowConfig` → `DA_BW_MatchFlow_Dev` | `ResultsScreenWidgetClass` polish (Step 16) |
+| **`LAS_ShooterGame_StandardHUD`** or **`LAS_BW_MatchHUD_Dev`** | |
+| **`EAS_BW_CaptureTheRelic`** → slot widgets (score, relic, health, portraits) | |
+| Gameplay phases via RM orchestrator (no auto `BW_Phase_*` grants) | |
+| `BP_BW_GameState` with Scoring, RelicManager, RoundManagement | |
 
 ---
 
 ## Related docs (Section 2)
 
 - [MatchUI_Setup.md](./MatchUI_Setup.md) — Steps 12–13 editor tutorials
-- [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) — Step 14 layout
+- [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) — Step 14 slot composition (health + portraits)
 - [UI_System.md](./UI_System.md) — C++ widget bases
 - [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) — PostRound, PostMatch, URL overrides
 - [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) — tutorial format reference
@@ -850,16 +853,17 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 | `OnRoundTimeChanged` / `OnSuddenDeathWarning` authority-only broadcast | 14–16 | 14-3, 15-2, 16-3 | Poll `GetRoundTimeRemaining()` on clients (score widget C++ already polls timer) |
 | Extended results stats (damage, healing, gold, fumbles) not on `ABwayPlayerState` | 16 | 16-1 | Show K/D/A/Objective only; hide or `"—"` extended rows |
 
-**Resolved in C++ (May 2026):**
+**Resolved in C++ (May–Jun 2026):**
 
-- Score/relic slot widgets — `UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget` (shared `UBwayMatchHUDWidgetBase`)
-- `OnRelicPossessionChanged` in `UBwayCoreHUDWidget` — 0.25s poll via shared relic helpers
+- Score/relic/health/portrait slot widgets — `UBwayCaptureTheRelicScoreWidget`, `UBwayRelicStatusWidget`, `UBwayHealthHUDWidget`, `UBwayTeamPortraitsHUDWidget` (shared `UBwayMatchHUDWidgetBase`)
+- **`UBwayCoreHUDWidget`** — deprecated; monolithic shell abandoned in favor of slot composition
+- **Display-team remap** — `UBwayMatchHUDWidgetBase` + `UBwayHUDHelpers::*ForDisplaySlot` map local/friendly team to left column (all slot widgets)
 
 ---
 
 ## Step 12 — Score widget
 
-**Status:** **Not started**.
+**Status:** **Complete** (Jun 2026).
 
 **Goal:** Team round-win scores visible in HUD and updating on each round win.
 
@@ -871,33 +875,37 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 |-------|-------|
 | **Data** | `UBwayScoringComponent` on `BP_BW_GameState` — `OnTeamScoreChanged`; clients refresh via `OnRep_Scores` |
 | **Layout host** | `LAS_ShooterGame_StandardHUD` — Lyra HUD layout with extension slots |
-| **Injection** | `B_BW_CaptureTheRelic_Scoring` → `UGameFeatureAction_AddWidgets` → slot `HUD.Slot.TeamScore` |
+| **Injection** | **`EAS_BW_CaptureTheRelic`** → `UGameFeatureAction_AddWidgets` → slot `HUD.Slot.TeamScore` |
 | **Display** | `W_BW_CaptureTheRelic_ScoreWidget` — Blueprint child of **`UBwayCaptureTheRelicScoreWidget`** |
+| **Display perspective** | `UBwayMatchHUDWidgetBase` remaps scores so **display Team 1 (left)** = local player's team; spectators (`LocalTeam == -1`) see authoritative order |
+
+`Text_Team1Score` / `Text_Team2Score` are **display columns** (left/right), not raw game team indices. Blue left / orange right UMG styling aligns with friendly/enemy after remap.
 
 Reference: `/ShooterCore/Elimination/UI/W_ScoreWidget_Elimination` (layout only). Editor steps: [MatchUI_Setup.md](./MatchUI_Setup.md).
 
 ### Substeps
 
-| ID | Tag | Task |
-|----|-----|------|
-| **12-0** | [C++] | **`UBwayMatchHUDWidgetBase`**, **`UBwayCaptureTheRelicScoreWidget`** — score/timer binding extracted from CoreHUD |
-| **12-1** | [Editor] | Inspect ShooterCore reference widgets; note `HUD.Slot.TeamScore` in `LAS_ShooterGame_StandardHUD` |
-| **12-2** | [Editor] | Configure `B_BW_CaptureTheRelic_Scoring` → **Add Widgets** → `W_BW_CaptureTheRelic_ScoreWidget` → `HUD.Slot.TeamScore` |
-| **12-3** | [Editor] | Create `W_BW_CaptureTheRelic_ScoreWidget` BP (parent **`BwayCaptureTheRelicScoreWidget`**) — UMG layout + BindWidget names only |
-| **12-4** | [Editor] | Add `LAS_ShooterGame_StandardHUD` + `B_BW_CaptureTheRelic_Scoring` to `B_BW_Experience_Dev` ActionSets |
-| **12-5** | [PIE] | Pass checklist (3/3 cold starts) |
+| ID | Tag | Task | Status |
+|----|-----|------|--------|
+| **12-0** | [C++] | **`UBwayMatchHUDWidgetBase`**, **`UBwayCaptureTheRelicScoreWidget`** — score/timer binding extracted from CoreHUD | Done |
+| **12-0b** | [C++] | Display-team remap helpers on base + **`UBwayHUDHelpers::*ForDisplaySlot`** (shared with Steps 13–14) | Done |
+| **12-1** | [Editor] | Inspect ShooterCore reference widgets; note `HUD.Slot.TeamScore` in `LAS_ShooterGame_StandardHUD` | Done |
+| **12-2** | [Editor] | Configure **`EAS_BW_CaptureTheRelic`** → **Add Widgets** → `W_BW_CaptureTheRelic_ScoreWidget` → `HUD.Slot.TeamScore` | Done |
+| **12-3** | [Editor] | Create `W_BW_CaptureTheRelic_ScoreWidget` BP (parent **`BwayCaptureTheRelicScoreWidget`**) — UMG layout + BindWidget names incl. optional `Text_RoundLabel` | Done |
+| **12-4** | [Editor] | Add `LAS_ShooterGame_StandardHUD` + `EAS_BW_CaptureTheRelic` to `B_BW_Experience_Dev` ActionSets | Done |
+| **12-5** | [PIE] | Pass checklist (3/3 cold starts) | Done |
 
 ### Experience changes (`B_BW_Experience_Dev`)
 
 | Add | Purpose |
 |-----|---------|
-| `LAS_ShooterGame_StandardHUD` | HUD layout + extension slots |
-| `B_BW_CaptureTheRelic_Scoring` | Injects score widget |
+| `LAS_ShooterGame_StandardHUD` or `LAS_BW_MatchHUD_Dev` | HUD layout + extension slots |
+| `EAS_BW_CaptureTheRelic` | Injects score widget (+ later slot rows) |
 
 | Remove / omit | |
 |---------------|--|
-| Relic status widget row in scoring set | Step 13 |
-| `WBP_BW_CoreHUD` layout | Step 14 |
+| Relic status widget row on EAS | Step 13 |
+| Health / portrait slot rows on EAS | Step 14 |
 
 ### PIE URL
 
@@ -909,12 +917,13 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 ### Pass checklist
 
-- [ ] Documented experience action sets match table above
-- [ ] Team 1 and Team 2 scores visible at **0–0** on match start
-- [ ] Score a round → winning team digit increments before PostRound overlay
-- [ ] **3/3** cold-start PIE runs (Listen Server)
-- [ ] No unexpected `Error` in Output Log
-- [ ] Regression: relic pickup/throw/score, bot AI, Step 11 phase flow (Prematch → Warmup → Playing → PostRound)
+- [x] Documented experience action sets match table above
+- [x] Team 1 and Team 2 scores visible at **0–0** on match start
+- [x] Score a round → winning team digit increments before PostRound overlay
+- [x] Local player on game team 1 sees **their** score on the **left**
+- [x] **3/3** cold-start PIE runs (Listen Server)
+- [x] No unexpected `Error` in Output Log
+- [x] Regression: relic pickup/throw/score, bot AI, Step 11 phase flow (Prematch → Warmup → Playing → PostRound)
 
 ### Regression
 
@@ -929,7 +938,7 @@ Section 1: pickup, throw, pass, walk-in/throw score, round reset, sudden death m
 | Symptom | Check |
 |---------|--------|
 | No HUD | `LAS_ShooterGame_StandardHUD` on experience; cold-start editor |
-| Widget missing | Scoring action set on experience; Slot ID = `HUD.Slot.TeamScore` |
+| Widget missing | `EAS_BW_CaptureTheRelic` on experience; Slot ID = `HUD.Slot.TeamScore` |
 | Scores stuck at 0 | Recompile C++; BP parent = `BwayCaptureTheRelicScoreWidget`; BindWidget names `Text_Team1Score` / `Text_Team2Score` |
 | Wrong/overlapping score UI | Only one widget registered to `HUD.Slot.TeamScore` |
 
@@ -948,7 +957,7 @@ Section 1: pickup, throw, pass, walk-in/throw score, round reset, sudden death m
 | Layer | Owner |
 |-------|-------|
 | **Data** | `UBwayRelicManagerComponent` — `GetRelicPossessingTeam()` (replicated); `ARelicActor::CurrentCarrier` for carrier name |
-| **Injection** | Same `B_BW_CaptureTheRelic_Scoring` action — slot `HUD.Slot.ModeStatus` |
+| **Injection** | Same **`EAS_BW_CaptureTheRelic`** action — slot `HUD.Slot.ModeStatus` |
 | **Display** | `W_BW_RelicStatusWidget` — Blueprint child of **`UBwayRelicStatusWidget`** |
 
 **Binding:** C++ polls `GetRelicPossessingTeam()` + carrier name every **0.25s** (client-safe). No Blueprint Event Graph required for pass.
@@ -959,16 +968,16 @@ Editor steps: [MatchUI_Setup.md](./MatchUI_Setup.md) section 3.
 
 | ID | Tag | Task |
 |----|-----|------|
-| **13-0** | [C++] | **`UBwayRelicStatusWidget`** — relic poll + BindWidget status/carrier text |
+| **13-0** | [C++] | **`UBwayRelicStatusWidget`** — relic poll + BindWidget status/carrier text; uses display-team remap | Done |
 | **13-1** | [Editor] | Create `W_BW_RelicStatusWidget` BP (parent **`BwayRelicStatusWidget`**) — layout + BindWidget names |
-| **13-2** | [Editor] | Add second **Widgets** row to `B_BW_CaptureTheRelic_Scoring` → `HUD.Slot.ModeStatus` |
+| **13-2** | [Editor] | Add second **Widgets** row to **`EAS_BW_CaptureTheRelic`** → `HUD.Slot.ModeStatus` |
 | **13-3** | [PIE] | Listen server: pickup / throw / pass update UI |
 
 ### Experience changes
 
 | Add / change | Purpose |
 |--------------|---------|
-| `B_BW_CaptureTheRelic_Scoring` | Add `W_BW_RelicStatusWidget` → `HUD.Slot.ModeStatus` |
+| **`EAS_BW_CaptureTheRelic`** | Add `W_BW_RelicStatusWidget` → `HUD.Slot.ModeStatus` |
 
 No other experience ActionSet changes.
 
@@ -978,7 +987,7 @@ Same as Step 12.
 
 ### Pass checklist
 
-- [ ] Documented scoring set has both TeamScore and ModeStatus rows
+- [ ] Documented EAS has both TeamScore and ModeStatus rows
 - [ ] Round start shows **NEUTRAL** (or equivalent)
 - [ ] Pickup → correct team label + carrier player name
 - [ ] Throw / drop → returns to neutral
@@ -1005,11 +1014,11 @@ Step 12 score widget; Section 1 relic gameplay.
 
 ---
 
-## Step 14 — Core HUD shell
+## Step 14 — Health + team portrait slots (slot composition pivot)
 
-**Status:** **Not started**.
+**Status:** **In progress** (Jun 2026 pivot).
 
-**Goal:** Single `WBP_BW_CoreHUD` provides top bar (scores, timer, round #), team portraits, health, and relic status — composes or replaces Steps 12–13 standalone widgets.
+**Goal:** Complete in-match HUD via Lyra **slot widgets** — add health bar and team portrait rows without a monolithic CoreHUD. Steps 12–13 widgets remain on **`EAS_BW_CaptureTheRelic`**.
 
 **Prerequisites:** Step **13** pass (3/3).
 
@@ -1017,34 +1026,37 @@ Step 12 score widget; Section 1 relic gameplay.
 
 | Layer | Owner |
 |-------|-------|
-| **Data** | `UBwayCoreHUDWidget` getters + BP events (`OnScoreChanged`, `OnRoundTimeUpdated`, `OnHealthChanged`, …) |
-| **Team rows** | `UBwayHUDHelpers::GetTeamPlayerHUDData` / `UpdateTeamPortraits` |
-| **Display** | `WBP_BW_CoreHUD` parent **`UBwayCoreHUDWidget`** at `/BreakawayCore/UI/Match/` |
+| **Layout host** | `LAS_BW_MatchHUD_Dev` (duplicate of `LAS_ShooterGame_StandardHUD`) → `WBP_BW_MatchHUDLayout` @ `UI.Layer.Game` |
+| **Injection** | **`EAS_BW_CaptureTheRelic`** — four **Widgets** rows (score, relic, health, portraits) |
+| **Health** | `UBwayHealthHUDWidget` → `HUD.Slot.Health` |
+| **Portraits** | `UBwayTeamPortraitsHUDWidget` → `HUD.Slot.TeamPortraits` |
+| **Round label** | Optional `Text_RoundLabel` on score slot (`UBwayCaptureTheRelicScoreWidget`) |
 
 Layout tutorial: [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md).
+
+**Automation:** `Scripts/setup-health-hud-widget.mjs`, `setup-team-portraits-widget.mjs`, `setup-match-hud-layout.mjs`, `pivot-hud-to-slots.mjs`.
 
 ### Substeps
 
 | ID | Tag | Task |
 |----|-----|------|
-| **14-0** | [C++] optional | Wire `RelicManager` → `OnRelicPossessionChanged` in `BwayCoreHUDWidget.cpp`; Tier 1 compile |
-| **14-1** | [Editor] | Create `WBP_BW_CoreHUD` parented to `UBwayCoreHUDWidget` |
-| **14-2** | [Editor] | Layout: top bar, team portrait rows, bottom health, relic cluster (see CoreHUD_Layout_Setup.md) |
-| **14-3** | [Editor + BP] | Implement `OnScoreChanged`, `OnRoundTimeUpdated`, `OnRoundStateChanged`, `OnHealthChanged`; Tick fallback for timer on clients |
-| **14-4** | [Editor] | Inject CoreHUD via **Add Widgets → Layout** (`Lyra.HUD.PlayerHUD`); remove standalone 12–13 slot rows from scoring set |
-| **14-5** | [PIE] | Pass checklist + regression 12–13 behavior via shell |
+| **14-0** | [C++] | **`UBwayHealthHUDWidget`**, **`UBwayTeamPortraitsHUDWidget`**, score `Text_RoundLabel` + round-state bind; tags `HUD.Slot.Health`, `HUD.Slot.TeamPortraits` | Done |
+| **14-1** | [Editor/script] | Create `W_BW_HealthWidget`, `W_BW_TeamPortraitsWidget` BPs |
+| **14-2** | [Editor/script] | Duplicate layout → `WBP_BW_MatchHUDLayout`; LAS → `LAS_BW_MatchHUD_Dev`; add extension points |
+| **14-3** | [Editor/script] | **`pivot-hud-to-slots.mjs`** — restore EAS rows; remove `B_BW_CoreHUD_Layout`; `bShowRoundTimer=true` |
+| **14-4** | [PIE] | Pass checklist + regression 12–13 |
 
 ### Experience changes
 
-| Add | Purpose |
-|-----|---------|
-| `B_BW_CoreHUD_Layout` (new action set) or Layout row on HUD action set | Injects `WBP_BW_CoreHUD` as full layout |
+| Add / change | Purpose |
+|--------------|---------|
+| `LAS_BW_MatchHUD_Dev` | Breakaway HUD layout shell (replaces Shooter LAS on experience) |
+| `EAS_BW_CaptureTheRelic` | Four slot widget rows |
 
 | Remove | Purpose |
 |--------|---------|
-| `W_BW_CaptureTheRelic_ScoreWidget` slot row | Avoid duplicate scores |
-| `W_BW_RelicStatusWidget` slot row | Avoid duplicate relic UI |
-| *(optional)* `LAS_ShooterGame_StandardHUD` | If custom `LAS_BW_MatchHUD_Dev` replaces Shooter layout entirely |
+| `B_BW_CoreHUD_Layout` | Deprecated monolithic CoreHUD path |
+| Empty widget list on EAS | Restore score/relic if removed during failed CoreHUD migration |
 
 ### PIE URL
 
@@ -1054,32 +1066,32 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 ### Pass checklist
 
-- [ ] Documented experience matches layout injection table
-- [ ] Timer counts down **MM:SS** during active round
-- [ ] Team scores and round number visible
-- [ ] Team portrait row populated (placeholder portraits OK)
+- [ ] Documented experience uses slot composition (no CoreHUD layout)
+- [ ] Timer + round label on score slot; team scores visible
+- [ ] Relic status slot matches Step 13
 - [ ] Health bar tracks damage / respawn
-- [ ] Relic status matches Step 13 behavior
+- [ ] Team portrait rows populated (placeholder OK)
 - [ ] No duplicate score/relic widgets
 - [ ] **3/3** cold-start Listen Server runs
 - [ ] Regression: scoring, relic AI, match phases
 
 ### Regression
 
-Steps 12–13 behavior (via CoreHUD, not standalone widgets); Section 1 gameplay.
+Steps 12–13 slot widgets; Section 1 gameplay.
 
 ### Git discipline
 
-`core-loop: step 14 passed (core HUD shell)`
+`core-loop: step 14 passed (match HUD slot composition)`
 
 ### Troubleshooting
 
 | Symptom | Check |
 |---------|--------|
-| Double HUD elements | Remove Step 12–13 slot rows from scoring set |
-| Timer frozen on client | Add 1s Tick poll using `GetRoundTimeFormatted()` |
-| Health bar empty | Humanoid pawn spawned; health component present |
-| Relic text stale | 0.25s poll or complete 14-0 C++ bind |
+| No score/relic HUD | `EAS_BW_CaptureTheRelic` widget rows not empty — run `pivot-hud-to-slots.mjs` |
+| Missing health/portraits | Extension points on `WBP_BW_MatchHUDLayout`; gameplay tags registered |
+| Double HUD elements | Remove `B_BW_CoreHUD_Layout` from experience |
+| Timer frozen on client | Score widget `bShowRoundTimer=true`; C++ 1s poll |
+| Health bar empty | Humanoid pawn; recompile C++ health widget |
 
 ---
 
@@ -1096,7 +1108,7 @@ Steps 12–13 behavior (via CoreHUD, not standalone widgets); Section 1 gameplay
 | Layer | Owner |
 |-------|-------|
 | **Data** | `UBwayRoundManagementComponent::OnBetweenRoundPlanningStarted(CompletedRoundNumber, PlanningDurationSeconds)`; `GetCurrentMatchPhase() == PostRound` |
-| **Display** | `WBP_BW_BetweenRoundPlanning` — owned by CoreHUD (viewport overlay or child widget) |
+| **Display** | `WBP_BW_BetweenRoundPlanning` — viewport overlay from a dedicated slot widget or game-layer push (Step 15; not CoreHUD-owned) |
 
 Stub OK: title + countdown text only — no buildable shop until Section 3+.
 
@@ -1105,13 +1117,13 @@ Stub OK: title + countdown text only — no buildable shop until Section 3+.
 | ID | Tag | Task |
 |----|-----|------|
 | **15-1** | [Editor] | Create `WBP_BW_BetweenRoundPlanning` at `/BreakawayCore/UI/Match/` — title `"Between Rounds"`, countdown `Text`, semi-transparent background |
-| **15-2** | [Editor + BP] | On `WBP_BW_CoreHUD` Construct: get RM → bind `OnBetweenRoundPlanningStarted` → show overlay + start countdown; poll `GetCurrentMatchPhase()` → hide when `Playing` |
-| **15-3** | [Editor] | No new experience action set — overlay spawned/managed from CoreHUD |
+| **15-2** | [Editor + BP] | Spawn/show overlay on `OnBetweenRoundPlanningStarted`; poll `GetCurrentMatchPhase()` → hide when `Playing` |
+| **15-3** | [Editor] | No new experience action set — overlay managed from a small BP helper or future overlay slot |
 | **15-4** | [PIE] | Short PostRound URL test |
 
 ### Experience changes
 
-No ActionSet changes. Overlay wired from CoreHUD Event Graph.
+No ActionSet changes. Overlay wired from a slot widget or CommonUI layer push.
 
 ### PIE URL
 
@@ -1132,7 +1144,7 @@ Use `PointsToWin=3` so PostRound loop runs between rounds.
 
 ### Regression
 
-In-round HUD (Step 14); multi-round flow (Step 11-6).
+In-round HUD slot widgets (Step 14); multi-round flow (Step 11-6).
 
 ### Git discipline
 
@@ -1164,7 +1176,7 @@ In-round HUD (Step 14); multi-round flow (Step 11-6).
 | **Results data** | `ABwayGameState::ShowResultsScreen` → `Client_ShowResults` → `UBwayResultsScreenWidget::ApplyAuthoritativeResults` |
 | **Per-player stats** | `ABwayPlayerState` — K/D/A/Objective only (extended screenshot columns deferred) |
 | **Sudden death** | `UBwayRoundManagementComponent::OnSuddenDeathWarning` at `SuddenDeathWarningSeconds` (default **60**); optional sync with midfield divider visibility (Step 9 C++) |
-| **Display** | `WBP_BW_ResultsWidget` at `/BreakawayCore/UI/`; sudden-death banner on `WBP_BW_CoreHUD` |
+| **Display** | `WBP_BW_ResultsWidget` at `/BreakawayCore/UI/`; sudden-death banner on score slot widget (`Text_Timer` color) or future overlay slot |
 
 **Asset naming:** use existing `WBP_BW_ResultsWidget` (not `WBP_BW_ResultsScreen`).
 
@@ -1174,7 +1186,7 @@ In-round HUD (Step 14); multi-round flow (Step 11-6).
 |----|-----|------|
 | **16-1** | [Editor] | Polish `WBP_BW_ResultsWidget` (parent `UBwayResultsScreenWidget`) — VICTORY/DEFEAT header, round-win pips, team stat rows (K/D/A/Objective), MVP block, Return to Lobby / Play Again buttons |
 | **16-2** | [Editor] | `BP_BW_GameState` → **Results Screen Widget Class** = `WBP_BW_ResultsWidget` |
-| **16-3** | [Editor + BP] | On CoreHUD: bind RM `OnSuddenDeathWarning` + poll `GetRoundTimeRemaining() <= 60` fallback; show/hide `Border_SuddenDeathBanner` |
+| **16-3** | [Editor + BP] | On score widget BP: bind RM `OnSuddenDeathWarning` + poll `GetRoundTimeRemaining() <= 60` fallback; red timer at ≤60s (C++ `OnRoundTimeUpdated` hook) |
 | **16-4** | [PIE] | `PointsToWin=1` full match → results → Return to Lobby; **3/3** cold starts |
 | **16-5** | [PIE] | Regression Steps 12–15 |
 
@@ -1260,7 +1272,7 @@ All Section 2 steps; Step 11-7 results RPC + front-end return; Section 1 sudden 
 | Results 0–0 | Widget parent = `UBwayResultsScreenWidget`; `ApplyAuthoritativeResults` path via `Client_ShowResults` |
 | No results screen | `ResultsScreenWidgetClass` set on `BP_BW_GameState`; match reached PostMatch |
 | Return to Lobby fails | `ReturnToLobby()` on results widget → `Server_RequestReturnToFrontEnd` |
-| No sudden-death banner | RM `SuddenDeathWarningSeconds` > 0; round reaches ≤60s; bind on CoreHUD |
+| No sudden-death timer color | RM `SuddenDeathWarningSeconds` > 0; round reaches ≤60s; score widget BP handles `OnRoundTimeUpdated` |
 | Extended stat columns empty | Expected — only K/D/A/Objective tracked on `ABwayPlayerState` today |
 
 ---
@@ -1269,10 +1281,10 @@ All Section 2 steps; Step 11-7 results RPC + front-end return; Section 1 sudden 
 
 | Step | Add to experience | Pass when |
 |------|-------------------|-----------|
-| **12** | `W_BW_CaptureTheRelic_ScoreWidget` + `B_BW_CaptureTheRelic_Scoring` + `LAS_ShooterGame_StandardHUD` | Team scores visible; updates on round win |
-| **13** | `W_BW_RelicStatusWidget` (via scoring set) | Carrier / possession state correct on client |
-| **14** | `WBP_BW_CoreHUD` shell | Layout: teams, round timer, health; composes or replaces 12–13 |
-| **15** | Between-round planning UI (stub, CoreHUD-owned) | Shows on PostRound / `OnBetweenRoundPlanningStarted`; dismisses when Playing resumes |
+| **12** | `W_BW_CaptureTheRelic_ScoreWidget` + `EAS_BW_CaptureTheRelic` + `LAS_ShooterGame_StandardHUD` | Team scores visible; updates on round win; local team left |
+| **13** | `W_BW_RelicStatusWidget` (via EAS) | Carrier / possession state correct on client |
+| **14** | Health + portrait slots on EAS; `LAS_BW_MatchHUD_Dev` | Timer, round label, health, portraits via slot widgets |
+| **15** | Between-round planning UI (stub) | Shows on PostRound / `OnBetweenRoundPlanningStarted`; dismisses when Playing resumes |
 | **16** | Polish `WBP_BW_ResultsWidget` + sudden-death warning at 60s | Full match readable without log spelunking |
 
 ---
@@ -1329,6 +1341,6 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **Section 2 Step 12-1** — Inspect ShooterCore reference widgets (`W_ScoreWidget_Elimination`, `W_CPScoreWidget`) for AddWidgets slot tags; see [MatchUI_Setup.md](./MatchUI_Setup.md).
+1. **Section 2 Step 13–14** — Run pivot scripts: restore EAS slot rows, health/portrait widgets; see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) and [MatchUI_Setup.md](./MatchUI_Setup.md).
 2. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
 3. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.

@@ -2,10 +2,14 @@
 
 #include "UI/BwayCoreHUDWidget.h"
 #include "UI/BwayMatchHUDWidgetBase.h"
+#include "UI/BwayHUDHelpers.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "GameState/BwayScoringComponent.h"
 #include "Character/LyraHealthComponent.h"
+#include "Components/Image.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "GameFramework/PlayerController.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCoreHUDWidget)
@@ -24,6 +28,7 @@ void UBwayCoreHUDWidget::NativeConstruct()
 
 	BindToGameState();
 	BindToHealthComponent();
+	RefreshAllDisplay();
 }
 
 void UBwayCoreHUDWidget::NativeDestruct()
@@ -63,8 +68,30 @@ void UBwayCoreHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 			{
 				LastRelicPossessingTeam = TeamIndex;
 				bLastRelicCarried = bIsCarried;
+				RefreshRelicDisplay(TeamIndex, bIsCarried);
 				OnRelicPossessionChanged(TeamIndex, bIsCarried);
 			}
+		}
+	}
+
+	// Client timer fallback (OnRoundTimeChanged is authority-only)
+	if (TimerPollInterval > 0.0f)
+	{
+		TimeSinceLastTimerPoll += InDeltaTime;
+		if (TimeSinceLastTimerPoll >= TimerPollInterval)
+		{
+			TimeSinceLastTimerPoll = 0.0f;
+			RefreshTimerDisplay();
+		}
+	}
+
+	if (PortraitRefreshInterval > 0.0f)
+	{
+		TimeSinceLastPortraitRefresh += InDeltaTime;
+		if (TimeSinceLastPortraitRefresh >= PortraitRefreshInterval)
+		{
+			TimeSinceLastPortraitRefresh = 0.0f;
+			RefreshTeamPortraits();
 		}
 	}
 }
@@ -209,7 +236,9 @@ void UBwayCoreHUDWidget::BindToHealthComponent()
 				// Initial update
 				const float Health = HealthComp->GetHealth();
 				const float MaxHealth = HealthComp->GetMaxHealth();
-				OnHealthChanged(Health, MaxHealth, HealthComp->GetHealthNormalized());
+				const float HealthPercent = HealthComp->GetHealthNormalized();
+				RefreshHealthDisplay(Health, MaxHealth, HealthPercent);
+				OnHealthChanged(Health, MaxHealth, HealthPercent);
 				LastKnownHealth = Health;
 			}
 		}
@@ -220,7 +249,10 @@ void UBwayCoreHUDWidget::HandleHealthChanged(ULyraHealthComponent* HealthComp, f
 {
 	if (HealthComp)
 	{
-		OnHealthChanged(NewValue, HealthComp->GetMaxHealth(), HealthComp->GetHealthNormalized());
+		const float MaxHealth = HealthComp->GetMaxHealth();
+		const float HealthPercent = HealthComp->GetHealthNormalized();
+		RefreshHealthDisplay(NewValue, MaxHealth, HealthPercent);
+		OnHealthChanged(NewValue, MaxHealth, HealthPercent);
 
 		// Check for death
 		if (NewValue <= 0.0f && LastKnownHealth > 0.0f)
@@ -239,16 +271,18 @@ void UBwayCoreHUDWidget::HandleHealthChanged(ULyraHealthComponent* HealthComp, f
 
 void UBwayCoreHUDWidget::HandleScoreChanged(int32 TeamIndex, int32 NewScore)
 {
-	OnScoreChanged(GetTeam1Score(), GetTeam2Score());
+	RefreshScoreDisplay();
 }
 
 void UBwayCoreHUDWidget::HandleRoundTimeChanged(int32 SecondsRemaining)
 {
-	OnRoundTimeUpdated(SecondsRemaining, GetRoundTimeFormatted());
+	RefreshTimerDisplay();
 }
 
 void UBwayCoreHUDWidget::HandleRoundStateChanged(FName NewState)
 {
+	RefreshRoundLabel();
+	RefreshTeamPortraits();
 	OnRoundStateChanged(NewState);
 }
 
@@ -283,5 +317,161 @@ ULyraHealthComponent* UBwayCoreHUDWidget::GetLocalPlayerHealthComponent() const
 	}
 
 	return nullptr;
+}
+
+void UBwayCoreHUDWidget::RefreshAllDisplay()
+{
+	RefreshScoreDisplay();
+	RefreshTimerDisplay();
+	RefreshRoundLabel();
+	RefreshRelicDisplay(GetRelicPossessingTeam(), IsRelicCarried());
+	RefreshTeamPortraits();
+
+	if (ULyraHealthComponent* HealthComp = GetLocalPlayerHealthComponent())
+	{
+		RefreshHealthDisplay(HealthComp->GetHealth(), HealthComp->GetMaxHealth(), HealthComp->GetHealthNormalized());
+	}
+}
+
+void UBwayCoreHUDWidget::RefreshScoreDisplay()
+{
+	const int32 Team1Score = GetTeam1Score();
+	const int32 Team2Score = GetTeam2Score();
+	UpdateBoundScoreTexts(Team1Score, Team2Score);
+	OnScoreChanged(Team1Score, Team2Score);
+}
+
+void UBwayCoreHUDWidget::RefreshTimerDisplay()
+{
+	const int32 SecondsRemaining = GetRoundTimeRemaining();
+	const FText FormattedTime = GetRoundTimeFormatted();
+	UpdateBoundTimerText(SecondsRemaining);
+	OnRoundTimeUpdated(SecondsRemaining, FormattedTime);
+}
+
+void UBwayCoreHUDWidget::RefreshRoundLabel()
+{
+	if (Text_RoundLabel)
+	{
+		const int32 RoundNumber = FMath::Max(GetCurrentRoundNumber(), 1);
+		Text_RoundLabel->SetText(FText::Format(
+			NSLOCTEXT("BwayCoreHUD", "RoundLabel", "ROUND {0}"),
+			FText::AsNumber(RoundNumber)));
+	}
+}
+
+void UBwayCoreHUDWidget::RefreshRelicDisplay(int32 DisplayPossessingTeam, bool bIsCarried)
+{
+	const FText StatusText = BuildRelicStatusText(DisplayPossessingTeam);
+	const FText CarrierName = bIsCarried ? UBwayMatchHUDWidgetBase::GetRelicCarrierNameFromWorld(GetWorld()) : FText::GetEmpty();
+
+	if (Text_RelicStatus)
+	{
+		Text_RelicStatus->SetText(StatusText);
+	}
+
+	if (Text_CarrierName)
+	{
+		if (bIsCarried && !CarrierName.IsEmpty())
+		{
+			Text_CarrierName->SetText(CarrierName);
+			Text_CarrierName->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		else
+		{
+			Text_CarrierName->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void UBwayCoreHUDWidget::RefreshHealthDisplay(float NewHealth, float MaxHealth, float HealthPercent)
+{
+	if (Progress_Health)
+	{
+		Progress_Health->SetPercent(HealthPercent);
+	}
+
+	if (Text_HealthValues)
+	{
+		Text_HealthValues->SetText(FText::Format(
+			NSLOCTEXT("BwayCoreHUD", "HealthValues", "{0} / {1}"),
+			FText::AsNumber(FMath::RoundToInt(NewHealth)),
+			FText::AsNumber(FMath::RoundToInt(MaxHealth))));
+	}
+}
+
+void UBwayCoreHUDWidget::RefreshTeamPortraits()
+{
+	const int32 LocalTeam = GetLocalPlayerTeam();
+
+	if (const TArray<UImage*> Team1Images = GetTeamPortraitImages(0); Team1Images.Num() > 0)
+	{
+		UBwayHUDHelpers::UpdateTeamPortraitsForDisplaySlot(this, 0, LocalTeam, Team1Images, EmptyPortraitTexture);
+	}
+
+	if (const TArray<UImage*> Team2Images = GetTeamPortraitImages(1); Team2Images.Num() > 0)
+	{
+		UBwayHUDHelpers::UpdateTeamPortraitsForDisplaySlot(this, 1, LocalTeam, Team2Images, EmptyPortraitTexture);
+	}
+}
+
+FText UBwayCoreHUDWidget::BuildRelicStatusText(const int32 DisplayPossessingTeam) const
+{
+	switch (DisplayPossessingTeam)
+	{
+	case 0:
+		return Team1StatusText;
+	case 1:
+		return Team2StatusText;
+	default:
+		return NeutralStatusText;
+	}
+}
+
+void UBwayCoreHUDWidget::UpdateBoundScoreTexts(int32 Team1Score, int32 Team2Score)
+{
+	if (Text_Team1Score)
+	{
+		Text_Team1Score->SetText(FText::AsNumber(Team1Score));
+	}
+
+	if (Text_Team2Score)
+	{
+		Text_Team2Score->SetText(FText::AsNumber(Team2Score));
+	}
+}
+
+void UBwayCoreHUDWidget::UpdateBoundTimerText(int32 SecondsRemaining)
+{
+	if (Text_Timer)
+	{
+		Text_Timer->SetText(UBwayMatchHUDWidgetBase::FormatRoundTime(SecondsRemaining));
+
+		const FLinearColor TimerColor = (SecondsRemaining <= 60)
+			? FLinearColor(1.0f, 0.2f, 0.2f, 1.0f)
+			: FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		Text_Timer->SetColorAndOpacity(TimerColor);
+	}
+}
+
+TArray<UImage*> UBwayCoreHUDWidget::GetTeamPortraitImages(int32 DisplaySlotIndex) const
+{
+	TArray<UImage*> Images;
+	if (DisplaySlotIndex == 0)
+	{
+		if (Team1_Portrait_1) { Images.Add(Team1_Portrait_1); }
+		if (Team1_Portrait_2) { Images.Add(Team1_Portrait_2); }
+		if (Team1_Portrait_3) { Images.Add(Team1_Portrait_3); }
+		if (Team1_Portrait_4) { Images.Add(Team1_Portrait_4); }
+	}
+	else if (DisplaySlotIndex == 1)
+	{
+		if (Team2_Portrait_1) { Images.Add(Team2_Portrait_1); }
+		if (Team2_Portrait_2) { Images.Add(Team2_Portrait_2); }
+		if (Team2_Portrait_3) { Images.Add(Team2_Portrait_3); }
+		if (Team2_Portrait_4) { Images.Add(Team2_Portrait_4); }
+	}
+
+	return Images;
 }
 

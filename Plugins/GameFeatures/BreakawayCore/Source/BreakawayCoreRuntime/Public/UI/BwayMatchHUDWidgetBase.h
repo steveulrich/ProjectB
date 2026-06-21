@@ -14,7 +14,7 @@ class UWorld;
 
 /**
  * Shared match HUD data access and delegate binding for Lyra slot widgets
- * (score bar, relic status) and reused by UBwayCoreHUDWidget via static helpers.
+ * (score bar, relic status) and optional deprecated UBwayCoreHUDWidget via static helpers.
  */
 UCLASS(Abstract, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayMatchHUDWidgetBase : public UCommonUserWidget
@@ -71,6 +71,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Team")
 	static int32 GetDisplayRelicPossessingTeam(const UWorld* World, int32 LocalPlayerTeamIndex);
 
+	/** Current round number from GameState (0 if unavailable). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Timer")
+	static int32 GetCurrentRoundNumberFromWorld(const UWorld* World);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -88,12 +92,18 @@ protected:
 	/** Override in slot widgets to react to round timer broadcasts (authority only). */
 	virtual void NotifyRoundTimeChanged(int32 SecondsRemaining) {}
 
+	/** Override in slot widgets to react to round FSM state changes. */
+	virtual void NotifyRoundStateChanged(FName NewState) {}
+
 private:
 	UFUNCTION()
 	void HandleTeamScoreChanged(int32 TeamIndex, int32 NewScore);
 
 	UFUNCTION()
 	void HandleRoundTimeChanged(int32 SecondsRemaining);
+
+	UFUNCTION()
+	void HandleRoundStateChanged(FName NewState);
 
 	UPROPERTY()
 	TWeakObjectPtr<ABwayGameState> CachedGameState;

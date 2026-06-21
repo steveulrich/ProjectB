@@ -51,22 +51,31 @@ protected:
 	TObjectPtr<UTextBlock> Text_Team2Score;
 
 	UPROPERTY(meta = (BindWidgetOptional))
+	TObjectPtr<UTextBlock> Text_RoundLabel;
+
+	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> Text_Timer;
 
 	/** Poll round timer on clients (OnRoundTimeChanged is authority-only). */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")
 	float TimerPollInterval = 1.0f;
 
-	/** When false, timer text and OnRoundTimeUpdated are skipped (CoreHUD owns timer in Step 14). */
+	/** When false, timer text and OnRoundTimeUpdated are skipped. */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")
 	bool bShowRoundTimer = true;
+
+	/** Push current round number to bound round label text. */
+	UFUNCTION(BlueprintCallable, Category = "HUD|Timer")
+	void RefreshRoundLabelDisplay();
 
 private:
 	virtual void NotifyTeamScoreChanged(int32 TeamIndex, int32 NewScore) override;
 	virtual void NotifyRoundTimeChanged(int32 SecondsRemaining) override;
+	virtual void NotifyRoundStateChanged(FName NewState) override;
 
 	void UpdateBoundScoreTexts(int32 Team1Score, int32 Team2Score);
 	void UpdateBoundTimerText(int32 SecondsRemaining);
+	void UpdateBoundRoundLabelText();
 
 	FTimerHandle TimerPollHandle;
 };
