@@ -2,9 +2,12 @@
 
 #include "BwayPlayerController.h"
 #include "UI/BwayResultsScreenWidget.h"
+#include "UI/BwayPostRoundSummaryWidget.h"
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "GameState/BwayRoundManagementComponent.h"
+#include "Stats/BwayMatchStatsLibrary.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Blueprint/UserWidget.h"
@@ -175,6 +178,151 @@ void ABwayPlayerController::RestoreGameplayInputMode()
 	SetShowMouseCursor(false);
 }
 
+void ABwayPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (IsLocalPlayerController())
+	{
+		BindPostRoundSummaryListeners();
+	}
+}
+
+void ABwayPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (IsLocalPlayerController())
+	{
+		UnbindPostRoundSummaryListeners();
+		DismissPostRoundSummary();
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayPlayerController::BindPostRoundSummaryListeners()
+{
+	UnbindPostRoundSummaryListeners();
+
+	if (UWorld* World = GetWorld())
+	{
+		if (ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+		{
+			if (UBwayRoundManagementComponent* RoundMgmt = GameState->FindComponentByClass<UBwayRoundManagementComponent>())
+			{
+				BoundRoundManagementComponent = RoundMgmt;
+				RoundMgmt->OnPostRoundSummaryStarted.AddDynamic(this, &ABwayPlayerController::HandlePostRoundSummaryStarted);
+				RoundMgmt->OnMatchPhaseChanged.AddDynamic(this, &ABwayPlayerController::HandleMatchPhaseChanged);
+
+				if (RoundMgmt->GetCurrentMatchPhase() == EBwayMatchPhase::PostRound && RoundMgmt->HasActivePostRoundSummary())
+				{
+					ShowPostRoundSummary(RoundMgmt->GetActivePostRoundSummary());
+				}
+			}
+		}
+	}
+}
+
+void ABwayPlayerController::UnbindPostRoundSummaryListeners()
+{
+	if (UBwayRoundManagementComponent* RoundMgmt = BoundRoundManagementComponent.Get())
+	{
+		RoundMgmt->OnPostRoundSummaryStarted.RemoveDynamic(this, &ABwayPlayerController::HandlePostRoundSummaryStarted);
+		RoundMgmt->OnMatchPhaseChanged.RemoveDynamic(this, &ABwayPlayerController::HandleMatchPhaseChanged);
+	}
+
+	BoundRoundManagementComponent.Reset();
+}
+
+void ABwayPlayerController::HandlePostRoundSummaryStarted(FBwayPostRoundSummaryData SummaryData)
+{
+	if (UBwayRoundManagementComponent* RoundMgmt = BoundRoundManagementComponent.Get())
+	{
+		if (RoundMgmt->GetCurrentMatchPhase() != EBwayMatchPhase::PostRound)
+		{
+			return;
+		}
+	}
+
+	ShowPostRoundSummary(SummaryData);
+}
+
+void ABwayPlayerController::HandleMatchPhaseChanged(EBwayMatchPhase NewPhase)
+{
+	if (NewPhase != EBwayMatchPhase::PostRound)
+	{
+		DismissPostRoundSummary();
+	}
+}
+
+TSubclassOf<UUserWidget> ABwayPlayerController::ResolvePostRoundSummaryWidgetClass() const
+{
+	if (const ABwayGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+	{
+		if (!GameState->PostRoundSummaryWidgetClass.IsNull())
+		{
+			if (UClass* LoadedClass = GameState->PostRoundSummaryWidgetClass.LoadSynchronous())
+			{
+				return LoadedClass;
+			}
+		}
+	}
+
+	const TSoftClassPtr<UBwayPostRoundSummaryWidget> DefaultWidgetClass(
+		FSoftObjectPath(TEXT("/BreakawayCore/UI/Match/WBP_BW_PostRoundSummary.WBP_BW_PostRoundSummary_C")));
+
+	return DefaultWidgetClass.LoadSynchronous();
+}
+
+void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData& SummaryData)
+{
+	const TSubclassOf<UUserWidget> WidgetClass = ResolvePostRoundSummaryWidgetClass();
+	if (!WidgetClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: PostRound summary widget class not configured"));
+		return;
+	}
+
+	if (!PostRoundSummaryWidget)
+	{
+		PostRoundSummaryWidget = CreateWidget<UBwayPostRoundSummaryWidget>(this, WidgetClass);
+		if (!PostRoundSummaryWidget)
+		{
+			return;
+		}
+
+		PostRoundSummaryWidget->AddToViewport(150);
+	}
+
+	FBwayPostRoundSummaryData ResolvedSummary = SummaryData;
+	if (UBwayRoundManagementComponent* RoundMgmt = BoundRoundManagementComponent.Get())
+	{
+		if (RoundMgmt->HasActivePostRoundSummary())
+		{
+			ResolvedSummary = RoundMgmt->GetActivePostRoundSummary();
+		}
+	}
+
+	ResolvedSummary = UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
+		this,
+		ResolvedSummary.CompletedRoundNumber,
+		ResolvedSummary.RoundWinningTeam,
+		ResolvedSummary.DisplayDurationSeconds);
+
+	PostRoundSummaryWidget->ApplySummaryData(ResolvedSummary);
+
+	UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: PostRound summary shown (round %d, winner team %d)"),
+		ResolvedSummary.CompletedRoundNumber, ResolvedSummary.RoundWinningTeam + 1);
+}
+
+void ABwayPlayerController::DismissPostRoundSummary()
+{
+	if (PostRoundSummaryWidget)
+	{
+		PostRoundSummaryWidget->RemoveFromParent();
+		PostRoundSummaryWidget = nullptr;
+	}
+}
+
 void ABwayPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
@@ -199,6 +347,8 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 	int32 TotalRounds,
 	const TSoftClassPtr<UUserWidget>& WidgetClass)
 {
+	DismissPostRoundSummary();
+
 	if (WidgetClass.IsNull())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Client_ShowResults called with null widget class"));

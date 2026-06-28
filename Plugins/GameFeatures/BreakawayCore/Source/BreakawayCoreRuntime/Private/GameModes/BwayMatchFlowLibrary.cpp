@@ -107,6 +107,7 @@ void CopyConfigToResolved(const UBwayMatchFlowConfig* BaseConfig, FBwayResolvedM
 	Resolved.PrematchDuration = BaseConfig->PrematchDuration;
 	Resolved.WarmupDuration = BaseConfig->WarmupDuration;
 	Resolved.PostRoundDuration = BaseConfig->PostRoundDuration;
+	Resolved.PostMatchSummaryDuration = BaseConfig->PostMatchSummaryDuration;
 	Resolved.PrematchPhaseAbility = BaseConfig->PrematchPhaseAbility;
 	Resolved.WarmupPhaseAbility = BaseConfig->WarmupPhaseAbility;
 	Resolved.PlayingPhaseAbility = BaseConfig->PlayingPhaseAbility;
@@ -173,6 +174,7 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 	const float DaPrematchDuration = Resolved.PrematchDuration;
 	const float DaWarmupDuration = Resolved.WarmupDuration;
 	const float DaPostRoundDuration = Resolved.PostRoundDuration;
+	const float DaPostMatchSummaryDuration = Resolved.PostMatchSummaryDuration;
 	const float DaRoundDuration = Resolved.RoundDuration;
 
 	if (!BaseConfig)
@@ -227,6 +229,7 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 	ApplyDurationUrlOverride(TEXT("PrematchDuration"), Resolved.PrematchDuration, DaPrematchDuration);
 	ApplyDurationUrlOverride(TEXT("WarmupDuration"), Resolved.WarmupDuration, DaWarmupDuration);
 	ApplyDurationUrlOverride(TEXT("PostRoundDuration"), Resolved.PostRoundDuration, DaPostRoundDuration);
+	ApplyDurationUrlOverride(TEXT("PostMatchSummaryDuration"), Resolved.PostMatchSummaryDuration, DaPostMatchSummaryDuration);
 	ApplyDurationUrlOverride(TEXT("RoundDuration"), Resolved.RoundDuration, DaRoundDuration);
 
 	return Resolved;
@@ -257,7 +260,7 @@ void UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(const FBwayResolvedMatc
 		: TEXT("default (use DA DefaultNumBots or BotCreation scaling)");
 
 	UE_LOG(LogTemp, Log,
-		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s Prematch=%.1fs Warmup=%.1fs PostRound=%.1fs"),
+		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s Prematch=%.1fs Warmup=%.1fs PostRound=%.1fs PostMatchSummary=%.1fs"),
 		*Settings.ConfigAssetName.ToString(),
 		Settings.PointsToWin,
 		Settings.RoundDuration,
@@ -265,5 +268,6 @@ void UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(const FBwayResolvedMatc
 		Settings.bOrchestrateMatchFlow ? TEXT("true") : TEXT("false"),
 		Settings.PrematchDuration,
 		Settings.WarmupDuration,
-		Settings.PostRoundDuration);
+		Settings.PostRoundDuration,
+		Settings.PostMatchSummaryDuration);
 }

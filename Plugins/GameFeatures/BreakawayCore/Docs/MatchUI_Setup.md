@@ -17,6 +17,8 @@ Full step checklists: [CoreLoop_Implementation_Plan.md](./CoreLoop_Implementatio
 | `UBwayRelicStatusWidget` | Step 13 slot widget — possession poll + carrier name; parent for `W_BW_RelicStatusWidget` |
 | `UBwayHealthHUDWidget` | Step 14 health slot — `ULyraHealthComponent` bind |
 | `UBwayTeamPortraitsHUDWidget` | Step 14 portrait slot — display-slot team rows |
+| `UBwayPostRoundSummaryWidget` | Step 15 PostRound team-aggregate interstitial |
+| `UBwayMatchStatsLibrary` | Per-player / team stat helpers |
 | `UBwayCoreHUDWidget` | **Deprecated** — monolithic shell; not used in Steps 12–14 |
 | `UBwayScoringComponent` | Replicated team scores; `OnTeamScoreChanged` (also fired from `OnRep_Scores` on clients) |
 | `UBwayRelicManagerComponent` | `GetRelicPossessingTeam()` (-1 = neutral) |
@@ -232,6 +234,66 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 ---
 
+## 6. PostRound summary — `WBP_BW_PostRoundSummary` (Step 15)
+
+**Path:** `/BreakawayCore/UI/Match/WBP_BW_PostRoundSummary`
+
+**Parent class:** **`BwayPostRoundSummaryWidget`**
+
+**Setup script:** `node Scripts/setup-post-round-summary.mjs` (requires Unreal Editor open with MCP bridge connected)
+
+### What C++ owns
+
+| Behavior | C++ |
+|----------|-----|
+| Show/dismiss on PostRound phase | `ABwayPlayerController` binds `OnPostRoundSummaryStarted` / `OnMatchPhaseChanged` |
+| Team round stat values | `ApplySummaryData` → `RefreshBoundWidgets` |
+| Header text | **ROUND WIN** / **ROUND LOSS** from local team vs round winner |
+| BP layout hook | `OnSummaryReady(SummaryData)` — round pips, styling |
+| **Display perspective** | **Team0 / left = local (blue), Team1 / right = enemy (red)** — C++ remaps in `ApplySummaryData` via `RemapPostRoundSummaryForDisplay` (same pattern as CTR score widget `OnScoreChanged`) |
+
+**BindWidget names** (team value columns — labels are static in UMG):
+
+- `Text_Header`
+- `Text_Team0_KDA`, `Text_Team1_KDA`
+- `Text_Team0_Gold`, `Text_Team1_Gold`
+- `Text_Team0_Damage`, `Text_Team1_Damage`
+- `Text_Team0_Healing`, `Text_Team1_Healing`
+- `Text_Team0_Buildables`, `Text_Team1_Buildables`
+
+### Widget hierarchy (reference — END OF MATCH interstitial layout)
+
+```
+[CanvasPanel] RootCanvas (full viewport)
+├── [Image] DimOverlay (anchors 0,0,1,1 — semi-transparent black)
+└── [SizeBox] CenterPanelSize (anchors center 0.5,0.5 — 920×540)
+    └── [Border] PanelBorder
+        └── [VerticalBox] MainVBox
+            ├── [TextBlock] Text_Header
+            ├── [HorizontalBox] RoundPipsRow  ← wire in OnSummaryReady
+            ├── [SizeBox] SpacerAfterPips
+            └── [VerticalBox] StatsVBox
+                ├── Row_KDA: Text_Team0_KDA | Text_Label_KDA | Text_Team1_KDA
+                ├── Row_Gold: ...
+                ├── Row_Damage: ...
+                ├── Row_Healing: ...
+                └── Row_Buildables: ...
+```
+
+**Anchors:** center panel uses canvas anchors `0.5,0.5,0.5,0.5` + alignment `0.5,0.5` + fixed size (not position offsets). Dim overlay uses full-screen anchors `0,0,1,1`.
+
+### GameState wiring
+
+`BP_BW_GameState` → **Post Round Summary Widget Class** = `WBP_BW_PostRoundSummary` (script sets CDO automatically).
+
+### PIE URL (PostRound loop)
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&PostRoundDuration=3&WarmupDuration=5
+```
+
+---
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -244,6 +306,59 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 | ShooterCore elimination score still showing | Only one widget per slot |
 | Relic status always NEUTRAL | BP parent = `BwayRelicStatusWidget`; Listen Server PIE; `RelicManager` on GameState |
 | Carrier name blank | `CurrentCarrier` replicated; wait one poll interval after pickup |
+| PostRound overlay missing | `PostRoundSummaryWidgetClass` on `BP_BW_GameState`; re-run setup script; verify PostRound in log |
+| PostRound stats all zero | Expected for Damage/Healing/Buildables stubs; score a goal for Gold delta |
+| Widget off-screen | Re-run script — center panel must use canvas anchors, not default top-left offsets |
+| Final round skips PostRound | Recompile — match-winning round must enter PostRound before PostMatch (`bPendingMatchEndAfterPostRound`) |
+| PostMatch shows immediately | Expected only after PostRound timer; check log for `PostRound complete — match ended, advancing to PostMatch` |
+
+---
+
+## 7. PostMatch summary — Step 16
+
+**Flow:** final round → `WBP_BW_PostRoundSummary` (PostRound) → `WBP_BW_MatchSummaryInterstitial` (timed) → `WBP_BW_MatchBreakdown` (buttons).
+
+| Widget | Parent C++ | Path |
+|--------|------------|------|
+| `WBP_BW_MatchSummaryInterstitial` | `BwayPostMatchInterstitialWidget` | `/BreakawayCore/UI/Match/` |
+| `WBP_BW_MatchBreakdown` | `BwayMatchBreakdownWidget` | `/BreakawayCore/UI/Match/` |
+| `WBP_BW_ResultsWidget` | `BwayResultsScreenWidget` (orchestrator) | existing |
+
+**Config:** `DA_BW_MatchFlow_Dev` → `PostMatchSummaryDuration` (default 4s); URL `PostMatchSummaryDuration=5`.
+
+**Interstitial BindWidget names** (same stat columns as PostRound): `Text_Header`, `Text_Team0_*`, `Text_Team1_*` — header **VICTORY** / **DEFEAT**; team columns remapped local-left.
+
+**Breakdown:** implement `OnBreakdownReady` — iterate `GetPlayerColumns()`; highlight `bIsMVP`; wire buttons to `RequestReturnToLobby` / `RequestPlayAgain`.
+
+**Sudden death timer:** on score widget BP, implement `OnSuddenDeathTimerStateChanged` — tint `Text_Timer` red when true.
+
+**PIE URL (full match end):**
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&PostRoundDuration=3&PostMatchSummaryDuration=4&WarmupDuration=5
+```
+
+### Editor setup script
+
+With Unreal Editor + MCP bridge open:
+
+```bash
+node Scripts/setup-step16-postmatch-ui.mjs
+```
+
+Creates/refreshes all three widget trees, wires `BP_BW_GameState.ResultsScreenWidgetClass`, and sets `InterstitialWidgetClass` / `BreakdownWidgetClass` on the results orchestrator CDO. Log: `AI_Planning/setup_step16_postmatch_ui_log.json`.
+
+| Widget | Layout |
+|--------|--------|
+| **Interstitial** | Same centered 920×540 panel as PostRound — `END OF MATCH` subtitle, `VICTORY`/`DEFEAT` header, `RoundPipsRow`, 5 team stat rows |
+| **Breakdown** | Centered 1200×720 panel — stat labels column (220px) + horizontal `PlayerColumnsHost` scroll area + footer buttons |
+| **Results orchestrator** | Reparent + CDO wiring only (no tree rebuild) — C++ spawns interstitial/breakdown at runtime; remove legacy on-screen results UI from old `WBP_BW_ResultsWidget` graph if still visible |
+
+**Blueprint follow-up after script:**
+
+- Interstitial: `OnInterstitialReady` → spawn/configure pips (reuse `WBP_BW_RoundPip` pattern)
+- Breakdown: `OnBreakdownReady` → spawn player columns into `PlayerColumnsHost`; wire `Btn_ReturnToLobby` / `Btn_PlayAgain` → `RequestReturnToLobby` / `RequestPlayAgain`
+- Score widget: `OnSuddenDeathTimerStateChanged` → red timer tint
 
 ---
 

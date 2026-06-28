@@ -43,6 +43,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnRoundTimeUpdated(int32 SecondsRemaining, const FText& FormattedTime);
 
+	/** Called when round timer enters sudden-death warning window (<= SuddenDeathWarningSeconds). */
+	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
+	void OnSuddenDeathTimerStateChanged(bool bSuddenDeathWarningActive);
+
 	/** Optional named bindings — auto-updated when present in widget tree. */
 	UPROPERTY(meta = (BindWidgetOptional))
 	TObjectPtr<UTextBlock> Text_Team1Score;
@@ -78,4 +82,5 @@ private:
 	void UpdateBoundRoundLabelText();
 
 	FTimerHandle TimerPollHandle;
+	bool bSuddenDeathWarningShown = false;
 };

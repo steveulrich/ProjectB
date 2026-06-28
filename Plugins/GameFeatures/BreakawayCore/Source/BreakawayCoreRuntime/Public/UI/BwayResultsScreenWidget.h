@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "BwayResultsScreenWidget.generated.h"
 
 class ABwayGameState;
+class UBwayMatchBreakdownWidget;
+class UBwayPostMatchInterstitialWidget;
 
 /**
- * Match results data structure
+ * @deprecated Legacy results payload — use FBwayPostMatchSummaryData (Step 16).
  */
 USTRUCT(BlueprintType)
 struct FMatchResultsData
@@ -42,11 +45,9 @@ struct FMatchResultsData
 };
 
 /**
- * UBwayResultsScreenWidget
- * 
- * End-of-match results screen showing winning team, scores, and MVP.
- * Provides "Play Again" and "Return to Lobby" buttons.
- * Designed to be extended in Blueprint for visual implementation.
+ * Post-match flow orchestrator (Step 16):
+ * END OF MATCH interstitial (timed) → Match Breakdown (buttons).
+ * Blueprint child: WBP_BW_ResultsWidget (or thin wrapper).
  */
 UCLASS(Abstract, Blueprintable, meta = (DisplayName = "Breakaway Results Screen"))
 class BREAKAWAYCORERUNTIME_API UBwayResultsScreenWidget : public UCommonActivatableWidget
@@ -56,80 +57,85 @@ class BREAKAWAYCORERUNTIME_API UBwayResultsScreenWidget : public UCommonActivata
 public:
 	UBwayResultsScreenWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	/**
-	 * Apply server-authoritative match results before display.
-	 * Called from ABwayPlayerController::Client_ShowResults — do not rely on replicated scores
-	 * being available yet when the widget is created.
-	 */
 	void ApplyAuthoritativeResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds);
 
 protected:
-	//~ UUserWidget interface
 	virtual void NativeConstruct() override;
-	//~ End UUserWidget interface
+	virtual void NativeDestruct() override;
 
-	// ========== DATA ACCESS ==========
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Results")
+	FBwayPostMatchSummaryData GetPostMatchSummary() const { return CachedSummary; }
 
-	/** Get the match results data */
+	/** @deprecated Use GetPostMatchSummary(). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Results")
 	FMatchResultsData GetMatchResults() const;
 
-	/** Check if local player won */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Results")
-	bool DidLocalPlayerWin() const;
+	bool DidLocalPlayerWin() const { return CachedSummary.bLocalPlayerWon; }
 
-	/** Get the winning team index (0 or 1) */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Results")
-	int32 GetWinningTeam() const;
+	int32 GetWinningTeam() const { return CachedSummary.WinningTeam; }
 
-	// ========== ACTIONS ==========
-
-	/** Play another match */
 	UFUNCTION(BlueprintCallable, Category = "Results")
 	void PlayAgain();
 
-	/** Return to the main menu/lobby */
 	UFUNCTION(BlueprintCallable, Category = "Results")
 	void ReturnToLobby();
 
-	// ========== BLUEPRINT EVENTS ==========
+	UFUNCTION(BlueprintImplementableEvent, Category = "Results|Events")
+	void OnPostMatchFlowStarted(const FBwayPostMatchSummaryData& SummaryData);
 
-	/** Called when results data is ready to display */
+	/** @deprecated Use OnPostMatchFlowStarted. */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Results|Events")
 	void OnResultsReady(const FMatchResultsData& Results);
 
-	/** Called when "Play Again" is triggered - use for confirmation or transition */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Results|Events")
 	void OnPlayAgainRequested();
 
-	/** Called when "Return to Lobby" is triggered */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Results|Events")
 	void OnReturnToLobbyRequested();
 
-protected:
-	/** Level to load for a new match */
+	UPROPERTY(EditDefaultsOnly, Category = "Results|Widgets")
+	TSoftClassPtr<UBwayPostMatchInterstitialWidget> InterstitialWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Results|Widgets")
+	TSoftClassPtr<UBwayMatchBreakdownWidget> BreakdownWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Results")
 	TSoftObjectPtr<UWorld> PlayAgainLevel;
 
-	/** Level to load for returning to lobby */
 	UPROPERTY(EditDefaultsOnly, Category = "Results")
 	TSoftObjectPtr<UWorld> LobbyLevel;
 
-	/** Delay before allowing button presses (prevent accidental clicks) */
 	UPROPERTY(EditDefaultsOnly, Category = "Results")
 	float ButtonEnableDelay = 2.0f;
 
 private:
-	/** Get the game state */
+	void BeginPostMatchFlow();
+	void ShowInterstitial();
+	void AdvanceToBreakdown();
+	void ShowBreakdown();
+	void CleanupChildWidgets();
+	float ResolveInterstitialDuration() const;
+
+	UFUNCTION()
+	void HandleBreakdownReturnToLobby();
+
+	UFUNCTION()
+	void HandleBreakdownPlayAgain();
+
 	ABwayGameState* GetBwayGameState() const;
 
-	/** Calculate MVP player */
-	void DetermineMVP(FMatchResultsData& OutResults) const;
-
-	/** Cached results */
 	UPROPERTY()
-	FMatchResultsData CachedResults;
+	FBwayPostMatchSummaryData CachedSummary;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayPostMatchInterstitialWidget> InterstitialWidget;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayMatchBreakdownWidget> BreakdownWidget;
+
+	FTimerHandle InterstitialTimerHandle;
 
 	bool bResultsApplied = false;
 };
-

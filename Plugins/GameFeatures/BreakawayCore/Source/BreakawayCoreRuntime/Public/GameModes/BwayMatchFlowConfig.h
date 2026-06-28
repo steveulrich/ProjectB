@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Phases", meta = (ClampMin = "0"))
 	float PostRoundDuration = 5.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Phases", meta = (ClampMin = "0"))
+	float PostMatchSummaryDuration = 4.0f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Phases")
 	TSubclassOf<ULyraGamePhaseAbility> PrematchPhaseAbility;
 

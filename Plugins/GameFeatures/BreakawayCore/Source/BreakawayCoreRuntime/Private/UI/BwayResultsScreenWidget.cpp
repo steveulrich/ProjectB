@@ -1,137 +1,217 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayResultsScreenWidget.h"
+
 #include "BwayGameState.h"
 #include "BwayPlayerController.h"
-#include "BwayPlayerState.h"
-#include "GameState/BwayScoringComponent.h"
-#include "HeroSystems/BwayHeroDataAsset.h"
-#include "HeroSystems/BwayHeroRegistry.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
+#include "Stats/BwayMatchStatsLibrary.h"
+#include "UI/BwayMatchBreakdownWidget.h"
+#include "UI/BwayPostMatchInterstitialWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayResultsScreenWidget)
 
 UBwayResultsScreenWidget::UBwayResultsScreenWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	InterstitialWidgetClass = TSoftClassPtr<UBwayPostMatchInterstitialWidget>(
+		FSoftObjectPath(TEXT("/BreakawayCore/UI/Match/WBP_BW_MatchSummaryInterstitial.WBP_BW_MatchSummaryInterstitial_C")));
+	BreakdownWidgetClass = TSoftClassPtr<UBwayMatchBreakdownWidget>(
+		FSoftObjectPath(TEXT("/BreakawayCore/UI/Match/WBP_BW_MatchBreakdown.WBP_BW_MatchBreakdown_C")));
 }
 
 void UBwayResultsScreenWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	// Authoritative results are applied via ApplyAuthoritativeResults from Client_ShowResults.
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UBwayResultsScreenWidget::ApplyAuthoritativeResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds)
+void UBwayResultsScreenWidget::NativeDestruct()
+{
+	CleanupChildWidgets();
+	Super::NativeDestruct();
+}
+
+void UBwayResultsScreenWidget::ApplyAuthoritativeResults(
+	const int32 WinningTeam,
+	const int32 Team1Score,
+	const int32 Team2Score,
+	const int32 TotalRounds)
 {
 	if (bResultsApplied)
 	{
 		return;
 	}
 
-	CachedResults.WinningTeam = WinningTeam;
-	CachedResults.Team1Score = Team1Score;
-	CachedResults.Team2Score = Team2Score;
-	CachedResults.TotalRounds = TotalRounds;
+	const float InterstitialDuration = ResolveInterstitialDuration();
+	CachedSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
+		this,
+		WinningTeam,
+		TotalRounds,
+		InterstitialDuration);
 
-	if (WinningTeam == 0)
+	if (CachedSummary.Team0Score == 0 && CachedSummary.Team1Score == 0)
 	{
-		CachedResults.WinnerText = NSLOCTEXT("Results", "Team1Wins", "TEAM 1 WINS!");
+		CachedSummary.Team0Score = Team1Score;
+		CachedSummary.Team1Score = Team2Score;
 	}
-	else if (WinningTeam == 1)
+
+	bResultsApplied = true;
+	BeginPostMatchFlow();
+}
+
+void UBwayResultsScreenWidget::BeginPostMatchFlow()
+{
+	OnPostMatchFlowStarted(CachedSummary);
+
+	FMatchResultsData LegacyResults;
+	LegacyResults.WinningTeam = CachedSummary.WinningTeam;
+	LegacyResults.Team1Score = CachedSummary.Team0Score;
+	LegacyResults.Team2Score = CachedSummary.Team1Score;
+	LegacyResults.TotalRounds = CachedSummary.TotalRounds;
+	LegacyResults.bLocalPlayerWon = CachedSummary.bLocalPlayerWon;
+	LegacyResults.MVPPlayerName = CachedSummary.MVPPlayerName;
+	LegacyResults.MVPHeroName = CachedSummary.MVPHeroName;
+	LegacyResults.WinnerText = CachedSummary.bLocalPlayerWon
+		? NSLOCTEXT("Results", "Victory", "VICTORY")
+		: NSLOCTEXT("Results", "Defeat", "DEFEAT");
+	OnResultsReady(LegacyResults);
+
+	ShowInterstitial();
+
+	if (CachedSummary.InterstitialDurationSeconds > 0.0f)
 	{
-		CachedResults.WinnerText = NSLOCTEXT("Results", "Team2Wins", "TEAM 2 WINS!");
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().SetTimer(
+				InterstitialTimerHandle,
+				this,
+				&UBwayResultsScreenWidget::AdvanceToBreakdown,
+				CachedSummary.InterstitialDurationSeconds,
+				false);
+		}
 	}
 	else
 	{
-		CachedResults.WinnerText = NSLOCTEXT("Results", "Draw", "DRAW!");
+		AdvanceToBreakdown();
 	}
+}
 
-	if (APlayerController* PC = GetOwningPlayer())
+void UBwayResultsScreenWidget::ShowInterstitial()
+{
+	const TSubclassOf<UBwayPostMatchInterstitialWidget> LoadedClass = InterstitialWidgetClass.LoadSynchronous();
+	if (!LoadedClass)
 	{
-		if (ABwayGameState* GameState = GetBwayGameState())
-		{
-			if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
-			{
-				const int32 LocalTeam = GameState->GetPlayerTeam(PS);
-				CachedResults.bLocalPlayerWon = (WinningTeam >= 0 && LocalTeam == WinningTeam);
-			}
-		}
+		UE_LOG(LogTemp, Warning, TEXT("BwayResultsScreen: InterstitialWidgetClass not configured — skipping interstitial"));
+		return;
 	}
 
-	DetermineMVP(CachedResults);
+	if (!InterstitialWidget)
+	{
+		InterstitialWidget = CreateWidget<UBwayPostMatchInterstitialWidget>(GetOwningPlayer(), LoadedClass);
+		if (!InterstitialWidget)
+		{
+			return;
+		}
 
-	bResultsApplied = true;
-	OnResultsReady(CachedResults);
+		InterstitialWidget->AddToViewport(160);
+	}
+
+	InterstitialWidget->ApplySummaryData(CachedSummary);
+}
+
+void UBwayResultsScreenWidget::AdvanceToBreakdown()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(InterstitialTimerHandle);
+	}
+
+	if (InterstitialWidget)
+	{
+		InterstitialWidget->RemoveFromParent();
+		InterstitialWidget = nullptr;
+	}
+
+	ShowBreakdown();
+}
+
+void UBwayResultsScreenWidget::ShowBreakdown()
+{
+	const TSubclassOf<UBwayMatchBreakdownWidget> LoadedClass = BreakdownWidgetClass.LoadSynchronous();
+	if (!LoadedClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayResultsScreen: BreakdownWidgetClass not configured"));
+		return;
+	}
+
+	if (!BreakdownWidget)
+	{
+		BreakdownWidget = CreateWidget<UBwayMatchBreakdownWidget>(GetOwningPlayer(), LoadedClass);
+		if (!BreakdownWidget)
+		{
+			return;
+		}
+
+		BreakdownWidget->AddToViewport(160);
+		BreakdownWidget->OnReturnToLobbyRequested.AddDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownReturnToLobby);
+		BreakdownWidget->OnPlayAgainRequested.AddDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownPlayAgain);
+	}
+
+	BreakdownWidget->ApplyBreakdownData(CachedSummary);
+}
+
+void UBwayResultsScreenWidget::CleanupChildWidgets()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(InterstitialTimerHandle);
+	}
+
+	if (InterstitialWidget)
+	{
+		InterstitialWidget->RemoveFromParent();
+		InterstitialWidget = nullptr;
+	}
+
+	if (BreakdownWidget)
+	{
+		BreakdownWidget->OnReturnToLobbyRequested.RemoveDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownReturnToLobby);
+		BreakdownWidget->OnPlayAgainRequested.RemoveDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownPlayAgain);
+		BreakdownWidget->RemoveFromParent();
+		BreakdownWidget = nullptr;
+	}
+}
+
+float UBwayResultsScreenWidget::ResolveInterstitialDuration() const
+{
+	const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
+	return FMath::Max(0.0f, Settings.PostMatchSummaryDuration);
 }
 
 FMatchResultsData UBwayResultsScreenWidget::GetMatchResults() const
 {
 	FMatchResultsData Results;
-
-	ABwayGameState* GameState = GetBwayGameState();
-	if (!GameState)
-	{
-		return Results;
-	}
-
-	// Get scores from ScoringComponent
-	if (UBwayScoringComponent* Scoring = GameState->FindComponentByClass<UBwayScoringComponent>())
-	{
-		Results.Team1Score = Scoring->GetTeamScore(0);
-		Results.Team2Score = Scoring->GetTeamScore(1);
-	}
-	Results.TotalRounds = GameState->GetCurrentRoundNumber();
-
-	// Determine winner
-	if (Results.Team1Score > Results.Team2Score)
-	{
-		Results.WinningTeam = 0;
-		Results.WinnerText = NSLOCTEXT("Results", "Team1Wins", "TEAM 1 WINS!");
-	}
-	else if (Results.Team2Score > Results.Team1Score)
-	{
-		Results.WinningTeam = 1;
-		Results.WinnerText = NSLOCTEXT("Results", "Team2Wins", "TEAM 2 WINS!");
-	}
-	else
-	{
-		Results.WinningTeam = -1;
-		Results.WinnerText = NSLOCTEXT("Results", "Draw", "DRAW!");
-	}
-
-	// Check if local player won
-	if (APlayerController* PC = GetOwningPlayer())
-	{
-		if (APlayerState* PS = PC->GetPlayerState<APlayerState>())
-		{
-			const int32 LocalTeam = GameState->GetPlayerTeam(PS);
-			Results.bLocalPlayerWon = (LocalTeam == Results.WinningTeam);
-		}
-	}
-
-	// Determine MVP
-	DetermineMVP(Results);
-
+	Results.WinningTeam = CachedSummary.WinningTeam;
+	Results.Team1Score = CachedSummary.Team0Score;
+	Results.Team2Score = CachedSummary.Team1Score;
+	Results.TotalRounds = CachedSummary.TotalRounds;
+	Results.bLocalPlayerWon = CachedSummary.bLocalPlayerWon;
+	Results.MVPPlayerName = CachedSummary.MVPPlayerName;
+	Results.MVPHeroName = CachedSummary.MVPHeroName;
+	Results.WinnerText = CachedSummary.bLocalPlayerWon
+		? NSLOCTEXT("Results", "Victory", "VICTORY")
+		: NSLOCTEXT("Results", "Defeat", "DEFEAT");
 	return Results;
-}
-
-bool UBwayResultsScreenWidget::DidLocalPlayerWin() const
-{
-	return CachedResults.bLocalPlayerWon;
-}
-
-int32 UBwayResultsScreenWidget::GetWinningTeam() const
-{
-	return CachedResults.WinningTeam;
 }
 
 void UBwayResultsScreenWidget::PlayAgain()
 {
 	OnPlayAgainRequested();
 
-	// If level is set, travel there
 	if (!PlayAgainLevel.IsNull())
 	{
 		if (UWorld* World = GetWorld())
@@ -139,13 +219,9 @@ void UBwayResultsScreenWidget::PlayAgain()
 			UGameplayStatics::OpenLevelBySoftObjectPtr(World, PlayAgainLevel);
 		}
 	}
-	else
+	else if (APlayerController* PC = GetOwningPlayer())
 	{
-		// Restart the current level
-		if (APlayerController* PC = GetOwningPlayer())
-		{
-			PC->ConsoleCommand(TEXT("restartlevel"));
-		}
+		PC->ConsoleCommand(TEXT("restartlevel"));
 	}
 }
 
@@ -153,14 +229,12 @@ void UBwayResultsScreenWidget::ReturnToLobby()
 {
 	OnReturnToLobbyRequested();
 
-	// Always route through the PC RPC so non-authority clients work correctly.
 	if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(GetOwningPlayer()))
 	{
 		BwayPC->Server_RequestReturnToFrontEnd();
 		return;
 	}
 
-	// Listen-host / standalone fallback.
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
 		GameState->ReturnToFrontEnd();
@@ -171,61 +245,22 @@ void UBwayResultsScreenWidget::ReturnToLobby()
 	}
 }
 
+void UBwayResultsScreenWidget::HandleBreakdownReturnToLobby()
+{
+	ReturnToLobby();
+}
+
+void UBwayResultsScreenWidget::HandleBreakdownPlayAgain()
+{
+	PlayAgain();
+}
+
 ABwayGameState* UBwayResultsScreenWidget::GetBwayGameState() const
 {
 	if (UWorld* World = GetWorld())
 	{
 		return World->GetGameState<ABwayGameState>();
 	}
+
 	return nullptr;
 }
-
-void UBwayResultsScreenWidget::DetermineMVP(FMatchResultsData& OutResults) const
-{
-	ABwayGameState* GameState = GetBwayGameState();
-	if (!GameState)
-	{
-		return;
-	}
-
-	ABwayPlayerState* BestPlayer = nullptr;
-	float BestScore = -1.0f;
-
-	for (APlayerState* PS : GameState->PlayerArray)
-	{
-		ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
-		if (!BwayPS)
-		{
-			continue;
-		}
-
-		const float MVPScore =
-			static_cast<float>(BwayPS->GetKills()) * 2.0f +
-			static_cast<float>(BwayPS->GetAssists()) * 1.0f +
-			static_cast<float>(BwayPS->GetObjectiveScore()) * 3.0f -
-			static_cast<float>(BwayPS->GetDeaths()) * 0.5f;
-
-		if (MVPScore > BestScore)
-		{
-			BestScore = MVPScore;
-			BestPlayer = BwayPS;
-		}
-	}
-
-	if (!BestPlayer)
-	{
-		return;
-	}
-
-	OutResults.MVPPlayerName = FText::FromString(BestPlayer->GetPlayerName());
-
-	FPrimaryAssetId HeroId = BestPlayer->GetSelectedHeroId();
-	if (HeroId.IsValid())
-	{
-		if (UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
-		{
-			OutResults.MVPHeroName = HeroData->DisplayName;
-		}
-	}
-}
-

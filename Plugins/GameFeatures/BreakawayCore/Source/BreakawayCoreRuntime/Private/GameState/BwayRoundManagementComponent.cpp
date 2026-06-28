@@ -3,6 +3,7 @@
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameModes/BwayGameplayUrlLibrary.h"
+#include "Stats/BwayMatchStatsLibrary.h"
 #include "GameState/BwayBotCreationComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameModes/LyraExperienceDefinition.h"
@@ -52,6 +53,8 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentMatchPhase);
+	DOREPLIFETIME(UBwayRoundManagementComponent, ReplicatedPostRoundSummary);
+	DOREPLIFETIME(UBwayRoundManagementComponent, bHasActivePostRoundSummary);
 }
 
 void UBwayRoundManagementComponent::BeginPlay()
@@ -148,6 +151,13 @@ void UBwayRoundManagementComponent::OnRep_MatchPhase()
 {
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Match phase -> %s"),
 		*StaticEnum<EBwayMatchPhase>()->GetNameStringByValue(static_cast<int64>(CurrentMatchPhase)));
+
+	OnMatchPhaseChanged.Broadcast(CurrentMatchPhase);
+
+	if (CurrentMatchPhase != EBwayMatchPhase::PostRound)
+	{
+		ClearActivePostRoundSummary();
+	}
 }
 
 TSubclassOf<ULyraGamePhaseAbility> UBwayRoundManagementComponent::ResolvePrematchPhaseAbilityClass() const
@@ -651,6 +661,18 @@ void UBwayRoundManagementComponent::CompletePostRoundPhase()
 		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
 	}
 
+	if (bPendingMatchEndAfterPostRound)
+	{
+		const int32 WinningTeam = PendingMatchWinningTeam;
+		bPendingMatchEndAfterPostRound = false;
+		PendingMatchWinningTeam = INDEX_NONE;
+
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound complete — match ended, advancing to PostMatch"));
+		OnMatchEnded.Broadcast(WinningTeam, CurrentRoundNumber);
+		EnterPostMatch();
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound complete — advancing to Playing for next round (11-6)"));
 	EnterPlaying();
 }
@@ -693,10 +715,10 @@ void UBwayRoundManagementComponent::EnterPostMatch()
 		return;
 	}
 
-	if (CurrentMatchPhase != EBwayMatchPhase::Playing)
+	if (CurrentMatchPhase != EBwayMatchPhase::Playing && CurrentMatchPhase != EBwayMatchPhase::PostRound)
 	{
 		UE_LOG(LogTemp, Warning,
-			TEXT("BwayRoundManagement: EnterPostMatch ignored — expected Playing, got %s"),
+			TEXT("BwayRoundManagement: EnterPostMatch ignored — expected Playing or PostRound, got %s"),
 			*StaticEnum<EBwayMatchPhase>()->GetNameStringByValue(static_cast<int64>(CurrentMatchPhase)));
 		return;
 	}
@@ -1062,6 +1084,93 @@ void UBwayRoundManagementComponent::StartRound()
 	}
 
 	OnRoundStarted.Broadcast(CurrentRoundNumber, RoundDuration);
+
+	BeginRoundStatTrackingForAllPlayers();
+}
+
+void UBwayRoundManagementComponent::BeginRoundStatTrackingForAllPlayers()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		for (APlayerState* PlayerState : BwayGS->PlayerArray)
+		{
+			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+			{
+				BwayPS->BeginRoundStatTracking();
+			}
+		}
+	}
+}
+
+void UBwayRoundManagementComponent::FinalizeRoundStatsForAllPlayers()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		for (APlayerState* PlayerState : BwayGS->PlayerArray)
+		{
+			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+			{
+				BwayPS->FinalizeRoundStats();
+			}
+		}
+	}
+}
+
+void UBwayRoundManagementComponent::BuildAndBroadcastPostRoundSummary(
+	const int32 RoundWinningTeam,
+	const float DisplayDurationSeconds)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	ReplicatedPostRoundSummary = UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
+		this, CurrentRoundNumber, RoundWinningTeam, DisplayDurationSeconds);
+	bHasActivePostRoundSummary = true;
+
+	NotifyPostRoundSummaryListeners();
+
+	OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, DisplayDurationSeconds);
+}
+
+void UBwayRoundManagementComponent::ClearActivePostRoundSummary()
+{
+	if (!bHasActivePostRoundSummary)
+	{
+		return;
+	}
+
+	bHasActivePostRoundSummary = false;
+	ReplicatedPostRoundSummary = FBwayPostRoundSummaryData();
+}
+
+void UBwayRoundManagementComponent::NotifyPostRoundSummaryListeners()
+{
+	if (!bHasActivePostRoundSummary)
+	{
+		return;
+	}
+
+	OnPostRoundSummaryStarted.Broadcast(ReplicatedPostRoundSummary);
+}
+
+void UBwayRoundManagementComponent::OnRep_PostRoundSummary()
+{
+	if (bHasActivePostRoundSummary)
+	{
+		NotifyPostRoundSummaryListeners();
+	}
 }
 
 void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinCondition WinCondition)
@@ -1101,32 +1210,36 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 
 	OnRoundEnded.Broadcast(WinningTeam, WinCondition, CurrentRoundNumber);
 
-	if (CheckMatchEnd())
+	const bool bMatchEnding = CheckMatchEnd();
+	if (bMatchEnding)
 	{
-		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Match Over! Team %d wins!"), WinningTeam + 1);
-		SetRoundState(ERoundState::RoundComplete);
-
-		// Broadcast match-end to listeners (GameState shows results; RM enters PostMatch below).
-		OnMatchEnded.Broadcast(WinningTeam, CurrentRoundNumber);
-
-		if (bOrchestratorActive)
-		{
-			EnterPostMatch();
-		}
-		return;
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Match Over! Team %d wins — showing final PostRound before PostMatch"),
+			WinningTeam + 1);
 	}
 
 	SetRoundState(ERoundState::RoundComplete);
 
+	FinalizeRoundStatsForAllPlayers();
+
 	if (bOrchestratorActive)
 	{
+		if (bMatchEnding)
+		{
+			bPendingMatchEndAfterPostRound = true;
+			PendingMatchWinningTeam = WinningTeam;
+		}
+
 		const float PostRoundDuration = ResolvedMatchFlowSettings.PostRoundDuration;
-		OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, PostRoundDuration);
 		EnterPostRound();
+		BuildAndBroadcastPostRoundSummary(WinningTeam, PostRoundDuration);
+	}
+	else if (bMatchEnding)
+	{
+		OnMatchEnded.Broadcast(WinningTeam, CurrentRoundNumber);
 	}
 	else
 	{
-		OnBetweenRoundPlanningStarted.Broadcast(CurrentRoundNumber, RoundEndDelay);
+		BuildAndBroadcastPostRoundSummary(WinningTeam, RoundEndDelay);
 
 		ClearBetweenRoundTimer();
 		GetWorld()->GetTimerManager().SetTimer(

@@ -59,7 +59,7 @@ Replicated `RegisteredBuildables` array — late joiners receive existing replic
 
 ## Between-Round Spend
 
-Listen to `UBwayRoundManagementComponent::OnBetweenRoundPlanningStarted` for planning UI.
+Listen to `UBwayRoundManagementComponent::OnPostRoundSummaryStarted` for between-round UI (Step 15). Legacy `OnBetweenRoundPlanningStarted` is deprecated.
 
 ## Networking
 

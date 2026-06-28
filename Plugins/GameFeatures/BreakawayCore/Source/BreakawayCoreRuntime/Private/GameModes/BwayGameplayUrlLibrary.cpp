@@ -38,6 +38,7 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("PrematchDuration"),
 		TEXT("WarmupDuration"),
 		TEXT("PostRoundDuration"),
+		TEXT("PostMatchSummaryDuration"),
 		TEXT("RoundDuration"),
 		TEXT("DisableRelicBotAI"),
 		TEXT("HeroSelectStaging"),

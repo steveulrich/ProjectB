@@ -60,6 +60,14 @@ void UBwayCaptureTheRelicScoreWidget::RefreshScoreDisplay()
 void UBwayCaptureTheRelicScoreWidget::RefreshTimerDisplay()
 {
 	const int32 SecondsRemaining = GetRoundTimeRemainingFromWorld(GetWorld());
+	const int32 SuddenDeathThreshold = GetSuddenDeathWarningSecondsFromWorld(GetWorld());
+	const bool bNewSuddenDeathWarning = SuddenDeathThreshold > 0 && SecondsRemaining <= SuddenDeathThreshold;
+	if (bNewSuddenDeathWarning != bSuddenDeathWarningShown)
+	{
+		bSuddenDeathWarningShown = bNewSuddenDeathWarning;
+		OnSuddenDeathTimerStateChanged(bSuddenDeathWarningShown);
+	}
+
 	UpdateBoundTimerText(SecondsRemaining);
 	OnRoundTimeUpdated(SecondsRemaining, FormatRoundTime(SecondsRemaining));
 }
@@ -80,6 +88,7 @@ void UBwayCaptureTheRelicScoreWidget::NotifyRoundTimeChanged(int32 SecondsRemain
 
 void UBwayCaptureTheRelicScoreWidget::NotifyRoundStateChanged(FName NewState)
 {
+	bSuddenDeathWarningShown = false;
 	RefreshRoundLabelDisplay();
 }
 

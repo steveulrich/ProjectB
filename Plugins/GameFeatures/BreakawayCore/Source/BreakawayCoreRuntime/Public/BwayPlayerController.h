@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "CommonActivatableWidget.h"
+#include "GameModes/BwayMatchPhaseTypes.h"
 #include "Player/LyraPlayerController.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "BwayPlayerController.generated.h"
 
 class UUserWidget;
+class UBwayPostRoundSummaryWidget;
+class UBwayRoundManagementComponent;
 
 /**
  * ABwayPlayerController
@@ -95,9 +99,25 @@ public:
 	void RestoreGameplayInputMode();
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
+	void BindPostRoundSummaryListeners();
+	void UnbindPostRoundSummaryListeners();
+
+	UFUNCTION()
+	void HandlePostRoundSummaryStarted(FBwayPostRoundSummaryData SummaryData);
+
+	UFUNCTION()
+	void HandleMatchPhaseChanged(EBwayMatchPhase NewPhase);
+
+	void ShowPostRoundSummary(const FBwayPostRoundSummaryData& SummaryData);
+	void DismissPostRoundSummary();
+
+	TSubclassOf<UUserWidget> ResolvePostRoundSummaryWidgetClass() const;
+
 	/** Active hero-selection widget pushed through Lyra's CommonUI layer stack. */
 	UPROPERTY(Transient)
 	TObjectPtr<UCommonActivatableWidget> HeroSelectionWidget;
@@ -105,5 +125,11 @@ private:
 	/** Active results widget, kept so we can clean it up if the match restarts. */
 	UPROPERTY(Transient)
 	TObjectPtr<UUserWidget> ResultsWidget;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayPostRoundSummaryWidget> PostRoundSummaryWidget;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UBwayRoundManagementComponent> BoundRoundManagementComponent;
 };
 

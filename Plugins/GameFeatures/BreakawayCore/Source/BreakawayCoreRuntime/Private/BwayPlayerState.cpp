@@ -184,6 +184,12 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, Deaths);
 	DOREPLIFETIME(ABwayPlayerState, Assists);
 	DOREPLIFETIME(ABwayPlayerState, ObjectiveScore);
+	DOREPLIFETIME(ABwayPlayerState, DamageDealt);
+	DOREPLIFETIME(ABwayPlayerState, HealingDone);
+	DOREPLIFETIME(ABwayPlayerState, ForcedFumbles);
+	DOREPLIFETIME(ABwayPlayerState, Interceptions);
+	DOREPLIFETIME(ABwayPlayerState, BuildablesDestroyed);
+	DOREPLIFETIME(ABwayPlayerState, LastRoundStats);
 }
 
 void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
@@ -250,12 +256,97 @@ void ABwayPlayerState::ResetMatchStats()
 		Deaths = 0;
 		Assists = 0;
 		ObjectiveScore = 0;
+		DamageDealt = 0;
+		HealingDone = 0;
+		ForcedFumbles = 0;
+		Interceptions = 0;
+		BuildablesDestroyed = 0;
+		LastRoundStats.Reset();
+		RoundStartStatsBaseline.Reset();
+		GoldAtRoundStart = 0;
 		OnRep_MatchStats();
+		OnRep_LastRoundStats();
 		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s match stats reset"), *GetPlayerName());
 	}
+}
+
+FBwayPlayerMatchStats ABwayPlayerState::GetMatchStatsSnapshot() const
+{
+	return BuildCurrentStatSnapshot();
+}
+
+int32 ABwayPlayerState::GetCurrentGoldTotal() const
+{
+	if (const ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent())
+	{
+		if (const UBwayGoldAttributeSet* GoldSet = ASC->GetSet<UBwayGoldAttributeSet>())
+		{
+			return FMath::RoundToInt(GoldSet->GetCurrentGold());
+		}
+	}
+
+	return 0;
+}
+
+FBwayPlayerMatchStats ABwayPlayerState::BuildCurrentStatSnapshot() const
+{
+	FBwayPlayerMatchStats Snapshot;
+	Snapshot.Kills = Kills;
+	Snapshot.Deaths = Deaths;
+	Snapshot.Assists = Assists;
+	Snapshot.GoldEarned = GetCurrentGoldTotal();
+	Snapshot.DamageDealt = DamageDealt;
+	Snapshot.HealingDone = HealingDone;
+	Snapshot.RelicScores = ObjectiveScore;
+	Snapshot.ForcedFumbles = ForcedFumbles;
+	Snapshot.Interceptions = Interceptions;
+	Snapshot.BuildablesDestroyed = BuildablesDestroyed;
+	return Snapshot;
+}
+
+void ABwayPlayerState::BeginRoundStatTracking()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	RoundStartStatsBaseline = BuildCurrentStatSnapshot();
+	GoldAtRoundStart = GetCurrentGoldTotal();
+	LastRoundStats.Reset();
+	OnRep_LastRoundStats();
+
+	UE_LOG(LogTemp, Verbose, TEXT("BwayPlayerState: %s began round stat tracking (gold baseline=%d)"),
+		*GetPlayerName(), GoldAtRoundStart);
+}
+
+void ABwayPlayerState::FinalizeRoundStats()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	FBwayPlayerMatchStats CurrentSnapshot = BuildCurrentStatSnapshot();
+	CurrentSnapshot.GoldEarned = GetCurrentGoldTotal();
+	LastRoundStats = FBwayPlayerMatchStats::Diff(CurrentSnapshot, RoundStartStatsBaseline);
+	LastRoundStats.GoldEarned = FMath::Max(0, GetCurrentGoldTotal() - GoldAtRoundStart);
+	OnRep_LastRoundStats();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s round stats finalized — K/D/A %d/%d/%d Gold=%d"),
+		*GetPlayerName(),
+		LastRoundStats.Kills,
+		LastRoundStats.Deaths,
+		LastRoundStats.Assists,
+		LastRoundStats.GoldEarned);
 }
 
 void ABwayPlayerState::OnRep_MatchStats()
 {
 	OnMatchStatsChanged.Broadcast();
+}
+
+void ABwayPlayerState::OnRep_LastRoundStats()
+{
+	// Reserved for UI refresh hooks (PostRound summary).
 }

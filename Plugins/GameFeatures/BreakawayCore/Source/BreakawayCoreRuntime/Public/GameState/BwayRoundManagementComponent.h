@@ -6,6 +6,7 @@
 #include "Components/GameStateComponent.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameModes/BwayMatchPhaseTypes.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "GameplayEffectTypes.h"
 #include "GameplayTagContainer.h"
 #include "Net/UnrealNetwork.h"
@@ -51,6 +52,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRoundEnded, int32, WinningTeam
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMatchEnded, int32, WinningTeam, int32, TotalRounds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundTimeChanged, int32, RemainingSeconds);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostRoundSummaryStarted, FBwayPostRoundSummaryData, SummaryData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMatchPhaseChanged, EBwayMatchPhase, NewPhase);
+/** @deprecated Use OnPostRoundSummaryStarted — retained for legacy Blueprint bindings. */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBetweenRoundPlanningStarted, int32, CompletedRoundNumber, float, PlanningDurationSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSuddenDeathWarning, int32, RemainingSeconds);
 
@@ -166,6 +170,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
 	void EnterPostRound();
 
+	/** True while PostRound summary data is active for UI. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	bool HasActivePostRoundSummary() const { return bHasActivePostRoundSummary; }
+
+	/** Replicated PostRound summary payload for UI. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	FBwayPostRoundSummaryData GetActivePostRoundSummary() const { return ReplicatedPostRoundSummary; }
+
 	// ========================================
 	// Configuration
 	// ========================================
@@ -244,8 +256,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundStateChanged OnRoundStateChanged;
 
-	/** Fired after a round ends and before the next round starts (planning / buildable spend window). */
+	/** Fired after a round ends with team-aggregate round stats for PostRoundSummary UI (Step 15). */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
+	FOnPostRoundSummaryStarted OnPostRoundSummaryStarted;
+
+	/** Fired when replicated match phase changes (PostRound dismiss, etc.). */
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
+	FOnMatchPhaseChanged OnMatchPhaseChanged;
+
+	/** @deprecated Use OnPostRoundSummaryStarted. */
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events", meta = (DeprecatedProperty, DeprecationMessage = "Use OnPostRoundSummaryStarted"))
 	FOnBetweenRoundPlanningStarted OnBetweenRoundPlanningStarted;
 
 	/** Fired once per round when remaining time crosses SuddenDeathWarningSeconds (awareness only). */
@@ -334,6 +354,19 @@ protected:
 	/** Get the owning game state cast to ABwayGameState */
 	ABwayGameState* GetBwayGameState() const;
 
+	void BeginRoundStatTrackingForAllPlayers();
+
+	void FinalizeRoundStatsForAllPlayers();
+
+	void BuildAndBroadcastPostRoundSummary(int32 RoundWinningTeam, float DisplayDurationSeconds);
+
+	void ClearActivePostRoundSummary();
+
+	void NotifyPostRoundSummaryListeners();
+
+	UFUNCTION()
+	void OnRep_PostRoundSummary();
+
 	/** Determine which team has relic possession based on location/carrier */
 	int32 DetermineRelicPossessionTeam() const;
 
@@ -370,6 +403,12 @@ protected:
 	UFUNCTION()
 	void OnRep_MatchPhase();
 
+	UPROPERTY(ReplicatedUsing = OnRep_PostRoundSummary)
+	FBwayPostRoundSummaryData ReplicatedPostRoundSummary;
+
+	UPROPERTY(Replicated)
+	bool bHasActivePostRoundSummary = false;
+
 	/** Resolved match-flow settings cached on experience load when orchestrator may run. */
 	FBwayResolvedMatchFlowSettings ResolvedMatchFlowSettings;
 
@@ -383,6 +422,11 @@ protected:
 	bool bWarmupCompletionHandled = false;
 
 	bool bPostRoundCompletionHandled = false;
+
+	/** When true, CompletePostRoundPhase advances to PostMatch instead of Playing. */
+	bool bPendingMatchEndAfterPostRound = false;
+
+	int32 PendingMatchWinningTeam = INDEX_NONE;
 
 	/** Guards against duplicate experience-load handling on the canonical component. */
 	bool bMatchFlowExperienceHandled = false;

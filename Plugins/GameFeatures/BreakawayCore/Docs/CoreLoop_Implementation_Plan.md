@@ -1095,11 +1095,11 @@ Steps 12–13 slot widgets; Section 1 gameplay.
 
 ---
 
-## Step 15 — Between-round planning stub
+## Step 15 — PostRoundSummary
 
-**Status:** **Not started**.
+**Status:** **In progress** — C++ landed; editor widget + PIE checklist open.
 
-**Goal:** Minimal overlay during **PostRound** / `OnBetweenRoundPlanningStarted`; dismisses when next round (**Playing**) resumes.
+**Goal:** Team-aggregate **round-only** stat interstitial during **PostRound**; auto-dismiss when **Playing** resumes (no skip).
 
 **Prerequisites:** Step **14** pass (3/3).
 
@@ -1107,23 +1107,38 @@ Steps 12–13 slot widgets; Section 1 gameplay.
 
 | Layer | Owner |
 |-------|-------|
-| **Data** | `UBwayRoundManagementComponent::OnBetweenRoundPlanningStarted(CompletedRoundNumber, PlanningDurationSeconds)`; `GetCurrentMatchPhase() == PostRound` |
-| **Display** | `WBP_BW_BetweenRoundPlanning` — viewport overlay from a dedicated slot widget or game-layer push (Step 15; not CoreHUD-owned) |
+| **Stats** | `FBwayPlayerMatchStats` / `FBwayTeamStatAggregate` — `ABwayPlayerState` round snapshots + `UBwayMatchStatsLibrary` aggregation |
+| **Lifecycle** | `BeginRoundStatTracking` at round start; `FinalizeRoundStats` at `EndRound`; `LastRoundStats` replicated on PlayerState |
+| **Event** | `UBwayRoundManagementComponent::OnPostRoundSummaryStarted(FBwayPostRoundSummaryData)` (+ replicated `ReplicatedPostRoundSummary`) |
+| **Phase dismiss** | `OnMatchPhaseChanged` → hide when phase ≠ `PostRound` |
+| **Display** | `WBP_BW_PostRoundSummary` (parent `UBwayPostRoundSummaryWidget`) — pushed from `ABwayPlayerController` |
+| **Config** | `BP_BW_GameState` → **Post Round Summary Widget Class**; fallback soft path `/BreakawayCore/UI/Match/WBP_BW_PostRoundSummary` |
 
-Stub OK: title + countdown text only — no buildable shop until Section 3+.
+**PostRound UI (team aggregate, round-only, 5 stat rows — no Relic Scores):**
+
+| Element | Spec |
+|---------|------|
+| Header | **ROUND WIN** / **ROUND LOSS** (local team vs round winner) |
+| Round pips | Current match score vs `PointsToWin` |
+| Stats | K/D/A, Gold Earned, Damage Dealt, Healing Done, Buildables Destroyed (team sums) |
+| Interaction | Timer only — **no skip**; `PostRoundDuration` from config/URL |
+| Input | Overlay only — do not permanently block gameplay input mode |
+
+Stub stats (Damage, Healing, Buildables) return `0` until wired in Section 3+.
 
 ### Substeps
 
 | ID | Tag | Task |
 |----|-----|------|
-| **15-1** | [Editor] | Create `WBP_BW_BetweenRoundPlanning` at `/BreakawayCore/UI/Match/` — title `"Between Rounds"`, countdown `Text`, semi-transparent background |
-| **15-2** | [Editor + BP] | Spawn/show overlay on `OnBetweenRoundPlanningStarted`; poll `GetCurrentMatchPhase()` → hide when `Playing` |
-| **15-3** | [Editor] | No new experience action set — overlay managed from a small BP helper or future overlay slot |
-| **15-4** | [PIE] | Short PostRound URL test |
+| **15-1** | [C++] | `FBwayPlayerMatchStats`, `UBwayMatchStatsLibrary`, round snapshot on `ABwayPlayerState`, `OnPostRoundSummaryStarted` delegate |
+| **15-2** | [C++] | `UBwayPostRoundSummaryWidget` + `ABwayPlayerController` show/dismiss wiring |
+| **15-3** | [Editor] | Create `WBP_BW_PostRoundSummary` — parent `BwayPostRoundSummaryWidget`; bind optional `Text_*` widgets or implement `OnSummaryReady` |
+| **15-4** | [Editor] | `BP_BW_GameState` → **Post Round Summary Widget Class** = `WBP_BW_PostRoundSummary` |
+| **15-5** | [PIE] | `PointsToWin=3&PostRoundDuration=3` — overlay after round win, hidden when Playing resumes — **3/3** cold starts |
 
 ### Experience changes
 
-No ActionSet changes. Overlay wired from a slot widget or CommonUI layer push.
+No ActionSet changes.
 
 ### PIE URL
 
@@ -1131,149 +1146,84 @@ No ActionSet changes. Overlay wired from a slot widget or CommonUI layer push.
 L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&PostRoundDuration=3&WarmupDuration=5
 ```
 
-Use `PointsToWin=3` so PostRound loop runs between rounds.
-
 ### Pass checklist
 
-- [ ] Overlay appears after round win, before next round starts
-- [ ] Countdown roughly matches `PostRoundDuration` (URL or config)
-- [ ] Overlay hidden when Playing resumes
-- [ ] Gameplay input not permanently blocked (stub — no `UIOnly` input mode)
+- [ ] Overlay appears after round win with **ROUND WIN** or **ROUND LOSS** header
+- [ ] Team aggregate stats visible (K/D/A + Gold; stub columns show `0` OK)
+- [ ] Round pips reflect current match score
+- [ ] Overlay hidden when `Playing` resumes (~`PostRoundDuration`)
+- [ ] No skip control; gameplay input not permanently blocked
 - [ ] **3/3** cold-start runs
 - [ ] Regression: Steps 12–14 HUD still correct during rounds
 
-### Regression
-
-In-round HUD slot widgets (Step 14); multi-round flow (Step 11-6).
-
 ### Git discipline
 
-`core-loop: step 15 passed (between-round stub)`
+`core-loop: step 15 passed (post-round summary)`
 
 ### Troubleshooting
 
 | Symptom | Check |
 |---------|--------|
-| Never appears | Bound to RM delegate; use `PointsToWin=3`; verify PostRound in log |
-| Stuck visible | Poll `GetCurrentMatchPhase()`; hide when not `PostRound` |
-| Wrong duration | URL `PostRoundDuration=3`; config `DA_BW_MatchFlow_Dev` |
-| Skips PostRound | `PointsToWin=1` ends match — use 3 for this step |
+| Never appears | `PostRoundSummaryWidgetClass` on `BP_BW_GameState`; verify PostRound in log; `PointsToWin=3` |
+| Stuck visible | `OnMatchPhaseChanged` dismiss; phase should return to `Playing` |
+| Stats all zero | Expected for Damage/Healing/Buildables stubs; score a relic goal for Gold delta |
+| Skips PostRound | `PointsToWin=1` ends match after one round — use 3 to test between-round loop; final winning round still shows PostRound before PostMatch |
 
 ---
 
-## Step 16 — Results + sudden death polish
+## Step 16 — PostMatchSummary + sudden death polish
 
-**Status:** **Not started**.
+**Status:** **C++ in progress** — flow orchestrator + interstitial/breakdown widget bases; editor BPs required.
 
-**Goal:** Full match outcome readable without log spelunking; sudden-death awareness banner at ≤60s remaining.
+**Goal:** Two sequential post-match screens + sudden-death in-match timer color at ≤60s.
+
+**Match flow (final round):** `Playing` → **PostRound** (`WBP_BW_PostRoundSummary`, `PostRoundDuration`) → **PostMatch** (END OF MATCH interstitial → Match Breakdown). The match-winning round no longer skips PostRound.
 
 **Prerequisites:** Step **15** pass (3/3).
 
-**Architecture note:**
+**Architecture note — three surfaces:**
+
+| Surface | Duration | Content |
+|---------|----------|---------|
+| **END OF MATCH interstitial** | `PostMatchSummaryDuration` (~3–5s, no skip) | **VICTORY** / **DEFEAT**, round pips, team aggregate match totals (same 5 rows as PostRound) |
+| **Match Breakdown** | Until button press | Horizontal layout — portraits + per-player columns; full stat rows (incl. Relic Scores, Fumbles, Interceptions); MVP column highlighted |
+| **Footer** | Breakdown only | **Return to Lobby** + **Play Again** (`restartlevel` for now) |
 
 | Layer | Owner |
 |-------|-------|
-| **Results data** | `ABwayGameState::ShowResultsScreen` → `Client_ShowResults` → `UBwayResultsScreenWidget::ApplyAuthoritativeResults` |
-| **Per-player stats** | `ABwayPlayerState` — K/D/A/Objective only (extended screenshot columns deferred) |
-| **Sudden death** | `UBwayRoundManagementComponent::OnSuddenDeathWarning` at `SuddenDeathWarningSeconds` (default **60**); optional sync with midfield divider visibility (Step 9 C++) |
-| **Display** | `WBP_BW_ResultsWidget` at `/BreakawayCore/UI/`; sudden-death banner on score slot widget (`Text_Timer` color) or future overlay slot |
-
-**Asset naming:** use existing `WBP_BW_ResultsWidget` (not `WBP_BW_ResultsScreen`).
+| **Stats** | `UBwayMatchStatsLibrary` — match totals + per-player helpers (stubs for unimplemented stats) |
+| **Flow** | Refactor `UBwayResultsScreenWidget` → interstitial timer → breakdown |
+| **Sudden death** | `OnSuddenDeathWarning` + score widget timer red at ≤60s |
 
 ### Substeps
 
 | ID | Tag | Task |
 |----|-----|------|
-| **16-1** | [Editor] | Polish `WBP_BW_ResultsWidget` (parent `UBwayResultsScreenWidget`) — VICTORY/DEFEAT header, round-win pips, team stat rows (K/D/A/Objective), MVP block, Return to Lobby / Play Again buttons |
-| **16-2** | [Editor] | `BP_BW_GameState` → **Results Screen Widget Class** = `WBP_BW_ResultsWidget` |
-| **16-3** | [Editor + BP] | On score widget BP: bind RM `OnSuddenDeathWarning` + poll `GetRoundTimeRemaining() <= 60` fallback; red timer at ≤60s (C++ `OnRoundTimeUpdated` hook) |
-| **16-4** | [PIE] | `PointsToWin=1` full match → results → Return to Lobby; **3/3** cold starts |
-| **16-5** | [PIE] | Regression Steps 12–15 |
+| **16-1** | [C++] | `PostMatchSummaryDuration` on `UBwayMatchFlowConfig` + URL override; match results flow orchestrator |
+| **16-2** | [C++] | `UBwayMatchBreakdownWidget` — horizontal per-player layout data API |
+| **16-3** | [Editor] | `WBP_BW_MatchSummaryInterstitial`, `WBP_BW_MatchBreakdown`; refactor `WBP_BW_ResultsWidget` |
+| **16-4** | [Editor + BP] | Sudden-death timer color on score slot widget at ≤60s |
+| **16-5** | [PIE] | Full match → interstitial → breakdown → Lobby / Play Again — **3/3** cold starts |
 
-#### Results layout (Phase 1 — humanoid dev)
-
-Mirror reference screenshot structure where data exists:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  DEFEAT / VICTORY                    MATCH TIME (optional)  │
-│  [round-win pips: blue vs grey hexes]                       │
-├─────────────────────────────────────────────────────────────┤
-│  MY TEAM          │  STAT LABEL  │  OPPONENT TEAM           │
-│  portraits+names  │  K / D / A   │  portraits+names         │
-│                   │  OBJECTIVE   │                          │
-│                   │  (damage, healing, gold → "—" or hide) │
-├─────────────────────────────────────────────────────────────┤
-│  MVP: [name]                                                │
-│  [ PLAY AGAIN ]              [ RETURN TO LOBBY ]            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**OnResultsReady (Results):**
-
-```
-Event OnResultsReady (Results)
-  → If Results.bLocalPlayerWon → Header = "VICTORY!" else "DEFEAT"
-  → Set final score from Results.Team1Score / Team2Score
-  → Populate player rows from GameState PlayerArray → Cast Bway Player State
-  → K/D/A/Objective from getters; extended rows = "—" or collapsed
-  → Set MVP text from Results.MVPPlayerName
-  → Return to Lobby button → Call ReturnToLobby()
-  → Play Again button → Call PlayAgain()
-```
-
-Populate player rows by iterating `Get Game State → Player Array`, filter by team via `Bway Game State → Get Player Team`.
-
-### Experience changes
-
-| Change | Asset |
-|--------|-------|
-| Set **Results Screen Widget Class** | `BP_BW_GameState` |
-
-No ActionSet changes.
+**Match Breakdown stat rows (match totals, horizontal mock, no tabs):** K/D/A, Gold Earned, Damage Dealt, Healing Done, Relic Scores, Forced Fumbles, Interceptions, Buildables Destroyed. MVP = gold highlight on best player's column.
 
 ### PIE URL
-
-**Full match / results:**
 
 ```
 L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=1&RoundDuration=90
 ```
 
-**Sudden-death banner smoke test** (optional — let round run to ≤60s without scoring):
-
-```
-L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
-```
-
 ### Pass checklist
 
-- [ ] `BP_BW_GameState` → `ResultsScreenWidgetClass` = `WBP_BW_ResultsWidget`
-- [ ] One round win at `PointsToWin=1` → results shows correct scores (**not 0–0**)
-- [ ] VICTORY/DEFEAT reflects local team outcome
-- [ ] **Return to Lobby** → `L_LyraFrontEnd` (Step 11-7 behavior)
-- [ ] Sudden-death banner visible at ≤60s (or configured `SuddenDeathWarningSeconds` on RM)
-- [ ] Match readable without Output Log filtering
+- [ ] END OF MATCH interstitial → Match Breakdown sequence works
+- [ ] **Return to Lobby** → `L_LyraFrontEnd`; **Play Again** → `restartlevel`
+- [ ] Sudden-death timer color at ≤60s
 - [ ] **3/3** cold-start full-match runs
-- [ ] Regression: Steps 12–15 still pass
-
-### Regression
-
-All Section 2 steps; Step 11-7 results RPC + front-end return; Section 1 sudden death midfield rule at 0:00.
+- [ ] Regression: Steps 12–15
 
 ### Git discipline
 
-`core-loop: step 16 passed (results + sudden death UI)`
-
-### Troubleshooting
-
-| Symptom | Check |
-|---------|--------|
-| Results 0–0 | Widget parent = `UBwayResultsScreenWidget`; `ApplyAuthoritativeResults` path via `Client_ShowResults` |
-| No results screen | `ResultsScreenWidgetClass` set on `BP_BW_GameState`; match reached PostMatch |
-| Return to Lobby fails | `ReturnToLobby()` on results widget → `Server_RequestReturnToFrontEnd` |
-| No sudden-death timer color | RM `SuddenDeathWarningSeconds` > 0; round reaches ≤60s; score widget BP handles `OnRoundTimeUpdated` |
-| Extended stat columns empty | Expected — only K/D/A/Objective tracked on `ABwayPlayerState` today |
+`core-loop: step 16 passed (post-match summary + sudden death UI)`
 
 ---
 
@@ -1284,8 +1234,8 @@ All Section 2 steps; Step 11-7 results RPC + front-end return; Section 1 sudden 
 | **12** | `W_BW_CaptureTheRelic_ScoreWidget` + `EAS_BW_CaptureTheRelic` + `LAS_ShooterGame_StandardHUD` | Team scores visible; updates on round win; local team left |
 | **13** | `W_BW_RelicStatusWidget` (via EAS) | Carrier / possession state correct on client |
 | **14** | Health + portrait slots on EAS; `LAS_BW_MatchHUD_Dev` | Timer, round label, health, portraits via slot widgets |
-| **15** | Between-round planning UI (stub) | Shows on PostRound / `OnBetweenRoundPlanningStarted`; dismisses when Playing resumes |
-| **16** | Polish `WBP_BW_ResultsWidget` + sudden-death warning at 60s | Full match readable without log spelunking |
+| **15** | PostRound summary overlay (`WBP_BW_PostRoundSummary`) | Team round stats on PostRound; dismisses when Playing resumes |
+| **16** | PostMatch two-step summary + sudden-death timer | END OF MATCH interstitial → Match Breakdown; Lobby / Play Again |
 
 ---
 

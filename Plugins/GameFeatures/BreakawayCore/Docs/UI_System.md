@@ -19,7 +19,9 @@ In-match HUD (Section 2): Lyra **`UGameFeatureAction_AddWidgets`** on **`EAS_BW_
 | `UBwayTeamPortraitsHUDWidget` | Step 14 portrait slot — display-slot-aware team rows |
 | `UBwayCoreHUDWidget` | **Deprecated** — monolithic shell; use slot widgets instead |
 | `UBwayScoreboardWidget` | Tab scoreboard — K/D/A/objective from PlayerState |
-| `UBwayResultsScreenWidget` | Post-match — MVP score formula in C++ |
+| `UBwayPostRoundSummaryWidget` | Step 15 PostRound team-aggregate interstitial |
+| `UBwayMatchStatsLibrary` | Per-player / team stat helpers + PostRound summary builder |
+| `UBwayResultsScreenWidget` | Post-match flow — MVP formula; Step 16 orchestrates interstitial + breakdown |
 | `UBwayPauseMenuWidget` | Pause menu |
 | `UBwayHeroSelectWidget` | Hero pick — 6 BP implementable events |
 | `UBwayHeroSlotWidget` | Hero slot button |
@@ -37,7 +39,7 @@ In-match HUD (Section 2): Lyra **`UGameFeatureAction_AddWidgets`** on **`EAS_BW_
 | `W_BW_HealthWidget` | `/BreakawayCore/UI/Match/` — parent **`BwayHealthHUDWidget`** (**Step 14**) |
 | `W_BW_TeamPortraitsWidget` | `/BreakawayCore/UI/Match/` — parent **`BwayTeamPortraitsHUDWidget`** (**Step 14**) |
 | `WBP_BW_MatchHUDLayout` | `/BreakawayCore/UI/Match/` — duplicated Shooter layout + Breakaway extension points |
-| `WBP_BW_BetweenRoundPlanning` | `/BreakawayCore/UI/Match/` |
+| `WBP_BW_PostRoundSummary` | `/BreakawayCore/UI/Match/` — parent **`BwayPostRoundSummaryWidget`** (**Step 15**) |
 | `WBP_BW_ResultsWidget` | `/BreakawayCore/UI/` |
 | `WBP_BW_Scoreboard` | `/BreakawayCore/UI/` (not created yet) |
 | `WBP_BW_PauseMenu` | `/BreakawayCore/UI/` (not created yet) |
@@ -78,9 +80,12 @@ Authoritative game teams (`0` / `1`) are unchanged in gameplay code. HUD widgets
 
 Weighted score: `K*2 + A*1 + Objective*3 - D*0.5` — highest across all players.
 
-## Between-Round UI
+## PostRound / PostMatch UI
 
-Bind to `UBwayRoundManagementComponent::OnBetweenRoundPlanningStarted` for buildable shop overlay (stub in Section 2 Step 15).
+- **PostRound (Step 15):** bind to `UBwayRoundManagementComponent::OnPostRoundSummaryStarted` or rely on `ABwayPlayerController` auto-show. Dismiss via `OnMatchPhaseChanged` when phase ≠ `PostRound`.
+- **PostMatch (Step 16):** END OF MATCH interstitial (team aggregate) → Match Breakdown (horizontal per-player columns, MVP highlight) → Return to Lobby / Play Again.
+
+Stat helpers: `UBwayMatchStatsLibrary::GetPlayerMatchStats`, `GetPlayerLastRoundStats`, `AggregateTeamStats`.
 
 ## Setup Guides
 

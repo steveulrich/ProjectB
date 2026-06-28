@@ -190,6 +190,13 @@ public:
 	TSoftClassPtr<UUserWidget> ResultsScreenWidgetClass;
 
 	/**
+	 * Widget class for the between-round PostRound summary (Step 15).
+	 * Must be a subclass of UBwayPostRoundSummaryWidget.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	TSoftClassPtr<UUserWidget> PostRoundSummaryWidgetClass;
+
+	/**
 	 * Map to load when returning to lobby / front-end.
 	 * Optional override for 11-8+; 11-7 always travels to L_LyraFrontEnd unless this points there too.
 	 */

@@ -76,8 +76,8 @@ Prematch → Warmup (once) → Playing ⇄ PostRound → PostMatch
 | **Prematch** | `EnterPrematch()` on experience load | Frozen (`ShouldDeferPlayerRestartForMatchFlow`) | `PrematchPhaseAbility` | `PrematchDuration` (config/URL) |
 | **Warmup** | After prematch completes | Spawn / restart deferred players + bots | `WarmupPhaseAbility` | `WarmupDuration` — **once per match** |
 | **Playing** | After warmup, or after PostRound | Active | `PlayingPhaseAbility` (match-long) | Per-round: `RoundDuration` via round FSM |
-| **PostRound** | After round win, match not over | Active | `PostRoundPhaseAbility` | `PostRoundDuration` |
-| **PostMatch** | Match win threshold reached | Stopped / results | `PostMatchPhaseAbility` | Presentation-driven |
+| **PostRound** | After round win, **including the match-winning round** | Active | `PostRoundPhaseAbility` | `PostRoundDuration` |
+| **PostMatch** | After final PostRound completes | Stopped / results | `PostMatchPhaseAbility` | `PostMatchSummaryDuration` (interstitial) |
 
 **Hybrid timing:** Config timers are **authoritative**. If the GAS phase ability fires `PhaseEnded` early, RM shortens the current phase (clears timer, advances).
 

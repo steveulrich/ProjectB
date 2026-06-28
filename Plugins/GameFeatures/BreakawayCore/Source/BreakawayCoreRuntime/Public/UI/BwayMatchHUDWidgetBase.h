@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "BwayMatchHUDWidgetBase.generated.h"
 
 class ABwayGameState;
@@ -67,6 +68,20 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Team")
 	static int32 GetDisplayTeamScore(const UWorld* World, int32 DisplaySlotIndex, int32 LocalPlayerTeamIndex);
 
+	/** Remap authoritative game-team scores to left/right display columns (local = left). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Team")
+	static void RemapGameTeamScoresForDisplay(
+		int32 LocalPlayerTeamIndex,
+		int32 GameTeam0Score,
+		int32 GameTeam1Score,
+		int32& OutDisplayLeftScore,
+		int32& OutDisplayRightScore);
+
+	/** Remap PostRound summary team columns for local-team-left UI (Team0 = left, Team1 = right). */
+	static FBwayPostRoundSummaryData RemapPostRoundSummaryForDisplay(
+		const FBwayPostRoundSummaryData& Summary,
+		int32 LocalPlayerTeamIndex);
+
 	/** Relic possessing team in display slot space (-1 = neutral). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Team")
 	static int32 GetDisplayRelicPossessingTeam(const UWorld* World, int32 LocalPlayerTeamIndex);
@@ -74,6 +89,10 @@ public:
 	/** Current round number from GameState (0 if unavailable). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Timer")
 	static int32 GetCurrentRoundNumberFromWorld(const UWorld* World);
+
+	/** Sudden-death warning threshold from RoundManagement (0 if unavailable). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Timer")
+	static int32 GetSuddenDeathWarningSecondsFromWorld(const UWorld* World);
 
 protected:
 	virtual void NativeConstruct() override;

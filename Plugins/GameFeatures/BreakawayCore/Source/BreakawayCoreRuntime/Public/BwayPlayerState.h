@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Player/LyraPlayerState.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "Net/UnrealNetwork.h"
 #include "BwayPlayerState.generated.h"
 
@@ -145,6 +146,22 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void ResetMatchStats();
 
+	/** Snapshot of all tracked match stats (including economy / relic stubs). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats")
+	FBwayPlayerMatchStats GetMatchStatsSnapshot() const;
+
+	/** Stats earned during the most recently completed round (replicated). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Stats")
+	FBwayPlayerMatchStats GetLastRoundStats() const { return LastRoundStats; }
+
+	/** Server-only: capture baseline at round start for round-only deltas. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void BeginRoundStatTracking();
+
+	/** Server-only: finalize round deltas into LastRoundStats. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void FinalizeRoundStats();
+
 	/** Fired when any stat changes (K/D/A/Objective). Used by scoreboard/results UI. */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMatchStatsChanged OnMatchStatsChanged;
@@ -189,6 +206,36 @@ protected:
 	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
 	int32 ObjectiveScore = 0;
 
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 DamageDealt = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 HealingDone = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 ForcedFumbles = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 Interceptions = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	int32 BuildablesDestroyed = 0;
+
+	UPROPERTY(ReplicatedUsing=OnRep_LastRoundStats)
+	FBwayPlayerMatchStats LastRoundStats;
+
+	/** Server-only baseline captured at round start. */
+	FBwayPlayerMatchStats RoundStartStatsBaseline;
+
+	/** Server-only gold at round start for GoldEarned delta. */
+	int32 GoldAtRoundStart = 0;
+
 	UFUNCTION()
 	void OnRep_MatchStats();
+
+	UFUNCTION()
+	void OnRep_LastRoundStats();
+
+	FBwayPlayerMatchStats BuildCurrentStatSnapshot() const;
+	int32 GetCurrentGoldTotal() const;
 };

@@ -40,6 +40,9 @@ struct FBwayResolvedMatchFlowSettings
 	float PostRoundDuration = 5.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	float PostMatchSummaryDuration = 4.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
 	TSubclassOf<class ULyraGamePhaseAbility> PrematchPhaseAbility;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")

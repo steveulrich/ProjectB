@@ -2,8 +2,10 @@
 
 #include "UI/BwayMatchHUDWidgetBase.h"
 #include "BwayGameState.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayScoringComponent.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Relic/RelicActor.h"
 #include "GameFramework/PlayerController.h"
@@ -216,6 +218,40 @@ int32 UBwayMatchHUDWidgetBase::GetDisplayTeamScore(
 	return GetTeamScoreFromWorld(World, GameTeamIndex);
 }
 
+void UBwayMatchHUDWidgetBase::RemapGameTeamScoresForDisplay(
+	const int32 LocalPlayerTeamIndex,
+	const int32 GameTeam0Score,
+	const int32 GameTeam1Score,
+	int32& OutDisplayLeftScore,
+	int32& OutDisplayRightScore)
+{
+	if (ShouldSwapTeamsForDisplay(LocalPlayerTeamIndex))
+	{
+		OutDisplayLeftScore = GameTeam1Score;
+		OutDisplayRightScore = GameTeam0Score;
+	}
+	else
+	{
+		OutDisplayLeftScore = GameTeam0Score;
+		OutDisplayRightScore = GameTeam1Score;
+	}
+}
+
+FBwayPostRoundSummaryData UBwayMatchHUDWidgetBase::RemapPostRoundSummaryForDisplay(
+	const FBwayPostRoundSummaryData& Summary,
+	const int32 LocalPlayerTeamIndex)
+{
+	FBwayPostRoundSummaryData DisplaySummary = Summary;
+
+	if (ShouldSwapTeamsForDisplay(LocalPlayerTeamIndex))
+	{
+		Swap(DisplaySummary.Team0Score, DisplaySummary.Team1Score);
+		Swap(DisplaySummary.Team0Stats, DisplaySummary.Team1Stats);
+	}
+
+	return DisplaySummary;
+}
+
 int32 UBwayMatchHUDWidgetBase::GetDisplayRelicPossessingTeam(const UWorld* World, const int32 LocalPlayerTeamIndex)
 {
 	const int32 GameTeamIndex = GetRelicPossessingTeamFromWorld(World);
@@ -232,6 +268,24 @@ int32 UBwayMatchHUDWidgetBase::GetCurrentRoundNumberFromWorld(const UWorld* Worl
 	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
 	{
 		return GameState->GetCurrentRoundNumber();
+	}
+
+	return 0;
+}
+
+int32 UBwayMatchHUDWidgetBase::GetSuddenDeathWarningSecondsFromWorld(const UWorld* World)
+{
+	if (!World)
+	{
+		return 0;
+	}
+
+	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	{
+		if (const UBwayRoundManagementComponent* RoundMgmt = GameState->FindComponentByClass<UBwayRoundManagementComponent>())
+		{
+			return RoundMgmt->SuddenDeathWarningSeconds;
+		}
 	}
 
 	return 0;
