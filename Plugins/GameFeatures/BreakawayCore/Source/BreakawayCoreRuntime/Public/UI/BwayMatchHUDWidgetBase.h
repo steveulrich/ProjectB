@@ -108,7 +108,7 @@ protected:
 	/** Override in slot widgets to react to score changes. */
 	virtual void NotifyTeamScoreChanged(int32 TeamIndex, int32 NewScore) {}
 
-	/** Override in slot widgets to react to round timer broadcasts (authority only). */
+	/** Override in slot widgets to react to round timer updates (authority ~1 Hz; clients poll + one-shot OnRep_RoundDuration). */
 	virtual void NotifyRoundTimeChanged(int32 SecondsRemaining) {}
 
 	/** Override in slot widgets to react to round FSM state changes. */

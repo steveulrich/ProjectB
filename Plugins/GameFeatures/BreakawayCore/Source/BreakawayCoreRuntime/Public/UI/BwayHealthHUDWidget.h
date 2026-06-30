@@ -33,10 +33,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnHealthChanged(float NewHealth, float MaxHealth, float HealthPercent);
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UProgressBar> Progress_Health;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UTextBlock> Text_HealthValues;
 
 private:

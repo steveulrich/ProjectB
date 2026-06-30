@@ -1,7 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayCaptureTheRelicScoreWidget.h"
-#include "Components/TextBlock.h"
+#include "CommonNumericTextBlock.h"
+#include "CommonTextBlock.h"
 #include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCaptureTheRelicScoreWidget)
@@ -79,17 +80,28 @@ void UBwayCaptureTheRelicScoreWidget::NotifyTeamScoreChanged(int32 TeamIndex, in
 
 void UBwayCaptureTheRelicScoreWidget::NotifyRoundTimeChanged(int32 SecondsRemaining)
 {
+	(void)SecondsRemaining;
+
 	if (bShowRoundTimer)
 	{
-		UpdateBoundTimerText(SecondsRemaining);
-		OnRoundTimeUpdated(SecondsRemaining, FormatRoundTime(SecondsRemaining));
+		RefreshTimerDisplay();
 	}
 }
 
 void UBwayCaptureTheRelicScoreWidget::NotifyRoundStateChanged(FName NewState)
 {
-	bSuddenDeathWarningShown = false;
+	if (bSuddenDeathWarningShown)
+	{
+		bSuddenDeathWarningShown = false;
+		OnSuddenDeathTimerStateChanged(false);
+	}
+
 	RefreshRoundLabelDisplay();
+
+	if (bShowRoundTimer)
+	{
+		RefreshTimerDisplay();
+	}
 }
 
 void UBwayCaptureTheRelicScoreWidget::RefreshRoundLabelDisplay()
@@ -126,5 +138,10 @@ void UBwayCaptureTheRelicScoreWidget::UpdateBoundTimerText(int32 SecondsRemainin
 	if (Text_Timer)
 	{
 		Text_Timer->SetText(FormatRoundTime(SecondsRemaining));
+
+		const FLinearColor TimerColor = bSuddenDeathWarningShown
+			? FLinearColor(1.0f, 0.2f, 0.2f, 1.0f)
+			: FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		Text_Timer->SetColorAndOpacity(TimerColor);
 	}
 }

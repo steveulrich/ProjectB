@@ -6,7 +6,8 @@
 #include "UI/BwayMatchHUDWidgetBase.h"
 #include "BwayCaptureTheRelicScoreWidget.generated.h"
 
-class UTextBlock;
+class UCommonNumericTextBlock;
+class UCommonTextBlock;
 
 /**
  * Lyra HUD slot widget for Capture-the-Relic team round-win scores.
@@ -47,18 +48,18 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnSuddenDeathTimerStateChanged(bool bSuddenDeathWarningActive);
 
-	/** Optional named bindings — auto-updated when present in widget tree. */
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_Team1Score;
+	/** Optional named bindings — auto-updated when present in widget tree. BlueprintReadOnly required for Event Graph access. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
+	TObjectPtr<UCommonNumericTextBlock> Text_Team1Score;
 
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_Team2Score;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
+	TObjectPtr<UCommonNumericTextBlock> Text_Team2Score;
 
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_RoundLabel;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
+	TObjectPtr<UCommonTextBlock> Text_RoundLabel;
 
-	UPROPERTY(meta = (BindWidgetOptional))
-	TObjectPtr<UTextBlock> Text_Timer;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
+	TObjectPtr<UCommonTextBlock> Text_Timer;
 
 	/** Poll round timer on clients (OnRoundTimeChanged is authority-only). */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")

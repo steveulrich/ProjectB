@@ -215,7 +215,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnMatchStateChanged OnMatchStateChanged;
 
-	/** Broadcast when round time updates (every second) */
+	/** Broadcast when round time updates. Authority ticks ~1 Hz during RoundActive; clients also receive a one-shot refresh when RoundDuration replicates. */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundTimeChanged OnRoundTimeChanged;
 

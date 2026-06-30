@@ -194,8 +194,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
 	void SetRoundDuration(float InRoundDuration);
 
-	/** Duration of each round in seconds */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
+	/** Duration of each round in seconds (class default; runtime value replicated from authority match-flow resolve). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, ReplicatedUsing = OnRep_RoundDuration, Category = "Breakaway|Config")
 	float RoundDuration = 180.0f;
 
 	/** Time to wait before starting a new round after one ends */
@@ -366,6 +366,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_PostRoundSummary();
+
+	UFUNCTION()
+	void OnRep_RoundDuration();
 
 	/** Determine which team has relic possession based on location/carrier */
 	int32 DetermineRelicPossessionTeam() const;

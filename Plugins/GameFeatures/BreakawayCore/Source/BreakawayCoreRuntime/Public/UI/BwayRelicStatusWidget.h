@@ -34,10 +34,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
 	void OnRelicStatusUpdated(int32 PossessingTeamIndex, bool bIsCarried, const FText& StatusText, const FText& CarrierName);
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UTextBlock> Text_Status;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UTextBlock> Text_Carrier;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Relic")

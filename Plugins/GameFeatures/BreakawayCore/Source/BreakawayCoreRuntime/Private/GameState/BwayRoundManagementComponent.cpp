@@ -50,6 +50,7 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundState);
+	DOREPLIFETIME(UBwayRoundManagementComponent, RoundDuration);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentMatchPhase);
@@ -839,7 +840,25 @@ void UBwayRoundManagementComponent::SetRoundDuration(float InRoundDuration)
 		return;
 	}
 
-	RoundDuration = FMath::Max(1.0f, InRoundDuration);
+	const float NewDuration = FMath::Max(1.0f, InRoundDuration);
+	if (!FMath::IsNearlyEqual(RoundDuration, NewDuration))
+	{
+		RoundDuration = NewDuration;
+	}
+}
+
+void UBwayRoundManagementComponent::OnRep_RoundDuration()
+{
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		return;
+	}
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		// One-shot client HUD refresh when authoritative duration arrives; periodic ticks stay authority-only.
+		BwayGS->OnRoundTimeChanged.Broadcast(GetRoundTimeRemaining());
+	}
 }
 
 bool UBwayRoundManagementComponent::IsRoundLifecycleActive() const

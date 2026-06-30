@@ -332,6 +332,12 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 **Sudden death timer:** on score widget BP, implement `OnSuddenDeathTimerStateChanged` — tint `Text_Timer` red when true.
 
+```bash
+node Scripts/setup-step16-4-sudden-death-timer.mjs
+```
+
+Log: `AI_Planning/setup_step16_4_sudden_death_timer_log.json`. C++ also applies red/white tint in `UpdateBoundTimerText` when `bSuddenDeathWarningShown` (client poll path).
+
 **PIE URL (full match end):**
 
 ```

@@ -795,10 +795,10 @@ Reference layouts (Breakaway target): top-center **timer + team scores + round-w
 | Step | Status | Notes |
 |------|--------|-------|
 | **12** | **Complete** | Score slot widget C++ + `W_BW_CaptureTheRelic_ScoreWidget` UMG; experience wired; **local-team-left** display remap on `UBwayMatchHUDWidgetBase` |
-| **13** | **In progress** | C++ + `W_BW_RelicStatusWidget`; EAS slot row restore via pivot script |
-| **14** | **In progress** | Slot composition pivot — health + portraits slots; see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) |
-| **15** | **Not started** | Between-round planning stub |
-| **16** | **Not started** | Results polish + sudden-death banner |
+| **13** | **Complete** | `W_BW_RelicStatusWidget` on EAS; verified via Step 16 regression |
+| **14** | **Complete** | Slot composition (`LAS_BW_MatchHUD_Dev`, health + portraits); verified via Step 16 regression |
+| **15** | **Complete** | `WBP_BW_PostRoundSummary` on PostRound; verified via Step 16 flow |
+| **16** | **Complete** | PostMatch interstitial → breakdown; sudden-death timer tint; **3/3** PIE pass (Jun 2026) |
 
 ---
 
@@ -823,14 +823,13 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 **Experience baseline after Step 12** (Section 1 / Step 11 + Step 12 complete):
 
-| Present on `B_BW_Experience_Dev` | Absent until later Section 2 steps |
-|----------------------------------|-------------------------------------|
-| `LAS_BW_SharedInput`, teams, bots, relic pickup/throw/pass action sets | Between-round planning UI (Step 15) |
-| `BwayGameFeatureAction_MatchFlowConfig` → `DA_BW_MatchFlow_Dev` | `ResultsScreenWidgetClass` polish (Step 16) |
-| **`LAS_ShooterGame_StandardHUD`** or **`LAS_BW_MatchHUD_Dev`** | |
-| **`EAS_BW_CaptureTheRelic`** → slot widgets (score, relic, health, portraits) | |
+| Present on `B_BW_Experience_Dev` | Notes |
+|----------------------------------|-------|
+| `LAS_BW_SharedInput`, teams, bots, relic pickup/throw/pass action sets | Section 1 baseline |
+| `BwayGameFeatureAction_MatchFlowConfig` → `DA_BW_MatchFlow_Dev` | Match-flow orchestrator |
+| **`LAS_BW_MatchHUD_Dev`** + **`EAS_BW_CaptureTheRelic`** → score, relic, health, portrait slots | Section 2 complete |
 | Gameplay phases via RM orchestrator (no auto `BW_Phase_*` grants) | |
-| `BP_BW_GameState` with Scoring, RelicManager, RoundManagement | |
+| `BP_BW_GameState` — Scoring, RelicManager, RoundManagement, PostRound + Results widget classes | |
 
 ---
 
@@ -1173,7 +1172,7 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 ## Step 16 — PostMatchSummary + sudden death polish
 
-**Status:** **C++ in progress** — flow orchestrator + interstitial/breakdown widget bases; editor BPs required.
+**Status:** **Complete** (Jun 2026).
 
 **Goal:** Two sequential post-match screens + sudden-death in-match timer color at ≤60s.
 
@@ -1201,25 +1200,36 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 |----|-----|------|
 | **16-1** | [C++] | `PostMatchSummaryDuration` on `UBwayMatchFlowConfig` + URL override; match results flow orchestrator |
 | **16-2** | [C++] | `UBwayMatchBreakdownWidget` — horizontal per-player layout data API |
-| **16-3** | [Editor] | `WBP_BW_MatchSummaryInterstitial`, `WBP_BW_MatchBreakdown`; refactor `WBP_BW_ResultsWidget` |
-| **16-4** | [Editor + BP] | Sudden-death timer color on score slot widget at ≤60s |
-| **16-5** | [PIE] | Full match → interstitial → breakdown → Lobby / Play Again — **3/3** cold starts |
+| **16-3** | [Editor] | `WBP_BW_MatchSummaryInterstitial`, `WBP_BW_MatchBreakdown`; refactor `WBP_BW_ResultsWidget` | Done |
+| **16-4** | [Editor + BP] | Sudden-death timer color on score slot widget at ≤60s | Done |
+| **16-5** | [PIE] | Full match → interstitial → breakdown → Lobby / Play Again — **3/3** cold starts | Done |
 
 **Match Breakdown stat rows (match totals, horizontal mock, no tabs):** K/D/A, Gold Earned, Damage Dealt, Healing Done, Relic Scores, Forced Fumbles, Interceptions, Buildables Destroyed. MVP = gold highlight on best player's column.
 
 ### PIE URL
 
 ```
-L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=1&RoundDuration=90
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&PostRoundDuration=3&PostMatchSummaryDuration=4&WarmupDuration=5&RoundDuration=90
 ```
+
+**PIE:** 1 player, **Listen Server**. Let a round reach **≤60s** on the timer to verify sudden-death red tint.
+
+### 16-4 deliverables (done)
+
+| Item | Detail |
+|------|--------|
+| C++ | `UBwayCaptureTheRelicScoreWidget` — `OnSuddenDeathTimerStateChanged` fired at ≤`SuddenDeathWarningSeconds`; timer tint in `UpdateBoundTimerText`; round reset clears warning + refreshes display |
+| BP | `W_BW_CaptureTheRelic_ScoreWidget` Event Graph — `OnSuddenDeathTimerStateChanged` → Branch → `Text_Timer` Set Color and Opacity (red / white); `BlueprintReadOnly` on all `BindWidgetOptional` members |
+| Script | `Scripts/setup-step16-4-sudden-death-timer.mjs` (requires editor MCP bridge) |
+| Wiring | `BP_BW_GameState.ResultsScreenWidgetClass`; `WBP_BW_ResultsWidget` CDO `InterstitialWidgetClass` + `BreakdownWidgetClass` verified via MCP |
 
 ### Pass checklist
 
-- [ ] END OF MATCH interstitial → Match Breakdown sequence works
-- [ ] **Return to Lobby** → `L_LyraFrontEnd`; **Play Again** → `restartlevel`
-- [ ] Sudden-death timer color at ≤60s
-- [ ] **3/3** cold-start full-match runs
-- [ ] Regression: Steps 12–15
+- [x] END OF MATCH interstitial → Match Breakdown sequence works
+- [x] **Return to Lobby** → `L_LyraFrontEnd`; **Play Again** → `restartlevel`
+- [x] Sudden-death timer color at ≤60s
+- [x] **3/3** cold-start full-match runs
+- [x] Regression: Steps 12–15
 
 ### Git discipline
 
@@ -1241,7 +1251,9 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 # Section 3 — Hero integration (TBD)
 
-Start only after Section 2 is bulletproof. Likely order:
+**Section 2 is complete** (Steps 12–16, Jun 2026). Start Section 3 only after commit/tag of the Section 2 pass.
+
+Likely order:
 
 1. Fixed single hero on humanoid fallback (dev)
 2. Hero select staging map (resume paused work)
@@ -1291,6 +1303,6 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **Section 2 Step 13–14** — Run pivot scripts: restore EAS slot rows, health/portrait widgets; see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) and [MatchUI_Setup.md](./MatchUI_Setup.md).
+1. **Section 3** — Hero integration (see above); commit Section 2 pass: `core-loop: step 16 passed (post-match summary + sudden death UI)`.
 2. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
 3. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.

@@ -30,28 +30,28 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "HUD|Portraits")
 	void RefreshTeamPortraits();
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team1_Portrait_1;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team1_Portrait_2;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team1_Portrait_3;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team1_Portrait_4;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team2_Portrait_1;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team2_Portrait_2;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team2_Portrait_3;
 
-	UPROPERTY(meta = (BindWidgetOptional))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "HUD|Widgets")
 	TObjectPtr<UImage> Team2_Portrait_4;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
