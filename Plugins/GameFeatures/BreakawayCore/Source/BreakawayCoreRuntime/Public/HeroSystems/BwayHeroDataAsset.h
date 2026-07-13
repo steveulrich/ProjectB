@@ -3,12 +3,13 @@
 #include "BwayHeroDataAsset.generated.h"
 
 // Forward declarations
-class UAbilitySet;
+class ULyraAbilitySet;
 class UAttributeSet;
 class UMediaSource;
 
 /**
- * Display information for a single ability in the character select UI
+ * Resolved display information for a single ability in UI widgets.
+ * Built at runtime from ability CDO display data + grant InputTag.
  */
 USTRUCT(BlueprintType)
 struct FAbilityDisplayInfo
@@ -16,31 +17,31 @@ struct FAbilityDisplayInfo
     GENERATED_BODY()
 
     /** The name displayed in the UI (e.g., "SIEGE ENGINE") */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     FText AbilityName;
 
     /** Description text shown when ability is selected */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display", meta=(MultiLine=true))
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     FText Description;
 
     /** Icon texture for the ability bar */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     TSoftObjectPtr<UTexture2D> Icon;
 
     /** Optional video preview of the ability in action */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     TSoftObjectPtr<UMediaSource> PreviewVideo;
 
     /** Static image preview (fallback if no video) */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     TSoftObjectPtr<UTexture2D> PreviewImage;
 
     /** Whether this is the ultimate ability (shown with special styling) */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     bool bIsUltimate = false;
 
-    /** Input action tag for displaying keybind (optional) */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Display")
+    /** Input tag from the ability set grant (used for keybind display). */
+    UPROPERTY(BlueprintReadOnly, Category="Display")
     FGameplayTag InputActionTag;
 };
 
@@ -62,13 +63,18 @@ struct FHeroStats
     GENERATED_BODY()
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float MaxHealth = 200.f;
+    float MaxHealth = 500.f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float BaseDamage = 25.f;
+    float BaseDamage = 50.f;
 
+    /** Sheet armor value (e.g. Argus = 3). */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
-    float MoveSpeed = 600.f;
+    float Armor = 0.f;
+
+    /** Sheet speed rating (e.g. Argus = 10 → 600 uu/s). Values > 100 treated as legacy direct uu/s. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
+    float MoveSpeed = 10.f;
 };
 
 UCLASS(BlueprintType)
@@ -123,10 +129,6 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
     TObjectPtr<UTexture2D> Portrait;
 
-    /** Abilities to display in character select (order matters: slot 0-5) */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
-    TArray<FAbilityDisplayInfo> AbilityDisplayInfos;
-
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<USkeletalMesh> HeroMesh;
 
@@ -146,19 +148,17 @@ public:
     TArray<TObjectPtr<const ULyraAbilitySet>> AbilitySets;
 
     /* -------- Buildables -------- */
-    /** Legacy single buildable reference. Prefer BuildableDataAssets. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables")
     TObjectPtr<UBwayBuildableDataAsset> BuildableDataAsset;
 
-    /** Up to two buildables per hero (design spec). */
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables")
-    TArray<TObjectPtr<UBwayBuildableDataAsset>> BuildableDataAssets;
-
-    /** Returns all configured buildable data assets (merges legacy + array). */
     UFUNCTION(BlueprintCallable, BlueprintPure, Category="Buildables")
-    TArray<UBwayBuildableDataAsset*> GetAllBuildableDataAssets() const;
+    UBwayBuildableDataAsset* GetBuildableDataAsset() const { return BuildableDataAsset; }
 
     /* -------- Audio -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
     TObjectPtr<USoundBase> VoiceBank;
+
+#if WITH_EDITOR
+    virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;
+#endif
 };

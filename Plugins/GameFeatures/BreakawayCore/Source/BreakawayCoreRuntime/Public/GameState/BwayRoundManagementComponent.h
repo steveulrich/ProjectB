@@ -162,6 +162,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
 	void EnterWarmup();
 
+	/** Direct PIE: retry prematch completion after human hero locks (Step 17). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
+	void TryCompletePrematchAfterHeroLocks();
+
 	/** Advance to Playing — starts playing GAS phase and round 1 FSM (11-4). */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Match Flow")
 	void EnterPlaying();
@@ -296,6 +300,10 @@ protected:
 
 	void CompletePrematchPhase();
 
+	bool ShouldWaitForDirectPieHeroLocks() const;
+
+	bool AreAllHumanPlayersHeroLocked() const;
+
 	void StartWarmupPhaseAbility();
 
 	void StartWarmupPhaseAbilityImpl();
@@ -421,6 +429,8 @@ protected:
 	bool bPlayingPhaseListenerRegistered = false;
 
 	bool bPrematchCompletionHandled = false;
+
+	bool bWaitingForDirectPieHeroLock = false;
 
 	bool bWarmupCompletionHandled = false;
 

@@ -42,6 +42,29 @@ void UBwayRelicManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 	DOREPLIFETIME(UBwayRelicManagerComponent, RelicPossessingTeam);
 }
 
+const URelicSettings* UBwayRelicManagerComponent::GetRelicSettings() const
+{
+	if (ActiveRelic)
+	{
+		if (const URelicSettings* RelicOwnedSettings = ActiveRelic->GetRelicSettings())
+		{
+			return RelicOwnedSettings;
+		}
+	}
+
+	if (!RelicSettingsAsset.IsNull())
+	{
+		if (const URelicSettings* Loaded = RelicSettingsAsset.Get())
+		{
+			return Loaded;
+		}
+
+		return RelicSettingsAsset.LoadSynchronous();
+	}
+
+	return nullptr;
+}
+
 ARelicActor* UBwayRelicManagerComponent::SpawnRelic()
 {
 	if (GetOwnerRole() != ROLE_Authority)

@@ -3,6 +3,7 @@
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Net/UnrealNetwork.h"
@@ -57,8 +58,33 @@ void ABwayPlayerState::SetHasRelic(bool bNewHasRelic)
 	}
 }
 
+void ABwayPlayerState::ApplyRelicCarrierTag(bool bCarrier, EGameplayTagReplicationState ReplicationState)
+{
+	ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
+	if (!ASC)
+	{
+		return;
+	}
+
+	const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
+	if (!RelicCarrierTag.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Gameplay.State.RelicCarrier is not registered — carrier ability blocking will not work."));
+		return;
+	}
+
+	ASC->SetLooseGameplayTagCount(RelicCarrierTag, bCarrier ? 1 : 0, ReplicationState);
+}
+
 void ABwayPlayerState::OnRep_HasRelic()
 {
+	if (!HasAuthority())
+	{
+		// Mirror replicated carrier state onto the client ASC immediately so LocalPredicted
+		// combat abilities fail CanActivateAbility without waiting for loose-tag replication.
+		ApplyRelicCarrierTag(bHasRelic, EGameplayTagReplicationState::None);
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s now %s the relic"), 
 		*GetName(), bHasRelic ? TEXT("has") : TEXT("does not have"));
 	
@@ -304,6 +330,16 @@ FBwayPlayerMatchStats ABwayPlayerState::BuildCurrentStatSnapshot() const
 	return Snapshot;
 }
 
+void ABwayPlayerState::MarkBuildablePlacedThisRound()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	bHasPlacedBuildableThisRound = true;
+}
+
 void ABwayPlayerState::BeginRoundStatTracking()
 {
 	if (!HasAuthority())
@@ -313,6 +349,7 @@ void ABwayPlayerState::BeginRoundStatTracking()
 
 	RoundStartStatsBaseline = BuildCurrentStatSnapshot();
 	GoldAtRoundStart = GetCurrentGoldTotal();
+	bHasPlacedBuildableThisRound = false;
 	LastRoundStats.Reset();
 	OnRep_LastRoundStats();
 

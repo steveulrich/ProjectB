@@ -5,6 +5,8 @@
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/MeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayWorldReticle_ActorVisualization)
 
@@ -75,6 +77,43 @@ void ABwayWorldReticle_ActorVisualization::InitializeReticleVisualizationInforma
 				MeshComp->SetMaterial(0, CurrentInvalidMaterial);
 			}
 		}
+	}
+}
+
+void ABwayWorldReticle_ActorVisualization::InitializeReticleVisualizationFromPreviewMesh(AActor* InTargetingActor, USkeletalMesh* PreviewMesh, UMaterialInterface* InValidMaterial, UMaterialInterface* InInvalidMaterial)
+{
+	CurrentValidMaterial = InValidMaterial;
+	CurrentInvalidMaterial = InInvalidMaterial;
+	VisualizationComponents.Empty();
+
+	if (!PreviewMesh)
+	{
+		return;
+	}
+
+	USceneComponent* MyRoot = GetRootComponent();
+	check(MyRoot);
+
+	TargetingActor = Cast<AGameplayAbilityTargetActor>(InTargetingActor);
+	if (TargetingActor)
+	{
+		AddTickPrerequisiteActor(TargetingActor);
+	}
+
+	USkeletalMeshComponent* MeshComp = NewObject<USkeletalMeshComponent>(this, NAME_None, RF_Transient);
+	MeshComp->SetSkeletalMesh(PreviewMesh);
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetupAttachment(MyRoot);
+	MeshComp->RegisterComponent();
+	VisualizationComponents.Add(MeshComp);
+
+	if (CurrentValidMaterial)
+	{
+		MeshComp->SetMaterial(0, CurrentValidMaterial);
+	}
+	else if (CurrentInvalidMaterial)
+	{
+		MeshComp->SetMaterial(0, CurrentInvalidMaterial);
 	}
 }
 

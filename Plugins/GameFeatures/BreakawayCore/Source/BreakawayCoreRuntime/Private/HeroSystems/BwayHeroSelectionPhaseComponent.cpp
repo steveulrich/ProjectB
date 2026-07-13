@@ -14,6 +14,7 @@
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "Player/LyraPlayerBotController.h"
+#include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
@@ -257,8 +258,24 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 
 	if (!ShouldTravelToPostHeroSelectionMap())
 	{
-		// Spawn heroes for all players
-		SpawnHeroesForAllPlayers();
+		if (const ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
+		{
+			if (UBwayRoundManagementComponent* RoundManagement = GameState->GetRoundManagement())
+			{
+				if (RoundManagement->IsOrchestratingMatchFlow())
+				{
+					UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: RM orchestrator active — deferring spawn to Warmup"));
+				}
+				else
+				{
+					SpawnHeroesForAllPlayers();
+				}
+			}
+			else
+			{
+				SpawnHeroesForAllPlayers();
+			}
+		}
 	}
 	else
 	{
@@ -289,7 +306,24 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 	// Spawn heroes immediately
 	if (!ShouldTravelToPostHeroSelectionMap())
 	{
-		SpawnHeroesForAllPlayers();
+		if (const ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
+		{
+			if (UBwayRoundManagementComponent* RoundManagement = GameState->GetRoundManagement())
+			{
+				if (RoundManagement->IsOrchestratingMatchFlow())
+				{
+					UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: RM orchestrator active — deferring spawn to Warmup"));
+				}
+				else
+				{
+					SpawnHeroesForAllPlayers();
+				}
+			}
+			else
+			{
+				SpawnHeroesForAllPlayers();
+			}
+		}
 	}
 	else
 	{
@@ -382,7 +416,7 @@ void UBwayHeroSelectionPhaseComponent::StartDevDirectPlayHeroSelection()
 		return;
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting direct editor-play hero selection (cheat-driven UI)"));
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting direct editor-play hero selection (auto UI)"));
 	StartHeroSelectionPhase();
 }
 
@@ -518,7 +552,19 @@ void UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady()
 	{
 		return;
 	}
-	
+
+	if (const ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
+	{
+		if (UBwayRoundManagementComponent* RoundManagement = GameState->GetRoundManagement())
+		{
+			if (RoundManagement->IsOrchestratingMatchFlow())
+			{
+				RoundManagement->TryCompletePrematchAfterHeroLocks();
+				return;
+			}
+		}
+	}
+
 	// Progress Lyra's phase to the next one (e.g. Warmup / Playing)
 	EndPhaseAndProgressToNext();
 }
@@ -599,6 +645,34 @@ void UBwayHeroSelectionPhaseComponent::AssignRandomHeroes(bool bOnlyBots, bool b
 {
 	if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
 	{
+		const FPrimaryAssetId DirectPieBotHero = UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroId(this);
+		if (bOnlyBots && DirectPieBotHero.IsValid())
+		{
+			if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
+			{
+				for (APlayerState* PS : GameState->PlayerArray)
+				{
+					ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
+					if (!BwayPS)
+					{
+						continue;
+					}
+
+					AController* Controller = Cast<AController>(BwayPS->GetOwner());
+					if (!Controller || !Controller->IsA<AAIController>())
+					{
+						continue;
+					}
+
+					if (!BwayPS->GetSelectedHeroId().IsValid() || !BwayPS->IsHeroLocked())
+					{
+						Manager->AssignHeroToPlayer(BwayPS, DirectPieBotHero, bLockImmediately);
+					}
+				}
+			}
+			return;
+		}
+
 		Manager->AssignRandomHeroToPlayers(bOnlyBots, ResolveFallbackHeroId(), bLockImmediately);
 	}
 }
@@ -633,7 +707,7 @@ FPrimaryAssetId UBwayHeroSelectionPhaseComponent::ResolveFallbackHeroId() const
 
 bool UBwayHeroSelectionPhaseComponent::ShouldSuppressAutoHeroSelectUI() const
 {
-	return UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
+	return false;
 }
 
 UBwayHeroSelectionManager* UBwayHeroSelectionPhaseComponent::GetSelectionManager() const

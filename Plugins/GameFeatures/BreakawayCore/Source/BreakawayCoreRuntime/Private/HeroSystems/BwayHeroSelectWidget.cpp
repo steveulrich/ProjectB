@@ -6,6 +6,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerController.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
+#include "HeroSystems/BwayHeroAbilityUILibrary.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "TimerManager.h"
@@ -148,8 +149,8 @@ TArray<FHeroDisplayInfo> UBwayHeroSelectWidget::GetAvailableHeroes() {
     int32& ClassCount = ClassCounts.FindOrAdd(static_cast<uint8>(DisplayInfo.HeroClass));
     DisplayInfo.HeroClassIndex = ClassCount++;
 
-    // Populate ability display info
-    DisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
+    // Populate ability display info from ability set grants + CDO display data
+    DisplayInfo.Abilities = UBwayHeroAbilityUILibrary::ResolveAbilityBarForHero(HeroData);
 
     // Check availability
     if (SelectionManager) {
@@ -363,7 +364,7 @@ bool UBwayHeroSelectWidget::GetHeroDisplayInfo(
   OutDisplayInfo.Stats = HeroData->HeroStats;
   OutDisplayInfo.HeroClass = HeroData->HeroClass;
   OutDisplayInfo.ClassName = HeroData->GetClassDisplayName();
-  OutDisplayInfo.Abilities = HeroData->AbilityDisplayInfos;
+  OutDisplayInfo.Abilities = UBwayHeroAbilityUILibrary::ResolveAbilityBarForHero(HeroData);
   OutDisplayInfo.HeroClassIndex = 0;
 
   int32 LocalTeam = GetLocalPlayerTeam();

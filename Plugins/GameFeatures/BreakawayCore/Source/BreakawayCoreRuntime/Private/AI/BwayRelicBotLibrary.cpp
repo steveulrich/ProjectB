@@ -157,7 +157,21 @@ void UBwayRelicBotLibrary::ApplyRelicRequestState(ABwayCharacterWithAbilities* B
 	}
 
 	const ARelicActor* Relic = GetActiveRelic(BotCharacter);
-	const URelicSettings* Settings = Relic ? Relic->GetRelicSettings() : nullptr;
+	const URelicSettings* Settings = nullptr;
+	if (const UWorld* World = BotCharacter->GetWorld())
+	{
+		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+		{
+			if (const UBwayRelicManagerComponent* RelicMgr = GameState->RelicManagerComponent)
+			{
+				Settings = RelicMgr->GetRelicSettings();
+			}
+		}
+	}
+	if (!Settings)
+	{
+		Settings = Relic ? Relic->GetRelicSettings() : nullptr;
+	}
 
 	if (Settings && Settings->RequestingGameplayEffectClass)
 	{

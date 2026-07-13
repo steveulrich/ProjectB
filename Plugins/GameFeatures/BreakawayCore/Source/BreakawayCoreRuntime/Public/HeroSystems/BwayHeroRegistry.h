@@ -34,4 +34,8 @@ public:
 	/** Get hero data by primary asset ID */
 	UFUNCTION(BlueprintCallable, Category="Heroes")
 	static UBwayHeroDataAsset* GetHeroDataById(const FPrimaryAssetId& HeroId);
+
+	/** Resolve HeroDataAsset primary asset id from URL/codename (e.g. Argus -> HeroDataAsset:Argus). */
+	UFUNCTION(BlueprintCallable, Category="Heroes")
+	static FPrimaryAssetId ResolveHeroIdByName(const FString& HeroName);
 };

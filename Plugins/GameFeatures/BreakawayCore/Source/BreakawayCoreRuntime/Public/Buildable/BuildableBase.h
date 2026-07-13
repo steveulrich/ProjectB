@@ -62,7 +62,6 @@ protected:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Buildable|Config")
     bool bPersistsBetweenRounds = true;  // 
 
-
     UPROPERTY(Replicated)
     bool bIsDestroyed = false;
 
@@ -97,11 +96,25 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Placement", meta=(ClampMin="0"))
     int32 MaxActiveBuildablesPerPlayer = 2;
     
+    /** Default mesh for placement preview and spawn when the buildable BP mesh is unset. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<USkeletalMesh> PrimaryBuildableMesh;
     
+    /** Optional cosmetic variants. Runtime picks an index (defaults to 0 until loadout exists). */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TArray<TObjectPtr<USkeletalMesh>> CosmeticBuildableMeshes;
+
+    /** Cosmetic mesh at Index when valid; otherwise PrimaryBuildableMesh. */
+    UFUNCTION(BlueprintPure, Category="Buildables|Mesh")
+    USkeletalMesh* ResolvePreviewMesh(int32 CosmeticIndex = 0) const
+    {
+        if (CosmeticBuildableMeshes.IsValidIndex(CosmeticIndex) && CosmeticBuildableMeshes[CosmeticIndex] != nullptr)
+        {
+            return CosmeticBuildableMeshes[CosmeticIndex];
+        }
+
+        return PrimaryBuildableMesh;
+    }
 
 };
 /**

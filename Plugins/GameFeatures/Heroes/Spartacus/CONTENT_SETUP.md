@@ -1,88 +1,85 @@
-# Spartacus — Content Setup (Gate 1)
+# Spartacus / Argus — Content Setup (Section 3 Step 18)
 
-**Codename:** `Argus` (paths unchanged; DisplayName = Spartacus). See [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
+**Plugin:** `Hero_Spartacus`  
+**Asset folder (codename):** `Argus`  
+**DisplayName (UI):** **Argus** — Section 3 / stats sheet authority  
+**Parity:** [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md)
 
-C++ abilities exist under `BreakawayCoreRuntime`. Migrate legacy Editor content from `/BreakawayCore/Characters/Heroes/Argus/` into this plugin, then hard-cutover (N1).
+C++ lives in `BreakawayCoreRuntime`. Content targets this plugin mount (`/Hero_Spartacus/...`). Legacy `/BreakawayCore/Characters/Heroes/Argus/` may still hold assets until migration cutover.
 
-## Current Editor state (ue-mcp 2026-05-25)
+**Editor checklists:** [Argus_18a_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18b_Editor_Setup.md)  
+**Ability notes:** [Spartacus_Implementation_Summary.md](../../BreakawayCore/Docs/Spartacus_Implementation_Summary.md)
 
-| Asset | Status |
-|-------|--------|
-| `DA_BW_HeroData_Argus` | Exists; DisplayName still "Argus"; **HeroMesh = Alona SKM** |
-| `DA_BW_AbilitySet_Argus` | Exists; 4 abilities + display infos |
-| `DA_BW_BuildableData_Argus` | Single legacy DA; pistol placeholder mesh |
-| `BuildableDataAssets[]` | **Empty** on hero DA |
+## Ability ownership (canonical)
 
-## Target (F3 + K2 + O2)
+| Scope | Ability set | Grants |
+|-------|-------------|--------|
+| Common | `DA_BW_AbilitySet_Humanoid` | Left Shift slide · RMB Request Relic · Confirm · Cancel |
+| Per-hero | `DA_BW_AbilitySet_Argus` | LMB Primary · F/Q/E/R · key **1** PlaceBuildable |
+| Hero DA | `DA_BW_HeroData_Argus` | Single `BuildableDataAsset` → Siege Engine |
 
-| Item | Target path (in plugin) |
-|------|-------------------------|
+## Target layout
+
+| Item | Path |
+|------|------|
 | Hero DA | `/Hero_Spartacus/Characters/Heroes/Argus/DA_BW_HeroData_Argus` |
-| DisplayName | **Spartacus** |
-| HeroClass | Tank / Fighter |
-| HeroMesh | Spartacus mesh (fix from Alona placeholder) |
-| Ability set | `DA_BW_AbilitySet_Argus` — K2 MVP wired to C++ GAs |
-| BuildableDataAssets[0] | `DA_BW_Buildable_FireCatapult` — O2 placement only |
-| BuildableDataAssets[1] | `DA_BW_Buildable_DragonSpire` — O2 placement only |
+| Ability set | `…/DA_BW_AbilitySet_Argus` |
+| PlaceBuildable BP | `…/Abilities/GA_BW_Spartacus_BuildablePlacement` |
+| Siege Engine DA | `…/Buildables/DA_BW_BuildableData_SiegeEngine` |
+| Siege Engine actor | `…/Buildables/BP_BW_Buildable_SiegeEngine` |
 | GFD | `GFD_Hero_Spartacus` (`UBwayGameFeatureData`) |
 
-### Ability BPs (K2 — subclass C++)
+### Hero DA fields (18a + 18b)
 
-| C++ class | BP asset |
-|-----------|----------|
-| `UBwayGameplayAbility_ShieldBash` | `GA_Argus_ShieldBash` (or keep existing Argus names) |
-| `UBwayGameplayAbility_WarCry` | `GA_Argus_WarCry` |
-| `UBwayGameplayAbility_DefensiveStance` | `GA_Argus_DefensiveStance` |
-| `UBwayGameplayAbility_GladiatorsLeap` | `GA_Argus_GladiatorsLeap` |
-| `UBwayGameplayAbility_Slide` | `GA_Slide` (shared) |
+| Field | Value |
+|-------|--------|
+| DisplayName | **Argus** |
+| HeroStats | HP 500, BaseDamage 50, Armor 3, MoveSpeed 10 |
+| AttributeSetClass | `BwayHeroAttributeSet` |
+| AbilitySets | `DA_BW_AbilitySet_Argus` |
+| BuildableDataAsset | `DA_BW_BuildableData_SiegeEngine` (18b) |
+| HeroMesh / AnimBP | Argus mesh (not Alona placeholder) |
 
-Wire cooldowns, GEs, input tags per [Spartacus_Implementation_Summary.md](../../BreakawayCore/Docs/Spartacus_Implementation_Summary.md).
+### Ability set grants
 
-### Buildables (O2 — placement + persist only)
+| Input tag | Ability | Notes |
+|-----------|---------|-------|
+| `Primary` | MeleePrimary BP | 18a |
+| `Ability4` | Defense dodge stand-in → 18c Slide | F key |
+| `Ability1`–`Ability3` | Stand-ins → 18c No Retreat / For Glory / Retribution | |
+| `Buildable` | `GA_BW_Spartacus_BuildablePlacement` | 18b — **not** on humanoid |
 
-| Slice name | Data asset | BP actor |
-|------------|------------|----------|
-| Fire Catapult | `DA_BW_Buildable_FireCatapult` | `BP_Argus_FireCatapult` (subclass `ABuildableActor` / turret base) |
-| Dragon Spire | `DA_BW_Buildable_DragonSpire` | `BP_Argus_DragonSpire` |
+### Buildable (one — not two)
 
-- Set **`bPersistsBetweenRounds = true`** on buildable BPs.
-- **`BuildableActorClass`** + mesh required; combat behavior stub OK until after A1c.
+| Slice name | Data | Actor | Behavior |
+|------------|------|-------|----------|
+| **Siege Engine** | `DA_BW_BuildableData_SiegeEngine` | `BP_BW_Buildable_SiegeEngine` (`BwaySiegeEngineBuildable`) | 250 HP; 200 dmg/s vs buildables; 10s roll; once/round free; persists |
 
-## Migration steps (Editor + agent)
+**Deprecated (do not use for Section 3):** Fire Catapult / Dragon Spire two-buildable Gate 1 targets.
 
-1. **Enable plugin** — Edit → Plugins → `Hero Spartacus` (Registered → Enabled). Restart if prompted.
-2. **Create folder** — `Hero_Spartacus/Content/Characters/Heroes/Argus/`
-3. **Move or duplicate** from BreakawayCore Argus folder: hero DA, ability set, abilities, UI icons, buildable assets.
-4. **Fix hero DA** — DisplayName Spartacus; correct HeroMesh; fill **`BuildableDataAssets[]`** with both buildable DAs.
-5. **Create** `GFD_Hero_Spartacus` in plugin Content root; set `HeroDataAssets` → hero DA.
-6. **Agent: config** — Add to `Config/DefaultGame.ini`:
+## Migration / enable steps
 
-```ini
-+PrimaryAssetTypesToScan=(PrimaryAssetType="HeroDataAsset",AssetBaseClass="/Script/Engine.PrimaryDataAsset",bHasBlueprintClasses=False,bIsEditorOnly=False,Directories=((Path="/BreakawayCore/Characters/Heroes"),(Path="/Hero_Spartacus/Characters/Heroes")),SpecificAssets=,Rules=(Priority=-1,ChunkId=-1,bApplyRecursively=True,CookRule=AlwaysCook))
-```
+1. **Enable plugin** — Edit → Plugins → `Hero Spartacus` → Enabled.
+2. **Content** — Create or move Argus hero DA, ability set, abilities, Siege Engine under `/Hero_Spartacus/Characters/Heroes/Argus/`.
+3. **GFD** — `GFD_Hero_Spartacus` → `HeroDataAssets` includes hero DA.
+4. **Config** — `DefaultGame.ini` `HeroDataAsset` scan includes `(Path="/Hero_Spartacus/Characters/Heroes")`.
+5. **Experience** — `B_BW_Experience_Dev` → **GameFeaturesToEnable** → `Hero_Spartacus`.
+6. **18a** — Combat kit + stats per Argus_18a checklist.
+7. **18b** — Siege Engine + PlaceBuildable + Confirm/Cancel dual-bind per Argus_18b checklist.
+8. **Cutover** — After verify, remove legacy `/BreakawayCore/Characters/Heroes/Argus/` if duplicated.
 
-(Replace the existing single-directory `HeroDataAsset` line.)
+## Gate done when (Step 18)
 
-7. **Editor: experience** — Open `B_BW_Experience_CaptureTheRelic`; add **`Hero_Spartacus`** to **GameFeaturesToEnable**.
-8. **Verify (ue-mcp)** — With Editor open:
+- [ ] `Hero_Spartacus` on `B_BW_Experience_Dev`
+- [ ] Hero DA loads; DisplayName **Argus**
+- [ ] 18a combat + relic carrier pass
+- [ ] 18b Siege Engine place / confirm / cancel / once-per-round / persist pass
+- [ ] **3/3** cold-start PIE listen server
+- [ ] 18c parity (optional for “functional” gate; required for hero-complete)
 
-```bash
-node Scripts/audit-breakaway-assets.mjs
-```
+Then proceed to **Alona** ([CONTENT_SETUP](../Alona/CONTENT_SETUP.md)) only after 18c (or explicit skip of parity).
 
-Expect hero registry / search to find Spartacus DisplayName and plugin path; hero select shows Spartacus (not duplicated with legacy Argus folder).
+## Related
 
-9. **N1 cutover** — Delete `/BreakawayCore/Characters/Heroes/Argus/` after verification.
-
-## Gate 1 done when
-
-- [ ] `Hero_Spartacus` in experience `GameFeaturesToEnable`
-- [ ] Hero DA primary asset loads from `/Hero_Spartacus/...`
-- [ ] DisplayName **Spartacus** in hero select
-- [ ] Two buildable DAs in `BuildableDataAssets[]`
-- [ ] K2 abilities activate in PIE without errors
-- [ ] O2 buildable places and registers on `UBwayBuildableRegistryComponent`
-- [ ] BreakawayCore `Argus/` folder removed
-- [ ] `HERO_CODENAME_MAP.md` unchanged for Spartacus row (already correct)
-
-Then proceed to **Gate 2 — Alona** ([CONTENT_SETUP](../Alona/CONTENT_SETUP.md)).
+- [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md) — plugin/folder codenames; DisplayName follows Section 3
+- [CoreLoop_Implementation_Plan.md](../../BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) — Step 18

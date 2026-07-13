@@ -3,7 +3,7 @@
 Automated verification for Cursor agents, mapped to [CoreLoop_Implementation_Plan.md](./CoreLoop_Implementation_Plan.md). Tiers increase in fidelity and runtime cost.
 
 ```
-Tier 1  Compile gate          ~2–15 min   every C++ change
+Tier 1  Compile gate          ~2–15 min   optional (user/CI); agents do not run
 Tier 2  Standalone log smoke   ~30–90 s    packaging / experience regressions
 Tier 3  CQTest (editor)        ~2–5 min    per core-loop sub-step (11-1, …)
 Tier 4  CI                     scheduled   PR compile + nightly smoke + step tests
@@ -30,7 +30,7 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 .\Run-Tier.ps1 -Tier 1                  # full compile
 ```
 
-**Agent rule:** After any `.h` / `.cpp` / `.Build.cs` change, run Tier 1 before marking the task complete. Do not use MCP or in-editor Live Coding for verification.
+**Agent rule:** Do **not** run Tier 1. After C++ edits, ask the user to recompile and restart the editor manually. Tier 1 remains available for local dev and CI when needed.
 
 **Notes:**
 - Target is `LyraEditor`, not `ProjectBEditor` — Lyra keeps native target names.
@@ -58,9 +58,8 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 - `B_LyraDefaultExperience` (fallback experience — indicates asset-manager / registration failure)
 
 **Prerequisites:**
-1. Tier 1 passes.
-2. Game target built: `LyraGame` Win64 Development (or shipping package).
-3. `/BreakawayCore` content cooked (`MapsToCook`, `DirectoriesToAlwaysCook` in `DefaultGame.ini`).
+1. Game target built: `LyraGame` Win64 Development (or shipping package).
+2. `/BreakawayCore` content cooked (`MapsToCook`, `DirectoriesToAlwaysCook` in `DefaultGame.ini`).
 
 **Implementation sketch:**
 
@@ -130,7 +129,7 @@ Wrapped by `Scripts/Test/Tier3-CQTest.ps1` with pass/fail parsing.
 
 **World settings prerequisite:** `L_BW_DevMap` may need `Force Standalone Net Mode` disabled for future listen-server tests (see ShooterTests README). For 11-1, standalone map load is sufficient.
 
-**Agent rule:** Run Tier 3 filter matching the core-loop sub-step you touched (e.g. `11-1` only) after Tier 1 passes.
+**Agent rule:** Tier 3 is optional unless the user requests it. When run, use the filter matching the core-loop sub-step you touched (e.g. `11-1` only).
 
 ---
 
@@ -164,13 +163,13 @@ Self-hosted Windows runners are typical for UE CI (long compile, large disk).
 
 ## Decision matrix — which tier when?
 
-| Change type | Minimum tier |
-|-------------|--------------|
-| C++ only (BreakawayCoreRuntime, LyraGame) | **1** |
-| `.ini` asset manager / cook paths | **1** + **2** when package exists |
-| Experience / match-flow assets | **1** + **3** (`11-1` filter) |
-| Core-loop sub-step claim (“11-2 passes”) | **1** + **3** (that step’s filter) |
-| Pre-release / standalone validation | **1** + **2** + relevant **3** |
+| Change type | Suggested verification |
+|-------------|----------------------|
+| C++ only (BreakawayCoreRuntime, LyraGame) | User recompile + editor/PIE smoke |
+| `.ini` asset manager / cook paths | Recompile + **2** when package exists |
+| Experience / match-flow assets | PIE + optional **3** (`11-1` filter) |
+| Core-loop sub-step claim (“11-2 passes”) | PIE checklist + optional **3** (that step’s filter) |
+| Pre-release / standalone validation | **2** + relevant **3** |
 
 ---
 

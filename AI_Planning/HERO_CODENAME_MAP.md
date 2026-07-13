@@ -1,25 +1,25 @@
 # Hero Codename Map
 
-> **Source of truth** for slice display names vs internal asset paths (locked 2026-05-25).  
-> Policy: **I2** — codenames in folders/asset names; **DisplayName** uses slice roster names.
+> **Paths / plugin names:** locked policy **I2** — codenames in folders/asset names.  
+> **DisplayName (UI):** Section 3 / [Breakaway_Hero_Stats_Sheet.md](./Breakaway_Hero_Stats_Sheet.md) / [CoreLoop_Implementation_Plan.md](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) — **not** older “Spartacus / Morgan Le Fay” marketing names for the slice roster.
 
 ## Roster
 
-| DisplayName (UI / design spec) | Codename (folder) | GF plugin | Hero data asset (target) | Legacy BreakawayCore path |
-|--------------------------------|-------------------|-----------|--------------------------|---------------------------|
-| Spartacus | **Argus** | `Hero_Spartacus` | `DA_BW_HeroData_Argus` → keep name, set DisplayName | `/BreakawayCore/Characters/Heroes/Argus/` |
+| DisplayName (UI / Section 3) | Codename (folder) | GF plugin | Hero data asset | Legacy BreakawayCore path |
+|------------------------------|-------------------|-----------|-----------------|---------------------------|
+| **Argus** | **Argus** | `Hero_Spartacus` | `DA_BW_HeroData_Argus` | `/BreakawayCore/Characters/Heroes/Argus/` |
 | Alona | **Alona** | `Hero_Alona` | `DA_BW_HeroData_Alona` | `/BreakawayCore/Characters/Heroes/Alona/` |
-| Morgan Le Fay | **Hexweaver** | `Hero_Morgan` | `DA_BW_HeroData_Hexweaver` (new) | — |
-| Rawlins | **Gunslinger** | `Hero_Rawlins` | `DA_BW_HeroData_Gunslinger` (new) | — |
+| **Korryn** | **Hexweaver** | `Hero_Morgan` | `DA_BW_HeroData_Hexweaver` (or existing Hexweaver DA) | — |
+| Rawlins | **Gunslinger** | `Hero_Rawlins` | `DA_BW_HeroData_Gunslinger` (or existing) | — |
 
-**Spartacus note (H3):** Do not rename `Argus` assets for path parity; only fix **DisplayName**, portrait, and **HeroMesh** in the hero DA.
+**Argus note:** Do not rename `Argus` assets or the `Hero_Spartacus` plugin for path parity. Set **DisplayName = Argus**. Plugin FriendlyName may still say Spartacus.
 
-## Plugin content layout (L2 + M1)
+**Historical note:** Older docs used DisplayName “Spartacus” for this hero. Section 3 superseded that — UI and hero select show **Argus**.
 
-After migration, each hero lives under its GF plugin mount (typically `/Hero_<PluginName>/`):
+## Plugin content layout
 
 ```
-Hero_Spartacus/Content/Characters/Heroes/Argus/     … Spartacus (codename Argus)
+Hero_Spartacus/Content/Characters/Heroes/Argus/     … Argus (plugin Hero_Spartacus)
 Hero_Alona/Content/Characters/Heroes/Alona/
 Hero_Morgan/Content/Characters/Heroes/Hexweaver/
 Hero_Rawlins/Content/Characters/Heroes/Gunslinger/
@@ -28,45 +28,44 @@ Hero_Rawlins/Content/Characters/Heroes/Gunslinger/
 Each plugin includes:
 
 - `GFD_Hero_<PluginName>` (`UBwayGameFeatureData`) → `HeroDataAssets[]`
-- Hero DA, ability set(s), two buildable DAs (F3), placement BPs (O2)
+- Hero DA, ability set(s), **one** buildable DA + actor BP
+- Per-hero PlaceBuildable BP; Confirm/Cancel stay on BreakawayCore humanoid set
 
-## Config cutover (P1 + N1)
+## Config cutover
 
-Per hero, **after** ue-mcp verifies hero select:
+Per hero, after verify:
 
-1. Add plugin to `B_BW_Experience_CaptureTheRelic` → `GameFeaturesToEnable`
-2. Add scan directory to `Config/DefaultGame.ini` → `PrimaryAssetTypesToScan` / `HeroDataAsset`:
+1. Add plugin to `B_BW_Experience_Dev` → `GameFeaturesToEnable` (Section 3: one at a time)
+2. Add scan directory to `Config/DefaultGame.ini` → `HeroDataAsset`:
 
 ```ini
 (Path="/Hero_Spartacus/Characters/Heroes")
 ```
 
-3. **Delete** legacy folder under `/BreakawayCore/Characters/Heroes/<Codename>/`
+3. Delete legacy folder under `/BreakawayCore/Characters/Heroes/<Codename>/` when duplicated
 
-Do **not** add the next hero’s scan path until the previous hero passes its gate.
+## Implementation order (Section 3)
 
-## Implementation order (G1)
-
-1. Spartacus (`Argus`) — **in progress**
+1. Argus (`Hero_Spartacus`) — **in progress** (Step 18)
 2. Alona
-3. Morgan (`Hexweaver`)
-4. Rawlins (`Gunslinger`)
+3. Korryn (`Hero_Morgan` / Hexweaver)
+4. Rawlins (`Hero_Rawlins` / Gunslinger)
 
-## Content bars (locked)
+## Content bars (Section 3)
 
 | Area | Bar |
 |------|-----|
-| Abilities | **K2** — design-spec MVP behavior |
-| Buildables | **O2** — placement + `bPersistsBetweenRounds`; no combat tuning until after A1c |
-| A1c pass | **E2 + F3** — all four heroes in select before playtest gate |
-| A1c human player | **Alona** (D1) |
+| Abilities | Stats sheet kit; 18a may use Spartacus C++ stand-ins until 18c |
+| Buildables | **One per hero**; once/round; free; persist; sheet behavior |
+| Gold | Earn in-match; **not** spent on buildables |
 
 ## Cheats / registry IDs
 
-Hero registry uses **primary asset IDs** from hero DAs, not DisplayName. After migration, update dev cheats/docs if they reference old paths. Prefer `SelectHero` by primary asset name once stable.
+Hero registry uses **primary asset IDs** from hero DAs (e.g. `HeroDataAsset:Argus`), not DisplayName. Prefer `Hero=Argus` URL / `SelectHero` by primary asset name.
 
 ## Related
 
+- [Spartacus CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md)
+- [Argus_18b_Editor_Setup.md](../Plugins/GameFeatures/BreakawayCore/Docs/Argus_18b_Editor_Setup.md)
 - [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
-- [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)
-- [Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md) — Gate 1 checklist
+- [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md) — may still say Spartacus; prefer this map + Core Loop for DisplayName

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Abilities/BwayGameplayAbility.h"
 #include "BwayCharacterWithAbilities.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/Abilities/LyraGameplayAbility.h"
 #include "BwayGameplayAbility_Base.generated.h"
 
 class UGameplayEffect;
@@ -16,7 +16,7 @@ class UAbilitySystemComponent;
  * Provides common functionality for team checking, damage application, and effect context creation
  */
 UCLASS(Abstract)
-class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Base : public ULyraGameplayAbility
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Base : public UBwayGameplayAbility
 {
 	GENERATED_BODY()
 

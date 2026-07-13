@@ -10,6 +10,7 @@
 
 class AGameplayAbilityTargetActor;
 class UMaterialInterface;
+class USkeletalMesh;
 
 /** This is a dummy reticle for internal use by visualization placement tasks. It builds a custom visual model of the visualization being placed. */
 UCLASS(notplaceable)
@@ -19,6 +20,8 @@ class BREAKAWAYCORERUNTIME_API ABwayWorldReticle_ActorVisualization : public AGa
 
 public:
 	void InitializeReticleVisualizationInformation(AActor* InTargetingActor, AActor* VisualizationActor, UMaterialInterface* InValidMaterial, UMaterialInterface* InInvalidMaterial);
+	/** Lightweight preview path: one skeletal mesh component, no temporary actor spawn. */
+	void InitializeReticleVisualizationFromPreviewMesh(AActor* InTargetingActor, USkeletalMesh* PreviewMesh, UMaterialInterface* InValidMaterial, UMaterialInterface* InInvalidMaterial);
 	void UpdatePlacementVisuals(bool bIsValid);
 	void SetIsReticleVisible(bool bVisible);
 private:

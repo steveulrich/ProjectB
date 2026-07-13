@@ -1,0 +1,10 @@
+#pragma once
+
+#include "NativeGameplayTags.h"
+
+namespace BwayGameplayTags
+{
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Buildable_PlacementSession);
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Ability_Buildable_PlacementExempt);
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_BuildablePlacement);
+}

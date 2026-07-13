@@ -31,7 +31,7 @@ FGameplayTag ResolvePickupEventTag(const URelicSettings* RelicSettings)
     return FGameplayTag::RequestGameplayTag(FName("Event.Interaction.PickupRelic"), /*ErrorIfNotFound*/ false);
 }
 
-bool IsCharacterRequestingRelic(const ABwayCharacterWithAbilities* Character, const URelicSettings* RelicSettings)
+bool    IsCharacterRequestingRelic(const ABwayCharacterWithAbilities* Character, const URelicSettings* RelicSettings)
 {
     if (!Character)
     {
@@ -90,7 +90,7 @@ ARelicActor::ARelicActor()
 void ARelicActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    
+
     // Replicate state machine and its components
     DOREPLIFETIME(ARelicActor, CurrentCarrier);
     DOREPLIFETIME(ARelicActor, CurrentState);
@@ -101,7 +101,7 @@ void ARelicActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 void ARelicActor::BeginPlay()
 {
     Super::BeginPlay();
-    
+
     // Set interaction sphere radius from settings
     if (RelicSettings)
     {
@@ -109,14 +109,14 @@ void ARelicActor::BeginPlay()
         RelicMesh->SetMassOverrideInKg(NAME_None, RelicSettings->RelicMass);
         RelicMesh->SetLinearDamping(RelicSettings->LinearDamping);
         RelicMesh->SetAngularDamping(RelicSettings->AngularDamping);
-        
+
         if(!RelicSettings->RelicMesh.IsNull())
         {
             if (UStaticMesh* LoadedMesh = RelicSettings->RelicMesh.LoadSynchronous())
             {
                 RelicMesh->SetStaticMesh(LoadedMesh);
             }
-        
+
             if (UMaterialInterface* LoadedMaterial = RelicSettings->RelicMaterial.LoadSynchronous())
             {
                 RelicMesh->SetMaterial(0, LoadedMaterial);
@@ -148,8 +148,8 @@ void ARelicActor::BeginPlay()
         }
         // --- End Preload ---
     }
-    
-   
+
+
     // Attach other components to the main relic mesh
     InteractionSphere->AttachToComponent(RelicMesh, FAttachmentTransformRules::KeepRelativeTransform);
 
@@ -161,7 +161,7 @@ void ARelicActor::BeginPlay()
     }
     // Bind overlap event (can also be done in Blueprint)
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ARelicActor::OnInteractionSphereOverlap);
-    
+
     // Initialize dynamic material for team color tinting
     if (RelicMesh && RelicSettings && !RelicSettings->RelicMaterial.IsNull())
     {
@@ -186,10 +186,10 @@ void ARelicActor::InitializeRelicData(const URelicSettings* InRelicSettings)
 
     // Store the settings from the data asset (now properly const)
     RelicSettings = InRelicSettings;
-    
+
     // Apply configuration immediately (before BeginPlay)
     ApplyRelicConfiguration();
-    
+
     UE_LOG(LogTemp, Log, TEXT("Relic initialized with data asset: %s"), *InRelicSettings->GetName());
 }
 
@@ -244,7 +244,7 @@ void ARelicActor::ApplyRelicConfiguration()
                 if (RelicSettings && !RelicSettings->RelicAbilitySet.IsNull())
                 {
                     LoadedRelicAbilitySet = RelicSettings->RelicAbilitySet.Get();
-                    UE_LOG(LogTemp, Log, TEXT("Relic ability set loaded: %s"), 
+                    UE_LOG(LogTemp, Log, TEXT("Relic ability set loaded: %s"),
                         *GetNameSafe(LoadedRelicAbilitySet));
                 }
             })
@@ -307,7 +307,7 @@ bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
     {
         return false;
     }
-    
+
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
     return CurrentState != ERelicState::Carried && IsCharacterRequestingRelic(Character, RelicSettings);
 }
@@ -322,7 +322,7 @@ void ARelicActor::OnRep_CurrentState()
     // Update VFX and audio based on state change
     UpdateStateVFX(CurrentState);
     UpdateTeamColorTinting();
-    
+
     if (RelicMesh && !HasAuthority())
     {
         const bool bShouldSimulateForSmoothing =
@@ -336,7 +336,7 @@ void ARelicActor::OnRep_CurrentState()
         RelicMesh->SetSimulatePhysics(bShouldSimulateForSmoothing);
         RelicMesh->SetCollisionEnabled(bShouldSimulateForSmoothing ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
     }
-    
+
     UE_LOG(LogTemp, Verbose, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), static_cast<int32>(CurrentState));
 }
 
@@ -441,7 +441,7 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
             LastPossessingTeam = GameState->GetPlayerTeam(NewCarrier->GetPlayerState());
         }
     }
-    
+
     // Notify relic manager component of carrier change
     if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
     {
@@ -450,13 +450,13 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
             RelicMgr->OnRelicCarrierChanged(NewCarrier);
         }
     }
-    
+
     CurrentCarrier = NewCarrier; // Set replicated property
     OnRep_CurrentCarrier(); // Call RepNotify manually on server
 
     AttachToCarrier(NewCarrier);
     SetRelicState(ERelicState::Carried);
-    
+
     // Play pickup audio
     PlayStateAudio(ERelicState::Carried);
 }
@@ -476,7 +476,7 @@ void ARelicActor::OnDropped()
             LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
         }
     }
-    
+
     // Notify relic manager component carrier is gone (do this first while CurrentCarrier is still valid)
     if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
     {
@@ -485,17 +485,17 @@ void ARelicActor::OnDropped()
             RelicMgr->OnRelicCarrierChanged(nullptr);
         }
     }
-    
+
     // Detach from carrier (uses CurrentCarrier internally for ability cleanup)
     DetachFromCarrier();
-    
+
     // Now clear the replicated carrier property
     CurrentCarrier = nullptr;
     OnRep_CurrentCarrier();
 
     // Set state (LastPossessingTeam is maintained - don't reset it)
     SetRelicState(ERelicState::Dropped);
-    
+
     // Play drop audio
     PlayStateAudio(ERelicState::Dropped);
 }
@@ -506,21 +506,21 @@ void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
     {
         return;
     }
-    
+
     // Validate that we haven't already scored this round
     if (bHasScoredThisRound)
     {
         UE_LOG(LogTemp, Warning, TEXT("Relic attempted to score again in same round - ignoring"));
         return;
     }
-    
+
     // Cannot score if relic is resetting or already scoring
     if (CurrentState == ERelicState::Resetting || CurrentState == ERelicState::Scoring)
     {
         UE_LOG(LogTemp, Verbose, TEXT("Relic is in invalid state for scoring: %d"), (int32)CurrentState);
         return;
     }
-    
+
     // Release the carrier before scoring VFX so round-reset pawn destroy/restart is safe.
     if (CurrentCarrier)
     {
@@ -531,13 +531,13 @@ void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
 
     // Set scoring state internally
     SetRelicState(ERelicState::Scoring);
-    
+
     // Mark as scored
     bHasScoredThisRound = true;
-    
+
     // Play scoring audio (VFX will be handled by OnRep_CurrentState)
     PlayStateAudio(ERelicState::Scoring);
-    
+
     UE_LOG(LogTemp, Log, TEXT("Relic entered goal for Team %d"), ScoringTeam + 1);
 }
 
@@ -547,7 +547,7 @@ void ARelicActor::ClearScoringFlag()
     {
         return;
     }
-    
+
     bHasScoredThisRound = false;
     UE_LOG(LogTemp, Verbose, TEXT("Relic scoring flag cleared for new round"));
 }
@@ -584,13 +584,13 @@ void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
                 LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
             }
         }
-        
+
         // Send client prediction RPC to the throwing client for immediate feedback
         if (APlayerController* CarrierPC = CurrentCarrier->GetController<APlayerController>())
         {
             ClientPredictThrow(ThrowVelocity);
         }
-        
+
         DetachFromCarrier(&ThrowVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
         OnRep_CurrentCarrier(); // Call RepNotify manually on server
@@ -619,7 +619,7 @@ void ARelicActor::Server_PassRelic_Implementation(const FVector& PassVelocity)
                 LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
             }
         }
-        
+
         DetachFromCarrier(&PassVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
         OnRep_CurrentCarrier(); // Call RepNotify manually on server
@@ -673,14 +673,9 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
                     IsValid(PlayerStateASC), IsValid(AbilitySetToGrant));
             }
 
-            const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
-            if (PlayerStateASC && RelicCarrierTag.IsValid())
-            {
-                PlayerStateASC->AddLooseGameplayTag(RelicCarrierTag);
-            }
-
             if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CarrierPlayerState))
             {
+                BwayPS->ApplyRelicCarrierTag(true, EGameplayTagReplicationState::TagAndCountToAll);
                 BwayPS->SetHasRelic(true);
             }
         }
@@ -689,6 +684,15 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
             UE_LOG(LogTemp, Warning, TEXT("Server: Carrier %s has no PlayerState, cannot grant RelicAbilitySet."), *GetNameSafe(Carrier));
         }
         // --- End Grant Ability Set ---
+    }
+    else if (Carrier->IsLocallyControlled())
+    {
+        // Client-side mirror for the local carrier so combat abilities are blocked before
+        // replicated loose tags arrive (prevents LocalPredicted rubberbanding).
+        if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Carrier->GetPlayerState()))
+        {
+            BwayPS->ApplyRelicCarrierTag(true, EGameplayTagReplicationState::None);
+        }
     }
 
     // If called on client via OnRep_CurrentCarrier, this visually attaches the relic.
@@ -715,22 +719,18 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
                     GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
                     UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(CarrierPlayerState), *GetNameSafe(CurrentCarrier));
 
-                    const FGameplayTag RelicCarrierTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.State.RelicCarrier"), /*ErrorIfNotFound*/ false);
-                    if (RelicCarrierTag.IsValid())
-                    {
-                        PlayerStateASC->RemoveLooseGameplayTag(RelicCarrierTag);
-                    }
                 }
 
                 if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CarrierPlayerState))
                 {
+                    BwayPS->ApplyRelicCarrierTag(false, EGameplayTagReplicationState::TagAndCountToAll);
                     BwayPS->SetHasRelic(false);
                 }
             }
         }
         // --- End Clear Ability Set ---
 
-        
+
         // Enable server-side physics AFTER clearing abilities/detaching
         RelicMesh->SetSimulatePhysics(true);
         if (InitialVelocity)
@@ -952,14 +952,14 @@ void ARelicActor::ClientPredictThrow_Implementation(const FVector& ThrowVelocity
         {
             DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
         }
-        
+
         // Enable physics temporarily for prediction
         RelicMesh->SetSimulatePhysics(true);
         RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-        
+
         // Apply the throw velocity
         RelicMesh->SetPhysicsLinearVelocity(ThrowVelocity);
-        
+
         // The server's authoritative state will correct this shortly
         UE_LOG(LogTemp, VeryVerbose, TEXT("Client predicted throw with velocity: %s"), *ThrowVelocity.ToString());
     }

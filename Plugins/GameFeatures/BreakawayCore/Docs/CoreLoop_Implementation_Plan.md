@@ -34,15 +34,21 @@ Decisions captured from design review (May 2026).
 | Pawn | **`DA_BW_PawnData_Humanoid`** — no heroes until Section 3 |
 | Progress mechanism | **Action sets + ability sets + experience / GameState / map config** — no `CoreLoopStep` URL gates |
 | Teams | **4v4** — you + 3 bots vs 4 bots |
-| Hero select | **Paused** — `SkipHeroSelection=1` |
+| Hero select | **Paused** — `SkipHeroSelection=1` (+ **`ForceHumanoid=1`** after Section 3 Step 17) |
 | Bulletproof bar | Checklist + **3 cold-start PIE runs**; **listen server** from Step 3; **`Net PktLag=100`** on throw / pass / score steps |
-| UI | **Section 2** after Step 11 — no match HUD required in Section 1 |
-| Heroes | **Section 3** — after Section 2 UI (possibly later) |
+| UI | **Section 2** complete (Steps 12–16) |
+| Heroes | **Section 3** — Steps 17–22 (Jun 2026 plan) |
 
-**Standard PIE URL (Section 1):**
+**Standard PIE URL (Section 1 — until Step 17 refactors `SkipHeroSelection`):**
 
 ```
 L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7
+```
+
+**Section 1 regression URL (after Step 17):**
+
+```
+L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&ForceHumanoid=1&NumBots=7
 ```
 
 **PIE settings:** 1 player, **Listen Server** from Step 3 onward (Standalone OK for Steps 1–2).
@@ -83,6 +89,8 @@ Everyone spawns via Lyra experience **`DefaultPawnData = DA_BW_PawnData_Humanoid
 **Also do once:** Strip `B_BW_Experience_Dev` to Step 1 baseline (see Step 1).
 
 **Pass:** Recompile; Step 1 checklist attempt succeeds without hero assets loading.
+
+**Step 17 note:** `SkipHeroSelection` semantics change in Section 3 Step 17 — it will mean “skip hero-select UI/phase only,” not “skip hero apply.” Humanoid regression moves to **`ForceHumanoid=1`**.
 
 ---
 
@@ -168,7 +176,7 @@ Relic spawns via `BreakawayGameMode::SpawnInitialGameObjects` → `RelicManager`
 
 - [ ] **Listen server** PIE
 - [ ] Hold / interact to request pickup → relic attaches to socket
-- [ ] `Gameplay.State.RelicCarrier` on server; **replicates to client**
+- [x] `Gameplay.State.RelicCarrier` on server; **replicates to client** (replicated loose tag + client mirror via `bHasRelic` / local attach)
 - [ ] 3/3 cold starts + 3/3 with listen server
 
 ---
@@ -407,7 +415,6 @@ Replaces the old “playlist tile only” **11-8** path for ranked/unranked queu
 - [ ] Wire a Lyra front-end button: on click → `Log Matchmaking Goal` with selected DA
 - [ ] Log shows exact `QueueTypeTag` and `PlayersPerTeam` from the asset
 - [ ] No compilation errors; no session / travel side effects
-- [ ] Tier 1 compile pass
 
 #### `11-MM-2` — Custom game config persistence (Phase 2)
 
@@ -422,7 +429,6 @@ Replaces the old “playlist tile only” **11-8** path for ranked/unranked queu
 
 - [ ] Blueprint: set `CustomMaxPlayersPerTeam = 4` on menu A
 - [ ] Navigate to menu B, call `GetCustomGameSettings()` → still **4**
-- [ ] Tier 1 compile pass
 
 #### `11-MM-3` — Matchmaking subsystem + mock queue (Phase 3)
 
@@ -436,7 +442,6 @@ Replaces the old “playlist tile only” **11-8** path for ranked/unranked queu
 
 - [ ] Menu button → `StartMatchmakingQueue` → JSON prints to log / screen
 - [ ] After 3s: `OnMockMatchFound` → screen message *"Match Found! Simulating Server Handoff."*
-- [ ] Tier 1 compile pass
 
 #### `11-MM-4` — Session travel integration (Phase 4)
 
@@ -457,7 +462,7 @@ Replaces the old “playlist tile only” **11-8** path for ranked/unranked queu
 **Pass checklist — regression:**
 
 - [ ] Step 10 URL still works when bypassing front-end
-- [ ] Tier 1 compile pass; front-end E2E **3/3** cold starts
+- [ ] Front-end E2E **3/3** cold starts
 
 ---
 
@@ -536,7 +541,7 @@ Do **not** fork a second experience for menu vs PIE.
 #### Hero selection (11-2, Section 3)
 
 - **11-2:** Skip path must **not** call `EndPhaseAndProgressToNext()`.
-- **Section 3:** Add `EBwayMatchPhase::HeroSelection`; RM owns transition to Warmup.
+- **Section 3 (locked Jun 2026):** **No** `EBwayMatchPhase::HeroSelection` in RM. Production path = **`L_BW_HeroSelect_Staging`** → seamless travel → match. Direct PIE = `Hero=` URL, auto hero UI, or console cheats. See [Section 3 — Hero integration](#section-3--hero-integration).
 
 ---
 
@@ -820,6 +825,8 @@ Reference layouts (Breakaway target): top-center **timer + team scores + round-w
 ```
 L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsToWin=3&RoundDuration=90
 ```
+
+After **Section 3 Step 17**, add **`ForceHumanoid=1`** for humanoid-only regression (see [Section 3 principles](#section-3-principles)).
 
 **Experience baseline after Step 12** (Section 1 / Step 11 + Step 12 complete):
 
@@ -1249,16 +1256,542 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 ---
 
-# Section 3 — Hero integration (TBD)
+# Section 3 — Hero integration
 
 **Section 2 is complete** (Steps 12–16, Jun 2026). Start Section 3 only after commit/tag of the Section 2 pass.
 
-Likely order:
+**Parity source of truth:** [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md) — base stats, abilities, cooldowns, damage, buildables. Tiered delivery: **integration → functional → parity** per hero.
 
-1. Fixed single hero on humanoid fallback (dev)
-2. Hero select staging map (resume paused work)
-3. Per-hero ability sets in match
-4. Hero buildables / economy hooks
+Design review decisions captured **Jun 2026** (grill-me).
+
+**Agent prompts:** [Section 3 agent prompts](#section-3-agent-prompts) — copy-paste one prompt per step/sub-step.
+
+---
+
+## Progress (Section 3)
+
+| Step | Status | Notes |
+|------|--------|-------|
+| **17** | **C++ done** | ForceHumanoid, SkipHeroSelection refactor, Hero= URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables — editor checklists open |
+| **18** | **18a/18b C++ done** | Argus functional + Siege Engine + PlaceBuildable/Confirm/Cancel C++; editor wiring per [Argus_18a](./Argus_18a_Editor_Setup.md) / [Argus_18b](./Argus_18b_Editor_Setup.md); 3/3 PIE open |
+| **19** | **Open** | Alona |
+| **20** | **Open** | Korryn (`Hero_Morgan` / `Hexweaver` folder) |
+| **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
+| **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
+
+---
+
+## Section 3 principles
+
+| Decision | Choice |
+|----------|--------|
+| Test harness | PIE on **`L_BW_DevMap`**, **`B_BW_Experience_Dev`**; listen server for hero/combat steps |
+| Parity bar | **`Breakaway_Hero_Stats_Sheet.md`** — functional behavior + mechanical tuning (CDs, damage, radii, durations) |
+| Roster (Section 3) | **Argus, Alona, Korryn, Rawlins** only; registry accepts all 11; UI shows **official names** |
+| Hero select (production) | **`L_BW_HeroSelect_Staging`** → lock → seamless travel → match ([HeroSelect_Staging_Setup.md](./HeroSelect_Staging_Setup.md)) |
+| Hero select (direct PIE) | `Hero=` URL **or** auto `WBP_BW_HeroSelect` **or** console (`SelectHero`, `RespawnAsHero`); **no** in-match RM `HeroSelection` phase |
+| Humanoid regression | **`ForceHumanoid=1`** — no hero apply, no hero assets (replaces old `SkipHeroSelection`-only humanoid path after Step 17) |
+| `SkipHeroSelection=1` (post–17) | Skip hero-select UI/phase only; **still apply** locked `SelectedHeroId` (staging travel + pre-locked URL) |
+| Direct PIE bots | Fixed **Argus** (`HeroDataAsset:Argus`), not random |
+| RM on direct PIE | **Wait** for human hero lock before Warmup |
+| Buildables | **One per hero** from stats sheet; **once per round**, **free**; **persists** between rounds until destroyed |
+| Gold | Awarding in-match OK; **spend deferred** — gold is for **stat enhancers/items** (post–vertical slice), not buildable purchase |
+| Experience | Enable hero GF plugins on **`B_BW_Experience_Dev`** **one hero at a time** (Steps 18→21) |
+| Experience parent | **`LyraExperienceDefinition`** — do not reparent |
+| Bulletproof bar | Pass Criteria Template + **3/3 cold starts**; user recompile after C++ sub-steps |
+
+### URL cheat sheet
+
+| Purpose | URL |
+|---------|-----|
+| Section 1 / humanoid regression (after Step 17) | `L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&ForceHumanoid=1&NumBots=7` |
+| Hero test (automated) | `…&Hero=Alona&NumBots=7` (listen server) |
+| Hero test (interactive) | omit `Hero=` → auto hero UI; bots Argus |
+| Staging | `L_BW_HeroSelect_Staging?HeroSelectStaging=1&…` (see staging doc) |
+
+### Architecture (flows)
+
+```
+Production:  Front-end tile → L_BW_HeroSelect_Staging → lock → SeamlessTravel → L_BW_DevMap
+Direct PIE:  DevMap → (Hero= URL | auto hero UI) → lock → RM Warmup → Playing
+Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
+```
+
+**Modularity:** heroes in **GF plugins**; `GameFeaturesToEnable` controls roster; `UBwayHeroDataAsset` + ability sets; RM owns match phases (not hero select).
+
+---
+
+## Step 17 — Hero infra + routing
+
+**Status:** **C++ done** (Jun 2026) — editor/staging setup + PIE checklists open.
+
+**Goal:** All paths apply heroes correctly without breaking Section 1 humanoid regression.
+
+### C++ (`BreakawayCoreRuntime`)
+
+| Change | Files / notes |
+|--------|----------------|
+| **`ForceHumanoid` URL option** | `BwayGameplayUrlLibrary`, `BreakawayGameMode::ApplyHeroDataToNewPawn`, `BwayBotCreationComponent` |
+| **Refactor `SkipHeroSelection`** | Skip select phase/UI only; **apply** hero if `SelectedHeroId` valid |
+| **`Hero=` URL parsing** | Resolve via `UBwayHeroRegistry`; lock on `PostLogin` before spawn apply |
+| **Direct PIE bot default** | `BwayBotCreationComponent` → Argus when `IsDirectEditorPlayWithoutHeroSelectFlow` |
+| **RM hero-lock gate** | `BwayRoundManagementComponent` — hold Prematch/Warmup until all **human** players `IsHeroLocked()` |
+| **Auto hero UI** | `StartDevDirectPlayHeroSelection` on experience load when direct PIE, no `Hero=` |
+| **Once-per-round buildable** | `BwayBuildablePlacementLibrary` — remove gold gate for slice; track placements per round on `ABwayPlayerState`; reset on round start |
+| **Staging travel** | Keep `SkipHeroSelection=1` on post-staging match URL (safe after refactor) |
+
+### Editor
+
+- Complete [HeroSelect_Staging_Setup.md](./HeroSelect_Staging_Setup.md) (experience, map, playlist tiles `bRouteThroughHeroSelectStaging=true`)
+- Update Section 1/2 regression URLs in editor bookmarks to add `ForceHumanoid=1` after Step 17 lands
+
+### Pass checklist
+
+- [ ] `SkipHeroSelection=1&ForceHumanoid=1` → humanoid, no hero assets, Step 10 relic loop OK
+- [ ] `Hero=Argus` → you Argus, 7 bots Argus, mesh + ability set applied
+- [ ] Direct PIE without `Hero=` → hero UI auto-opens; RM waits; lock → respawn with hero
+- [ ] Staging → lock → travel → match applies chosen hero (listen server)
+- [ ] Buildable placement allowed **once per round** without gold
+- [ ] **3/3** cold starts
+
+---
+
+## Steps 18–21 — Per-hero (hero-complete)
+
+**Order:** Argus → Alona → Korryn → Rawlins.  
+**Each step:** add **one** GF plugin to `B_BW_Experience_Dev` + `DefaultGame.ini` hero scan path.
+
+**Sub-steps per hero:**
+
+| Sub-step | Deliverable |
+|----------|-------------|
+| **x-a Functional** | Base stats from sheet; LMB Primary + F defense dodge + Q/E/R activate; RMB = common Request Relic; Left Shift = common movement slide; relic carrier blocks combat (F dodge / Shift / Request Relic / PlaceBuildable still allowed) |
+| **x-b Buildable** | One buildable from sheet: per-hero PlaceBuildable + humanoid Confirm/Cancel; once/round free; persist; sheet health/effect |
+| **x-c Parity** | CDs, damage, scaling, durations, radii match stats sheet |
+
+**Commit examples:** `core-loop: step 18a passed (Argus functional)` → `18b` → `18c`.
+
+---
+
+### Step 18 — Argus (`Hero_Spartacus`, `DA_BW_HeroData_Argus`)
+
+**DisplayName:** Argus (official UI name). Plugin **`Hero_Spartacus`**; asset folder **`Argus`** unchanged.
+
+| Slot | Ability (stats sheet) | In-game key / tag | CD | Buildable |
+|------|----------------------|-------------------|-----|-----------|
+| Base | HP 500, Armor 3, Atk 50, Speed 10 | | | |
+| LMB | Primary Attack | LMB / `Primary` | — | |
+| RMB (sheet) | Slide (defense dodge) | **F** / `Ability4` | 18s | |
+| — | Request Relic (common) | **RMB** / `RelicRequest` | — | |
+| Q | No Retreat | Q / `Ability1` | 12s | |
+| E | For Glory | E / `Ability2` | 25s | |
+| R | Retribution | R / `Ability3` | 30s | **Siege Engine** — HP 250; 200 dmg/s vs buildables; 10s max |
+| 1 | Siege Engine place | **1** / `Buildable` (per-hero) | — | Confirm LMB / Cancel RMB while placing |
+
+**Editor checklists:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md)
+
+**Realignment:** 18a uses deprecated Spartacus C++ stand-ins (`ShieldBash`, `WarCry`, `DefensiveStance`, `GladiatorsLeap`) for F/Q/E/R; replace with sheet-accurate abilities in **18c**. Legacy kit notes: [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md).
+
+**Pass:** sub-steps 18a–18c + relic pickup/score regression; **3/3** cold starts.
+
+---
+
+### Step 19 — Alona (`Hero_Alona`)
+
+| Slot | Ability | Buildable |
+|------|---------|-----------|
+| LMB | Primary (28 dmg, 0.25 scale) | |
+| RMB | Sun's Grace | |
+| Q | Radiance | |
+| E | Sun Burst | |
+| R | Blessing of the Sun | **Sun Shrine** — 750 HP, 35 HP/s, 5m |
+
+**Pass:** 19a–19c; **3/3** cold starts.
+
+---
+
+### Step 20 — Korryn (`Hero_Morgan`, folder `Hexweaver`)
+
+**DisplayName:** Korryn (official). Plugin folder **`Hexweaver`** unchanged until rename pass.
+
+| Slot | Ability | Buildable |
+|------|---------|-----------|
+| LMB | Primary + armor shred | |
+| RMB | Flock | |
+| Q | Burden of Sin | |
+| E | Circle of Spite | |
+| R | Aura of Silence | **Cursed Ward** — 600 HP, 50% slow, 6m |
+
+**Pass:** 20a–20c; **3/3** cold starts.
+
+---
+
+### Step 21 — Rawlins (`Hero_Rawlins`, folder `Gunslinger`)
+
+| Slot | Ability | Buildable |
+|------|---------|-----------|
+| LMB | Two-shot primary | |
+| RMB | Double Down | |
+| Q | Power Shot | |
+| E | Slide Shot | |
+| R | Blazing Barrage | **Jail** — 450 HP, cage trap |
+
+**Pass:** 21a–21c; **3/3** cold starts.
+
+---
+
+## Step 22 — Section 3 capstone
+
+**Goal:** Full vertical-slice hero loop + cross-cutting relic rule.
+
+| Item | Work |
+|------|------|
+| **Fumble-on-damage** | Carrier drops relic when damaged; increment `ForcedFumbles` on `ABwayPlayerState` |
+| **Staging E2E** | Front-end tile → staging → match; four heroes in select; duplicate-hero rule per team |
+| **Four-hero match** | All four GF plugins on experience; listen server 4v4 |
+| **HUD** | Portraits show official names; ability bar wired where Section 2 stubbed |
+| **Docs** | `HERO_CODENAME_MAP.md`, `Breakaway_Reborn_Design_Spec.md` §2.2 buildable/gold wording |
+| **Regression** | `ForceHumanoid=1` Section 1 URL still passes |
+
+### Pass checklist
+
+- [ ] Fumble-on-damage drops relic (listen server)
+- [ ] Buildable placed round 1 **persists** round 2; second placement blocked until next round
+- [ ] Staging E2E **3/3** cold starts
+- [ ] Full mini-match with four heroes selectable; combat + relic loop
+
+---
+
+## Section 3 summary
+
+| Step | Scope | Pass when |
+|------|-------|-----------|
+| **17** | Infra + routing | `ForceHumanoid` regression; `Hero=`; staging travel; once-per-round buildable |
+| **18** | Argus | Sheet kit + Siege Engine + parity |
+| **19** | Alona | Sheet kit + Sun Shrine + parity |
+| **20** | Korryn | Sheet kit + Cursed Ward + parity |
+| **21** | Rawlins | Sheet kit + Jail + parity |
+| **22** | Capstone | Fumble, staging E2E, four-hero match |
+
+---
+
+## Explicit non-goals (Section 3)
+
+- `EBwayMatchPhase::HeroSelection` in RM
+- In-match hero select phase on DevMap (except dev auto UI overlay)
+- Gold-spend shop / stat enhancers
+- Heroes 5–11 implementation (registry-only)
+- Bot hero variety on direct PIE (Argus only)
+- Renaming asset folders (`Argus`, `Hexweaver`, `Gunslinger`)
+
+---
+
+## Doc updates (with Step 17 / 22)
+
+**`Breakaway_Reborn_Design_Spec.md` §2.2** (target wording — still apply at Step 22 if not already):
+
+- Slice roster: four heroes; **one buildable each** (stats sheet).
+- **Once per round**, free placement; persists between rounds until destroyed.
+- **Gold** earned in-match; spend on **stat enhancers/items** — post–vertical slice (not buildable purchase).
+
+**`HERO_CODENAME_MAP.md`:** Updated Jul 2026 — DisplayName **Argus** / **Korryn**; one buildable per hero; Section 3 authority.
+
+---
+
+## Section 3 agent prompts
+
+Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a → b → c** within Steps 18–21. Each prompt assumes [Section 3 principles](#section-3-principles) and **`Breakaway_Hero_Stats_Sheet.md`** as parity source of truth.
+
+| Prompt | Step |
+|--------|------|
+| [Step 17](#prompt-step-17--hero-infra--routing) | Infra + routing |
+| [18a → 18c](#prompt-step-18a--argus-functional) | Argus |
+| [19a → 19c](#prompt-step-19a--alona-functional) | Alona |
+| [20a → 20c](#prompt-step-20a--korryn-functional) | Korryn |
+| [21a → 21c](#prompt-step-21a--rawlins-functional) | Rawlins |
+| [Step 22](#prompt-step-22--section-3-capstone) | Capstone |
+
+### Prompt: Step 17 — Hero infra + routing
+
+```
+Implement Core Loop Section 3 Step 17 (hero infra + routing) in ProjectB.
+
+Read first:
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md (Section 3 Step 17)
+- Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md
+
+Goals:
+1. Add URL option ForceHumanoid=1 for Section 1 humanoid regression (no hero apply, no hero assets).
+2. Refactor SkipHeroSelection=1 to mean "skip hero-select UI/phase only" — still call ApplyHeroDataToNewPawn when ABwayPlayerState::SelectedHeroId is valid and locked.
+3. Add Hero= URL option — resolve primary asset name via UBwayHeroRegistry, set + lock on server at login.
+4. Direct PIE bots: default to Argus (HeroDataAsset:Argus) when UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow (not random).
+5. UBwayRoundManagementComponent: do not enter Warmup until all human players have IsHeroLocked() on direct PIE (bots may be Argus earlier).
+6. Direct PIE without Hero=: auto-start dev hero select UI via existing StartDevDirectPlayHeroSelection.
+7. UBwayBuildablePlacementLibrary: remove gold requirement for slice; enforce once-per-round free placement per player (track on ABwayPlayerState, reset on round start); buildables still persist between rounds.
+8. Verify staging seamless travel still works with SkipHeroSelection=1 on match URL after refactor.
+
+Constraints:
+- Do NOT add EBwayMatchPhase::HeroSelection to RM.
+- Do NOT reparent B_BW_Experience_Dev.
+- Match Lyra/Breakaway modularity patterns; verify UE APIs with unreal-api MCP.
+- Ask user to recompile/restart editor after C++ changes (do not run Tier 1 from agent).
+
+Pass checklist (document results):
+- SkipHeroSelection=1&ForceHumanoid=1&NumBots=7 → humanoid, Step 10 relic loop OK
+- Hero=Argus&NumBots=7 listen server → you + bots Argus with mesh/abilities
+- Direct PIE no Hero= → auto UI, RM waits, lock → hero applied
+- Staging lock → travel → match applies hero
+- Buildable once per round without gold
+- 3/3 cold-start PIE runs
+
+Update CoreLoop_Implementation_Plan.md Step 17 status when done. Ask me to recompile/restart editor manually.
+```
+
+### Prompt: Step 18a — Argus functional
+
+```
+Implement Core Loop Section 3 Step 18a (Argus functional) in ProjectB.
+
+Read first:
+- AI_Planning/Breakaway_Hero_Stats_Sheet.md (Argus section)
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md (Step 18)
+- Plugins/GameFeatures/BreakawayCore/Docs/Argus_18a_Editor_Setup.md
+- Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md
+
+Scope: Enable Hero_Spartacus on B_BW_Experience_Dev + DefaultGame.ini scan path only for Argus.
+
+Ability ownership (canonical):
+- Humanoid set: Left Shift movement slide (`InputTag.Ability.Slide`), RMB Request Relic (`InputTag.Ability.RelicRequest`)
+- Per-hero Argus set: LMB Primary, F Ability4, Q/E/R combat (PlaceBuildable deferred to 18b)
+
+Wire stats-sheet kit (18a may use Spartacus C++ stand-ins for F/Q/E/R):
+- LMB Primary Attack (`InputTag.Ability.Primary` → BwayGameplayAbility_MeleePrimary)
+- F defense dodge (`InputTag.Ability.Ability4` — Argus sheet name "Slide"; stats sheet RMB column ≠ in-game key)
+- RMB common Request Relic (`InputTag.Ability.RelicRequest` on humanoid set)
+- Q No Retreat (`InputTag.Ability.Ability1`)
+- E For Glory (`InputTag.Ability.Ability2`)
+- R Retribution (`InputTag.Ability.Ability3`)
+- Left Shift common movement slide (`InputTag.Ability.Slide` on humanoid set)
+
+Apply base stats from sheet: HP 500, Armor 3, Attack Str 50, Speed 10 via UBwayHeroDataAsset / InitializeHeroData.
+
+Set hero DA DisplayName = "Argus" (official). Leave BuildableDataAsset empty until 18b.
+
+Do NOT implement Siege Engine yet (18b). Do NOT grant PlaceBuildable yet (18b — per-hero set). Do NOT tune parity (18c).
+
+Pass: PIE Hero=Argus&NumBots=7 listen server — LMB/F/Q/E/R + Shift slide + RMB Request Relic activate; relic carrier blocks LMB/F/Q/E/R but allows Shift + Request Relic; **3/3** cold starts; relic score regression still works.
+Follow Argus_18a_Editor_Setup.md for editor checklist.
+```
+
+### Prompt: Step 18b — Argus Siege Engine buildable
+
+```
+Implement Core Loop Section 3 Step 18b (Argus buildable — Siege Engine) in ProjectB.
+
+Read first:
+- AI_Planning/Breakaway_Hero_Stats_Sheet.md (Argus buildable row)
+- Plugins/GameFeatures/BreakawayCore/Docs/Argus_18b_Editor_Setup.md
+- Plugins/GameFeatures/BreakawayCore/Docs/Buildable_System.md
+
+C++ for PlaceBuildable / Confirm / Cancel / SiegeEngine / RelicRequest blocking should already exist — prefer editor wiring + PIE pass; only fix C++ if broken.
+
+Goals:
+1. Siege Engine data + BP actor (HP 250, 200 dmg/s vs buildables, 10s roll, bPersistsBetweenRounds=true, Cost=0).
+2. Wire DA_BW_HeroData_Argus.BuildableDataAsset → Siege Engine DA.
+3. Grant PlaceBuildable BP child on DA_BW_AbilitySet_Argus (InputTag.Ability.Buildable / key 1) — NOT on humanoid.
+4. Remove InputTag.Ability.Buildable from DA_BW_AbilitySet_Humanoid if present.
+5. Humanoid Confirm/Cancel GAs + dual-bind LMB (Primary + Buildable.Confirm) and RMB (RelicRequest + Buildable.Cancel).
+6. Reparent GA_BW_Relic_Request → BwayGameplayAbility_RelicRequest.
+7. Do not strip C++ ActivationRequiredTags / PlacementExempt / PlacementSession defaults on BP children.
+
+Pass: PIE Hero=Argus listen server — press 1 → ghost; LMB valid spawns+rolls; LMB invalid stays in preview; RMB cancels; during placement Primary/Request Relic blocked; other abilities cancel preview; once/round; persists round 2; **3/3** cold starts.
+Follow Argus_18b_Editor_Setup.md pass checklist + failure triage.
+```
+
+### Prompt: Step 18c — Argus parity
+
+```
+Implement Core Loop Section 3 Step 18c (Argus parity pass) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Argus) — source of truth.
+
+Tune Argus abilities + Siege Engine to match sheet:
+- Cooldowns: Slide 18s, No Retreat 12s, For Glory 25s, Retribution 30s
+- Damage/scaling: Primary 10/0.4; No Retreat & For Glory 2/0.4; Retribution 10+20/0.5
+- Siege Engine: HP 250, 200 dmg/s vs buildables, 10s max duration
+
+Verify in PIE/logs. Update Spartacus_Implementation_Summary.md to reflect sheet-accurate ability names.
+
+Pass: spot-check each value vs sheet; 3/3 cold starts; commit message: core-loop: step 18c passed (Argus parity).
+Do not start Alona (Step 19) in this task unless 18c checklist is fully green.
+```
+
+### Prompt: Step 19a — Alona functional
+
+```
+Implement Core Loop Section 3 Step 19a (Alona functional) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Alona section).
+Enable Hero_Alona on B_BW_Experience_Dev + DefaultGame.ini scan (keep Argus enabled).
+
+Implement functional kit:
+- LMB Primary (28 dmg, 0.25 scale)
+- RMB Sun's Grace (22s invuln teleport dodge)
+- Q Radiance (8s heal — closest ally to reticule, 4s active)
+- E Sun Burst (20s knockback)
+- R Blessing of the Sun (25s ground heal circle)
+
+Base stats: HP 350, Armor 0, Atk 40, Speed 10. DisplayName = "Alona".
+
+No Sun Shrine buildable yet (19b). No parity tuning yet (19c).
+
+Pass: Hero=Alona&NumBots=7 listen server; all abilities fire; relic carrier gating correct; 3/3 cold starts; Argus regression still works.
+```
+
+### Prompt: Step 19b — Alona Sun Shrine
+
+```
+Implement Core Loop Section 3 Step 19b (Alona buildable — Sun Shrine) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Alona buildable).
+
+Wire Sun Shrine to DA_BW_HeroData_Alona:
+- Health 750; heals 35 HP/s; 5m radius; does not stack with other Sun Shrines.
+
+Once per round free placement; persists between rounds.
+
+Pass: place in round 1, persists round 2, blocked second placement same round; allies heal in radius; 3/3 cold starts listen server.
+```
+
+### Prompt: Step 19c — Alona parity
+
+```
+Implement Core Loop Section 3 Step 19c (Alona parity pass) in ProjectB.
+
+Tune all Alona abilities + Sun Shrine to Breakaway_Hero_Stats_Sheet.md values (CDs, heal amounts, Radiance STR/52 scaling up to 1.75, Blessing initial 70 + 35/s, etc.).
+
+Pass: sheet spot-check; 3/3 cold starts; core-loop: step 19c passed (Alona parity).
+```
+
+### Prompt: Step 20a — Korryn functional
+
+```
+Implement Core Loop Section 3 Step 20a (Korryn functional) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Korryn section).
+Enable Hero_Morgan plugin (content folder Hexweaver) on experience + ini scan. DisplayName = "Korryn" (official).
+
+Implement functional kit:
+- LMB Primary (22 dmg, armor -2 per hit max -10 for 2s)
+- RMB Flock (22s, 1.5s ethereal)
+- Q Burden of Sin (14s slow ravens)
+- E Circle of Spite (20s hex zone)
+- R Aura of Silence (30s AoE silence)
+
+Base stats: HP 335, Armor 0, Atk 40, Speed 10.
+
+No Cursed Ward yet (20b). No parity yet (20c).
+
+Pass: Hero=Korryn&NumBots=7; silence/slow/debuff behaviors work at MVP; relic gating; 3/3 cold starts.
+```
+
+### Prompt: Step 20b — Korryn Cursed Ward
+
+```
+Implement Core Loop Section 3 Step 20b (Korryn buildable — Cursed Ward) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Korryn buildable).
+
+Wire Cursed Ward: Health 600; 50% slow; 6m range. Once per round free; persists between rounds.
+
+Pass: functional slow in radius; placement rules; 3/3 cold starts.
+```
+
+### Prompt: Step 20c — Korryn parity
+
+```
+Implement Core Loop Section 3 Step 20c (Korryn parity pass) in ProjectB.
+
+Tune to stats sheet: Burden 33 dmg/2s 50% slow; Circle 15% slow, 35% damage amp, 7m, 5s; Aura 13 dmg, 8m, 5s silence; Cursed Ward 600 HP/50% slow/6m; all CDs from sheet.
+
+Pass: sheet spot-check; 3/3 cold starts; core-loop: step 20c passed (Korryn parity).
+```
+
+### Prompt: Step 21a — Rawlins functional
+
+```
+Implement Core Loop Section 3 Step 21a (Rawlins functional) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Rawlins section).
+Enable Hero_Rawlins plugin (folder Gunslinger) on experience + ini. DisplayName = "Rawlins".
+
+Implement functional kit:
+- LMB two-shot primary (1 dmg, 0.3 scale each)
+- RMB Double Down (14s dodge roll)
+- Q Power Shot (8s knockback)
+- E Slide Shot (18s launch)
+- R Blazing Barrage (25s 12-shot stationary)
+
+Base stats: HP 400, Armor 0, Atk 60, Speed 10.5.
+
+No Jail buildable yet (21b). No parity yet (21c).
+
+Pass: Hero=Rawlins&NumBots=7; all abilities activate; relic gating; 3/3 cold starts.
+```
+
+### Prompt: Step 21b — Rawlins Jail
+
+```
+Implement Core Loop Section 3 Step 21b (Rawlins buildable — Jail) in ProjectB.
+
+Read: AI_Planning/Breakaway_Hero_Stats_Sheet.md (Rawlins buildable).
+
+Wire Jail trap: Health 450; encages first opponent on floor trap until cage destroyed or victim killed; can trap multiple if close.
+
+Once per round free; persists between rounds.
+
+Pass: trap triggers on enemy; placement rules; 3/3 cold starts listen server.
+```
+
+### Prompt: Step 21c — Rawlins parity
+
+```
+Implement Core Loop Section 3 Step 21c (Rawlins parity pass) in ProjectB.
+
+Tune to stats sheet: Power Shot 30/0.65; Slide Shot 10/0.6; Blazing Barrage 4×12 bullets/0.3; Jail 450 HP; all CDs from sheet.
+
+Pass: sheet spot-check; 3/3 cold starts; core-loop: step 21c passed (Rawlins parity).
+All four slice heroes now on B_BW_Experience_Dev.
+```
+
+### Prompt: Step 22 — Section 3 capstone
+
+```
+Implement Core Loop Section 3 Step 22 (capstone) in ProjectB.
+
+Read:
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md (Step 22)
+- Plugins/GameFeatures/BreakawayCore/Docs/Relic_System.md
+- Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md
+
+All four hero GF plugins enabled on B_BW_Experience_Dev.
+
+Tasks:
+1. Fumble-on-damage: relic carrier drops relic on taking damage; increment ABwayPlayerState::ForcedFumbles. Server authoritative; listen server test.
+2. Staging E2E: front-end/playlist tile → L_BW_HeroSelect_Staging → lock hero → seamless travel → L_BW_DevMap with hero applied. Duplicate-hero-per-team rule enforced.
+3. Four-hero match: 4v4 listen server; all four selectable in staging/dev UI with official names (Argus, Alona, Korryn, Rawlins).
+4. HUD: team portraits show official names; wire ability bar stubs from Section 2 where applicable.
+5. Docs: update HERO_CODENAME_MAP.md (official names, one buildable/hero, stats sheet authority) and Breakaway_Reborn_Design_Spec.md §2.2 (buildables once/round free; gold = stat enhancers later, NOT buildable purchase).
+6. Regression: SkipHeroSelection=1&ForceHumanoid=1&NumBots=7 still passes full relic loop.
+
+Pass checklist:
+- Fumble works (listen server, optionally Net PktLag=100)
+- Buildable round 1 persists round 2; second placement blocked same round
+- Staging E2E 3/3 cold starts
+- Full mini-match combat + relic
+
+Mark Section 3 complete in CoreLoop_Implementation_Plan.md when all green.
+```
 
 ---
 
@@ -1296,13 +1829,18 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 - [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md)
 - [UI_System.md](./UI_System.md)
 - [Lyra_Integration.md](./Lyra_Integration.md)
-- [HeroSelect_Staging_Setup.md](./HeroSelect_Staging_Setup.md) (paused until Section 3)
+- [HeroSelect_Staging_Setup.md](./HeroSelect_Staging_Setup.md) — Section 3 staging path
+- [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md) — hero parity source of truth
+- [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md) — Argus ability C++ (realign to stats sheet)
+- [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md)
 - [SYSTEMS_INDEX.md](./SYSTEMS_INDEX.md)
 
 ---
 
 ## Next actions
 
-1. **Section 3** — Hero integration (see above); commit Section 2 pass: `core-loop: step 16 passed (post-match summary + sudden death UI)`.
-2. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
-3. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.
+1. **Section 3 Step 17** — Hero infra C++ (`ForceHumanoid`, `SkipHeroSelection` refactor, `Hero=` URL, RM hero-lock gate, once-per-round buildables).
+2. **Section 3 Steps 18–21** — One hero per step (Argus → Alona → Korryn → Rawlins); enable GF plugins on experience incrementally.
+3. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, doc updates.
+4. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
+5. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.

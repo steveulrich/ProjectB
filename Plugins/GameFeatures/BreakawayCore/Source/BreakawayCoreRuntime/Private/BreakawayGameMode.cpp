@@ -118,10 +118,28 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 	// Assign player to a team
 	AssignPlayerToTeam(NewPlayer);
 
+	TryApplyHeroUrlOptionAtLogin(NewPlayer);
+
+	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
+	{
+		UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with ForceHumanoid — using experience DefaultPawnData (no hero apply)"),
+			*NewPlayer->GetName());
+		return;
+	}
+
 	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
 	{
-		UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with SkipHeroSelection — using experience DefaultPawnData"),
-			*NewPlayer->GetName());
+		ABwayPlayerState* PS = NewPlayer->GetPlayerState<ABwayPlayerState>();
+		if (PS && PS->GetSelectedHeroId().IsValid() && PS->IsHeroLocked())
+		{
+			UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with SkipHeroSelection — locked hero %s will apply on spawn"),
+				*NewPlayer->GetName(), *PS->GetSelectedHeroId().ToString());
+		}
+		else
+		{
+			UE_LOG(LogBreakawayGame, Log, TEXT("Player %s logged in with SkipHeroSelection — hero-select UI/phase skipped"),
+				*NewPlayer->GetName());
+		}
 		return;
 	}
 
@@ -279,12 +297,45 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 		}
 	}
 
-	if (!UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
+	if (!UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
 	{
 		ApplyHeroDataToNewPawn(NewPlayer);
 	}
 
 	UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: END for %s"), *GetNameSafe(NewPlayer));
+}
+
+void ABreakawayGameMode::TryApplyHeroUrlOptionAtLogin(APlayerController* NewPlayer)
+{
+	if (!HasAuthority() || !NewPlayer || UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
+	{
+		return;
+	}
+
+	FString HeroName;
+	if (!UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionString(this, TEXT("Hero"), HeroName))
+	{
+		return;
+	}
+
+	ABwayPlayerState* BwayPS = NewPlayer->GetPlayerState<ABwayPlayerState>();
+	if (!BwayPS || BwayPS->IsHeroLocked())
+	{
+		return;
+	}
+
+	const FPrimaryAssetId HeroId = UBwayHeroRegistry::ResolveHeroIdByName(HeroName);
+	if (!HeroId.IsValid())
+	{
+		UE_LOG(LogBreakawayGame, Error, TEXT("PostLogin: Hero= URL '%s' did not resolve to a HeroDataAsset"), *HeroName);
+		return;
+	}
+
+	BwayPS->ServerSetSelectedHeroId_Implementation(HeroId);
+	BwayPS->ServerLockHeroSelection_Implementation();
+
+	UE_LOG(LogBreakawayGame, Log, TEXT("PostLogin: Applied Hero= URL '%s' -> %s (locked) for %s"),
+		*HeroName, *HeroId.ToString(), *NewPlayer->GetName());
 }
 
 void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
@@ -294,7 +345,7 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 		return;
 	}
 
-	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
+	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
 	{
 		return;
 	}
@@ -318,6 +369,12 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 	if (!HeroId.IsValid())
 	{
 		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Player %s has no hero selected"), *PC->GetName());
+		return;
+	}
+
+	if (!BwayPS->IsHeroLocked())
+	{
+		UE_LOG(LogBreakawayGame, Verbose, TEXT("ApplyHeroDataToNewPawn: Player %s hero not locked yet — deferring apply"), *PC->GetName());
 		return;
 	}
 
@@ -493,6 +550,11 @@ bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AControl
 	}
 
 	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
+	{
+		return false;
+	}
+
+	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
 	{
 		return false;
 	}

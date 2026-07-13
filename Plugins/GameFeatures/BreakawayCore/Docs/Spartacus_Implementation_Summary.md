@@ -1,179 +1,79 @@
-# Spartacus Hero Implementation Summary
+# Spartacus / Argus — Ability Implementation Notes
 
-> **See also:** [GAS_and_Abilities.md](./GAS_and_Abilities.md) · [Hero plugin setup](../../Heroes/Spartacus/CONTENT_SETUP.md)
+> **Current work:** Core Loop **Step 18** (Argus). DisplayName **Argus**; plugin **`Hero_Spartacus`**; asset folder **`Argus`**.  
+> **Editor:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) · [CONTENT_SETUP.md](../../Heroes/Spartacus/CONTENT_SETUP.md)  
+> **Parity source:** [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md)
+
+This doc retains the **legacy Spartacus C++ kit** (Shield Bash / War Cry / Defensive Stance / Gladiator's Leap) used as **18a stand-ins** for F/Q/E/R until **18c** replaces them with sheet-accurate Argus abilities.
 
 ## Relic Carrier Note
 
-Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation when ASC has `Gameplay.State.RelicCarrier`. Relic interaction abilities must use `ULyraGameplayAbility` (or a non-blocked base).
+Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation when ASC has `Gameplay.State.RelicCarrier` (LMB, F, Q, E, R). Relic interaction, movement slide, Request Relic, and buildable placement must use `UBwayGameplayAbility` / `ULyraGameplayAbility` (not `Base`).
 
-## Completed (C++ Code)
+## Ability ownership (current)
 
-All C++ ability classes have been implemented:
+| Scope | Set | Grants |
+|-------|-----|--------|
+| Common | `DA_BW_AbilitySet_Humanoid` | Left Shift slide · RMB Request Relic · Confirm · Cancel |
+| Per-hero | `DA_BW_AbilitySet_Argus` | LMB Primary · F/Q/E/R · key **1** PlaceBuildable |
+| Hero DA | `DA_BW_HeroData_Argus` | `BuildableDataAsset` → Siege Engine (18b) |
 
-1. **Shield Bash** (`BwayGameplayAbility_ShieldBash`)
-   - Dash forward with sphere trace for enemy detection
-   - Stuns first enemy hit
-   - 8 second cooldown (configured in Blueprint)
+## Input layout
 
-2. **War Cry** (`BwayGameplayAbility_WarCry`)
-   - AOE buff for nearby allies
-   - Applies speed and damage buff
-   - 12 second cooldown (configured in Blueprint)
+| Key | Input tag | Ability |
+|-----|-----------|---------|
+| LMB | `InputTag.Ability.Primary` | Per-hero primary (`BwayGameplayAbility_MeleePrimary`) |
+| LMB (while placing) | `InputTag.Ability.Buildable.Confirm` | Humanoid Confirm forwarder |
+| RMB | `InputTag.Ability.RelicRequest` | Request Relic (common) |
+| RMB (while placing) | `InputTag.Ability.Buildable.Cancel` | Humanoid Cancel forwarder |
+| F | `InputTag.Ability.Ability4` | Defense dodge (sheet name "Slide"; 18a stand-in Gladiator's Leap) |
+| Q | `InputTag.Ability.Ability1` | No Retreat (18a stand-in Shield Bash) |
+| E | `InputTag.Ability.Ability2` | For Glory (18a stand-in War Cry) |
+| R | `InputTag.Ability.Ability3` | Retribution (18a stand-in Defensive Stance) |
+| Left Shift | `InputTag.Ability.Slide` | Common movement slide |
+| 1 | `InputTag.Ability.Buildable` | Per-hero PlaceBuildable |
 
-3. **Defensive Stance** (`BwayGameplayAbility_DefensiveStance`)
-   - Toggle ability for damage reduction and movement slow
-   - Infinite duration until toggled off
-   - No cooldown (toggle on/off)
+**Do not** use `InputTag.Ability.Defense`. Stats sheet **RMB** column = design dodge slot → in-game **F**.
 
-4. **Gladiator's Leap** (`BwayGameplayAbility_GladiatorsLeap`)
-   - Leap to target location
-   - AOE damage on landing
-   - 45 second cooldown (configured in Blueprint)
+---
 
-## Gameplay Tags Added
+## Legacy C++ kit (18a stand-ins)
 
-All required gameplay tags have been added to `BreakawayCore.ini`:
-- `State.Stunned`
-- `State.Buffed.WarCry`
-- `State.DefensiveStance`
-- `State.Dashing`
-- `State.Leaping`
+All C++ classes live under `BreakawayCoreRuntime` `Abilities/`.
+
+1. **Shield Bash** (`BwayGameplayAbility_ShieldBash`) — dash + stun; 18a stand-in for **No Retreat**
+2. **War Cry** (`BwayGameplayAbility_WarCry`) — AOE ally buff; 18a stand-in for **For Glory**
+3. **Defensive Stance** (`BwayGameplayAbility_DefensiveStance`) — toggle DR; 18a stand-in for **Retribution**
+4. **Gladiator's Leap** (`BwayGameplayAbility_GladiatorsLeap`) — leap AOE; 18a stand-in for Argus defense **Slide**
+
+### Gameplay tags (legacy)
+
+- `State.Stunned`, `State.Buffed.WarCry`, `State.DefensiveStance`, `State.Dashing`, `State.Leaping`
+- `Ability.Spartacus.ShieldBash`, `WarCry`, `DefensiveStance`, `GladiatorsLeap`
 - `GameplayEffect.DamageType.Ability`
-- `Ability.Spartacus.ShieldBash`
-- `Ability.Spartacus.WarCry`
-- `Ability.Spartacus.DefensiveStance`
-- `Ability.Spartacus.GladiatorsLeap`
 
-## Remaining Tasks (Unreal Editor)
+### Editor content (if still using stand-ins)
 
-### 1. Create Gameplay Effects (Blueprints)
+Create GEs / BP children as needed under hero plugin content; wire cooldowns on each BP. Prefer Argus sheet names in DisplayData even when parent is a Spartacus stand-in class.
 
-Create the following Blueprint gameplay effects in `Content/GameplayEffects/`:
+---
 
-#### GE_Spartacus_ShieldBash_Stun
-- **Parent Class:** `GameplayEffect`
-- **Duration:** 1.5 seconds
-- **Granted Tags:** `State.Stunned`
-- **Block Abilities:** Add tag requirements to block movement/abilities
+## Target sheet kit (18c)
 
-#### GE_Spartacus_WarCry_Buff
-- **Parent Class:** `GameplayEffect`
-- **Duration:** 5 seconds
-- **Granted Tags:** `State.Buffed.WarCry`
-- **Modifiers:**
-  - Movement Speed: +20% (Multiplier)
-  - Base Damage: +15% (Multiplier)
+| Slot | Sheet ability | CD | Notes |
+|------|---------------|-----|-------|
+| LMB | Primary Attack | — | `BwayGameplayAbility_MeleePrimary` (done in 18a) |
+| F | Slide (dodge) | 18s | Replace Gladiator's Leap stand-in |
+| Q | No Retreat | 12s | Replace Shield Bash |
+| E | For Glory | 25s | Replace War Cry |
+| R | Retribution | 30s | Replace Defensive Stance |
+| 1 | Siege Engine | — | 18b PlaceBuildable + `ABwaySiegeEngineBuildable` |
 
-#### GE_Spartacus_DefensiveStance
-- **Parent Class:** `GameplayEffect`
-- **Duration:** Infinite
-- **Granted Tags:** `State.DefensiveStance`
-- **Modifiers:**
-  - Incoming Damage: -40% (Multiplier)
-  - Movement Speed: -30% (Multiplier)
+## Testing
 
-#### GE_Spartacus_GladiatorsLeap_Damage
-- **Parent Class:** `GameplayEffect`
-- **Duration:** Instant
-- **Damage Type Tag:** `GameplayEffect.DamageType.Ability`
-- **Damage:** 100 (or use SetByCaller from LyraGameData)
-
-### 2. Create Ability Blueprints
-
-For each C++ ability class, create a Blueprint in `Content/Abilities/Spartacus/`:
-
-#### BP_GA_Spartacus_ShieldBash
-- **Parent Class:** `BwayGameplayAbility_ShieldBash`
-- **Cooldown Gameplay Effect:** Create a cooldown effect (8 seconds)
-- **Input Tag:** `InputTag.Ability.Ability1`
-- **Stun Gameplay Effect Class:** Assign `GE_Spartacus_ShieldBash_Stun`
-
-#### BP_GA_Spartacus_WarCry
-- **Parent Class:** `BwayGameplayAbility_WarCry`
-- **Cooldown Gameplay Effect:** Create a cooldown effect (12 seconds)
-- **Input Tag:** `InputTag.Ability.Ability2`
-- **Buff Gameplay Effect Class:** Assign `GE_Spartacus_WarCry_Buff`
-
-#### BP_GA_Spartacus_DefensiveStance
-- **Parent Class:** `BwayGameplayAbility_DefensiveStance`
-- **Input Tag:** `InputTag.Ability.Ability3`
-- **Stance Gameplay Effect Class:** Assign `GE_Spartacus_DefensiveStance`
-
-#### BP_GA_Spartacus_GladiatorsLeap
-- **Parent Class:** `BwayGameplayAbility_GladiatorsLeap`
-- **Cooldown Gameplay Effect:** Create a cooldown effect (45 seconds)
-- **Input Tag:** `InputTag.Ability.Defense`
-- **Damage Gameplay Effect Class:** Assign `GE_Spartacus_GladiatorsLeap_Damage` (or use LyraGameData damage effect)
-
-### 3. Create Ability Set
-
-Create `DA_Spartacus_AbilitySet` in `Content/Characters/Heroes/Spartacus/`:
-- **Parent Class:** `LyraAbilitySet`
-- **Granted Gameplay Abilities:**
-  1. `BP_GA_Spartacus_ShieldBash` - InputTag: `InputTag.Ability.Ability1`
-  2. `BP_GA_Spartacus_WarCry` - InputTag: `InputTag.Ability.Ability2`
-  3. `BP_GA_Spartacus_DefensiveStance` - InputTag: `InputTag.Ability.Ability3`
-  4. `BP_GA_Spartacus_GladiatorsLeap` - InputTag: `InputTag.Ability.Defense`
-
-### 4. Create Hero Data Asset
-
-Create `DA_Spartacus_HeroData` in `Content/Characters/Heroes/Spartacus/`:
-- **Parent Class:** `BwayHeroDataAsset`
-- **Display Name:** "Spartacus"
-- **Portrait:** Assign hero portrait texture
-- **Hero Mesh:** Assign Spartacus skeletal mesh
-- **Animation BP:** Assign Spartacus animation blueprint
-- **Hero Stats:**
-  - Max Health: 300
-  - Base Damage: 25
-  - Move Speed: 550
-- **Ability Sets:** Add `DA_Spartacus_AbilitySet`
-- **Attribute Set Class:** Use existing Lyra health/combat sets
-
-### 5. Verify Input Bindings
-
-Verify in `Content/Input/DA_BW_InputData_Humanoid`:
-- Q key → `InputTag.Ability.Ability1` (Shield Bash)
-- E key → `InputTag.Ability.Ability2` (War Cry)
-- F key → `InputTag.Ability.Ability3` (Defensive Stance)
-- R key → `InputTag.Ability.Defense` (Gladiator's Leap)
-
-### 6. Testing Checklist
-
-#### Singleplayer Testing
-- [ ] All 4 abilities activate correctly
-- [ ] Cooldowns work and display properly
-- [ ] Shield Bash stuns enemies
-- [ ] War Cry buffs nearby allies
-- [ ] Defensive Stance toggles on/off correctly
-- [ ] Gladiator's Leap damages enemies on landing
-- [ ] Can pick up/throw relic while using abilities
-- [ ] Abilities don't interfere with movement
-
-#### Multiplayer Testing
-- [ ] All abilities replicate correctly
-- [ ] Cooldowns sync across clients
-- [ ] Shield Bash stun replicates
-- [ ] War Cry buff applies to all clients
-- [ ] Defensive Stance state replicates
-- [ ] Gladiator's Leap landing damage replicates
-- [ ] No desync issues
+See 18a / 18b pass checklists. Multiplayer: listen server; abilities `LocalPredicted` where applicable.
 
 ## File Locations
 
-### C++ Files
-- Headers: `Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public/Abilities/`
-- Implementation: `Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Private/Abilities/`
-
-### Blueprint Assets (to be created)
-- Abilities: `Content/Abilities/Spartacus/`
-- Gameplay Effects: `Content/GameplayEffects/`
-- Hero Data: `Content/Characters/Heroes/Spartacus/`
-
-## Notes
-
-- All abilities use `LocalPredicted` network execution policy for responsive gameplay
-- Team checking uses `BwayGameState::AreOnSameTeam()` with fallback to `ULyraTeamSubsystem`
-- Damage application uses Lyra's damage execution system via `ULyraGameData::DamageGameplayEffect_SetByCaller`
-- Cooldowns are handled by Blueprint gameplay effects assigned in the ability Blueprints
-
+- C++: `Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Public|Private/Abilities/`
+- Content target: `/Hero_Spartacus/Characters/Heroes/Argus/`

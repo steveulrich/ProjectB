@@ -21,12 +21,14 @@ Capture-the-Relic objective — physical ball with GAS-driven interactions.
 1. Character requests relic (gameplay tag on ASC — `State.RequestingRelic` or `RelicSettings::RequestingTag`).
 2. Overlap on `InteractionSphere` → server sends `Event.Interaction.PickupRelic` to PlayerState ASC.
 3. `GA_PickupRelic` (Blueprint/content) calls `ARelicActor::OnPickedUp`.
-4. Server grants carrier `ULyraAbilitySet` from `URelicSettings`, applies `Gameplay.State.RelicCarrier` tag, sets `ABwayPlayerState::bHasRelic`.
+4. Server grants carrier `ULyraAbilitySet` from `URelicSettings`, applies `Gameplay.State.RelicCarrier` on the PlayerState ASC (replicated loose tag), sets `ABwayPlayerState::bHasRelic`.
 
 ## Carrier Restrictions
 
-- Tag `Gameplay.State.RelicCarrier` blocks **`UBwayGameplayAbility_Base`** combat abilities via `ActivationBlockedTags`.
-- Relic abilities (throw/pass/drop) granted via separate ability set — must **not** inherit `UBwayGameplayAbility_Base` or must clear blocked tags.
+- Tag `Gameplay.State.RelicCarrier` blocks **`UBwayGameplayAbility_Base`** combat abilities (LMB, F, Q, E, R) via `ActivationBlockedTags`.
+- Applied on the **PlayerState ASC** with `TagAndCountToAll` replication; clients also mirror the tag when `bHasRelic` replicates and when the local carrier attaches, so LocalPredicted abilities fail `CanActivateAbility` without rubberbanding.
+- **Not blocked while carrying:** common movement slide (Left Shift), Request Relic (RMB), buildable placement (1), and relic throw/pass/drop GAs.
+- Relic interaction abilities (throw/pass/drop) granted via separate ability set — must **not** inherit `UBwayGameplayAbility_Base` or must clear blocked tags.
 
 ## Throw / Pass
 

@@ -577,6 +577,49 @@ bool UBwayHeroSelectionManager::AssignRandomHeroToPlayer(ABwayPlayerState* Playe
 	return true;
 }
 
+bool UBwayHeroSelectionManager::AssignHeroToPlayer(ABwayPlayerState* PlayerState, FPrimaryAssetId HeroId, bool bLockImmediately)
+{
+	if (!GetOwner()->HasAuthority() || !PlayerState || !HeroId.IsValid())
+	{
+		return false;
+	}
+
+	if (PlayerState->GetSelectedHeroId().IsValid() && (!bLockImmediately || PlayerState->IsHeroLocked()))
+	{
+		return true;
+	}
+
+	if (ABwayGameState* GameState = GetBwayGameState())
+	{
+		const int32 TeamIndex = GameState->GetPlayerTeam(PlayerState);
+		if (TeamIndex >= 0 && !IsHeroAvailableForTeam(HeroId, TeamIndex))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Cannot assign duplicate hero %s to team %d"),
+				*HeroId.ToString(), TeamIndex + 1);
+			return false;
+		}
+	}
+
+	if (PlayerState->GetSelectedHeroId() != HeroId)
+	{
+		PlayerState->ServerSetSelectedHeroId_Implementation(HeroId);
+	}
+
+	if (bLockImmediately && !PlayerState->IsHeroLocked())
+	{
+		PlayerState->ServerLockHeroSelection_Implementation();
+	}
+
+	SynchronizePlayerSelectionState(PlayerState);
+
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Assigned hero %s to %s (Lock=%s)"),
+		*HeroId.ToString(),
+		*PlayerState->GetPlayerName(),
+		bLockImmediately ? TEXT("true") : TEXT("false"));
+
+	return true;
+}
+
 void UBwayHeroSelectionManager::AssignRandomHeroToPlayers(bool bOnlyBots, FPrimaryAssetId FallbackHeroId, bool bLockImmediately)
 {
 	ABwayGameState* GameState = GetBwayGameState();

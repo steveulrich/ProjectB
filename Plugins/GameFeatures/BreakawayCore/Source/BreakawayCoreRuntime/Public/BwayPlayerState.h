@@ -6,6 +6,7 @@
 #include "Player/LyraPlayerState.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "Stats/BwayMatchStatsTypes.h"
+#include "GameplayEffectTypes.h"
 #include "Net/UnrealNetwork.h"
 #include "BwayPlayerState.generated.h"
 
@@ -43,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Relic")
 	void SetHasRelic(bool bNewHasRelic);
+
+	/** Apply or clear Gameplay.State.RelicCarrier on this player's ASC. Server uses replicated loose tags. */
+	void ApplyRelicCarrierTag(bool bCarrier, EGameplayTagReplicationState ReplicationState = EGameplayTagReplicationState::TagAndCountToAll);
 
 	UFUNCTION()
 	void OnRep_HasRelic();
@@ -162,6 +166,16 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void FinalizeRoundStats();
 
+	// ========== BUILDABLE PLACEMENT (SLICE) ==========
+
+	/** True after this player placed a buildable during the current round (reset on round start). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Buildables")
+	bool HasPlacedBuildableThisRound() const { return bHasPlacedBuildableThisRound; }
+
+	/** Server-only: mark the one free buildable placement for this round as used. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buildables")
+	void MarkBuildablePlacedThisRound();
+
 	/** Fired when any stat changes (K/D/A/Objective). Used by scoreboard/results UI. */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMatchStatsChanged OnMatchStatsChanged;
@@ -229,6 +243,9 @@ protected:
 
 	/** Server-only gold at round start for GoldEarned delta. */
 	int32 GoldAtRoundStart = 0;
+
+	/** Server-only: one free buildable placement per round (vertical slice). */
+	bool bHasPlacedBuildableThisRound = false;
 
 	UFUNCTION()
 	void OnRep_MatchStats();

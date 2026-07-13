@@ -9,6 +9,7 @@
 class ABwayWorldReticle_ActorVisualization;
 class UGameplayAbility;
 class UMaterialInterface;
+class UBwayBuildableDataAsset;
 
 USTRUCT(BlueprintType)
 struct FPlacementValidationResult
@@ -36,10 +37,17 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
 	virtual void Tick(float DeltaSeconds) override;
+	virtual bool ShouldProduceTargetData() const override;
+	virtual void ConfirmTargeting() override;
+	virtual void CancelTargeting() override;
 
 	/** Actor we intend to place. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
 	TObjectPtr<UClass> PlacedActorClass;
+
+	/** Buildable data used for lightweight preview meshes. Falls back to resolving from the owning player when unset. */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
+	TObjectPtr<UBwayBuildableDataAsset> BuildableDataAsset;
 	
 	/** Material for visualization when placement is valid. */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Targeting)
@@ -65,6 +73,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true), Category = Validation)
 	float FootprintTraceUpOffset = 20.0f;
 
+	/**
+	 * Extra clearance (cm) added on top of pivot-to-bottom lift so blocking shapes do not
+	 * immediately overlap the ground when the actor pivot sits on the hit point.
+	 */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (ExposeOnSpawn = true, ClampMin = "0.0"), Category = Validation)
+	float ObstructionGroundClearance = 2.0f;
+
 protected:
 	/** Channel used for overhang and obstruction checks */
 	UPROPERTY(EditAnywhere, Category="Validation")
@@ -72,6 +87,10 @@ protected:
 	
 	/** Visualization for the intended location of the placed actor. */
 	TWeakObjectPtr<ABwayWorldReticle_ActorVisualization> ActorVisualizationReticle;
+
+	void InitializePlacementVisualization(UGameplayAbility* InAbility);
+	bool TryInitializeVisualizationFromBuildableData(UGameplayAbility* InAbility);
+	bool TryInitializeVisualizationFromActorClass();
 
 	virtual FHitResult PerformTrace(AActor* InSourceActor) override;
 
@@ -81,7 +100,10 @@ protected:
 	FPlacementValidationResult PerformPlacementValidation(const FHitResult& GroundHit) const;
 	bool CheckSurfaceAngle(const FVector& SurfaceNormal) const;
 	bool CheckOverhangs(const FVector& CenterLocationOnGround, const FRotator& InitialPlacementRotation, FVector& OutAdjustedFootprintCenter, const FVector& SurfaceNormal) const;
-	bool CheckObstructions(const FVector& CenterLocation, const FRotator& PlacementRotation) const;
+	bool CheckObstructions(const FVector& CenterLocation, const FRotator& PlacementRotation, AActor* GroundHitActor) const;
+
+	/** Distance along actor +Z to lift the pivot so blocking collision bottoms sit on the ground plane. */
+	float ComputePivotLiftAlongLocalUp() const;
 
 	// To update material in Tick based on NewTraceResult's findings
 	mutable bool bLastTickPlacementValid = false;

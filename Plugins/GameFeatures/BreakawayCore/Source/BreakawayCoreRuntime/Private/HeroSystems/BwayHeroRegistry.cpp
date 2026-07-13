@@ -73,3 +73,58 @@ UBwayHeroDataAsset* UBwayHeroRegistry::GetHeroDataById(const FPrimaryAssetId& He
 
 	return Cast<UBwayHeroDataAsset>(Asset);
 }
+
+FPrimaryAssetId UBwayHeroRegistry::ResolveHeroIdByName(const FString& HeroName)
+{
+	if (HeroName.IsEmpty())
+	{
+		return FPrimaryAssetId();
+	}
+
+	const FPrimaryAssetType HeroAssetType(TEXT("HeroDataAsset"));
+	const FString TrimmedName = HeroName.TrimStartAndEnd();
+
+	TArray<FString> CandidateNames;
+	CandidateNames.Add(TrimmedName);
+	if (!TrimmedName.StartsWith(TEXT("DA_"), ESearchCase::IgnoreCase))
+	{
+		CandidateNames.Add(FString::Printf(TEXT("DA_BW_HeroData_%s"), *TrimmedName));
+		CandidateNames.Add(FString::Printf(TEXT("DA_BW_Hero_%s"), *TrimmedName));
+	}
+
+	for (const FString& CandidateName : CandidateNames)
+	{
+		const FPrimaryAssetId CandidateId(HeroAssetType, FName(*CandidateName));
+		if (GetHeroDataById(CandidateId))
+		{
+			return CandidateId;
+		}
+	}
+
+	TArray<FPrimaryAssetId> HeroIds;
+	UAssetManager::Get().GetPrimaryAssetIdList(HeroAssetType, HeroIds);
+
+	for (const FPrimaryAssetId& CandidateId : HeroIds)
+	{
+		if (CandidateId.PrimaryAssetName.ToString().Equals(TrimmedName, ESearchCase::IgnoreCase))
+		{
+			return CandidateId;
+		}
+	}
+
+	for (const FPrimaryAssetId& CandidateId : HeroIds)
+	{
+		if (UBwayHeroDataAsset* HeroData = GetHeroDataById(CandidateId))
+		{
+			if (HeroData->DisplayName.ToString().Equals(TrimmedName, ESearchCase::IgnoreCase))
+			{
+				return CandidateId;
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BwayHeroRegistry: ResolveHeroIdByName('%s') failed — %d HeroDataAsset(s) registered"),
+		*TrimmedName, HeroIds.Num());
+
+	return FPrimaryAssetId();
+}

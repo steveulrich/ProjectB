@@ -21,75 +21,15 @@ Breakaway: Reborn is a 4v4 team battle game that blends Action Brawler combat wi
     - **Turnovers:** Taking damage while holding the Relic causes a "Fumble," dropping the ball immediately.
 
 ### 2.2 The Buildable System
-- Each Hero has 2 unique buildables.
-- **Persistence:** Structures stay on the map between rounds. A wall placed in Round 1 is still there in Round 2 unless destroyed.
-- **Economy:** Players earn Gold from kills/objectives to purchase/upgrade Buildables between rounds.
+- **Vertical slice:** each hero has **one** buildable (stats sheet). Placement is **once per round**, **free** (no gold). Structures **persist** between rounds until destroyed.
+- **Post-slice:** gold earned in-match may spend on **stat enhancers / items** — not buildable purchase. Multi-buildable heroes are deferred if design returns.
+- **Authority:** [Breakaway_Hero_Stats_Sheet.md](./Breakaway_Hero_Stats_Sheet.md) · Core Loop Section 3.
 
-### 2.3 Hero Roster (Reconstructed)
-*Data sourced from Alpha footage and press releases.*
+### 2.3 Hero Roster
 
-#### Spartacus (The Gladiator)
-- **Role:** Frontline Brawler
-- **Playstyle:** Aggressive melee, great for clearing space.
-- **Abilities:**
-    - **Primary:** Gladius combo.
-    - **Dash:** Shoulder bash to close gaps.
-    - **Ultimate:** Dragon's Breath (High damage AOE).
-- **Buildables:**
-    - **Fire Catapult:** Rains fire on a target area.
-    - **Dragon Spire:** A hidden trap that erupts a spear from the ground when enemies approach.
+Per-hero base stats, abilities, cooldowns, damage values, and buildables are maintained in the **[Breakaway Hero Stats Sheet](./Breakaway_Hero_Stats_Sheet.md)**. Use that document as the source of truth for hero data during design and implementation.
 
-#### Morgan Le Fay (The Sorceress)
-- **Role:** Controller / Debuffer
-- **Playstyle:** Area denial and weakening enemies.
-- **Abilities:**
-    - **Passive:** Flock (Becomes intangible and flies forward).
-    - **Q:** Burden of Sin (Projectile that passes through enemies and slows).
-    - **E:** Circle of Spite (Hex zone: Slows enemies + Increases damage taken).
-    - **Ultimate:** Aura of Silence (AOE Silence and Damage).
-- **Buildables:**
-    - **Elder Stone:** Charges energy when enemies take damage near it, then explodes.
-    - **Tome of Frailty:** Turret that reduces enemy attack power.
-
-#### Alona (The Sun Priestess)
-- **Role:** Support / Healer
-- **Playstyle:** Sustains the team and controls zones.
-- **Abilities:**
-    - **Combat:** Sun-based projectiles.
-    - **Crowd Control:** Knockback burst to push enemies away ("Up and Away").
-- **Buildables:**
-    - **Sun Shrine:** Pulses healing to nearby allies.
-    - **Starlight:** Focuses a laser beam that deals increasing damage over time.
-
-#### Rawlins (The Gunslinger)
-- **Role:** Ranged DPS
-- **Playstyle:** High damage output from a distance.
-- **Abilities:**
-    - **Passive:** Trick Shot (Bullets ricochet once).
-    - **Q:** Scatter Shot (Cone AOE).
-    - **E:** Sticky Bomb (Explosive attachable).
-    - **Ultimate:** Ricochet (Bouncing high-damage shot).
-- **Buildables:**
-    - **Cage:** Traps an enemy in a localized prison.
-    - **Boom Box:** [Pending details]
-
-#### The Black Knight
-- **Role:** Heavy Tank
-- **Playstyle:** Slow but immovable; controls physics.
-- **Abilities:**
-    - **E:** Gravity Well (Sucks players toward a center point).
-    - **R:** Death Grip (Hooks/Drags an enemy).
-- **Buildables:**
-    - **Spike Trap:** Slows and damages enemies walking over it.
-
-#### Anne Bonny (The Pirate)
-- **Role:** Hybrid Zoner
-- **Abilities:**
-    - **Primary:** Cutlass & Pistol swap.
-    - **Movement:** Grapple Hook (Pull self to wall or enemy to self).
-    - **Ultimate:** Cannon Barrage (Global/Map artillery strike).
-- **Buildables:**
-    - **Accelerator:** Speed ramp to boost Relic carriers.
+**Roster:** Argus, Thorgrim, Kyra, Alona, Merrick, Rawlins, Korryn, Jarra, Sai, Greyven, Gallion
 
 ## 3. Technical Design Document (TDD)
 

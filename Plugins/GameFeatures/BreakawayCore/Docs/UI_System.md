@@ -25,6 +25,7 @@ In-match HUD (Section 2): Lyra **`UGameFeatureAction_AddWidgets`** on **`EAS_BW_
 | `UBwayPauseMenuWidget` | Pause menu |
 | `UBwayHeroSelectWidget` | Hero pick — 6 BP implementable events |
 | `UBwayHeroSlotWidget` | Hero slot button |
+| `UBwayHeroAbilityUILibrary` | Resolve ability bar display from ability sets / ASC + CDO DisplayData |
 | `UBwayAbilityIconWidget` | Ability bar icon |
 | `UBwayCurrencyDisplayWidget` | Gold display |
 | `UBwayHUDHelpers` | Portrait/class/color BP library; `*ForDisplaySlot` portrait helpers |

@@ -12,7 +12,7 @@ Match-only gold on PlayerState ASC.
 | `MaxGold` | Clamp upper bound |
 | `GoldPerSecond` | Passive income metadata |
 
-Modified via **instant GameplayEffects** (created at runtime in RoundManagement / PlacementLibrary).
+Modified via **instant GameplayEffects** (created at runtime in RoundManagement).
 
 ## Income Sources
 
@@ -22,9 +22,11 @@ Modified via **instant GameplayEffects** (created at runtime in RoundManagement 
 | Kill | `NotifyPlayerKilled` → `GoldAwardForKill` |
 | Goal scored | Team-wide award on `OnRelicScored` |
 
-## Spending
+## Spending (vertical slice)
 
-**`UBwayBuildablePlacementLibrary::SpawnBuildableForPlayer`** — deducts `UBwayBuildableDataAsset::Cost` if `CurrentGold >= Cost`.
+**Buildables do not spend gold.** Placement is once-per-round and free (`UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable` — no gold check). `UBwayBuildableDataAsset::Cost` may remain `0` for slice content.
+
+**Deferred (post–vertical slice):** gold spend on **stat enhancers / items**, not buildable purchase. See Core Loop Section 3 principles.
 
 ## Boundaries
 
@@ -44,5 +46,6 @@ Display-only; no direct gold mutation from BP without server authority GE.
 
 ## Future (Deferred)
 
+- Stat enhancer / item shop spend
 - `UBwaySaveGame` for campaign/meta
 - Structured GE assets (`GE_AwardGold_Kill`) instead of transient effects

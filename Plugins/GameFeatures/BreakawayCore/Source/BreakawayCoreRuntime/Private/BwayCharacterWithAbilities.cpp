@@ -18,6 +18,7 @@
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
+#include "HeroSystems/BwayHeroStatsLibrary.h"
 #include "Animation/AnimBlueprint.h" // For UAnimBlueprint
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Net/UnrealNetwork.h"
@@ -289,6 +290,8 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
 		}
 	}
 
+	UBwayHeroStatsLibrary::ApplyHeroStatsFromDataAsset(this, HeroData);
+
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
 	UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END for character %s"), *GetName());
 	UE_LOG(LogTemp, Warning, TEXT("========================================"));
@@ -301,21 +304,47 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 		return;
 	}
 
-	USkeletalMeshComponent* MeshComp = GetMesh();
-	if (MeshComp)
+	USkeletalMeshComponent* MainMesh = GetMesh();
+
+	TArray<USkeletalMeshComponent*> MeshComponents;
+	GetComponents<USkeletalMeshComponent>(MeshComponents);
+	for (USkeletalMeshComponent* MeshComp : MeshComponents)
 	{
-		UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting HeroMesh = %s on %s"), *GetNameSafe(HeroData->HeroMesh), *GetName());
-		MeshComp->SetSkeletalMesh(HeroData->HeroMesh);
-		
-		if (HeroData->AnimationBP)
+		if (!MeshComp || MeshComp == MainMesh)
 		{
-			UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting AnimInstanceClass = %s"), 
-				*GetNameSafe(HeroData->AnimationBP->GeneratedClass));
-			MeshComp->SetAnimInstanceClass(HeroData->AnimationBP->GeneratedClass);
+			continue;
+		}
+
+		MeshComp->SetHiddenInGame(true);
+		MeshComp->SetVisibility(false, true);
+	}
+
+	if (MainMesh)
+	{
+		if (HeroData->HeroMesh)
+		{
+			UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting HeroMesh = %s on %s"), *GetNameSafe(HeroData->HeroMesh), *GetName());
+			MainMesh->SetHiddenInGame(false);
+			MainMesh->SetVisibility(true);
+			MainMesh->SetSkeletalMesh(HeroData->HeroMesh);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationBP is null for %s"), *GetNameSafe(HeroData));
+			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: HeroMesh is null for %s — keeping experience pawn mesh"), *GetNameSafe(HeroData));
+		}
+
+		if (HeroData->AnimationBP)
+		{
+			if (UClass* AnimClass = HeroData->AnimationBP->GeneratedClass)
+			{
+				UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting AnimInstanceClass = %s"), *GetNameSafe(AnimClass));
+				MainMesh->SetAnimInstanceClass(AnimClass);
+				MainMesh->InitAnim(true);
+			}
+		}
+		else if (HeroData->HeroMesh)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationBP is null for %s — mesh may T-pose"), *GetNameSafe(HeroData));
 		}
 	}
 	else

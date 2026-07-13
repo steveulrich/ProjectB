@@ -173,6 +173,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	bool AssignRandomHeroToPlayer(ABwayPlayerState* PlayerState, FPrimaryAssetId FallbackHeroId, bool bLockImmediately);
 
+	/** Assign a specific hero id, optionally locking immediately. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	bool AssignHeroToPlayer(ABwayPlayerState* PlayerState, FPrimaryAssetId HeroId, bool bLockImmediately);
+
 	/** Assign random heroes to players without a valid selection. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	void AssignRandomHeroToPlayers(bool bOnlyBots, FPrimaryAssetId FallbackHeroId, bool bLockImmediately);

@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Abilities/BwayGameplayAbility.h"
 #include "BwayCharacterMovementComponent.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/Abilities/LyraGameplayAbility.h"
 #include "InputAction.h"
 #include "BwayGameplayAbility_Slide.generated.h"
 
@@ -14,7 +14,7 @@ class UGameplayEffect;
 class UInputAction;
 
 UCLASS()
-class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Slide : public ULyraGameplayAbility
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_Slide : public UBwayGameplayAbility
 {
 	GENERATED_BODY()
 

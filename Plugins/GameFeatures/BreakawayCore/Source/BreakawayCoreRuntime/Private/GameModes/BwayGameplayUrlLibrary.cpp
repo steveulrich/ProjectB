@@ -33,6 +33,8 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("NumBots"),
 		TEXT("PointsToWin"),
 		TEXT("SkipHeroSelection"),
+		TEXT("ForceHumanoid"),
+		TEXT("Hero"),
 		TEXT("Experience"),
 		TEXT("MatchFlowConfig"),
 		TEXT("PrematchDuration"),

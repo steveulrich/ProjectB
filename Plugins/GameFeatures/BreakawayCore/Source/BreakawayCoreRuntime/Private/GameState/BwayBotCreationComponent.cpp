@@ -229,7 +229,7 @@ void UBwayBotCreationComponent::SpawnOneBot()
 		BwayGameMode->AssignControllerToTeam(NewController);
 	}
 
-	if (!UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionWorld(this))
+	if (!UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidWorld(this))
 	{
 		ABwayGameState* GameState = GetOwner<ABwayGameState>();
 		UBwayHeroSelectionManager* SelectionManager = GameState ? GameState->FindComponentByClass<UBwayHeroSelectionManager>() : nullptr;
@@ -246,10 +246,18 @@ void UBwayBotCreationComponent::SpawnOneBot()
 			{
 				const bool bLockImmediately = SelectionManager->IsSelectionActive()
 					|| !UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
-				SelectionManager->AssignRandomHeroToPlayer(
-					BotPlayerState,
-					FPrimaryAssetId(),
-					bLockImmediately);
+				const FPrimaryAssetId DirectPieBotHero = UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroId(this);
+				if (DirectPieBotHero.IsValid())
+				{
+					SelectionManager->AssignHeroToPlayer(BotPlayerState, DirectPieBotHero, bLockImmediately);
+				}
+				else
+				{
+					SelectionManager->AssignRandomHeroToPlayer(
+						BotPlayerState,
+						FPrimaryAssetId(),
+						bLockImmediately);
+				}
 			}
 		}
 	}

@@ -12,16 +12,14 @@ Per-hero content lives in optional Game Feature plugins under `Plugins/GameFeatu
 
 ```
 Heroes/
-  Spartacus/
+  Spartacus/          # Argus (DisplayName); folder codename Argus
     Hero_Spartacus.uplugin
     CONTENT_SETUP.md
-    Content/          (create in Editor)
-      Characters/
-      Abilities/
-      Buildables/
-  Morgan/
+    Content/
+      Characters/Heroes/Argus/
   Alona/
-  Rawlins/
+  Morgan/             # Korryn; folder Hexweaver
+  Rawlins/            # folder Gunslinger
 ```
 
 ## Creating a Hero Plugin
@@ -29,22 +27,29 @@ Heroes/
 1. Copy an existing `Hero_*.uplugin` folder
 2. Rename FriendlyName / plugin Name
 3. In Editor: add `UBwayGameFeatureData` asset pointing to `UBwayHeroDataAsset`
-4. Add plugin to experience `GameFeaturesToEnable`
-5. Register hero data under `/BreakawayCore/Characters/Heroes/` OR plugin content path (update AssetManager scan if needed)
+4. Add plugin to experience `GameFeaturesToEnable` (one hero at a time during Section 3)
+5. Register hero scan path in `Config/DefaultGame.ini` (`HeroDataAsset` directories)
 
-## Vertical Slice Roster
+## Vertical Slice Roster (Section 3)
 
-Codename paths: [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
+**Authority:** [CoreLoop_Implementation_Plan.md](../BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) + [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md).  
+Codenames / paths: [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP.md).
 
-| Plugin | DisplayName | Codename folder | Gate | Buildables |
-|--------|-------------|-----------------|------|------------|
-| Hero_Spartacus | Spartacus | `Argus` | 1 | Fire Catapult, Dragon Spire |
-| Hero_Alona | Alona | `Alona` | 2 | Sun Shrine, Starlight |
-| Hero_Morgan | Morgan Le Fay | `Hexweaver` | 3 | Elder Stone, Tome of Frailty |
-| Hero_Rawlins | Rawlins | `Gunslinger` | 4 | Cage, Boom Box |
+| Plugin | DisplayName (UI) | Codename folder | Buildable (one) |
+|--------|------------------|-----------------|-----------------|
+| Hero_Spartacus | **Argus** | `Argus` | Siege Engine |
+| Hero_Alona | Alona | `Alona` | Sun Shrine |
+| Hero_Morgan | **Korryn** | `Hexweaver` | Cursed Ward |
+| Hero_Rawlins | Rawlins | `Gunslinger` | Jail |
+
+**Rules:** one buildable per hero; once per round; free; persists between rounds. PlaceBuildable is **per-hero**; Confirm/Cancel are **humanoid**.
+
+## Current focus
+
+**Argus / Step 18** — [Spartacus/CONTENT_SETUP.md](./Spartacus/CONTENT_SETUP.md) · [Argus_18b_Editor_Setup.md](../BreakawayCore/Docs/Argus_18b_Editor_Setup.md)
 
 ## Loader
 
-`UBwayHeroPluginLoader::LoadAllHeroPlugins` scans `/GameFeatures/Heroes/*` — ensure plugins are Registered/Loaded before hero select.
+Ensure plugins are Registered/Enabled before hero select. Prefer experience `GameFeaturesToEnable` for Section 3.
 
 See [GAS_and_Abilities.md](../BreakawayCore/Docs/GAS_and_Abilities.md).

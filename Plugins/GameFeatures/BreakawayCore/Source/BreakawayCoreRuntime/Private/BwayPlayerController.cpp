@@ -80,7 +80,7 @@ void ABwayPlayerController::Client_RequestPreSelectedHero_Implementation()
 
 void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimaryAssetId PreSelectedHeroId, bool bLockSelection)
 {
-	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionWorld(this))
+	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidWorld(this))
 	{
 		return;
 	}

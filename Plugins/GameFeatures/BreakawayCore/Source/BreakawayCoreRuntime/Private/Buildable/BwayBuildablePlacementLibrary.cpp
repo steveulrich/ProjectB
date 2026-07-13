@@ -1,46 +1,20 @@
 #include "Buildable/BwayBuildablePlacementLibrary.h"
 
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
 #include "Buildable/BuildableBase.h"
-#include "Economy/BwayGoldAttributeSet.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
-#include "AbilitySystemGlobals.h"
-#include "AbilitySystemComponent.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "Engine/Engine.h"
+#include "Engine/SkeletalMesh.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/PlayerState.h"
-#include "GameplayEffect.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayBuildablePlacementLibrary)
-
-namespace
-{
-void ApplyGoldDelta(APlayerState* PlayerState, float GoldDelta)
-{
-	if (!PlayerState || FMath::IsNearlyZero(GoldDelta))
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState);
-	if (!ASC || !ASC->GetSet<UBwayGoldAttributeSet>())
-	{
-		return;
-	}
-
-	UGameplayEffect* GoldEffect = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None);
-	GoldEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
-
-	FGameplayModifierInfo& Modifier = GoldEffect->Modifiers.AddDefaulted_GetRef();
-	Modifier.Attribute = UBwayGoldAttributeSet::GetCurrentGoldAttribute();
-	Modifier.ModifierOp = EGameplayModOp::Additive;
-	Modifier.ModifierMagnitude = FScalableFloat(GoldDelta);
-
-	ASC->ApplyGameplayEffectToSelf(GoldEffect, 1.0f, ASC->MakeEffectContext());
-}
-}
 
 ABuildableActor* UBwayBuildablePlacementLibrary::SpawnBuildableForPlayer(const UObject* WorldContextObject, APlayerController* PlayerController, UBwayBuildableDataAsset* BuildableData, const FTransform& SpawnTransform)
 {
@@ -73,12 +47,19 @@ ABuildableActor* UBwayBuildablePlacementLibrary::SpawnBuildableForPlayer(const U
 		TeamIndex = BwayGS->GetPlayerTeam(PlayerController ? PlayerController->PlayerState : nullptr);
 	}
 
+	ApplyResolvedBuildableMesh(Buildable, BuildableData, GetBuildableCosmeticIndexForPlayer(PlayerController));
+
 	Buildable->InitializeBuildable(PlayerController, TeamIndex);
-	ApplyGoldDelta(PlayerController ? PlayerController->PlayerState : nullptr, -BuildableData->Cost);
+
+	if (ABwayPlayerState* BwayPS = PlayerController ? PlayerController->GetPlayerState<ABwayPlayerState>() : nullptr)
+	{
+		BwayPS->MarkBuildablePlacedThisRound();
+	}
+
 	return Buildable;
 }
 
-bool UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable(const UObject* WorldContextObject, APlayerController* PlayerController, UBwayBuildableDataAsset* BuildableData, FText& OutFailureReason)
+bool UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable(const UObject* WorldContextObject, const APlayerController* PlayerController, const UBwayBuildableDataAsset* BuildableData, FText& OutFailureReason)
 {
 	if (!PlayerController || !BuildableData || !BuildableData->BuildableActorClass)
 	{
@@ -86,33 +67,11 @@ bool UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable(const UObject* Worl
 		return false;
 	}
 
-	if (BuildableData->MaxActiveBuildablesPerPlayer > 0 && CountActiveBuildablesForPlayer(WorldContextObject, PlayerController) >= BuildableData->MaxActiveBuildablesPerPlayer)
+	if (ABwayPlayerState* BwayPS = PlayerController->GetPlayerState<ABwayPlayerState>())
 	{
-		OutFailureReason = NSLOCTEXT("BreakawayBuildables", "BuildableCapReached", "Maximum active buildables reached.");
-		return false;
-	}
-
-	if (APlayerState* PlayerState = PlayerController->PlayerState)
-	{
-		if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState))
+		if (BwayPS->HasPlacedBuildableThisRound())
 		{
-			if (const UBwayGoldAttributeSet* GoldSet = ASC->GetSet<UBwayGoldAttributeSet>())
-			{
-				if (GoldSet->GetCurrentGold() < BuildableData->Cost)
-				{
-					OutFailureReason = NSLOCTEXT("BreakawayBuildables", "InsufficientGold", "Not enough gold.");
-					return false;
-				}
-			}
-			else
-			{
-				OutFailureReason = NSLOCTEXT("BreakawayBuildables", "GoldSetMissing", "Gold is not initialized.");
-				return false;
-			}
-		}
-		else
-		{
-			OutFailureReason = NSLOCTEXT("BreakawayBuildables", "ASCMissing", "Ability system is not initialized.");
+			OutFailureReason = NSLOCTEXT("BreakawayBuildables", "AlreadyPlacedThisRound", "You already placed a buildable this round.");
 			return false;
 		}
 	}
@@ -122,11 +81,17 @@ bool UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable(const UObject* Worl
 		return false;
 	}
 
+	if (BuildableData->MaxActiveBuildablesPerPlayer > 0 && CountActiveBuildablesForPlayer(WorldContextObject, PlayerController) >= BuildableData->MaxActiveBuildablesPerPlayer)
+	{
+		OutFailureReason = NSLOCTEXT("BreakawayBuildables", "BuildableCapReached", "Maximum active buildables reached.");
+		return false;
+	}
+
 	OutFailureReason = FText::GetEmpty();
 	return true;
 }
 
-int32 UBwayBuildablePlacementLibrary::CountActiveBuildablesForPlayer(const UObject* WorldContextObject, APlayerController* PlayerController)
+int32 UBwayBuildablePlacementLibrary::CountActiveBuildablesForPlayer(const UObject* WorldContextObject, const APlayerController* PlayerController)
 {
 	UWorld* World = GEngine ? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull) : nullptr;
 	if (!World || !PlayerController)
@@ -152,4 +117,87 @@ int32 UBwayBuildablePlacementLibrary::CountActiveBuildablesForPlayer(const UObje
 		}
 	}
 	return Count;
+}
+
+UBwayBuildableDataAsset* UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(const UObject* WorldContextObject, const APlayerController* PlayerController)
+{
+	if (!PlayerController)
+	{
+		return nullptr;
+	}
+
+	const ABwayPlayerState* BwayPS = PlayerController->GetPlayerState<ABwayPlayerState>();
+	if (!BwayPS)
+	{
+		return nullptr;
+	}
+
+	const FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+	if (!HeroId.IsValid())
+	{
+		return nullptr;
+	}
+
+	const UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId);
+	if (!HeroData)
+	{
+		return nullptr;
+	}
+
+	return HeroData->GetBuildableDataAsset();
+}
+
+int32 UBwayBuildablePlacementLibrary::GetBuildableCosmeticIndexForPlayer(const APlayerController* PlayerController)
+{
+	// TODO: read selected buildable cosmetic from ABwayPlayerState when loadout/cosmetic UI lands.
+	return 0;
+}
+
+USkeletalMesh* UBwayBuildablePlacementLibrary::ResolvePreviewMeshForPlayer(const UObject* WorldContextObject, const APlayerController* PlayerController, const UBwayBuildableDataAsset* BuildableData)
+{
+	if (!BuildableData)
+	{
+		return nullptr;
+	}
+
+	return BuildableData->ResolvePreviewMesh(GetBuildableCosmeticIndexForPlayer(PlayerController));
+}
+
+void UBwayBuildablePlacementLibrary::ApplyResolvedBuildableMesh(ABuildableActor* Buildable, const UBwayBuildableDataAsset* BuildableData, int32 CosmeticIndex)
+{
+	if (!Buildable || !BuildableData)
+	{
+		return;
+	}
+
+	USkeletalMeshComponent* MeshComponent = Buildable->GetMesh();
+	if (!MeshComponent || MeshComponent->GetSkeletalMeshAsset() != nullptr)
+	{
+		return;
+	}
+
+	if (USkeletalMesh* ResolvedMesh = BuildableData->ResolvePreviewMesh(CosmeticIndex))
+	{
+		MeshComponent->SetSkeletalMesh(ResolvedMesh);
+	}
+}
+
+bool UBwayBuildablePlacementLibrary::MakePlacementTransformFromHit(const FHitResult& HitResult, const APlayerController* PlayerController, FTransform& OutTransform)
+{
+	if (!HitResult.bBlockingHit || !PlayerController)
+	{
+		return false;
+	}
+
+	FVector Forward = PlayerController->GetControlRotation().Vector();
+	Forward = FVector::VectorPlaneProject(Forward, HitResult.ImpactNormal);
+	if (Forward.IsNearlyZero())
+	{
+		Forward = PlayerController->GetPawn() ? PlayerController->GetPawn()->GetActorForwardVector() : FVector::ForwardVector;
+		Forward = FVector::VectorPlaneProject(Forward, HitResult.ImpactNormal);
+	}
+
+	const FRotator PlacementRotation = UKismetMathLibrary::MakeRotFromZX(HitResult.ImpactNormal, Forward.GetSafeNormal());
+	OutTransform = FTransform(PlacementRotation, HitResult.Location);
+	return true;
 }

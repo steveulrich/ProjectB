@@ -1,5 +1,5 @@
 ---
-description: Run automated test tiers after C++ or gameplay wiring changes.
+description: Optional automated test tiers after C++ or gameplay wiring changes.
 globs:
   - "**/*.cpp"
   - "**/*.h"
@@ -10,9 +10,11 @@ globs:
 
 # Agentic test ladder (ProjectB)
 
-After C++ or match-flow wiring changes, verify with scripted tiers in `Scripts/Test/`.
+After C++ or match-flow wiring changes, **ask the user to recompile and restart the editor manually**. Do not run Tier 1 as part of agent task completion — it is slow, error-prone (Live Coding conflicts, long UBT runs), and blocks the agent loop.
 
-## Tier 1 — always after C++ edits
+Optional scripted tiers live in `Scripts/Test/` when the user or CI wants them.
+
+## Tier 1 — compile gate (optional; user/CI only)
 
 ```powershell
 cd "E:\Unreal Projects\ProjectB\Scripts\Test"
@@ -24,9 +26,9 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 - Path check only: `.\Run-Tier.ps1 -Tier 1 -ValidateOnly`
 - Engine override: `$env:UE_ENGINE_ROOT = 'E:\Github\UnrealEngine'`
 
-Do not use MCP or in-editor Live Coding as a compile substitute.
+**Agent rule:** Do **not** run Tier 1. After C++ edits, tell the user to rebuild (editor closed or Live Coding off) and verify in editor/PIE as needed.
 
-## Tier 2 / 3 — when applicable
+## Tier 2 / 3 — when applicable (optional)
 
 | Situation | Tier |
 |-----------|------|
@@ -38,6 +40,6 @@ Full design: `Plugins/GameFeatures/BreakawayCore/Docs/Agent_Testing_Ladder.md`
 ## Reporting
 
 Include in the task summary:
-- Tier run (e.g. "Tier 1: pass, exit 0")
-- Log path if failed
-- Do not mark core-loop steps complete without the tier listed in the plan checklist
+- Whether C++ changed and user was asked to recompile/restart editor
+- PIE or manual verification results if the user ran them
+- Do not block task completion on Tier 1 exit code

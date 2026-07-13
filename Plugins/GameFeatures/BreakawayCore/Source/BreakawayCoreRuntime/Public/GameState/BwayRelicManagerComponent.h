@@ -10,6 +10,7 @@
 class ARelicActor;
 class ABwayCharacterWithAbilities;
 class UBwaySpawnPointManagerComponent;
+class URelicSettings;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRelicCarrierChanged, ARelicActor*, Relic, ABwayCharacterWithAbilities*, NewCarrier);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRelicReset, ARelicActor*, Relic);
@@ -53,6 +54,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
 	ARelicActor* GetRelicActor() const { return ActiveRelic; }
 
+	/**
+	 * RelicSettings from the active relic, or RelicSettingsAsset if the relic has none yet.
+	 * Used by Request Relic GA and bot AI — no hardcoded content paths.
+	 */
+	const URelicSettings* GetRelicSettings() const;
+
 	/** Get which team currently possesses the relic (-1 if neutral) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
 	int32 GetRelicPossessingTeam() const { return RelicPossessingTeam; }
@@ -75,7 +82,7 @@ public:
 
 	/** Relic configuration data asset — provides physics, gameplay, visual, and audio settings */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Breakaway|Config")
-	TSoftObjectPtr<class URelicSettings> RelicSettingsAsset;
+	TSoftObjectPtr<URelicSettings> RelicSettingsAsset;
 
 	// ========================================
 	// Events

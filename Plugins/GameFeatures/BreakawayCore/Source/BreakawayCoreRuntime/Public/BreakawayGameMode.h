@@ -126,4 +126,7 @@ protected:
 
 	/** Re-merge PIE / editor URL options onto authority GameMode (listen-server safe). */
 	void RefreshGameplayUrlOptions();
+
+	/** Apply Hero= URL option on server at login (set + lock SelectedHeroId). */
+	void TryApplyHeroUrlOptionAtLogin(APlayerController* NewPlayer);
 };

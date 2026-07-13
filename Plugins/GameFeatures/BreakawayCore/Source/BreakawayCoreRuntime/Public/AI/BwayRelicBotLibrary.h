@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic Bot", meta = (WorldContext = "WorldContextObject"))
 	static bool IsSuddenDeathWindowActive(const UObject* WorldContextObject);
 
-	/** Applies GE_BW_Relic_Request (from RelicSettings) or loose RequestingTag — mirrors human request input. */
+	/** Applies RelicSettings::RequestingGameplayEffectClass (or loose RequestingTag) — mirrors human Request Relic GA. */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
 	static void ApplyRelicRequestState(ABwayCharacterWithAbilities* BotCharacter);
 

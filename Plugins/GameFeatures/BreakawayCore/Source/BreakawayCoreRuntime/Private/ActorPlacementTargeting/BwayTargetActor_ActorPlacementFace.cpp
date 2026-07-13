@@ -3,18 +3,21 @@
 
 #include "ActorPlacementTargeting/BwayTargetActor_ActorPlacementFace.h"
 #include "ActorPlacementTargeting/BwayWorldReticle_ActorVisualization.h"
+#include "Buildable/BwayBuildablePlacementLibrary.h"
+#include "Buildable/BuildableBase.h"
 #include "Engine/World.h"
-#include "Abilities/GameplayAbilityTargetActor.h"   // For IsTargetValid()
-#include "Engine/EngineTypes.h"     // For FOverlapResult, ECollisionChannel
+#include "Abilities/GameplayAbilityTargetActor.h"
+#include "Engine/EngineTypes.h"
 #include "Engine/OverlapResult.h"
-#include "Abilities/GameplayAbilityWorldReticle_ActorVisualization.h" // For base class of our reticle
-#include "Abilities/GameplayAbility.h" // For GetCurrentActorInfo
+#include "Abilities/GameplayAbilityWorldReticle_ActorVisualization.h"
+#include "Abilities/GameplayAbility.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "CollisionQueryParams.h"
 #include "WorldCollision.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Components/PrimitiveComponent.h"
-#include "Components/BoxComponent.h" // For footprint check
+#include "Components/BoxComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayTargetActor_ActorPlacementFace)
 
@@ -44,47 +47,183 @@ void ABwayTargetActor_ActorPlacementFace::EndPlay(const EEndPlayReason::Type End
 
 void ABwayTargetActor_ActorPlacementFace::StartTargeting(UGameplayAbility* InAbility)
 {
+	if (!BuildableDataAsset && InAbility)
+	{
+		if (APlayerController* PC = InAbility->GetCurrentActorInfo()->PlayerController.Get())
+		{
+			BuildableDataAsset = UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(GetWorld(), PC);
+		}
+	}
+
+	if (!PlacedActorClass)
+	{
+		if (BuildableDataAsset)
+		{
+			PlacedActorClass = BuildableDataAsset->BuildableActorClass;
+		}
+		else if (InAbility)
+		{
+			if (APlayerController* PC = InAbility->GetCurrentActorInfo()->PlayerController.Get())
+			{
+				if (UBwayBuildableDataAsset* ResolvedBuildableData = UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(GetWorld(), PC))
+				{
+					BuildableDataAsset = ResolvedBuildableData;
+					PlacedActorClass = ResolvedBuildableData->BuildableActorClass;
+				}
+			}
+		}
+	}
+
 	Super::StartTargeting(InAbility); // This will create ReticleActor (often a decal)
 
-	if (AActor* VisualizationActor = GetWorld()->SpawnActor(PlacedActorClass))
+	// WaitTargetData only forwards LocalInputConfirm/Cancel when ShouldProduceTargetData() is true,
+	// which for the base target actor requires PrimaryPC->IsLocalController(). Repair if missing.
+	if (!PrimaryPC)
 	{
-		// Ensure ActorVisualizationReticle is created if not already, or if previous one was destroyed
-		if (!ActorVisualizationReticle.IsValid())
+		if (APawn* SourcePawn = Cast<APawn>(SourceActor.Get()))
 		{
-			ActorVisualizationReticle = GetWorld()->SpawnActor<ABwayWorldReticle_ActorVisualization>();
+			PrimaryPC = Cast<APlayerController>(SourcePawn->GetController());
 		}
-		
-		if (ActorVisualizationReticle.IsValid())
+		if (!PrimaryPC && InAbility && InAbility->GetCurrentActorInfo())
 		{
-			ActorVisualizationReticle->InitializeReticleVisualizationInformation(SourceActor.Get(), VisualizationActor, ValidPlacementMaterial, InvalidPlacementMaterial);
-		
-			// Attach our visualization reticle to the main reticle actor (e.g., decal) managed by the parent class.
-			if (AGameplayAbilityWorldReticle* ParentReticle = ReticleActor.Get())
-			{
-				ActorVisualizationReticle->AttachToActor(ParentReticle, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-				ActorVisualizationReticle->SetIsReticleVisible(true); // Make sure it's visible
-			}
-			else
-			{
-				// If no parent reticle, our visualization becomes the main one.
-				// This path is less common if GroundTrace is configured with a ReticleClass.
-				ReticleActor = ActorVisualizationReticle; // Parent class will now manage this
-				ActorVisualizationReticle->SetIsReticleVisible(true);
-			}
+			PrimaryPC = InAbility->GetCurrentActorInfo()->PlayerController.Get();
 		}
-		GetWorld()->DestroyActor(VisualizationActor); // Destroy the temporary template actor
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("ABwayTargetActor_ActorPlacementFace: PlacedActorClass is not set or failed to spawn temporary actor."));
 	}
 
-	// Initial validation state
-	bLastTickPlacementValid = false; 
+	UE_LOG(LogTemp, Log,
+		TEXT("BwayPlacementTarget StartTargeting PrimaryPC=%s SourceActor=%s ShouldProduce=%d"),
+		*GetNameSafe(PrimaryPC),
+		*GetNameSafe(SourceActor.Get()),
+		ShouldProduceTargetData() ? 1 : 0);
+
+	InitializePlacementVisualization(InAbility);
+}
+
+bool ABwayTargetActor_ActorPlacementFace::ShouldProduceTargetData() const
+{
+	if (PrimaryPC && PrimaryPC->IsLocalController())
+	{
+		return true;
+	}
+
+	if (const APawn* SourcePawn = Cast<APawn>(SourceActor.Get()))
+	{
+		if (const APlayerController* PC = Cast<APlayerController>(SourcePawn->GetController()))
+		{
+			return PC->IsLocalController();
+		}
+	}
+
+	return Super::ShouldProduceTargetData();
+}
+
+void ABwayTargetActor_ActorPlacementFace::ConfirmTargeting()
+{
+	UE_LOG(LogTemp, Log,
+		TEXT("BwayPlacementTarget ConfirmTargeting ShouldProduce=%d PrimaryPC=%s SourceActor=%s bLastValid=%d"),
+		ShouldProduceTargetData() ? 1 : 0,
+		*GetNameSafe(PrimaryPC),
+		*GetNameSafe(SourceActor.Get()),
+		bLastTickPlacementValid ? 1 : 0);
+
+	Super::ConfirmTargeting();
+}
+
+void ABwayTargetActor_ActorPlacementFace::CancelTargeting()
+{
+	UE_LOG(LogTemp, Log, TEXT("BwayPlacementTarget CancelTargeting ShouldProduce=%d"), ShouldProduceTargetData() ? 1 : 0);
+	Super::CancelTargeting();
+}
+
+void ABwayTargetActor_ActorPlacementFace::InitializePlacementVisualization(UGameplayAbility* InAbility)
+{
+	if (!TryInitializeVisualizationFromBuildableData(InAbility))
+	{
+		if (!TryInitializeVisualizationFromActorClass())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ABwayTargetActor_ActorPlacementFace: No preview mesh available. Set PrimaryBuildableMesh on the buildable data asset or mesh on %s."),
+				PlacedActorClass ? *PlacedActorClass->GetName() : TEXT("(null class)"));
+		}
+	}
+
+	bLastTickPlacementValid = false;
 	if (ActorVisualizationReticle.IsValid())
 	{
 		ActorVisualizationReticle->UpdatePlacementVisuals(bLastTickPlacementValid);
 	}
+}
+
+bool ABwayTargetActor_ActorPlacementFace::TryInitializeVisualizationFromBuildableData(UGameplayAbility* InAbility)
+{
+	APlayerController* PC = InAbility ? InAbility->GetCurrentActorInfo()->PlayerController.Get() : nullptr;
+	USkeletalMesh* PreviewMesh = UBwayBuildablePlacementLibrary::ResolvePreviewMeshForPlayer(GetWorld(), PC, BuildableDataAsset);
+	if (!PreviewMesh)
+	{
+		return false;
+	}
+
+	if (!ActorVisualizationReticle.IsValid())
+	{
+		ActorVisualizationReticle = GetWorld()->SpawnActor<ABwayWorldReticle_ActorVisualization>();
+	}
+
+	if (!ActorVisualizationReticle.IsValid())
+	{
+		return false;
+	}
+
+	ActorVisualizationReticle->InitializeReticleVisualizationFromPreviewMesh(SourceActor.Get(), PreviewMesh, ValidPlacementMaterial, InvalidPlacementMaterial);
+
+	if (AGameplayAbilityWorldReticle* ParentReticle = ReticleActor.Get())
+	{
+		ActorVisualizationReticle->AttachToActor(ParentReticle, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		ActorVisualizationReticle->SetIsReticleVisible(true);
+	}
+	else
+	{
+		ReticleActor = ActorVisualizationReticle;
+		ActorVisualizationReticle->SetIsReticleVisible(true);
+	}
+
+	return true;
+}
+
+bool ABwayTargetActor_ActorPlacementFace::TryInitializeVisualizationFromActorClass()
+{
+	if (!PlacedActorClass)
+	{
+		return false;
+	}
+
+	AActor* VisualizationActor = GetWorld()->SpawnActor(PlacedActorClass);
+	if (!VisualizationActor)
+	{
+		return false;
+	}
+
+	if (!ActorVisualizationReticle.IsValid())
+	{
+		ActorVisualizationReticle = GetWorld()->SpawnActor<ABwayWorldReticle_ActorVisualization>();
+	}
+
+	if (ActorVisualizationReticle.IsValid())
+	{
+		ActorVisualizationReticle->InitializeReticleVisualizationInformation(SourceActor.Get(), VisualizationActor, ValidPlacementMaterial, InvalidPlacementMaterial);
+
+		if (AGameplayAbilityWorldReticle* ParentReticle = ReticleActor.Get())
+		{
+			ActorVisualizationReticle->AttachToActor(ParentReticle, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			ActorVisualizationReticle->SetIsReticleVisible(true);
+		}
+		else
+		{
+			ReticleActor = ActorVisualizationReticle;
+			ActorVisualizationReticle->SetIsReticleVisible(true);
+		}
+	}
+
+	GetWorld()->DestroyActor(VisualizationActor);
+	return ActorVisualizationReticle.IsValid();
 }
 
 FHitResult ABwayTargetActor_ActorPlacementFace::PerformTrace(AActor* InSourceActor)
@@ -119,8 +258,22 @@ void ABwayTargetActor_ActorPlacementFace::ConfirmTargetingAndContinue()
 	if (SourceActor)
 	{
 		bDebug = false;
-		FGameplayAbilityTargetDataHandle Handle = CreateTargetData(PerformTrace(SourceActor));
-		TargetDataReadyDelegate.Broadcast(Handle);
+		const FHitResult TraceHit = PerformTrace(SourceActor);
+		const FGameplayAbilityTargetDataHandle Handle = CreateTargetData(TraceHit);
+		if (Handle.IsValid(0))
+		{
+			UE_LOG(LogTemp, Log, TEXT("BwayPlacementTarget ConfirmTargetingAndContinue VALID — broadcasting target data"));
+			TargetDataReadyDelegate.Broadcast(Handle);
+		}
+		else
+		{
+			// Invalid confirm: do not broadcast — WaitTargetData stays active so the player can reposition and retry.
+			UE_LOG(LogTemp, Warning,
+				TEXT("BwayPlacementTarget ConfirmTargetingAndContinue INVALID — no broadcast (preview stays). bLastValid=%d Hit=%d Actor=%s"),
+				bLastTickPlacementValid ? 1 : 0,
+				TraceHit.bBlockingHit ? 1 : 0,
+				*GetNameSafe(TraceHit.GetActor()));
+		}
 	}
 }
 
@@ -140,29 +293,24 @@ void ABwayTargetActor_ActorPlacementFace::Tick(float DeltaSeconds)
 FGameplayAbilityTargetDataHandle ABwayTargetActor_ActorPlacementFace::CreateTargetData(
 	const FHitResult& InHitResult) const
 {
-	FPlacementValidationResult Validation = PerformPlacementValidation(InHitResult);
+	// Re-validate at confirm time (do not trust only the last tick cache).
+	const FPlacementValidationResult Validation = PerformPlacementValidation(InHitResult);
+	bLastTickPlacementValid = Validation.bIsValid;
+	LastValidatedPlacementResult = Validation;
 
-	if (bLastTickPlacementValid && LastValidatedPlacementResult.OriginalGroundHit.bBlockingHit)
+	if (Validation.bIsValid && Validation.OriginalGroundHit.bBlockingHit)
 	{
-		// Create target data with the (potentially) adjusted location and original normal.
 		FGameplayAbilityTargetData_SingleTargetHit* ReturnData = new FGameplayAbilityTargetData_SingleTargetHit();
 
-		FHitResult FinalHit = LastValidatedPlacementResult.OriginalGroundHit; // Start with original data
-		FinalHit.Location = LastValidatedPlacementResult.AdjustedLocation;
-		FinalHit.ImpactPoint = LastValidatedPlacementResult.AdjustedLocation;
-		// The ability will use FinalHit.Location and FinalHit.ImpactNormal
-		// and LastValidatedPlacementResult.PlacementRotation
-		
+		FHitResult FinalHit = Validation.OriginalGroundHit;
+		FinalHit.Location = Validation.AdjustedLocation;
+		FinalHit.ImpactPoint = Validation.AdjustedLocation;
 		ReturnData->HitResult = FinalHit;
-		// We need to ensure this data is correctly packaged.
-		// Consider creating a custom FGameplayAbilityTargetData if you need to pass PlacementRotation directly and cleanly.
-		// For now, the ability will have to reconstruct rotation from HitResult.Location/Normal and LastValidatedPlacementResult.PlacementRotation (if accessed).
 
 		return FGameplayAbilityTargetDataHandle(ReturnData);
 	}
 
-	// If our validation fails at confirmation time, return an empty handle.
-	// This signals to the WaitTargetData node that the confirmed target is invalid.
+	// Invalid confirm: empty handle — WaitTargetData stays alive (see ConfirmTargetingAndContinue).
 	return FGameplayAbilityTargetDataHandle();
 }
 
@@ -216,15 +364,63 @@ FPlacementValidationResult ABwayTargetActor_ActorPlacementFace::PerformPlacement
 	}
 	Result.AdjustedLocation = FootprintAdjustedLocation; // Update location based on overhang (snapping)
 
-	// 3. Obstruction Check (uses final AdjustedLocation and PlacementRotation)
-	if (!CheckObstructions(Result.AdjustedLocation, Result.PlacementRotation))
+	// Lift pivot so collision bottoms rest on the ground instead of intersecting it.
+	const float PivotLift = ComputePivotLiftAlongLocalUp();
+	if (PivotLift > 0.f)
 	{
+		Result.AdjustedLocation += Result.PlacementRotation.Quaternion().GetUpVector() * PivotLift;
+	}
+
+	// 3. Obstruction Check (uses final AdjustedLocation and PlacementRotation).
+	// Ignore the traced ground actor — pivot-centered collision always overlaps the floor otherwise.
+	if (!CheckObstructions(Result.AdjustedLocation, Result.PlacementRotation, GroundHit.GetActor()))
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("BwayPlacementTarget validation FAIL: obstruction at %s"), *Result.AdjustedLocation.ToCompactString());
 		Result.bIsValid = false;
 		return Result;
 	}
 
 	Result.bIsValid = true;
 	return Result;
+}
+
+float ABwayTargetActor_ActorPlacementFace::ComputePivotLiftAlongLocalUp() const
+{
+	if (!PlacedActorClass)
+	{
+		return ObstructionGroundClearance;
+	}
+
+	const AActor* CDO = PlacedActorClass->GetDefaultObject<AActor>();
+	if (!CDO)
+	{
+		return ObstructionGroundClearance;
+	}
+
+	float MaxLift = 0.f;
+
+	TArray<UPrimitiveComponent*> CDOPrimitives;
+	CDO->GetComponents<UPrimitiveComponent>(CDOPrimitives);
+
+	for (const UPrimitiveComponent* PrimitiveCDO : CDOPrimitives)
+	{
+		if (!PrimitiveCDO)
+		{
+			continue;
+		}
+
+		const ECollisionEnabled::Type CollisionEnabled = PrimitiveCDO->GetCollisionEnabled();
+		if (CollisionEnabled == ECollisionEnabled::NoCollision || CollisionEnabled == ECollisionEnabled::QueryOnly)
+		{
+			continue;
+		}
+
+		const FBoxSphereBounds ActorLocalBounds = PrimitiveCDO->CalcBounds(PrimitiveCDO->GetRelativeTransform());
+		const float BottomZ = ActorLocalBounds.Origin.Z - ActorLocalBounds.BoxExtent.Z;
+		MaxLift = FMath::Max(MaxLift, -BottomZ);
+	}
+
+	return MaxLift + ObstructionGroundClearance;
 }
 
 bool ABwayTargetActor_ActorPlacementFace::CheckSurfaceAngle(const FVector& SurfaceNormal) const
@@ -314,7 +510,8 @@ bool ABwayTargetActor_ActorPlacementFace::CheckOverhangs(const FVector& CenterLo
 }
 
 bool ABwayTargetActor_ActorPlacementFace::CheckObstructions(const FVector& CenterLocation,
-	const FRotator& PlacementRotation) const
+	const FRotator& PlacementRotation,
+	AActor* GroundHitActor) const
 {
 	if (!PlacedActorClass) return false;
 	AActor* CDO = PlacedActorClass->GetDefaultObject<AActor>();
@@ -324,48 +521,80 @@ bool ABwayTargetActor_ActorPlacementFace::CheckObstructions(const FVector& Cente
 	QueryParams.AddIgnoredActor(this);
 	if (ActorVisualizationReticle.IsValid()) QueryParams.AddIgnoredActor(ActorVisualizationReticle.Get());
 	if (SourceActor.Get()) QueryParams.AddIgnoredActor(SourceActor.Get());
-    QueryParams.bReturnPhysicalMaterial = false;
+	if (ReticleActor.IsValid()) QueryParams.AddIgnoredActor(ReticleActor.Get());
+	if (GroundHitActor)
+	{
+		QueryParams.AddIgnoredActor(GroundHitActor);
+	}
+	QueryParams.bReturnPhysicalMaterial = false;
 
-	// Iterate all primitive components on the CDO to form the collision check shape
-    TArray<UPrimitiveComponent*> CDOPrimitives;
-    CDO->GetComponents<UPrimitiveComponent>(CDOPrimitives);
+	TArray<UPrimitiveComponent*> CDOPrimitives;
+	CDO->GetComponents<UPrimitiveComponent>(CDOPrimitives);
 
-    if (CDOPrimitives.IsEmpty())
-    {
-        UE_LOG(LogTemp, Warning, TEXT("CheckObstructions: No primitive components on CDO of %s. Skipping."), *PlacedActorClass->GetName());
-        return true; // No collision to check
-    }
+	if (CDOPrimitives.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CheckObstructions: No primitive components on CDO of %s. Skipping."), *PlacedActorClass->GetName());
+		return true;
+	}
+
+	const FTransform PlacementTM(PlacementRotation, CenterLocation);
 
 	for (UPrimitiveComponent* PrimitiveCDO : CDOPrimitives)
 	{
-        if (!PrimitiveCDO || PrimitiveCDO->GetCollisionEnabled() == ECollisionEnabled::NoCollision)
-        {
-            continue;
-        }
+		if (!PrimitiveCDO)
+		{
+			continue;
+		}
 
-		FCollisionShape Shape = PrimitiveCDO->GetCollisionShape(); // Gets shape with CDO's scale
-		FTransform CDOCompRelativeTransform = PrimitiveCDO->GetRelativeTransform();
-		FTransform WorldCheckTransform = CDOCompRelativeTransform * FTransform(PlacementRotation, CenterLocation);
-		
+		const ECollisionEnabled::Type CollisionEnabled = PrimitiveCDO->GetCollisionEnabled();
+		if (CollisionEnabled == ECollisionEnabled::NoCollision || CollisionEnabled == ECollisionEnabled::QueryOnly)
+		{
+			continue;
+		}
+
+		const FCollisionShape Shape = PrimitiveCDO->GetCollisionShape();
+		const FTransform WorldCheckTransform = PrimitiveCDO->GetRelativeTransform() * PlacementTM;
+
 		TArray<FOverlapResult> Overlaps;
-		bool bHasBlockingOverlaps = GetWorld()->OverlapMultiByChannel(
+		const bool bHasOverlaps = GetWorld()->OverlapMultiByChannel(
 			Overlaps,
 			WorldCheckTransform.GetLocation(),
 			WorldCheckTransform.GetRotation(),
-			CollisionChannel, // Use a specific channel for buildable obstructions if needed
+			CollisionChannel,
 			Shape,
-			QueryParams
-		);
+			QueryParams);
 
-		if (bHasBlockingOverlaps)
+		if (!bHasOverlaps)
 		{
-			for (const FOverlapResult& Overlap : Overlaps)
+			continue;
+		}
+
+		for (const FOverlapResult& Overlap : Overlaps)
+		{
+			AActor* OverlapActor = Overlap.GetActor();
+			if (OverlapActor && (OverlapActor == GroundHitActor || OverlapActor == this || OverlapActor == SourceActor.Get()))
 			{
-				if (Overlap.GetActor()) // Could add more filtering here (e.g., ignore other friendly buildables if allowed)
+				continue;
+			}
+
+			// Floor / terrain pieces often aren't the exact ground-hit actor (multi-mesh floors).
+			// Skip blockers whose bounds sit at or below the placement plane.
+			if (Overlap.Component.IsValid())
+			{
+				const FBox SphereBounds = Overlap.Component->Bounds.GetBox();
+				const float ComponentTopZ = SphereBounds.Max.Z;
+				if (ComponentTopZ <= CenterLocation.Z + 2.0f)
 				{
-					UE_LOG(LogTemp, Log, TEXT("Obstruction with %s"), *Overlap.GetActor()->GetName());
-					return false;
+					continue;
 				}
+			}
+
+			if (Overlap.bBlockingHit || (Overlap.Component.IsValid() && Overlap.Component->GetCollisionResponseToChannel(CollisionChannel) == ECR_Block))
+			{
+				UE_LOG(LogTemp, Log, TEXT("BwayPlacementTarget obstruction with %s.%s"),
+					OverlapActor ? *OverlapActor->GetName() : TEXT("(null)"),
+					Overlap.Component.IsValid() ? *Overlap.Component->GetName() : TEXT("(null)"));
+				return false;
 			}
 		}
 	}

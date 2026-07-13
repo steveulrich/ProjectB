@@ -3,6 +3,7 @@
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameModes/BwayGameplayUrlLibrary.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "Stats/BwayMatchStatsLibrary.h"
 #include "GameState/BwayBotCreationComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
@@ -28,10 +29,19 @@
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameModeBase.h"
+#include "AIController.h"
 #include "TimerManager.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayRoundManagementComponent)
+
+namespace BwayRoundManagement
+{
+bool IsHumanPlayerController(const AController* Controller)
+{
+	return Controller && Controller->IsA<APlayerController>() && !Controller->IsA<AAIController>();
+}
+}
 
 UBwayRoundManagementComponent::UBwayRoundManagementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -345,6 +355,14 @@ void UBwayRoundManagementComponent::CompletePrematchPhase()
 		return;
 	}
 
+	if (ShouldWaitForDirectPieHeroLocks() && !AreAllHumanPlayersHeroLocked())
+	{
+		bWaitingForDirectPieHeroLock = true;
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch completion deferred — waiting for all human players to lock heroes"));
+		return;
+	}
+
+	bWaitingForDirectPieHeroLock = false;
 	bPrematchCompletionHandled = true;
 
 	if (UWorld* World = GetWorld())
@@ -354,6 +372,62 @@ void UBwayRoundManagementComponent::CompletePrematchPhase()
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch complete — advancing to Warmup (11-4)"));
 	EnterWarmup();
+}
+
+void UBwayRoundManagementComponent::TryCompletePrematchAfterHeroLocks()
+{
+	if (!bOrchestratorActive || CurrentMatchPhase != EBwayMatchPhase::Prematch || bPrematchCompletionHandled)
+	{
+		return;
+	}
+
+	if (ShouldWaitForDirectPieHeroLocks() && AreAllHumanPlayersHeroLocked())
+	{
+		CompletePrematchPhase();
+	}
+}
+
+bool UBwayRoundManagementComponent::ShouldWaitForDirectPieHeroLocks() const
+{
+	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidWorld(this))
+	{
+		return false;
+	}
+
+	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return false;
+	}
+
+	return UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayMatchMap(this);
+}
+
+bool UBwayRoundManagementComponent::AreAllHumanPlayersHeroLocked() const
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return true;
+	}
+
+	bool bFoundHuman = false;
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (!BwayRoundManagement::IsHumanPlayerController(PC))
+		{
+			continue;
+		}
+
+		bFoundHuman = true;
+		const ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
+		if (!BwayPS || !BwayPS->IsHeroLocked())
+		{
+			return false;
+		}
+	}
+
+	return bFoundHuman;
 }
 
 void UBwayRoundManagementComponent::EnterWarmup()
@@ -941,6 +1015,15 @@ void UBwayRoundManagementComponent::HandlePlayingPhaseActivated(const FGameplayT
 void UBwayRoundManagementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GetOwnerRole() == ROLE_Authority
+		&& bOrchestratorActive
+		&& CurrentMatchPhase == EBwayMatchPhase::Prematch
+		&& bWaitingForDirectPieHeroLock
+		&& !bPrematchCompletionHandled)
+	{
+		TryCompletePrematchAfterHeroLocks();
+	}
 
 	if (GetOwnerRole() != ROLE_Authority || !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
