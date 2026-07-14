@@ -77,6 +77,5 @@ Placement Confirm/Cancel dual-bind on LMB/RMB alongside Primary / RelicRequest �
 
 ## TODO
 
-- Morgan, Alona, Rawlins sheet-accurate ability implementations (Steps 19–21)
+- Alona 19b Sun Shrine + 19c parity; Morgan/Rawlins sheet-accurate kits (Steps 20–21)
 - Fumble-on-damage gameplay effect for relic carrier (Step 22)
-- Argus 18c parity (replace Spartacus stand-in GAs with sheet kit)

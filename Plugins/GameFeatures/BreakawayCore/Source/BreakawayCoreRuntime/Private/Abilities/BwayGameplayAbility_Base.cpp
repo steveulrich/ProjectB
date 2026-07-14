@@ -392,6 +392,40 @@ void UBwayGameplayAbility_Base::ApplyDamageToEnemy(ABwayCharacterWithAbilities* 
 	}
 }
 
+void UBwayGameplayAbility_Base::ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, float HealAmount)
+{
+	if (!Ally || HealAmount <= 0.0f)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
+	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Ally);
+	if (!SourceASC || !TargetASC)
+	{
+		return;
+	}
+
+	const ULyraGameData& GameData = ULyraGameData::Get();
+	TSubclassOf<UGameplayEffect> HealEffectClass = ULyraAssetManager::GetSubclass(GameData.HealGameplayEffect_SetByCaller);
+	if (!HealEffectClass)
+	{
+		return;
+	}
+
+	FGameplayEffectContextHandle EffectContextHandle = MakeEffectContext(StoredSpecHandle, CurrentActorInfo);
+	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(HealEffectClass, 1.0f, EffectContextHandle);
+	if (SpecHandle.IsValid())
+	{
+		if (FGameplayEffectSpec* Spec = SpecHandle.Data.Get())
+		{
+			Spec->SetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Heal, HealAmount);
+		}
+
+		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
+
 float UBwayGameplayAbility_Base::CalculateScaledDamage(float AbilityBaseDamage, float ScalingCoefficient) const
 {
 	float AttackStrength = 0.f;

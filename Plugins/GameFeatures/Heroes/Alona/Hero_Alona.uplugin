@@ -3,12 +3,28 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Hero Alona",
-	"Description": "Alona hero content for Breakaway",
+	"Description": "Alona hero content and runtime for Breakaway",
 	"Category": "Game Features",
 	"CreatedBy": "ProjectB",
 	"CanContainContent": true,
 	"EnabledByDefault": false,
 	"ExplicitlyLoaded": true,
 	"BuiltInInitialFeatureState": "Registered",
-	"Plugins": [{ "Name": "BreakawayCore", "Enabled": true }]
+	"Modules": [
+		{
+			"Name": "HeroAlonaRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "BreakawayCore",
+			"Enabled": true
+		},
+		{
+			"Name": "GameplayAbilities",
+			"Enabled": true
+		}
+	]
 }

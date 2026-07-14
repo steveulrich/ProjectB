@@ -49,6 +49,9 @@ protected:
 	/** Apply damage to enemy using Lyra's damage system */
 	void ApplyDamageToEnemy(ABwayCharacterWithAbilities* Enemy, float DamageAmount);
 
+	/** Apply healing to ally using Lyra's SetByCaller heal GE */
+	void ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, float HealAmount);
+
 	/**
 	 * Sheet formula: Final = AbilityBaseDamage + AttackStrength * ScalingCoefficient.
 	 * AttackStrength is ULyraCombatSet::BaseDamage (hero DA Attack Str).
