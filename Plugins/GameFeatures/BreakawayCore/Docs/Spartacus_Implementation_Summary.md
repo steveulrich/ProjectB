@@ -1,10 +1,8 @@
 # Spartacus / Argus — Ability Implementation Notes
 
-> **Current work:** Core Loop **Step 18** (Argus). DisplayName **Argus**; plugin **`Hero_Spartacus`**; asset folder **`Argus`**.  
-> **Editor:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) · [CONTENT_SETUP.md](../../Heroes/Spartacus/CONTENT_SETUP.md)  
+> **Current work:** Core Loop **Step 18c** (Argus parity). DisplayName **Argus**; plugin **`Hero_Spartacus`**; asset folder **`Argus`**.  
+> **Editor:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) · [Argus_18c_Editor_Setup.md](./Argus_18c_Editor_Setup.md) · [CONTENT_SETUP.md](../../Heroes/Spartacus/CONTENT_SETUP.md)  
 > **Parity source:** [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md)
-
-This doc retains the **legacy Spartacus C++ kit** (Shield Bash / War Cry / Defensive Stance / Gladiator's Leap) used as **18a stand-ins** for F/Q/E/R until **18c** replaces them with sheet-accurate Argus abilities.
 
 ## Relic Carrier Note
 
@@ -22,14 +20,14 @@ Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation wh
 
 | Key | Input tag | Ability |
 |-----|-----------|---------|
-| LMB | `InputTag.Ability.Primary` | Per-hero primary (`BwayGameplayAbility_MeleePrimary`) |
+| LMB | `InputTag.Ability.Primary` | `BwayGameplayAbility_MeleePrimary` |
 | LMB (while placing) | `InputTag.Ability.Buildable.Confirm` | Humanoid Confirm forwarder |
 | RMB | `InputTag.Ability.RelicRequest` | Request Relic (common) |
 | RMB (while placing) | `InputTag.Ability.Buildable.Cancel` | Humanoid Cancel forwarder |
-| F | `InputTag.Ability.Ability4` | Defense dodge (sheet name "Slide"; 18a stand-in Gladiator's Leap) |
-| Q | `InputTag.Ability.Ability1` | No Retreat (18a stand-in Shield Bash) |
-| E | `InputTag.Ability.Ability2` | For Glory (18a stand-in War Cry) |
-| R | `InputTag.Ability.Ability3` | Retribution (18a stand-in Defensive Stance) |
+| F | `InputTag.Ability.Ability4` | **Slide** (`BwayGameplayAbility_ArgusSlide`) |
+| Q | `InputTag.Ability.Ability1` | **No Retreat** (`BwayGameplayAbility_NoRetreat`) |
+| E | `InputTag.Ability.Ability2` | **For Glory** (`BwayGameplayAbility_ForGlory`) |
+| R | `InputTag.Ability.Ability3` | **Retribution** (`BwayGameplayAbility_Retribution`) |
 | Left Shift | `InputTag.Ability.Slide` | Common movement slide |
 | 1 | `InputTag.Ability.Buildable` | Per-hero PlaceBuildable |
 
@@ -37,41 +35,49 @@ Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation wh
 
 ---
 
-## Legacy C++ kit (18a stand-ins)
+## Sheet-accurate kit (18c)
 
-All C++ classes live under `BreakawayCoreRuntime` `Abilities/`.
+Damage formula: **`Final = AbilityBaseDamage + AttackStrength × Scaling`** (Attack Str from hero DA → `ULyraCombatSet::BaseDamage`).
 
-1. **Shield Bash** (`BwayGameplayAbility_ShieldBash`) — dash + stun; 18a stand-in for **No Retreat**
-2. **War Cry** (`BwayGameplayAbility_WarCry`) — AOE ally buff; 18a stand-in for **For Glory**
-3. **Defensive Stance** (`BwayGameplayAbility_DefensiveStance`) — toggle DR; 18a stand-in for **Retribution**
-4. **Gladiator's Leap** (`BwayGameplayAbility_GladiatorsLeap`) — leap AOE; 18a stand-in for Argus defense **Slide**
+| Slot | Ability | CD | Base / Scale | At Atk 50 |
+|------|---------|-----|--------------|-----------|
+| LMB | Primary Attack | — | 10 / 0.4 | 30 |
+| F | Slide | 18s | — (invuln dash) | — |
+| Q | No Retreat | 12s | 2 / 0.4 | 22 |
+| E | For Glory | 25s | 2 / 0.4 | 22 |
+| R | Retribution | 30s | 10+20 / 0.5 | 35 + 45 |
+| 1 | Siege Engine | — | HP 250; 200 dps; 10s roll | — |
 
-### Gameplay tags (legacy)
+### C++ classes
 
-- `State.Stunned`, `State.Buffed.WarCry`, `State.DefensiveStance`, `State.Dashing`, `State.Leaping`
-- `Ability.Spartacus.ShieldBash`, `WarCry`, `DefensiveStance`, `GladiatorsLeap`
-- `GameplayEffect.DamageType.Ability`
+| Ability | Class | Cooldown GE |
+|---------|-------|-------------|
+| Primary | `BwayGameplayAbility_MeleePrimary` | — |
+| Slide | `BwayGameplayAbility_ArgusSlide` | `UGE_Bway_Cooldown_ArgusSlide` |
+| No Retreat | `BwayGameplayAbility_NoRetreat` | `UGE_Bway_Cooldown_NoRetreat` |
+| For Glory | `BwayGameplayAbility_ForGlory` | `UGE_Bway_Cooldown_ForGlory` |
+| Retribution | `BwayGameplayAbility_Retribution` | `UGE_Bway_Cooldown_Retribution` |
 
-### Editor content (if still using stand-ins)
+### Gameplay tags
 
-Create GEs / BP children as needed under hero plugin content; wire cooldowns on each BP. Prefer Argus sheet names in DisplayData even when parent is a Spartacus stand-in class.
+- Abilities: `Ability.Argus.PrimaryAttack`, `.Slide`, `.NoRetreat`, `.ForGlory`, `.Retribution`
+- Cooldowns: `Cooldown.Argus.Slide` / `.NoRetreat` / `.ForGlory` / `.Retribution`
+- Slide owns `Gameplay.DamageImmunity` while active; For Glory owns `State.Unstoppable` while active
+
+### Legacy Spartacus stand-ins (superseded by 18c)
+
+Kept in tree for reference / other heroes; **do not grant** on Argus after 18c reparent:
+
+1. `BwayGameplayAbility_ShieldBash`
+2. `BwayGameplayAbility_WarCry`
+3. `BwayGameplayAbility_DefensiveStance`
+4. `BwayGameplayAbility_GladiatorsLeap`
 
 ---
 
-## Target sheet kit (18c)
-
-| Slot | Sheet ability | CD | Notes |
-|------|---------------|-----|-------|
-| LMB | Primary Attack | — | `BwayGameplayAbility_MeleePrimary` (done in 18a) |
-| F | Slide (dodge) | 18s | Replace Gladiator's Leap stand-in |
-| Q | No Retreat | 12s | Replace Shield Bash |
-| E | For Glory | 25s | Replace War Cry |
-| R | Retribution | 30s | Replace Defensive Stance |
-| 1 | Siege Engine | — | 18b PlaceBuildable + `ABwaySiegeEngineBuildable` |
-
 ## Testing
 
-See 18a / 18b pass checklists. Multiplayer: listen server; abilities `LocalPredicted` where applicable.
+See [Argus_18c_Editor_Setup.md](./Argus_18c_Editor_Setup.md). Multiplayer: listen server; abilities `LocalPredicted`.
 
 ## File Locations
 

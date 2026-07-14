@@ -1,14 +1,11 @@
 #include "Abilities/BwayGameplayAbility_MeleePrimary.h"
 
-#include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameplayTags.h"
-#include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "NativeGameplayTags.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Ability_Argus_PrimaryAttack, "Ability.Argus.PrimaryAttack");
-UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_InputTag_Ability_Primary, "InputTag.Ability.Primary");
 
 UBwayGameplayAbility_MeleePrimary::UBwayGameplayAbility_MeleePrimary(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -19,11 +16,13 @@ UBwayGameplayAbility_MeleePrimary::UBwayGameplayAbility_MeleePrimary(const FObje
 
 PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	AbilityTags.AddTag(TAG_Ability_Argus_PrimaryAttack);
-	AbilityTags.AddTag(TAG_InputTag_Ability_Primary);
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	ActivationBlockedTags.AddTag(BwayGameplayTags::State_BuildablePlacement);
 	CancelAbilitiesWithTag.Reset();
+
+	DisplayData.AbilityName = NSLOCTEXT("Argus", "PrimaryName", "Primary Attack");
+	DisplayData.Description = NSLOCTEXT("Argus", "PrimaryDesc", "Slashing melee attack.");
 }
 
 void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
@@ -34,11 +33,7 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	if (!CommitAbilityCooldown(Handle, ActorInfo, ActivationInfo, /*ForceCooldown*/ true))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
+	StoredSpecHandle = Handle;
 
 	ABwayCharacterWithAbilities* Character = GetBwayCharacterFromActorInfo();
 	if (!Character || !HasAuthority(&ActivationInfo))
@@ -59,14 +54,7 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 		World->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, ECC_Pawn, Shape, QueryParams);
 	}
 
-	float AppliedDamage = DamageAmount;
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
-	{
-		if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
-		{
-			AppliedDamage = FMath::Max(AppliedDamage, CombatSet->GetBaseDamage() * 0.4f);
-		}
-	}
+	const float AppliedDamage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
 
 	TSet<TObjectPtr<ABwayCharacterWithAbilities>> DamagedTargets;
 	for (const FHitResult& Hit : Hits)

@@ -4,6 +4,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
 #include "System/LyraGameData.h"
@@ -389,6 +390,33 @@ void UBwayGameplayAbility_Base::ApplyDamageToEnemy(ABwayCharacterWithAbilities* 
 		
 		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
+}
+
+float UBwayGameplayAbility_Base::CalculateScaledDamage(float AbilityBaseDamage, float ScalingCoefficient) const
+{
+	float AttackStrength = 0.f;
+	if (const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
+		{
+			AttackStrength = CombatSet->GetBaseDamage();
+		}
+	}
+
+	const float FinalDamage = AbilityBaseDamage + (AttackStrength * ScalingCoefficient);
+	UE_LOG(LogBwayAbility, Log, TEXT("[%s] ScaledDamage: base=%.1f atk=%.1f scale=%.2f -> %.1f"),
+		*GetClass()->GetName(), AbilityBaseDamage, AttackStrength, ScalingCoefficient, FinalDamage);
+	return FinalDamage;
+}
+
+void UBwayGameplayAbility_Base::ApplyKnockbackToEnemy(ABwayCharacterWithAbilities* Enemy, const FVector& Impulse) const
+{
+	if (!Enemy || Impulse.IsNearlyZero())
+	{
+		return;
+	}
+
+	Enemy->LaunchCharacter(Impulse, true, true);
 }
 
 FGameplayEffectContextHandle UBwayGameplayAbility_Base::MakeEffectContextForAbility() const

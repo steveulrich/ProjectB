@@ -31,6 +31,7 @@ Lyra FrontEnd → Experience (B_BW_Experience_Dev / CaptureTheRelic) → ABwayGa
 | Argus / Spartacus notes | [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md) |
 | Argus 18a editor | [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) |
 | Argus 18b editor (placement) | [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) |
+| Argus 18c editor (parity) | [Argus_18c_Editor_Setup.md](./Argus_18c_Editor_Setup.md) |
 | Agent testing | [Agent_Testing_Ladder.md](./Agent_Testing_Ladder.md) |
 
 ## Core C++ Entry Points

@@ -1,0 +1,59 @@
+#pragma once
+
+#include "Abilities/BwayGameplayAbility_Base.h"
+#include "NativeGameplayTags.h"
+#include "BwayGameplayAbility_NoRetreat.generated.h"
+
+BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Argus_NoRetreat);
+
+/**
+ * Argus Q — No Retreat.
+ * Straight-line shoulder charge; damages + knocks back first enemy hit. CD 12s. Damage 2 / 0.4.
+ */
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_NoRetreat : public UBwayGameplayAbility_Base
+{
+	GENERATED_BODY()
+
+public:
+	UBwayGameplayAbility_NoRetreat(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+protected:
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+	UFUNCTION()
+	void PerformChargeTrace();
+
+	void ApplyHitToEnemy(ABwayCharacterWithAbilities* Enemy);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float ChargeDistance = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.05"))
+	float ChargeDuration = 0.4f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float TraceRadius = 120.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float AbilityBaseDamage = 2.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float DamageScaling = 0.4f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float KnockbackStrength = 1200.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|NoRetreat", meta = (ClampMin = "0.0"))
+	float KnockbackUpward = 250.f;
+
+private:
+	FTimerHandle ChargeTraceTimerHandle;
+	FTimerHandle EndChargeTimerHandle;
+	FVector ChargeDirection = FVector::ForwardVector;
+	bool bHasHitEnemy = false;
+	static constexpr float ChargeTraceInterval = 0.016f;
+};

@@ -1273,7 +1273,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | Step | Status | Notes |
 |------|--------|-------|
 | **17** | **C++ done** | ForceHumanoid, SkipHeroSelection refactor, Hero= URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables — editor checklists open |
-| **18** | **18a/18b C++ done** | Argus functional + Siege Engine + PlaceBuildable/Confirm/Cancel C++; editor wiring per [Argus_18a](./Argus_18a_Editor_Setup.md) / [Argus_18b](./Argus_18b_Editor_Setup.md); 3/3 PIE open |
+| **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
 | **19** | **Open** | Alona |
 | **20** | **Open** | Korryn (`Hero_Morgan` / `Hexweaver` folder) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
@@ -1388,9 +1388,9 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 | R | Retribution | R / `Ability3` | 30s | **Siege Engine** — HP 250; 200 dmg/s vs buildables; 10s max |
 | 1 | Siege Engine place | **1** / `Buildable` (per-hero) | — | Confirm LMB / Cancel RMB while placing |
 
-**Editor checklists:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md)
+**Editor checklists:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) · [Argus_18c_Editor_Setup.md](./Argus_18c_Editor_Setup.md)
 
-**Realignment:** 18a uses deprecated Spartacus C++ stand-ins (`ShieldBash`, `WarCry`, `DefensiveStance`, `GladiatorsLeap`) for F/Q/E/R; replace with sheet-accurate abilities in **18c**. Legacy kit notes: [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md).
+**18c status:** Sheet-accurate C++ kit landed (`ArgusSlide`, `NoRetreat`, `ForGlory`, `Retribution` + cooldown GEs + Primary `Base+Atk×Scale`). Reparent Argus ability BPs per 18c editor checklist; PIE 3/3 still open.
 
 **Pass:** sub-steps 18a–18c + relic pickup/score regression; **3/3** cold starts.
 

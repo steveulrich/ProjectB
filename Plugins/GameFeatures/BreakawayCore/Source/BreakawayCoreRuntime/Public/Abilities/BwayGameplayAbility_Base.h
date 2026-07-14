@@ -49,6 +49,15 @@ protected:
 	/** Apply damage to enemy using Lyra's damage system */
 	void ApplyDamageToEnemy(ABwayCharacterWithAbilities* Enemy, float DamageAmount);
 
+	/**
+	 * Sheet formula: Final = AbilityBaseDamage + AttackStrength * ScalingCoefficient.
+	 * AttackStrength is ULyraCombatSet::BaseDamage (hero DA Attack Str).
+	 */
+	float CalculateScaledDamage(float AbilityBaseDamage, float ScalingCoefficient) const;
+
+	/** Launch knockback impulse on an enemy character (authority). */
+	void ApplyKnockbackToEnemy(ABwayCharacterWithAbilities* Enemy, const FVector& Impulse) const;
+
 	/** Create effect context using the ability's MakeEffectContext method */
 	FGameplayEffectContextHandle MakeEffectContextForAbility() const;
 

@@ -7,7 +7,7 @@
 
 C++ lives in `BreakawayCoreRuntime`. Content targets this plugin mount (`/Hero_Spartacus/...`). Legacy `/BreakawayCore/Characters/Heroes/Argus/` may still hold assets until migration cutover.
 
-**Editor checklists:** [Argus_18a_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18b_Editor_Setup.md)  
+**Editor checklists:** [Argus_18a_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18b_Editor_Setup.md) · [Argus_18c_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18c_Editor_Setup.md)  
 **Ability notes:** [Spartacus_Implementation_Summary.md](../../BreakawayCore/Docs/Spartacus_Implementation_Summary.md)
 
 ## Ability ownership (canonical)
@@ -44,9 +44,11 @@ C++ lives in `BreakawayCoreRuntime`. Content targets this plugin mount (`/Hero_S
 
 | Input tag | Ability | Notes |
 |-----------|---------|-------|
-| `Primary` | MeleePrimary BP | 18a |
-| `Ability4` | Defense dodge stand-in → 18c Slide | F key |
-| `Ability1`–`Ability3` | Stand-ins → 18c No Retreat / For Glory / Retribution | |
+| `Primary` | MeleePrimary BP | 18a/18c — damage 10/0.4 |
+| `Ability4` | Argus Slide BP (`BwayGameplayAbility_ArgusSlide`) | F key — 18c |
+| `Ability1` | No Retreat BP (`BwayGameplayAbility_NoRetreat`) | Q — 18c |
+| `Ability2` | For Glory BP (`BwayGameplayAbility_ForGlory`) | E — 18c |
+| `Ability3` | Retribution BP (`BwayGameplayAbility_Retribution`) | R — 18c |
 | `Buildable` | `GA_BW_Spartacus_BuildablePlacement` | 18b — **not** on humanoid |
 
 ### Buildable (one — not two)
@@ -74,10 +76,10 @@ C++ lives in `BreakawayCoreRuntime`. Content targets this plugin mount (`/Hero_S
 - [ ] Hero DA loads; DisplayName **Argus**
 - [ ] 18a combat + relic carrier pass
 - [ ] 18b Siege Engine place / confirm / cancel / once-per-round / persist pass
+- [ ] 18c sheet parity (CDs + damage) — [Argus_18c_Editor_Setup.md](../../BreakawayCore/Docs/Argus_18c_Editor_Setup.md)
 - [ ] **3/3** cold-start PIE listen server
-- [ ] 18c parity (optional for “functional” gate; required for hero-complete)
 
-Then proceed to **Alona** ([CONTENT_SETUP](../Alona/CONTENT_SETUP.md)) only after 18c (or explicit skip of parity).
+Then proceed to **Alona** ([CONTENT_SETUP](../Alona/CONTENT_SETUP.md)) only after 18c is green.
 
 ## Related
 

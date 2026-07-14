@@ -4,8 +4,9 @@
 #include "BwayGameplayAbility_MeleePrimary.generated.h"
 
 /**
- * Argus LMB — short forward melee trace. Blocked when relic carrier (via UBwayGameplayAbility_Base).
- * Cooldown/damage tuned in Blueprint subclass + GE (18c parity).
+ * Argus LMB — short forward melee trace.
+ * Sheet: Base 10, Scaling 0.4 → Final = 10 + AttackStr * 0.4.
+ * Blocked when relic carrier (via UBwayGameplayAbility_Base).
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_MeleePrimary : public UBwayGameplayAbility_Base
@@ -24,6 +25,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
 	float TraceDistance = 175.f;
 
+	/** Sheet Base Damage */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
-	float DamageAmount = 10.f;
+	float AbilityBaseDamage = 10.f;
+
+	/** Sheet Scaling coefficient (Final = Base + AttackStr * Scaling) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
+	float DamageScaling = 0.4f;
 };
