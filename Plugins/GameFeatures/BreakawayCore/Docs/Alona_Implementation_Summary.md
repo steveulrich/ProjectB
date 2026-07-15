@@ -1,7 +1,7 @@
 # Alona — Ability Implementation Notes
 
-> **Current work:** Core Loop **Step 19a passed** (Alona functional). Next: **19b** Sun Shrine. DisplayName **Alona**; plugin **`Hero_Alona`**; runtime **`HeroAlonaRuntime`**.
-> **Editor:** [Alona_19a_Editor_Setup.md](./Alona_19a_Editor_Setup.md) · [CONTENT_SETUP.md](../../Heroes/Alona/CONTENT_SETUP.md)
+> **Current work:** Core Loop **Step 19b C++ + scripts done** (Sun Shrine). Next: Editor wire + listen-server pass, then **19c** parity. DisplayName **Alona**; plugin **`Hero_Alona`**; runtime **`HeroAlonaRuntime`**.
+> **Editor:** [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md) · [Alona_19a_Editor_Setup.md](./Alona_19a_Editor_Setup.md) · [CONTENT_SETUP.md](../../Heroes/Alona/CONTENT_SETUP.md)
 > **Parity source:** [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md)
 
 ## Relic Carrier Note
@@ -13,8 +13,8 @@ Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation wh
 | Scope | Set | Grants |
 |-------|-----|--------|
 | Common | `DA_BW_AbilitySet_Humanoid` | Left Shift slide · RMB Request Relic · Confirm · Cancel |
-| Per-hero | `DA_BW_AbilitySet_Alona` | LMB / F / Q / E / R (no PlaceBuildable until 19b) |
-| Hero DA | `DA_BW_HeroData_Alona` | `BuildableDataAsset` empty until 19b |
+| Per-hero | `DA_BW_AbilitySet_Alona` | LMB / F / Q / E / R · **PlaceBuildable** (`InputTag.Ability.Buildable`) |
+| Hero DA | `DA_BW_HeroData_Alona` | `BuildableDataAsset` → Sun Shrine DA |
 
 ## Input layout
 
@@ -27,6 +27,7 @@ Combat abilities inherit `UBwayGameplayAbility_Base`, which blocks activation wh
 | E | `InputTag.Ability.Ability2` | **Sun Burst** |
 | R | `InputTag.Ability.Ability3` | **Blessing of the Sun** |
 | Left Shift | `InputTag.Ability.Slide` | Common movement slide |
+| **1** | `InputTag.Ability.Buildable` | PlaceBuildable → **Sun Shrine** |
 
 Stats sheet **RMB** dodge column → in-game **F**.
 
@@ -46,7 +47,14 @@ Stats sheet **RMB** dodge column → in-game **F**.
 - Shared heal helper: `UBwayGameplayAbility_Base::ApplyHealToAlly`
 - Content target: `/Hero_Alona/Characters/Heroes/Alona/`
 
+## Sun Shrine (19b)
+
+| Piece | Class / asset |
+|-------|----------------|
+| Actor | `ABwayAlonaSunShrineBuildable` — 750 HP, 35 HP/s, 500 uu, non-stack, persists |
+| Placement | Shared `UBwayGameplayAbility_PlaceBuildable` (once/round free) |
+| Editor | [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md) · `Scripts/setup-alona-19b-sun-shrine.mjs` |
+
 ## Deferred
 
-- **19b** Sun Shrine buildable
 - **19c** Radiance STR/52 scaling + full sheet parity spot-check

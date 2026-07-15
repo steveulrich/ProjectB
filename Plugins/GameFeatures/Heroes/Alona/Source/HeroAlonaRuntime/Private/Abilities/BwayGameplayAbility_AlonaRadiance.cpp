@@ -1,11 +1,15 @@
 #include "Abilities/BwayGameplayAbility_AlonaRadiance.h"
 
 #include "Abilities/BwayGameplayEffect_AlonaCooldowns.h"
+#include "AbilitySystem/Attributes/LyraCombatSet.h"
+#include "AbilitySystemComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayAbility_AlonaRadiance)
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayAlonaRadiance, Log, All);
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Ability_Alona_Radiance, "Ability.Alona.Radiance");
 
@@ -57,18 +61,42 @@ void UBwayGameplayAbility_AlonaRadiance::ActivateAbility(
 			LockedAlly = CachedCharacter;
 		}
 
+		float AttackStrength = 0.f;
+		float HealMultiplier = 0.f;
+		ResolvedHealPerTick = CalculateScaledHealPerTick(AttackStrength, HealMultiplier);
+		const float SafeTickInterval = FMath::Max(HealTickInterval, KINDA_SMALL_NUMBER);
+		RemainingHealTicks = FMath::Max(
+			1,
+			FMath::FloorToInt((ActiveDuration / SafeTickInterval) + KINDA_SMALL_NUMBER));
+
+		UE_LOG(
+			LogBwayAlonaRadiance,
+			Log,
+			TEXT("RadianceHeal: base=%.4f str=%.2f divisor=%.2f multiplier=%.4f cap=%.2f -> %.4f/tick (%d ticks over %.2fs)"),
+			HealPerTick,
+			AttackStrength,
+			StrengthDivisor,
+			HealMultiplier,
+			MaxHealMultiplier,
+			ResolvedHealPerTick,
+			RemainingHealTicks,
+			ActiveDuration);
+
 		ApplyHealTick();
 
-		if (UWorld* World = GetWorld())
+		if (RemainingHealTicks > 0)
 		{
-			World->GetTimerManager().ClearTimer(HealTickTimerHandle);
-			World->GetTimerManager().SetTimer(
-				HealTickTimerHandle,
-				this,
-				&UBwayGameplayAbility_AlonaRadiance::ApplyHealTick,
-				HealTickInterval,
-				true,
-				HealTickInterval);
+			if (UWorld* World = GetWorld())
+			{
+				World->GetTimerManager().ClearTimer(HealTickTimerHandle);
+				World->GetTimerManager().SetTimer(
+					HealTickTimerHandle,
+					this,
+					&UBwayGameplayAbility_AlonaRadiance::ApplyHealTick,
+					SafeTickInterval,
+					true,
+					SafeTickInterval);
+			}
 		}
 	}
 
@@ -151,14 +179,42 @@ ABwayCharacterWithAbilities* UBwayGameplayAbility_AlonaRadiance::FindClosestAlly
 	return BestAlly;
 }
 
+float UBwayGameplayAbility_AlonaRadiance::CalculateScaledHealPerTick(
+	float& OutAttackStrength,
+	float& OutHealMultiplier) const
+{
+	OutAttackStrength = 0.f;
+	if (const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
+		{
+			OutAttackStrength = CombatSet->GetBaseDamage();
+		}
+	}
+
+	const float SafeStrengthDivisor = FMath::Max(StrengthDivisor, KINDA_SMALL_NUMBER);
+	const float SafeMaxMultiplier = FMath::Max(0.f, MaxHealMultiplier);
+	OutHealMultiplier = FMath::Clamp(OutAttackStrength / SafeStrengthDivisor, 0.f, SafeMaxMultiplier);
+	return HealPerTick * OutHealMultiplier;
+}
+
 void UBwayGameplayAbility_AlonaRadiance::ApplyHealTick()
 {
-	if (!HasAuthority(&CurrentActivationInfo) || !IsValid(LockedAlly))
+	if (!HasAuthority(&CurrentActivationInfo) || !IsValid(LockedAlly) || RemainingHealTicks <= 0)
 	{
 		return;
 	}
 
-	ApplyHealToAlly(LockedAlly, HealPerTick);
+	ApplyHealToAlly(LockedAlly, ResolvedHealPerTick);
+	--RemainingHealTicks;
+
+	if (RemainingHealTicks <= 0)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().ClearTimer(HealTickTimerHandle);
+		}
+	}
 }
 
 void UBwayGameplayAbility_AlonaRadiance::EndAbility(
@@ -176,5 +232,7 @@ void UBwayGameplayAbility_AlonaRadiance::EndAbility(
 
 	LockedAlly = nullptr;
 	CachedCharacter = nullptr;
+	ResolvedHealPerTick = 0.f;
+	RemainingHealTicks = 0;
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

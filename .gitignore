@@ -73,3 +73,7 @@ DerivedDataCache/*
 
 # AI Scripts
 Scripts/*
+
+# AI Planning probe / setup artifacts (keep markdown plans tracked)
+AI_Planning/*.json
+AI_Planning/*.mjs

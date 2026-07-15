@@ -1274,7 +1274,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 |------|--------|-------|
 | **17** | **C++ done** | ForceHumanoid, SkipHeroSelection refactor, Hero= URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables — editor checklists open |
 | **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
-| **19** | **19a done; 19b/19c open** | Alona functional + listen-server PIE pass; [Alona_19a_Editor_Setup.md](./Alona_19a_Editor_Setup.md); Sun Shrine (19b) + parity (19c) next |
+| **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
 | **20** | **Open** | Korryn (`Hero_Morgan` / `Hexweaver` folder) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
@@ -1408,9 +1408,11 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 
 **19a status:** Functional kit + editor wiring landed; listen-server PIE pass confirmed (abilities fire, relic carrier gating, Argus regression).
 
+**19b status:** `ABwayAlonaSunShrineBuildable` + `Scripts/setup-alona-19b-sun-shrine.mjs` landed; Editor wire + listen-server place/heal/persist pass open.
+
 **Pass:** 19a–19c; **3/3** cold starts.
 
-**Editor checklist:** [Alona_19a_Editor_Setup.md](./Alona_19a_Editor_Setup.md) · [Alona_Implementation_Summary.md](./Alona_Implementation_Summary.md)
+**Editor checklist:** [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md) · [Alona_19a_Editor_Setup.md](./Alona_19a_Editor_Setup.md) · [Alona_Implementation_Summary.md](./Alona_Implementation_Summary.md)
 
 ---
 

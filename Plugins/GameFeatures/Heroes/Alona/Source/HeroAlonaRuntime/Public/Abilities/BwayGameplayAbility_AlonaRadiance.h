@@ -8,7 +8,7 @@ HEROALONARUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Alona_Radiance);
 
 /**
  * Alona Q — Radiance. Heal ally closest to reticule for ActiveDuration. CD 8s.
- * 19a uses a flat heal placeholder; STR/52 scaling lands in 19c.
+ * Sheet heal formula: BaseHealPerTick * clamp(AttackStrength / 52, 0, 1.75).
  */
 UCLASS()
 class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaRadiance : public UBwayGameplayAbility_Base
@@ -29,15 +29,23 @@ protected:
 	UFUNCTION()
 	void ApplyHealTick();
 
+	float CalculateScaledHealPerTick(float& OutAttackStrength, float& OutHealMultiplier) const;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.1"))
 	float ActiveDuration = 4.f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.05"))
 	float HealTickInterval = 1.f;
 
-	/** Flat placeholder heal per tick for 19a (parity scaling in 19c). */
+	/** Base heal before the sheet STR multiplier. With a one-second interval this is also base HP/s. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.0"))
 	float HealPerTick = 20.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.01"))
+	float StrengthDivisor = 52.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.0"))
+	float MaxHealMultiplier = 1.75f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Radiance", meta = (ClampMin = "0.0"))
 	float MaxTargetRange = 2500.f;
@@ -51,4 +59,6 @@ private:
 
 	FTimerHandle HealTickTimerHandle;
 	FTimerHandle EndAbilityTimerHandle;
+	float ResolvedHealPerTick = 0.f;
+	int32 RemainingHealTicks = 0;
 };

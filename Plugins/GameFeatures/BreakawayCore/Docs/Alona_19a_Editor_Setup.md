@@ -12,7 +12,7 @@ C++ landed in `HeroAlonaRuntime` (Alona combat kit). Complete these Editor steps
 |-------|-------------|--------|
 | **Common (all heroes)** | `DA_BW_AbilitySet_Humanoid` | Left Shift movement slide · RMB Request Relic · Confirm/Cancel placement |
 | **Per-hero** | `DA_BW_AbilitySet_Alona` | LMB Primary · F Sun's Grace · Q Radiance · E Sun Burst · R Blessing |
-| **Hero DA** | `DA_BW_HeroData_Alona` | Leave `BuildableDataAsset` empty until **19b** (Sun Shrine) |
+| **Hero DA** | `DA_BW_HeroData_Alona` | Leave `BuildableDataAsset` empty until **19b** (Sun Shrine). After 19b, re-running this script **preserves** buildable wiring |
 
 **Do not** put Request Relic or movement slide on the per-hero set. **Do not** grant PlaceBuildable in 19a.
 
@@ -111,7 +111,7 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&Hero=Alona&NumBots=7
 
 | Item | Step |
 |------|------|
-| Sun Shrine buildable | 19b |
+| Sun Shrine buildable | 19b — [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md) · `Scripts/setup-alona-19b-sun-shrine.mjs` |
 | Radiance STR/52 heal scaling + final parity spot-check | 19c |
 | In-match ability bar polish | 22 |
 

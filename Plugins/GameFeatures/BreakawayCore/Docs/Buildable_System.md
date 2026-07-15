@@ -2,7 +2,8 @@
 
 Persistent arena structures. **Vertical slice:** one buildable per hero, **once per round**, **free** (no gold). Gold spend is deferred to post-slice stat enhancers/items — see [Economy_Gold.md](./Economy_Gold.md).
 
-**Editor wiring (Argus):** [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md)
+**Editor wiring (Argus):** [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md)  
+**Editor wiring (Alona):** [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md)
 
 ## Core Types
 
@@ -10,6 +11,7 @@ Persistent arena structures. **Vertical slice:** one buildable per hero, **once 
 |------|------|
 | `ABuildableActor` | Base — build time, team, persistence flag |
 | `ABwaySiegeEngineBuildable` | Argus rolling barrel — buildable-only DPS, 10s roll |
+| `ABwayAlonaSunShrineBuildable` | Alona heal shrine — 750 HP, 35 HP/s ally aura, 5 m, non-stack |
 | `ATurretBase` | AI perception auto-target |
 | `ATrapBase` | Overlap trigger trap |
 | `UBwayBuildableDataAsset` | Class, cost (unused for slice), mesh, per-player cap |
@@ -60,8 +62,8 @@ Invalid confirm (red ghost) keeps preview active; player can reposition and retr
 
 | Hero (DisplayName) | Plugin / folder | Buildable |
 |--------------------|-----------------|-----------|
-| Argus | `Hero_Spartacus` / `Argus` | **Siege Engine** — 250 HP; 200 dmg/s vs buildables; 10s roll |
-| Alona | `Hero_Alona` | **Sun Shrine** — 750 HP, 35 HP/s, 5m |
+| Argus | `Hero_Spartacus` / `Argus` | **Siege Engine** — 250 HP; 200 dmg/s vs buildables; 10s roll · [18b](./Argus_18b_Editor_Setup.md) |
+| Alona | `Hero_Alona` | **Sun Shrine** — 750 HP, 35 HP/s, 5m, non-stack · [19b](./Alona_19b_Editor_Setup.md) |
 | Korryn | `Hero_Morgan` / `Hexweaver` | **Cursed Ward** — 600 HP, 50% slow, 6m |
 | Rawlins | `Hero_Rawlins` / `Gunslinger` | **Jail** — 450 HP, cage trap |
 
