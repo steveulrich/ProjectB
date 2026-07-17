@@ -2,6 +2,8 @@
 // Source: LyraCharacterMovementComponent_Slide.cpp
 #include "BwayCharacterMovementComponent.h"
 
+#include "AbilitySystemGlobals.h"
+#include "Attributes/BwayHeroAttributeSet.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
@@ -116,13 +118,31 @@ bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 // --- Speed and Braking Overrides ---
 float UBwayCharacterMovementComponent::GetMaxSpeed() const
 {
+	float BaseMaxSpeed = 0.f;
 	if (IsSliding())
 	{
 		float CurrentMaxSpeedFactor, SlopeAccelFactor, FrictionMultiplier;
 		GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, FrictionMultiplier);
-		return BaseSlideSpeed * CurrentMaxSpeedFactor;
+		BaseMaxSpeed = BaseSlideSpeed * CurrentMaxSpeedFactor;
 	}
-	return Super::GetMaxSpeed();
+	else
+	{
+		BaseMaxSpeed = Super::GetMaxSpeed();
+	}
+
+	float SpeedMultiplier = 1.f;
+	if (const AActor* OwnerActor = GetOwner())
+	{
+		if (const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerActor))
+		{
+			if (const UBwayHeroAttributeSet* HeroSet = ASC->GetSet<UBwayHeroAttributeSet>())
+			{
+				SpeedMultiplier = HeroSet->GetMoveSpeedMultiplier();
+			}
+		}
+	}
+
+	return BaseMaxSpeed * SpeedMultiplier;
 }
 
 float UBwayCharacterMovementComponent::GetMaxBrakingDeceleration() const
@@ -423,4 +443,36 @@ void UBwayCharacterMovementComponent::EndSlide()
 	{
 		CharacterOwner->UnCrouch(true);
 	}
+}
+
+void UBwayCharacterMovementComponent::BindAbilitySystem(UAbilitySystemComponent* InASC)
+{
+	UnbindAbilitySystem();
+
+	AbilitySystemComponent = InASC;
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	MoveSpeedMultiplierChangedHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+		UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute()).AddUObject(
+			this, &UBwayCharacterMovementComponent::HandleMoveSpeedMultiplierChanged);
+}
+
+void UBwayCharacterMovementComponent::UnbindAbilitySystem()
+{
+	if (AbilitySystemComponent && MoveSpeedMultiplierChangedHandle.IsValid())
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute()).Remove(MoveSpeedMultiplierChangedHandle);
+		MoveSpeedMultiplierChangedHandle.Reset();
+	}
+}
+
+void UBwayCharacterMovementComponent::HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData)
+{
+	// GetMaxSpeed() reads the attribute live; this callback exists so clients/server
+	// refresh velocity clamping immediately when slows apply/expire.
+	(void)ChangeData;
 }

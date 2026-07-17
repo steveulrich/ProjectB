@@ -36,6 +36,26 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 
 }
 
+void ABwayCharacterWithAbilities::OnAbilitySystemInitialized()
+{
+	Super::OnAbilitySystemInitialized();
+
+	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
+	{
+		MoveComp->BindAbilitySystem(GetAbilitySystemComponent());
+	}
+}
+
+void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
+{
+	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
+	{
+		MoveComp->UnbindAbilitySystem();
+	}
+
+	Super::OnAbilitySystemUninitialized();
+}
+
 void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

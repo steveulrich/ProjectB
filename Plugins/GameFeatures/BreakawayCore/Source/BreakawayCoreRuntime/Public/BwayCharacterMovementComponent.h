@@ -6,7 +6,8 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "InputAction.h" // Add this include
-#include "Gameplaytagcontainer.h"
+#include "GameplayTagContainer.h"
+#include "AbilitySystemComponent.h"
 #include "BwayCharacterMovementComponent.generated.h"
 
 class UAbilitySystemComponent;
@@ -189,6 +190,16 @@ protected:
 	/** Cached Ability System Component for tag checking. */
 	UPROPERTY(Transient)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	FDelegateHandle MoveSpeedMultiplierChangedHandle;
+
+	void HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData);
+
 	// -- END NEW SLIDE -- //
+
+public:
+	/** Bind ASC attribute change callbacks for MoveSpeedMultiplier (called from character ASC init). */
+	void BindAbilitySystem(UAbilitySystemComponent* InASC);
+	void UnbindAbilitySystem();
 
 };

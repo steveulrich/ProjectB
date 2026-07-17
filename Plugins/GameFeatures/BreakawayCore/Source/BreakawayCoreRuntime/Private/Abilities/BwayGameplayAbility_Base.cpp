@@ -5,6 +5,9 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
+#include "Attributes/BwayHeroAttributeSet.h"
+#include "BwayGameplayTags.h"
+#include "Combat/BwayDamageLibrary.h"
 #include "GameplayEffect.h"
 #include "GameplayEffectTypes.h"
 #include "System/LyraGameData.h"
@@ -33,6 +36,9 @@ UBwayGameplayAbility_Base::UBwayGameplayAbility_Base(const FObjectInitializer& O
 	{
 		ActivationBlockedTags.AddTag(RelicCarrierTag);
 	}
+
+	// Silence blocks combat abilities; Slide / RelicRequest inherit UBwayGameplayAbility directly.
+	ActivationBlockedTags.AddTag(BwayGameplayTags::State_Status_Silenced);
 }
 
 bool UBwayGameplayAbility_Base::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags, const FGameplayTagContainer* TargetTags, FGameplayTagContainer* OptionalRelevantTags) const
@@ -358,38 +364,11 @@ void UBwayGameplayAbility_Base::ApplyDamageToEnemy(ABwayCharacterWithAbilities* 
 	}
 
 	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
-	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy);
-	
-	if (!SourceASC || !TargetASC)
-	{
-		return;
-	}
+	AActor* Avatar = CurrentActorInfo && CurrentActorInfo->AvatarActor.IsValid()
+		? CurrentActorInfo->AvatarActor.Get()
+		: nullptr;
 
-	// Get damage gameplay effect from LyraGameData
-	const ULyraGameData& GameData = ULyraGameData::Get();
-	TSubclassOf<UGameplayEffect> DamageEffectClass = ULyraAssetManager::GetSubclass(GameData.DamageGameplayEffect_SetByCaller);
-	
-	if (!DamageEffectClass)
-	{
-		return;
-	}
-
-	// Use the ability's MakeEffectContext method which properly sets up the ability handle
-	FGameplayEffectContextHandle EffectContextHandle = MakeEffectContext(StoredSpecHandle, CurrentActorInfo);
-
-	// Apply damage effect with SetByCaller magnitude
-	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.0f, EffectContextHandle);
-	if (SpecHandle.IsValid())
-	{
-		FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
-		if (Spec)
-		{
-			// Set damage magnitude using SetByCaller tag from Lyra
-			Spec->SetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, DamageAmount);
-		}
-		
-		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-	}
+	UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, Enemy, DamageAmount, Avatar, Avatar);
 }
 
 void UBwayGameplayAbility_Base::ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, float HealAmount)
@@ -431,7 +410,11 @@ float UBwayGameplayAbility_Base::CalculateScaledDamage(float AbilityBaseDamage, 
 	float AttackStrength = 0.f;
 	if (const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
 	{
-		if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
+		if (const UBwayHeroAttributeSet* HeroSet = ASC->GetSet<UBwayHeroAttributeSet>())
+		{
+			AttackStrength = HeroSet->GetAttackStrength();
+		}
+		else if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
 		{
 			AttackStrength = CombatSet->GetBaseDamage();
 		}

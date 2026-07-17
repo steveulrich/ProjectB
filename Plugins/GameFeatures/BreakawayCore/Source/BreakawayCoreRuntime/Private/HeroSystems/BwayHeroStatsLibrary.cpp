@@ -98,6 +98,8 @@ void UBwayHeroStatsLibrary::ApplyHeroStatsFromDataAsset(ABwayCharacterWithAbilit
 		HeroSet->SetAttackStrength(BaseDamage);
 		HeroSet->SetArmor(Stats.Armor);
 		HeroSet->SetMoveSpeedRating(Stats.MoveSpeed);
+		HeroSet->SetMoveSpeedMultiplier(1.f);
+		HeroSet->SetIncomingDamageMultiplier(1.f);
 	}
 
 	if (UBwayCharacterMovementComponent* MoveComp = Character->GetBwayCharacterMovement())

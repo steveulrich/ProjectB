@@ -1,4 +1,4 @@
-#include "Projectiles/BwayAlonaPrimaryProjectile.h"
+#include "Projectiles/BwayKorrynPrimaryProjectile.h"
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
@@ -7,11 +7,12 @@
 #include "Combat/BwayDamageLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameplayEffect.h"
 #include "Teams/LyraTeamSubsystem.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(BwayAlonaPrimaryProjectile)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(BwayKorrynPrimaryProjectile)
 
-ABwayAlonaPrimaryProjectile::ABwayAlonaPrimaryProjectile()
+ABwayKorrynPrimaryProjectile::ABwayKorrynPrimaryProjectile()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
@@ -32,61 +33,73 @@ ABwayAlonaPrimaryProjectile::ABwayAlonaPrimaryProjectile()
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	ProjectileMovement->UpdatedComponent = CollisionSphere;
-	ProjectileMovement->InitialSpeed = 3200.f;
-	ProjectileMovement->MaxSpeed = 3200.f;
+	ProjectileMovement->InitialSpeed = 2800.f;
+	ProjectileMovement->MaxSpeed = 2800.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = false;
 	ProjectileMovement->ProjectileGravityScale = 0.f;
-	ProjectileMovement->bSweepCollision = true;
 }
 
-void ABwayAlonaPrimaryProjectile::ConfigureProjectile(
-	ABwayCharacterWithAbilities* InInstigatorCharacter,
-	float InDamageAmount,
+void ABwayKorrynPrimaryProjectile::ConfigureProjectile(
+	ABwayCharacterWithAbilities* InInstigator,
+	float InDamage,
 	float InSpeed,
-	float InLifeSpan)
+	float InLifeSpan,
+	TSubclassOf<UGameplayEffect> InArmorShredEffectClass)
 {
-	InstigatorCharacter = InInstigatorCharacter;
-	DamageAmount = InDamageAmount;
+	InstigatorCharacter = InInstigator;
+	DamageAmount = InDamage;
+	ArmorShredEffectClass = InArmorShredEffectClass;
 
-	if (InInstigatorCharacter)
+	if (InInstigator)
 	{
-		SetInstigator(InInstigatorCharacter);
-		SetOwner(InInstigatorCharacter);
+		SetOwner(InInstigator);
+		SetInstigator(InInstigator);
 	}
 
 	if (ProjectileMovement)
 	{
 		ProjectileMovement->InitialSpeed = InSpeed;
 		ProjectileMovement->MaxSpeed = InSpeed;
-		ProjectileMovement->Velocity = GetActorForwardVector() * InSpeed;
 	}
 
 	SetLifeSpan(InLifeSpan);
 }
 
-void ABwayAlonaPrimaryProjectile::BeginPlay()
+void ABwayKorrynPrimaryProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (CollisionSphere)
 	{
-		CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABwayAlonaPrimaryProjectile::OnSphereBeginOverlap);
-	}
-
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->OnProjectileStop.AddDynamic(this, &ABwayAlonaPrimaryProjectile::OnProjectileStop);
+		CollisionSphere->OnComponentHit.AddDynamic(this, &ABwayKorrynPrimaryProjectile::OnSphereHit);
+		CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABwayKorrynPrimaryProjectile::OnSphereBeginOverlap);
+		if (InstigatorCharacter)
+		{
+			CollisionSphere->IgnoreActorWhenMoving(InstigatorCharacter, true);
+		}
 	}
 }
 
-void ABwayAlonaPrimaryProjectile::OnProjectileStop(const FHitResult& ImpactResult)
+void ABwayKorrynPrimaryProjectile::OnSphereHit(
+	UPrimitiveComponent* HitComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit)
 {
-	TryApplyDamageToActor(ImpactResult.GetActor());
-	ExpireProjectile();
+	(void)HitComp;
+	(void)OtherComp;
+	(void)NormalImpulse;
+
+	TryApplyHitToActor(OtherActor ? OtherActor : Hit.GetActor());
+	if (bHasAppliedHit || (OtherActor && OtherActor != InstigatorCharacter))
+	{
+		ExpireProjectile();
+	}
 }
 
-void ABwayAlonaPrimaryProjectile::OnSphereBeginOverlap(
+void ABwayKorrynPrimaryProjectile::OnSphereBeginOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,
@@ -94,21 +107,22 @@ void ABwayAlonaPrimaryProjectile::OnSphereBeginOverlap(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	if (!OtherActor || OtherActor == this || OtherActor == InstigatorCharacter || OtherActor == GetOwner())
-	{
-		return;
-	}
+	(void)OverlappedComponent;
+	(void)OtherComp;
+	(void)OtherBodyIndex;
+	(void)bFromSweep;
+	(void)SweepResult;
 
-	TryApplyDamageToActor(OtherActor);
-	if (bHasAppliedDamage)
+	TryApplyHitToActor(OtherActor);
+	if (bHasAppliedHit)
 	{
 		ExpireProjectile();
 	}
 }
 
-void ABwayAlonaPrimaryProjectile::TryApplyDamageToActor(AActor* HitActor)
+void ABwayKorrynPrimaryProjectile::TryApplyHitToActor(AActor* HitActor)
 {
-	if (!HasAuthority() || bHasAppliedDamage || !HitActor || HitActor == InstigatorCharacter)
+	if (!HasAuthority() || bHasAppliedHit || !HitActor || HitActor == InstigatorCharacter)
 	{
 		return;
 	}
@@ -132,19 +146,37 @@ void ABwayAlonaPrimaryProjectile::TryApplyDamageToActor(AActor* HitActor)
 		}
 	}
 
-	if (!bIsEnemy || DamageAmount <= 0.f)
+	if (!bIsEnemy)
 	{
 		return;
 	}
 
 	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
-	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter))
+	if (DamageAmount > 0.f)
 	{
-		bHasAppliedDamage = true;
+		UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter);
 	}
+
+	if (ArmorShredEffectClass && SourceASC)
+	{
+		if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitCharacter))
+		{
+			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
+			Context.AddSourceObject(this);
+			Context.AddInstigator(InstigatorCharacter, this);
+
+			const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(ArmorShredEffectClass, 1.f, Context);
+			if (SpecHandle.IsValid())
+			{
+				TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+			}
+		}
+	}
+
+	bHasAppliedHit = true;
 }
 
-void ABwayAlonaPrimaryProjectile::ExpireProjectile()
+void ABwayKorrynPrimaryProjectile::ExpireProjectile()
 {
 	if (HasAuthority())
 	{

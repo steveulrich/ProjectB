@@ -1276,7 +1276,8 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
 | **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
 | **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
-| **20** | **Open** | Korryn (`Hero_Morgan` / `Hexweaver` folder) |
+| **20** | **20a C++ landed; Editor wiring + PIE open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) |
+| **20.5** | **Open** | Retrofit Argus + Alona kit config DAs (match Korryn `UBwayKorrynKitConfig` pattern) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
 
@@ -1513,15 +1514,43 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 
 **DisplayName:** Korryn (official). Plugin folder **`Hexweaver`** unchanged until rename pass.
 
+**20a status:** C++ kit + shared status/damage/movement support landed. Editor wiring via `Scripts/setup-korryn-20a-functional.mjs`. PIE + 3/3 cold starts still required before marking 20a passed. See [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md).
+
 | Slot | Ability | Buildable |
 |------|---------|-----------|
 | LMB | Primary + armor shred | |
-| RMB | Flock | |
+| RMB→**F** | Flock | |
 | Q | Burden of Sin | |
 | E | Circle of Spite | |
-| R | Aura of Silence | **Cursed Ward** — 600 HP, 50% slow, 6m |
+| R | Aura of Silence | **Cursed Ward** (20b) — 600 HP, 50% slow, 6m |
 
 **Pass:** 20a–20c; **3/3** cold starts.
+
+---
+
+### Step 20.5 — Hero kit config retrofit (Argus + Alona)
+
+**Goal:** Give Argus and Alona the same **one DA per hero** kit-tuning pattern introduced for Korryn in 20a (`UBwayKorrynKitConfig` + soft ref from abilities).
+
+| Hero | Runtime module | Kit config class (new) | Asset path (suggested) |
+|------|----------------|------------------------|------------------------|
+| Argus | `BreakawayCoreRuntime` (or existing Argus kit location) | `UBwayArgusKitConfig` | `/BreakawayCore/Characters/Heroes/Argus/DA_BW_ArgusKitConfig` (or Spartacus mount if content lives there) |
+| Alona | `HeroAlonaRuntime` | `UBwayAlonaKitConfig` | `/Hero_Alona/Kit/DA_BW_AlonaKitConfig` |
+| Korryn | `HeroMorganRuntime` | `UBwayKorrynKitConfig` (already exists) | `/Hero_Morgan/Kit/DA_BW_KorrynKitConfig` |
+
+**Scope:**
+- Add native primary data asset classes with sheet-seeded defaults (damage, scaling, CDs, durations, radii, knockback, heal ticks, etc.).
+- Wire `TSoftObjectPtr` kit config on each hero’s combat abilities; resolve on activate (overlay C++ defaults when DA loads).
+- Register Asset Manager scans with `AssetBaseClass=/Script/Engine.PrimaryDataAsset` + dedicated directories (same rule as Korryn / MatchFlow).
+- Idempotent setup/probe scripts (or extend existing 18a/19a scripts) to create/seed DAs and soft-bind paths.
+- Do **not** retune parity numbers beyond current sheet seeds — **18c / 19c / 20c** remain the formal parity audits.
+- Do **not** change input layout, grants, or buildables.
+
+**Pass:** Argus + Alona abilities read from kit DAs in PIE; Korryn still works; probe shows three kit assets; **3/3** cold starts; no gameplay regressions vs pre-20.5.
+
+**Order:** After **20c** (or after 20a if 20b/20c deferred and kits already need a shared pattern), **before Step 21a** (Rawlins should ship with a kit config from day one).
+
+**Git discipline:** `core-loop: step 20.5 passed (argus+alona kit configs)`
 
 ---
 
@@ -1571,6 +1600,7 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 | **19** | Alona | Sheet kit + Sun Shrine + parity |
 | **19.5** | Match HUD gameplay strip | Six stable ability slots; relic swap; buildable reset; live gold; 4v4 portrait status |
 | **20** | Korryn | Sheet kit + Cursed Ward + parity |
+| **20.5** | Kit configs | Retrofit Argus + Alona kit DAs (Korryn pattern); Rawlins ships with one in 21a |
 | **21** | Rawlins | Sheet kit + Jail + parity |
 | **22** | Capstone | Fumble, staging E2E, four-hero match |
 
@@ -1602,7 +1632,7 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 
 ## Section 3 agent prompts
 
-Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a → b → c** within Steps 18–21. Run **Step 19.5 after 19c and before 20a**. Each prompt assumes [Section 3 principles](#section-3-principles) and **`Breakaway_Hero_Stats_Sheet.md`** as parity source of truth.
+Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a → b → c** within Steps 18–21. Run **Step 19.5 after 19c and before 20a**. Run **Step 20.5 after 20c (or after 20a if deferring 20b/c) and before 21a**. Each prompt assumes [Section 3 principles](#section-3-principles) and **`Breakaway_Hero_Stats_Sheet.md`** as parity source of truth.
 
 | Prompt | Step |
 |--------|------|
@@ -1611,6 +1641,7 @@ Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a
 | [19a → 19c](#prompt-step-19a--alona-functional) | Alona |
 | [Step 19.5](#prompt-step-195--match-hud-gameplay-strip) | Ability bar + gold + portrait parity stub |
 | [20a → 20c](#prompt-step-20a--korryn-functional) | Korryn |
+| [Step 20.5](#prompt-step-205--hero-kit-config-retrofit) | Argus + Alona kit config DAs |
 | [21a → 21c](#prompt-step-21a--rawlins-functional) | Rawlins |
 | [Step 22](#prompt-step-22--section-3-capstone) | Capstone |
 
@@ -1859,6 +1890,26 @@ Tune to stats sheet: Burden 33 dmg/2s 50% slow; Circle 15% slow, 35% damage amp,
 Pass: sheet spot-check; 3/3 cold starts; core-loop: step 20c passed (Korryn parity).
 ```
 
+### Prompt: Step 20.5 — Hero kit config retrofit
+
+```
+Implement Core Loop Section 3 Step 20.5 (Argus + Alona kit config retrofit) in ProjectB.
+
+Read first:
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md (Step 20.5)
+- Plugins/GameFeatures/Heroes/Morgan/Source/HeroMorganRuntime/Public/BwayKorrynKitConfig.h (canonical pattern)
+- AI_Planning/Breakaway_Hero_Stats_Sheet.md (Argus + Alona sections)
+
+Goals:
+1. Add UBwayArgusKitConfig and UBwayAlonaKitConfig primary data assets (Engine/DataAsset.h include; GetPrimaryAssetId override).
+2. Soft-ref kit config from each hero's combat abilities; ResolveKitConfig overlays sheet values on activate (keep C++ defaults as fallback).
+3. DefaultGame.ini scans: AssetBaseClass=/Script/Engine.PrimaryDataAsset; dedicated directories (no GF class paths).
+4. Idempotent setup/probe scripts to create/seed DAs; do not change grants, inputs, or buildables.
+5. Seed from current sheet / existing ability defaults — this is not a parity retune (18c/19c remain authority for feel).
+
+Pass: Argus + Alona read kit DAs in PIE; Korryn unchanged; 3/3 cold starts; core-loop: step 20.5 passed (argus+alona kit configs).
+```
+
 ### Prompt: Step 21a — Rawlins functional
 
 ```
@@ -1873,6 +1924,8 @@ Implement functional kit:
 - Q Power Shot (8s knockback)
 - E Slide Shot (18s launch)
 - R Blazing Barrage (25s 12-shot stationary)
+
+Include a UBwayRawlinsKitConfig primary data asset from day one (same pattern as Korryn / Step 20.5).
 
 Base stats: HP 400, Armor 0, Atk 60, Speed 10.5.
 

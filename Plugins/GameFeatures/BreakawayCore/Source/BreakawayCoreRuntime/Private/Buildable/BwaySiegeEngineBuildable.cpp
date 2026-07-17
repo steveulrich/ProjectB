@@ -3,14 +3,12 @@
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "AbilitySystemGlobals.h"
 #include "BwayGameState.h"
+#include "Combat/BwayDamageLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
-#include "LyraGameplayTags.h"
 #include "Net/UnrealNetwork.h"
-#include "System/LyraAssetManager.h"
-#include "System/LyraGameData.h"
 #include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwaySiegeEngineBuildable)
@@ -164,36 +162,7 @@ void ABwaySiegeEngineBuildable::ApplyDamageToBuildable(ABuildableActor* TargetBu
 	}
 
 	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponent();
-	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(TargetBuildable);
-	if (!SourceASC || !TargetASC)
-	{
-		return;
-	}
-
-	const ULyraGameData& GameData = ULyraGameData::Get();
-	const TSubclassOf<UGameplayEffect> DamageEffectClass = ULyraAssetManager::GetSubclass(GameData.DamageGameplayEffect_SetByCaller);
-	if (!DamageEffectClass)
-	{
-		return;
-	}
-
-	FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
-	EffectContext.AddSourceObject(this);
-	EffectContext.AddInstigator(GetOwner(), this);
-
-	const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass, 1.f, EffectContext);
-	if (!SpecHandle.IsValid())
-	{
-		return;
-	}
-
-	FGameplayEffectSpec* Spec = SpecHandle.Data.Get();
-	if (Spec)
-	{
-		Spec->SetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, DamageAmount);
-	}
-
-	TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, TargetBuildable, DamageAmount, this, GetOwner());
 }
 
 void ABwaySiegeEngineBuildable::ApplyDamageToOverlappingEnemyBuildables(float DeltaTime)

@@ -74,4 +74,7 @@ protected:
 
 	/** Apply visual-only hero data (mesh/anim). Called on both server and clients. */
 	void ApplyHeroVisuals(const UBwayHeroDataAsset* HeroData);
+
+	virtual void OnAbilitySystemInitialized() override;
+	virtual void OnAbilitySystemUninitialized() override;
 };
