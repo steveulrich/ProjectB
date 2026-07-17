@@ -85,10 +85,10 @@ void ABwayPlayerState::OnRep_HasRelic()
 		ApplyRelicCarrierTag(bHasRelic, EGameplayTagReplicationState::None);
 	}
 
+	OnRelicPossessionChanged.Broadcast(bHasRelic);
+
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s now %s the relic"), 
 		*GetName(), bHasRelic ? TEXT("has") : TEXT("does not have"));
-	
-	// Blueprint events can bind here to update UI or player effects
 }
 
 void ABwayPlayerState::ServerSetHasCalledForRelic_Implementation(bool bNewStatus)
@@ -216,6 +216,7 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, Interceptions);
 	DOREPLIFETIME(ABwayPlayerState, BuildablesDestroyed);
 	DOREPLIFETIME(ABwayPlayerState, LastRoundStats);
+	DOREPLIFETIME_CONDITION(ABwayPlayerState, bHasPlacedBuildableThisRound, COND_OwnerOnly);
 }
 
 void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
@@ -332,12 +333,14 @@ FBwayPlayerMatchStats ABwayPlayerState::BuildCurrentStatSnapshot() const
 
 void ABwayPlayerState::MarkBuildablePlacedThisRound()
 {
-	if (!HasAuthority())
+	if (!HasAuthority() || bHasPlacedBuildableThisRound)
 	{
 		return;
 	}
 
 	bHasPlacedBuildableThisRound = true;
+	OnRep_HasPlacedBuildableThisRound();
+	ForceNetUpdate();
 }
 
 void ABwayPlayerState::BeginRoundStatTracking()
@@ -349,7 +352,12 @@ void ABwayPlayerState::BeginRoundStatTracking()
 
 	RoundStartStatsBaseline = BuildCurrentStatSnapshot();
 	GoldAtRoundStart = GetCurrentGoldTotal();
-	bHasPlacedBuildableThisRound = false;
+	if (bHasPlacedBuildableThisRound)
+	{
+		bHasPlacedBuildableThisRound = false;
+		OnRep_HasPlacedBuildableThisRound();
+		ForceNetUpdate();
+	}
 	LastRoundStats.Reset();
 	OnRep_LastRoundStats();
 
@@ -381,6 +389,11 @@ void ABwayPlayerState::FinalizeRoundStats()
 void ABwayPlayerState::OnRep_MatchStats()
 {
 	OnMatchStatsChanged.Broadcast();
+}
+
+void ABwayPlayerState::OnRep_HasPlacedBuildableThisRound()
+{
+	OnBuildablePlacedThisRoundChanged.Broadcast(bHasPlacedBuildableThisRound);
 }
 
 void ABwayPlayerState::OnRep_LastRoundStats()

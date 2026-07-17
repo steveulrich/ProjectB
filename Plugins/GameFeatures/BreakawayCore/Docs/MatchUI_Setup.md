@@ -32,7 +32,8 @@ Full step checklists: [CoreLoop_Implementation_Plan.md](./CoreLoop_Implementatio
 | `HUD.Slot.TeamScore` | `W_BW_CaptureTheRelic_ScoreWidget` |
 | `HUD.Slot.ModeStatus` | `W_BW_RelicStatusWidget` |
 | `HUD.Slot.Health` | `W_BW_HealthWidget` (Step 14) |
-| `HUD.Slot.TeamPortraits` | `W_BW_TeamPortraitsWidget` (Step 14) |
+| `HUD.Slot.TeamPortraits.Friendly` | `W_BW_TeamPortraitsWidget` (single-team row, left) |
+| `HUD.Slot.TeamPortraits.Enemy` | `W_BW_TeamPortraitsWidget_Enemy` (single-team row, right) |
 
 **Reference widgets to inspect (do not modify):**
 
@@ -77,9 +78,9 @@ On the same **Add Widgets** action, add a second **Widgets** row:
 
 Save the action set.
 
-### Step 14 — add health + portrait rows
+### Step 14 / 19.5 — health + portrait rows
 
-On the same **Add Widgets** action, add third and fourth **Widgets** rows:
+On the same **Add Widgets** action:
 
 | Property | Value |
 |----------|--------|
@@ -89,9 +90,16 @@ On the same **Add Widgets** action, add third and fourth **Widgets** rows:
 | Property | Value |
 |----------|--------|
 | **Widget Class** | `W_BW_TeamPortraitsWidget` |
-| **Slot ID** | `HUD.Slot.TeamPortraits` |
+| **Slot ID** | `HUD.Slot.TeamPortraits.Friendly` |
 
-Requires **`WBP_BW_MatchHUDLayout`** extension points — see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md) or run `Scripts/pivot-hud-to-slots.mjs`.
+| Property | Value |
+|----------|--------|
+| **Widget Class** | `W_BW_TeamPortraitsWidget_Enemy` |
+| **Slot ID** | `HUD.Slot.TeamPortraits.Enemy` |
+
+**Remove** any legacy row with Slot ID `HUD.Slot.TeamPortraits` (no `.Friendly`/`.Enemy`) — that tag on both layout extension points doubles the dual-team widget.
+
+Requires **`WBP_BW_MatchHUDLayout`** extension points — see [CoreHUD_Layout_Setup.md](./CoreHUD_Layout_Setup.md).
 
 ---
 

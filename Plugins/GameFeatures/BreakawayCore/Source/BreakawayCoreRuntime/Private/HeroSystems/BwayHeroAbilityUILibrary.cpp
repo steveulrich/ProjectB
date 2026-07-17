@@ -162,28 +162,38 @@ TArray<FAbilityDisplayInfo> UBwayHeroAbilityUILibrary::ResolveAbilityBarFromASC(
 
 	for (const FGameplayTag& SlotTag : SlotTags)
 	{
-		if (!SlotTag.IsValid())
+		TSubclassOf<ULyraGameplayAbility> AbilityClass;
+		if (!FindGrantedAbilityForInputTagOnASC(SlotTag, AbilitySystemComponent, AbilityClass))
 		{
 			continue;
 		}
 
-		const FGameplayAbilitySpec* MatchingSpec = nullptr;
-		for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
-		{
-			if (Spec.GetDynamicSpecSourceTags().HasTagExact(SlotTag))
-			{
-				MatchingSpec = &Spec;
-				break;
-			}
-		}
-
-		if (!MatchingSpec || !MatchingSpec->Ability)
-		{
-			continue;
-		}
-
-		ResolvedInfos.Add(MakeDisplayInfoFromAbility(MatchingSpec->Ability->GetClass(), SlotTag));
+		ResolvedInfos.Add(MakeDisplayInfoFromAbility(AbilityClass, SlotTag));
 	}
 
 	return ResolvedInfos;
+}
+
+bool UBwayHeroAbilityUILibrary::FindGrantedAbilityForInputTagOnASC(
+	const FGameplayTag InputTag,
+	const UAbilitySystemComponent* AbilitySystemComponent,
+	TSubclassOf<ULyraGameplayAbility>& OutAbilityClass)
+{
+	OutAbilityClass = nullptr;
+
+	if (!AbilitySystemComponent || !InputTag.IsValid())
+	{
+		return false;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
+	{
+		if (Spec.Ability && Spec.GetDynamicSpecSourceTags().HasTagExact(InputTag))
+		{
+			OutAbilityClass = Spec.Ability->GetClass();
+			return true;
+		}
+	}
+
+	return false;
 }

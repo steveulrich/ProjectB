@@ -8,6 +8,8 @@
 
 class UTexture2D;
 class UAbilitySystemComponent;
+class UImage;
+class UTextBlock;
 struct FOnAttributeChangeData;
 
 /**
@@ -18,7 +20,7 @@ struct FOnAttributeChangeData;
  * 
  * Designed to be extended in Blueprint for visual customization.
  */
-UCLASS(Abstract, Blueprintable, meta = (DisableNativeTick))
+UCLASS(Abstract, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayCurrencyDisplayWidget : public UCommonUserWidget
 {
 	GENERATED_BODY()
@@ -58,8 +60,11 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	void HandleCurrentGoldChanged(const FOnAttributeChangeData& ChangeData);
+	void TryBindToCurrentGold();
+	void UnbindFromCurrentGold();
 
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 
@@ -98,9 +103,21 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Currency Display")
 	bool bPlayerCanAfford = true;
 
+	/** Optional direct bindings for display-only match widgets. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Currency Display|Widgets")
+	TObjectPtr<UTextBlock> Text_Amount;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Currency Display|Widgets")
+	TObjectPtr<UImage> Image_CurrencyIcon;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Currency Display", meta = (ClampMin = "0.05"))
+	float BindingRetryInterval = 0.25f;
+
 	FDelegateHandle CurrentGoldChangedHandle;
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UAbilitySystemComponent> BoundAbilitySystemComponent;
+
+	float TimeSinceLastBindingAttempt = 0.0f;
 };
 

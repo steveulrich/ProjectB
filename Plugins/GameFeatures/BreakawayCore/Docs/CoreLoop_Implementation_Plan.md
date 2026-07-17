@@ -791,7 +791,7 @@ L_BW_DevMap?Experience=B_BW_Experience_Dev&SkipHeroSelection=1&NumBots=7&PointsT
 
 No production HUD in Section 1. Add widgets **one at a time** to `B_BW_Experience_Dev`; same bulletproof bar as Section 1 (**3/3 cold-start PIE**, **Listen Server** from Step 12).
 
-Reference layouts (Breakaway target): top-center **timer + team scores + round-win pips**; **team portrait rows** (4v4); center **relic/carrier status**; bottom **health** (ability bar stubbed until Section 3); post-match **VICTORY/DEFEAT** stats table with **Return to Lobby**.
+Reference layouts (Breakaway target): top-center **timer + team scores + round-win pips**; **team portrait rows** (4v4); center **relic/carrier status**; bottom **health**. The in-match **ability bar + gold counter** and portrait status polish are deferred to **Section 3 Step 19.5**; post-match uses a **VICTORY/DEFEAT** stats table with **Return to Lobby**.
 
 ---
 
@@ -1275,6 +1275,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **17** | **C++ done** | ForceHumanoid, SkipHeroSelection refactor, Hero= URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables — editor checklists open |
 | **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
 | **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
+| **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
 | **20** | **Open** | Korryn (`Hero_Morgan` / `Hexweaver` folder) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
@@ -1416,6 +1417,98 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 
 ---
 
+### Step 19.5 — Match HUD gameplay strip (ability bar, gold, portraits)
+
+**Status:** **Passed** (Jul 2026).
+
+**Goal:** Add the first gameplay-aware HUD pass now that Argus and Alona have working kits. Keep the existing Lyra layout + slot-injection architecture; use simple core-owned visuals until final textures are available.
+
+**Prerequisites:** Argus and Alona hero ability/buildable grants are wired on `B_BW_Experience_Dev`; Steps 12–16 HUD slots remain functional. Gameplay parity tuning may continue independently, but every visible ability must have stable display metadata or an explicit placeholder.
+
+#### Architecture
+
+| Concern | Owner |
+|---------|-------|
+| **Layout / injection** | `WBP_BW_MatchHUDLayout` + `EAS_BW_CaptureTheRelic`; `HUD.Slot.AbilityBar`, `HUD.Slot.Gold`, `HUD.Slot.TeamPortraits.Friendly` / `.Enemy` (no monolithic `UBwayCoreHUDWidget`) |
+| **Ability bar** | Non-interactive `UBwayAbilityBarHUDWidget` + match slot widget/view model; reuse `UBwayHeroAbilityUILibrary` and ability CDO `DisplayData` |
+| **Keybind labels** | Local `ULyraInputConfig` → active `UInputAction` → `UEnhancedInputLocalPlayerSubsystem::QueryKeysMappedToAction`; refresh when control mappings rebuild |
+| **Relic mode** | Replicated `Gameplay.State.RelicCarrier` on the local PlayerState ASC + an explicit, data-driven hero-to-relic slot mapping |
+| **Buildable state** | `ABwayPlayerState::bHasPlacedBuildableThisRound`, replicated owner-only with an `OnRep`/delegate; server remains authoritative |
+| **Gold** | Existing `UBwayCurrencyDisplayWidget` bound to `UBwayGoldAttributeSet::CurrentGold` |
+| **Portraits** | Single-team `UBwayTeamPortraitsHUDWidget` per side (`DisplaySlotIndex` 0/1) spawning four `UBwayTeamPortraitSlotWidget` children; local team remains display-left |
+
+#### Ability bar contract
+
+The bar always owns **six stable positions**. Resolution must preserve an empty/disabled entry instead of returning a sparse array that shifts later slots.
+
+| Position | Hero input tag | Expected key |
+|----------|----------------|--------------|
+| 0 | `InputTag.Ability.Buildable` | 1 |
+| 1 | `InputTag.Ability.Primary` | LMB |
+| 2 | `InputTag.Ability.Ability4` | F |
+| 3 | `InputTag.Ability.Ability1` | Q |
+| 4 | `InputTag.Ability.Ability2` | E |
+| 5 | `InputTag.Ability.Ability3` | R |
+
+- **Hero mode:** show the selected hero's buildable + five combat entries from live ASC grants, with CDO `DisplayData` and simple fallback visuals.
+- **Relic mode:** keep position 0 as the buildable; replace positions 1–5 with relic entries mapped to the real `InputTag.Relic.*` grants and their current keys.
+- Audit `AS_BW_BallAbilities`, `DA_BW_InputData_Humanoid`, and `IMC_BW_RelicAbilities` before authoring the mapping. If the current relic kit has fewer than five real actions, show an explicit disabled placeholder; do **not** invent a gameplay ability for UI symmetry.
+- Refresh after relic grant/removal without briefly collapsing or reordering the bar. Cache/configured fallback presentation may bridge ASC replication ordering.
+- A successful server-confirmed buildable spawn greys position 0 for the rest of that round. Entering preview, invalid confirm, and cancel do not consume it. `BeginRoundStatTracking` restores the slot at the next round start.
+- Labels show the player's **current** Enhanced Input mapping, not hardcoded `"1"`, `"F"`, `"Q"`, `"E"`, or `"R"` strings.
+
+#### Gold contract
+
+- Add a compact `W_BW_GoldWidget` in its own `HUD.Slot.Gold` extension point near the health/ability strip.
+- Reuse `UBwayCurrencyDisplayWidget` attribute binding; add optional bound amount/icon widgets so the Blueprint owns layout and styling only.
+- Show the initial replicated balance and update for passive income, kill awards, and team goal awards. Gold persists through death and round transitions because the ASC lives on PlayerState.
+- No affordability or spending behavior in this step.
+
+#### Portrait contract
+
+- Keep four stable occupied/empty positions per side. Display slot 0 is always friendly for an assigned local player; display slot 1 is enemy. Spectators retain authoritative team order.
+- Assign occupied slots deterministically from replicated player identity and preserve assignments across refreshes; do not directly expose mutable `TeamMembers` insertion order as the visual order.
+- Compose each entry from a team-colored frame, inner hero portrait (or core placeholder), death overlay/greying, and relic-carrier badge.
+- Determine remote death state from replicated Lyra death state/ASC tags rather than `GetOwningController()`; clear the overlay after respawn.
+- Refresh on roster, selected-hero, death-state, relic-state, and round changes. A low-rate fallback poll is acceptable, but a two-second poll must not be the only path for combat state.
+
+#### Substeps
+
+| ID | Tag | Task |
+|----|-----|------|
+| **19.5-0** | [Audit] | Confirm live hero/relic grants, input tags/actions, current EAS rows, and `WBP_BW_MatchHUDLayout` extension points | Done |
+| **19.5-1** | [C++] | Fixed six-slot view model + `UBwayAbilityBarHUDWidget`/match slot widget; preserve empty slots | Done |
+| **19.5-2** | [C++] | Live Enhanced Input key labels and mapping-rebuild refresh | Done |
+| **19.5-3** | [C++] | Owner-only replicated buildable-used state + UI delegate; relic-carrier mode switching | Done |
+| **19.5-4** | [C++/UMG] | Match-facing bound contract for `UBwayCurrencyDisplayWidget`; compact gold widget | Done |
+| **19.5-5** | [C++/UMG] | Single-team Friendly/Enemy rows + runtime portrait slots; death/relic badge | Done |
+| **19.5-6** | [Editor/script] | Add tags, layout extension points, EAS rows, placeholder visuals, and idempotent `setup-step19-5-match-hud.mjs` | Done |
+| **19.5-7** | [PIE] | Argus + Alona pass checklist, real client check, and Steps 12–16 regression | Done |
+
+#### Pass checklist
+
+- [x] Ability bar is ordered **1, LMB, F, Q, E, R** for both Argus and Alona; missing metadata uses an explicit placeholder without shifting slots
+- [x] Rebinding a displayed action updates its key label after Enhanced Input rebuilds mappings
+- [x] Relic pickup replaces all five combat entries with mapped relic entries; buildable remains; pass/drop/throw or other loss restores hero entries
+- [x] Confirmed buildable placement greys only position 0; cancel/invalid placement does not; next round removes the grey state on host and client
+- [x] Gold shows the initial balance and updates from passive, kill, and goal awards across death/round transitions
+- [x] Portraits show stable 4v4 friendly-left/enemy-right rows, team frames, hero/placeholder image, death greying, and the current carrier badge
+- [x] Carrier badge transfers on pass and clears on throw/drop; dead portrait restores after respawn
+- [x] One-player Listen Server: `Hero=Argus&NumBots=7` and `Hero=Alona&NumBots=7`
+- [x] Two-player Listen Server client check (six bots for 4v4): local-team-left remap and all replicated HUD states correct on the client
+- [x] **3/3** cold starts; score, relic-status, health, PostRound, and PostMatch widgets still pass
+
+#### Explicit non-goals (Step 19.5)
+
+- Live minimap, match-event toast, shop prompt, item/stat-enhancer shop, or gold spending
+- Imported final textures, final animation/audio polish, radial/numeric cooldown presentation, or ultimate-frame VFX
+- Portrait names, health bars, disconnect state, or respawn countdown numbers
+- Crosshair changes or changes to existing score/timer/relic/health/PostRound/PostMatch behavior
+
+**Git discipline:** `core-loop: step 19.5 passed (match HUD gameplay strip)`
+
+---
+
 ### Step 20 — Korryn (`Hero_Morgan`, folder `Hexweaver`)
 
 **DisplayName:** Korryn (official). Plugin folder **`Hexweaver`** unchanged until rename pass.
@@ -1455,7 +1548,7 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 | **Fumble-on-damage** | Carrier drops relic when damaged; increment `ForcedFumbles` on `ABwayPlayerState` |
 | **Staging E2E** | Front-end tile → staging → match; four heroes in select; duplicate-hero rule per team |
 | **Four-hero match** | All four GF plugins on experience; listen server 4v4 |
-| **HUD** | Portraits show official names; ability bar wired where Section 2 stubbed |
+| **HUD** | Regress Step 19.5 with all four heroes; add official-name/final-art polish only (do not rebuild the ability/gold/portrait data paths) |
 | **Docs** | `HERO_CODENAME_MAP.md`, `Breakaway_Reborn_Design_Spec.md` §2.2 buildable/gold wording |
 | **Regression** | `ForceHumanoid=1` Section 1 URL still passes |
 
@@ -1465,6 +1558,7 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 - [ ] Buildable placed round 1 **persists** round 2; second placement blocked until next round
 - [ ] Staging E2E **3/3** cold starts
 - [ ] Full mini-match with four heroes selectable; combat + relic loop
+- [ ] Step 19.5 ability, gold, and portrait widgets remain correct for all four heroes
 
 ---
 
@@ -1475,6 +1569,7 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 | **17** | Infra + routing | `ForceHumanoid` regression; `Hero=`; staging travel; once-per-round buildable |
 | **18** | Argus | Sheet kit + Siege Engine + parity |
 | **19** | Alona | Sheet kit + Sun Shrine + parity |
+| **19.5** | Match HUD gameplay strip | Six stable ability slots; relic swap; buildable reset; live gold; 4v4 portrait status |
 | **20** | Korryn | Sheet kit + Cursed Ward + parity |
 | **21** | Rawlins | Sheet kit + Jail + parity |
 | **22** | Capstone | Fumble, staging E2E, four-hero match |
@@ -1486,6 +1581,7 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 - `EBwayMatchPhase::HeroSelection` in RM
 - In-match hero select phase on DevMap (except dev auto UI overlay)
 - Gold-spend shop / stat enhancers
+- Live minimap, match-event toast, shop prompt, and final HUD art/animation pass
 - Heroes 5–11 implementation (registry-only)
 - Bot hero variety on direct PIE (Argus only)
 - Renaming asset folders (`Argus`, `Hexweaver`, `Gunslinger`)
@@ -1506,13 +1602,14 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 
 ## Section 3 agent prompts
 
-Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a → b → c** within Steps 18–21. Each prompt assumes [Section 3 principles](#section-3-principles) and **`Breakaway_Hero_Stats_Sheet.md`** as parity source of truth.
+Copy-paste one prompt per agent session. Run in order; do not skip sub-steps **a → b → c** within Steps 18–21. Run **Step 19.5 after 19c and before 20a**. Each prompt assumes [Section 3 principles](#section-3-principles) and **`Breakaway_Hero_Stats_Sheet.md`** as parity source of truth.
 
 | Prompt | Step |
 |--------|------|
 | [Step 17](#prompt-step-17--hero-infra--routing) | Infra + routing |
 | [18a → 18c](#prompt-step-18a--argus-functional) | Argus |
 | [19a → 19c](#prompt-step-19a--alona-functional) | Alona |
+| [Step 19.5](#prompt-step-195--match-hud-gameplay-strip) | Ability bar + gold + portrait parity stub |
 | [20a → 20c](#prompt-step-20a--korryn-functional) | Korryn |
 | [21a → 21c](#prompt-step-21a--rawlins-functional) | Rawlins |
 | [Step 22](#prompt-step-22--section-3-capstone) | Capstone |
@@ -1679,6 +1776,45 @@ Tune all Alona abilities + Sun Shrine to Breakaway_Hero_Stats_Sheet.md values (C
 Pass: sheet spot-check; 3/3 cold starts; core-loop: step 19c passed (Alona parity).
 ```
 
+### Prompt: Step 19.5 — Match HUD gameplay strip
+
+```
+Implement Core Loop Section 3 Step 19.5 (match HUD gameplay strip) in ProjectB.
+
+Read first:
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md (Step 19.5)
+- Plugins/GameFeatures/BreakawayCore/Docs/UI_System.md
+- Plugins/GameFeatures/BreakawayCore/Docs/CoreHUD_Layout_Setup.md
+- Plugins/GameFeatures/BreakawayCore/Docs/Economy_Gold.md
+- Plugins/GameFeatures/BreakawayCore/Docs/Relic_System.md
+- AI_Planning/HUD_LAYOUT_DETAILED_GUIDE.md
+
+Keep Lyra slot composition. Do not use the deprecated UBwayCoreHUDWidget.
+
+Goals:
+1. Add HUD.Slot.AbilityBar + HUD.Slot.Gold extension points and EAS_BW_CaptureTheRelic widget rows.
+2. Add a non-interactive match ability bar with six fixed positions ordered 1/LMB/F/Q/E/R. Resolve hero entries from the live PlayerState ASC + UBwayGameplayAbility DisplayData, with stable placeholders for unresolved entries.
+3. Resolve actual key labels through the local Lyra input config and active Enhanced Input mappings; update after remapping.
+4. Keep buildable in position 0 while carrying. Use an explicit mapping from real InputTag.Relic.* grants to replace the five combat entries. Audit AS_BW_BallAbilities/IMC_BW_RelicAbilities first; a missing action is a disabled placeholder, not new gameplay.
+5. Replicate bHasPlacedBuildableThisRound owner-only with OnRep/delegate. Gray buildable only after confirmed spawn; reset at round start.
+6. Reuse UBwayCurrencyDisplayWidget for CurrentGold; show initial value + passive/kill/goal updates.
+7. Upgrade team portraits to stable 4v4 entries: friendly left, enemy right, team frames, hero/core-placeholder image, replicated death greying, and relic-carrier badge.
+8. Create an idempotent Scripts/setup-step19-5-match-hud.mjs for UMG/layout/EAS setup and sync UI_System.md, CoreHUD_Layout_Setup.md, and Economy_Gold.md.
+
+Use simple BreakawayCore-owned placeholder visuals. Defer final textures/animations, cooldown presentation, portrait names/health/respawn countdowns, minimap, event toast, and shop prompt/spending.
+
+Pass:
+- Argus + Alona bars ordered 1/LMB/F/Q/E/R; live remap labels update
+- Relic pickup swaps five combat entries and loss restores them without slot shifting
+- Confirmed buildable grays until next round on host/client; cancel/invalid does not
+- Gold updates from all current award sources
+- Stable 4v4 portraits show team frame, death state, and carrier badge
+- One-player listen-server cold starts plus a two-player/six-bot client replication check
+- Steps 12–16 HUD regression; 3/3 cold starts
+
+Ask me to recompile/restart Unreal Editor manually after C++ changes; do not build the editor/project from the agent.
+```
+
 ### Prompt: Step 20a — Korryn functional
 
 ```
@@ -1786,7 +1922,7 @@ Tasks:
 1. Fumble-on-damage: relic carrier drops relic on taking damage; increment ABwayPlayerState::ForcedFumbles. Server authoritative; listen server test.
 2. Staging E2E: front-end/playlist tile → L_BW_HeroSelect_Staging → lock hero → seamless travel → L_BW_DevMap with hero applied. Duplicate-hero-per-team rule enforced.
 3. Four-hero match: 4v4 listen server; all four selectable in staging/dev UI with official names (Argus, Alona, Korryn, Rawlins).
-4. HUD: team portraits show official names; wire ability bar stubs from Section 2 where applicable.
+4. HUD: regress Step 19.5 ability/gold/portrait data paths with all four heroes; add official-name/final-art polish only.
 5. Docs: update HERO_CODENAME_MAP.md (official names, one buildable/hero, stats sheet authority) and Breakaway_Reborn_Design_Spec.md §2.2 (buildables once/round free; gold = stat enhancers later, NOT buildable purchase).
 6. Regression: SkipHeroSelection=1&ForceHumanoid=1&NumBots=7 still passes full relic loop.
 
@@ -1795,6 +1931,7 @@ Pass checklist:
 - Buildable round 1 persists round 2; second placement blocked same round
 - Staging E2E 3/3 cold starts
 - Full mini-match combat + relic
+- Step 19.5 HUD remains correct for all four heroes
 
 Mark Section 3 complete in CoreLoop_Implementation_Plan.md when all green.
 ```
@@ -1845,8 +1982,8 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. **Section 3 Step 17** — Hero infra C++ (`ForceHumanoid`, `SkipHeroSelection` refactor, `Hero=` URL, RM hero-lock gate, once-per-round buildables).
-2. **Section 3 Steps 18–21** — One hero per step (Argus → Alona → Korryn → Rawlins); enable GF plugins on experience incrementally.
-3. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, doc updates.
+1. Finish open editor/PIE gates for **Steps 18–19** (Argus + Alona).
+2. **Section 3 Steps 20–21** — Korryn then Rawlins; enable GF plugins on experience incrementally.
+3. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, four-hero HUD regression, and doc updates.
 4. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
 5. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.

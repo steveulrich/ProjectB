@@ -22,6 +22,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedHeroChanged, FPrimaryAsse
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroLocked, FPrimaryAssetId, LockedHeroId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerNumAssigned, int32, PlayerNum);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMatchStatsChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRelicPossessionChanged, bool, bHasRelic);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildablePlacedThisRoundChanged, bool, bHasPlacedBuildable);
 
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABwayPlayerState : public ALyraPlayerState
@@ -50,6 +52,10 @@ public:
 
 	UFUNCTION()
 	void OnRep_HasRelic();
+
+	/** Fired on authority and clients whenever replicated relic possession changes. */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnRelicPossessionChanged OnRelicPossessionChanged;
 
 	// Relic call tracking (for "Pass to me!" indicators)
 	UPROPERTY(ReplicatedUsing=OnRep_HasCalledForRelic, BlueprintReadOnly, Category="Relic")
@@ -176,6 +182,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buildables")
 	void MarkBuildablePlacedThisRound();
 
+	/** Fired for the owning client (and authority) when the once-per-round placement state changes. */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnBuildablePlacedThisRoundChanged OnBuildablePlacedThisRoundChanged;
+
 	/** Fired when any stat changes (K/D/A/Objective). Used by scoreboard/results UI. */
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMatchStatsChanged OnMatchStatsChanged;
@@ -244,8 +254,12 @@ protected:
 	/** Server-only gold at round start for GoldEarned delta. */
 	int32 GoldAtRoundStart = 0;
 
-	/** Server-only: one free buildable placement per round (vertical slice). */
+	/** Owner-only replicated: one free buildable placement per round (vertical slice). */
+	UPROPERTY(ReplicatedUsing=OnRep_HasPlacedBuildableThisRound)
 	bool bHasPlacedBuildableThisRound = false;
+
+	UFUNCTION()
+	void OnRep_HasPlacedBuildableThisRound();
 
 	UFUNCTION()
 	void OnRep_MatchStats();

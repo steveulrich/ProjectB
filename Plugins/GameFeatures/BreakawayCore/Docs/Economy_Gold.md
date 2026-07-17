@@ -38,7 +38,16 @@ Modified via **instant GameplayEffects** (created at runtime in RoundManagement)
 
 ## UI
 
-**`UBwayCurrencyDisplayWidget`** binds to `CurrentGold` attribute change delegate.
+**`W_BW_GoldWidget`** is injected at **`HUD.Slot.Gold`** through `EAS_BW_CaptureTheRelic` and derives from **`UBwayCurrencyDisplayWidget`**.
+
+`UBwayCurrencyDisplayWidget`:
+
+- Retries until the owning PlayerState ASC is available, then reads the initial `CurrentGold`.
+- Binds the `CurrentGold` attribute-change delegate, covering passive, kill, and goal awards.
+- Updates optional `Text_Amount` and `Image_CurrencyIcon` widgets directly; Blueprint owns layout/style only.
+- Unbinds safely on widget destruction. Gold remains on the PlayerState ASC through pawn death and round changes.
+
+Create/wire the compact match widget with `Scripts/setup-step19-5-match-hud.mjs` after recompiling `BreakawayCoreRuntime`.
 
 ## Blueprint
 

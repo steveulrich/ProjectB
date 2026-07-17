@@ -40,6 +40,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Ability UI", meta = (DefaultToSelf = "AbilitySystemComponent"))
 	static TArray<FAbilityDisplayInfo> ResolveAbilityBarFromASC(const UAbilitySystemComponent* AbilitySystemComponent);
 
+	/** Find one live ASC grant by its exact dynamic input tag. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Ability UI", meta = (DefaultToSelf = "AbilitySystemComponent"))
+	static bool FindGrantedAbilityForInputTagOnASC(
+		FGameplayTag InputTag,
+		const UAbilitySystemComponent* AbilitySystemComponent,
+		TSubclassOf<ULyraGameplayAbility>& OutAbilityClass);
+
 	/** Merge ability CDO display data with the grant input tag. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Ability UI")
 	static FAbilityDisplayInfo MakeDisplayInfoFromAbility(

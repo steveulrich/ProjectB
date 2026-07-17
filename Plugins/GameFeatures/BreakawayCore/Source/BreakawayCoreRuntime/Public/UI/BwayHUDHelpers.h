@@ -72,6 +72,10 @@ public:
 		int32 TeamIndex,
 		TArray<FTeamPlayerHUDData>& OutPlayerData);
 
+	/** Replication-safe alive state for local or remote players, including the respawn pawn gap. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|HUD")
+	static bool IsPlayerAliveForHUD(const ABwayPlayerState* PlayerState);
+
 	/**
 	 * Update an array of Image widgets with hero portraits for a team
 	 * 

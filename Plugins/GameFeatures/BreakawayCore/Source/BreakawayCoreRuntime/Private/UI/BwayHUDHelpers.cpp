@@ -6,13 +6,48 @@
 #include "BwayPlayerState.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
+#include "AbilitySystemComponent.h"
+#include "Character/LyraHealthComponent.h"
 #include "Components/Image.h"
 #include "Engine/Texture2D.h"
 #include "Engine/AssetManager.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "LyraGameplayTags.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHUDHelpers)
+
+bool UBwayHUDHelpers::IsPlayerAliveForHUD(const ABwayPlayerState* PlayerState)
+{
+	if (!PlayerState)
+	{
+		return false;
+	}
+
+	if (const UAbilitySystemComponent* AbilitySystemComponent = PlayerState->GetAbilitySystemComponent())
+	{
+		if (AbilitySystemComponent->HasMatchingGameplayTag(LyraGameplayTags::Status_Death))
+		{
+			return false;
+		}
+	}
+
+	// Lyra clears death tags when the old pawn uninitializes, before the replacement pawn exists.
+	// Treat that pawnless respawn window as dead so portraits cannot briefly flash alive.
+	const APawn* Pawn = PlayerState->GetPawn();
+	if (!Pawn)
+	{
+		return false;
+	}
+
+	if (const ULyraHealthComponent* HealthComponent = ULyraHealthComponent::FindHealthComponent(Pawn))
+	{
+		return !HealthComponent->IsDeadOrDying();
+	}
+
+	return true;
+}
 
 bool UBwayHUDHelpers::GetTeamPlayerHUDData(
 	const UObject* WorldContextObject,
@@ -47,12 +82,37 @@ bool UBwayHUDHelpers::GetTeamPlayerHUDData(
 	// Get team info
 	const FTeamInfo& TeamInfo = GameState->GetTeamInfo(TeamIndex);
 
-	// Process each team member
-	int32 SlotIndex = 0;
-	for (APlayerState* PS : TeamInfo.TeamMembers)
+	TArray<ABwayPlayerState*> SortedPlayers;
+	SortedPlayers.Reserve(TeamInfo.TeamMembers.Num());
+	for (APlayerState* PlayerState : TeamInfo.TeamMembers)
 	{
-		ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
-		if (!BwayPS)
+		if (ABwayPlayerState* BwayPlayerState = Cast<ABwayPlayerState>(PlayerState))
+		{
+			SortedPlayers.Add(BwayPlayerState);
+		}
+	}
+
+	// TeamInfo insertion order can differ across peers. PlayerNum is preferred when assigned;
+	// replicated PlayerId and name provide deterministic tie-breakers for bots/default PlayerNum.
+	SortedPlayers.Sort(
+		[](const ABwayPlayerState& A, const ABwayPlayerState& B)
+		{
+			if (A.GetPlayerNum() != B.GetPlayerNum())
+			{
+				return A.GetPlayerNum() < B.GetPlayerNum();
+			}
+			if (A.GetPlayerId() != B.GetPlayerId())
+			{
+				return A.GetPlayerId() < B.GetPlayerId();
+			}
+			return A.GetPlayerName().Compare(B.GetPlayerName(), ESearchCase::IgnoreCase) < 0;
+		});
+
+	// Process the four stable team positions.
+	int32 SlotIndex = 0;
+	for (ABwayPlayerState* BwayPS : SortedPlayers)
+	{
+		if (!BwayPS || SlotIndex >= 4)
 		{
 			continue;
 		}
@@ -62,12 +122,7 @@ bool UBwayHUDHelpers::GetTeamPlayerHUDData(
 		PlayerData.PlayerState = BwayPS;
 		PlayerData.SlotIndex = SlotIndex;
 		PlayerData.bHasRelic = BwayPS->bHasRelic;
-
-		// Check if player is alive (has a valid pawn)
-		if (AController* Controller = BwayPS->GetOwningController())
-		{
-			PlayerData.bIsAlive = Controller->GetPawn() != nullptr;
-		}
+		PlayerData.bIsAlive = IsPlayerAliveForHUD(BwayPS);
 
 		// Get hero data from the selected hero ID
 		FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
