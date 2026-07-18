@@ -149,7 +149,10 @@ def kit_summary(path):
     for prop in [
         'PrimaryBaseDamage', 'FlockCooldown', 'BurdenCooldown', 'CircleCooldown',
         'AuraCooldown', 'CircleRadius', 'AuraRadius', 'BurdenSlowMultiplier',
-        'CircleSlowMultiplier', 'CircleIncomingDamageMultiplier'
+        'CircleSlowMultiplier', 'CircleIncomingDamageMultiplier',
+        'BurdenBaseDamage', 'BurdenDamageScaling', 'BurdenSlowDuration',
+        'CircleDuration', 'AuraBaseDamage', 'AuraDamageScaling', 'AuraSilenceDuration',
+        'WardMaxHealth', 'WardSlowRadius', 'WardSlowMultiplier'
     ]:
         try:
             out[prop] = float(kit.get_editor_property(prop))
@@ -259,6 +262,10 @@ if kit_path and exists(kit_path):
         'AuraCooldown': 30.0,
         'AuraRadius': 800.0,
         'AuraSilenceDuration': 5.0,
+        # 20b/20c Cursed Ward + parity fields (safe on 20a reruns)
+        'WardMaxHealth': 600.0,
+        'WardSlowRadius': 600.0,
+        'WardSlowMultiplier': 0.5,
     }
     for k, v in defaults.items():
         try:
@@ -364,12 +371,17 @@ if hero_path and exists(hero_path):
         aset = unreal.load_asset(set_path)
         hero.set_editor_property('AbilitySets', [aset])
 
-    # Clear stale Elder Stone / non-Cursed-Ward buildable for 20a.
-    # Preserve a future canonical Cursed Ward grant on script reruns (path contains CursedWard).
+    # Preserve canonical Hexweaver / Cursed Ward buildable on script reruns (20b+).
+    # Clear only stale Elder Stone / non-Hexweaver buildables when 20b has not wired yet.
     try:
         existing_buildable = hero.get_editor_property('BuildableDataAsset')
         existing_path = existing_buildable.get_path_name() if existing_buildable else None
-        if existing_path and ('CursedWard' in existing_path or 'Cursed_Ward' in existing_path):
+        preserve = False
+        if existing_path:
+            lower = existing_path.lower()
+            if ('cursedward' in lower) or ('cursed_ward' in lower) or ('hexweaver' in lower and 'buildable' in lower):
+                preserve = True
+        if preserve:
             actions.append({'buildable_data_asset_preserved_cursed_ward': existing_path})
         else:
             hero.set_editor_property('BuildableDataAsset', None)

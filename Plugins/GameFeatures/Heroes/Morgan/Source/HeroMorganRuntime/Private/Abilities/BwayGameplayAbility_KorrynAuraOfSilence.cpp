@@ -58,11 +58,13 @@ void UBwayGameplayAbility_KorrynAuraOfSilence::ActivateAbility(
 	float LocalBase = AbilityBaseDamage;
 	float LocalScale = DamageScaling;
 	float LocalRadius = AuraRadius;
+	float LocalSilenceDuration = 5.f;
 	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
 	{
 		LocalBase = Config->AuraBaseDamage;
 		LocalScale = Config->AuraDamageScaling;
 		LocalRadius = Config->AuraRadius;
+		LocalSilenceDuration = Config->AuraSilenceDuration;
 	}
 
 	const float Damage = CalculateScaledDamage(LocalBase, LocalScale);
@@ -79,8 +81,9 @@ void UBwayGameplayAbility_KorrynAuraOfSilence::ActivateAbility(
 			{
 				FGameplayEffectContextHandle Context = MakeEffectContextForAbility();
 				const FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(SilenceEffectClass, 1.f, Context);
-				if (Spec.IsValid())
+				if (Spec.IsValid() && Spec.Data.IsValid())
 				{
+					Spec.Data->SetDuration(LocalSilenceDuration, /*bLockDuration*/ true);
 					TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 				}
 			}

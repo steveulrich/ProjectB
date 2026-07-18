@@ -23,6 +23,11 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	virtual float GetKitCooldownSeconds(const UBwayKorrynKitConfig& Config) const override
+	{
+		return Config.BurdenCooldown;
+	}
+
 	TArray<ABwayCharacterWithAbilities*> FindEnemiesInCone(const FVector& Origin, const FVector& Forward) const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Burden")

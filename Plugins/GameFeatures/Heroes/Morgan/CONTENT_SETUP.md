@@ -10,6 +10,9 @@ Plugin name remains `Hero_Morgan`. See [HERO_CODENAME_MAP.md](../../../AI_Planni
 | Hero DA | `/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_HeroData_Hexweaver` |
 | Ability set | `/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_AbilitySet_Hexweaver` |
 | Kit config | `/Hero_Morgan/Kit/DA_BW_KorrynKitConfig` |
+| Buildable DA | `/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_BuildableData_Hexweaver` |
+| Ward BP | `/Hero_Morgan/Characters/Heroes/Hexweaver/Buildable/BP_BW_Hexweaver_Buildable` |
+| PlaceBuildable BP | `/Hero_Morgan/Characters/Heroes/Hexweaver/Abilities/GA_BW_Korryn_BuildablePlacement` |
 | GFD | `/Hero_Morgan/Hero_Morgan` |
 
 ## Step 20a (functional)
@@ -24,8 +27,6 @@ Native kit lives in `HeroMorganRuntime`:
 | E | Ability2 | `BwayGameplayAbility_KorrynCircleOfSpite` |
 | R | Ability3 | `BwayGameplayAbility_KorrynAuraOfSilence` |
 
-**Do not** grant PlaceBuildable / Cursed Ward in 20a (that is **20b**).
-
 Automated wiring:
 
 ```
@@ -35,12 +36,23 @@ node Scripts/setup-korryn-20a-functional.mjs --probe-only
 
 Full checklist: [Korryn_20a_Editor_Setup.md](../../BreakawayCore/Docs/Korryn_20a_Editor_Setup.md).
 
+## Step 20b–20c (Cursed Ward + parity)
+
+| Item | Value |
+|------|--------|
+| Actor | `ABwayKorrynCursedWardBuildable` |
+| HP / radius / slow | 600 / 600 uu (6 m) / ×0.5 |
+| Placement | once/round free; persists between rounds |
+| Kit authority | cooldowns, damage, durations, radii, Ward fields on `DA_BW_KorrynKitConfig` |
+
+```
+node Scripts/setup-korryn-20b-cursed-ward.mjs
+node Scripts/setup-korryn-20b-cursed-ward.mjs --probe-only
+```
+
+Full checklist: [Korryn_20b_20c_Editor_Setup.md](../../BreakawayCore/Docs/Korryn_20b_20c_Editor_Setup.md).
+
 ## Ini scan
 
 `DefaultGame.ini` already scans `/Hero_Morgan/Characters/Heroes` as `HeroDataAsset` with `AssetBaseClass=/Script/Engine.PrimaryDataAsset`.  
 Kit configs scan `/Hero_Morgan/Kit` as `BwayKorrynKitConfig` (same Engine PrimaryDataAsset base).
-
-## Later steps
-
-- **20b** — Cursed Ward buildable
-- **20c** — sheet parity / feel audit

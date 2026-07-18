@@ -3,11 +3,16 @@
 #include "CoreMinimal.h"
 #include "GameplayEffect.h"
 #include "GameplayTagContainer.h"
+#include "NativeGameplayTags.h"
 #include "BwayGameplayEffect_KorrynEffects.generated.h"
 
+HEROMORGANRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_SetByCaller_Korryn_MoveSpeedMultiplier);
+HEROMORGANRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_SetByCaller_Korryn_IncomingDamageMultiplier);
+
 /**
- * Native status / cooldown GEs for Korryn (Step 20a).
+ * Native status / cooldown GEs for Korryn (Steps 20a–20c).
  * TargetTags component is added in PostInitProperties — not in the constructor.
+ * Tunable slows / damage amp use SetByCaller magnitudes from kit config.
  */
 UCLASS(Abstract)
 class HEROMORGANRUNTIME_API UGE_Bway_KorrynEffectBase : public UGameplayEffect
@@ -68,7 +73,7 @@ public:
 	UGE_Bway_KorrynArmorShred();
 };
 
-/** Burden of Sin: MoveSpeedMultiplier *= 0.5 for 2s. */
+/** Burden of Sin: MoveSpeedMultiplier SetByCaller (sheet default 0.5) for 2s. */
 UCLASS()
 class HEROMORGANRUNTIME_API UGE_Bway_KorrynBurdenSlow : public UGE_Bway_KorrynEffectBase
 {
@@ -77,7 +82,7 @@ public:
 	UGE_Bway_KorrynBurdenSlow();
 };
 
-/** Circle of Spite: MoveSpeedMultiplier *= 0.85 while in zone (infinite until removed). */
+/** Circle of Spite: MoveSpeedMultiplier SetByCaller while in zone (infinite until removed). */
 UCLASS()
 class HEROMORGANRUNTIME_API UGE_Bway_KorrynCircleSlow : public UGE_Bway_KorrynEffectBase
 {
@@ -86,13 +91,22 @@ public:
 	UGE_Bway_KorrynCircleSlow();
 };
 
-/** Circle of Spite: IncomingDamageMultiplier = 1.35 while in zone. */
+/** Circle of Spite: IncomingDamageMultiplier SetByCaller while in zone. */
 UCLASS()
 class HEROMORGANRUNTIME_API UGE_Bway_KorrynCircleDamageAmp : public UGE_Bway_KorrynEffectBase
 {
 	GENERATED_BODY()
 public:
 	UGE_Bway_KorrynCircleDamageAmp();
+};
+
+/** Cursed Ward: MoveSpeedMultiplier SetByCaller while in radius (infinite until removed). */
+UCLASS()
+class HEROMORGANRUNTIME_API UGE_Bway_KorrynCursedWardSlow : public UGE_Bway_KorrynEffectBase
+{
+	GENERATED_BODY()
+public:
+	UGE_Bway_KorrynCursedWardSlow();
 };
 
 /** Aura of Silence: grants State.Status.Silenced for 5s. */

@@ -24,6 +24,11 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	virtual float GetKitCooldownSeconds(const UBwayKorrynKitConfig& Config) const override
+	{
+		return Config.FlockCooldown;
+	}
+
 	void ApplyEtherealMovement();
 	void RestoreMovement();
 

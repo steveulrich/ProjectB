@@ -41,8 +41,15 @@ void ABuildableActor::InitializeAbilitySystem()
 {
     Super::InitializeAbilitySystem();
 
-    HealthSet->InitMaxHealth(100.f);
-    HealthSet->InitHealth(HealthSet->GetMaxHealth());
+    if (HealthSet)
+    {
+        HealthSet->InitMaxHealth(100.f);
+        HealthSet->InitHealth(HealthSet->GetMaxHealth());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[%s] HealthSet is null after ASC init — Blueprint subobjects likely broken (recreate BP from native parent)."), *GetName());
+    }
 }
 
 void ABuildableActor::BeginPlay()

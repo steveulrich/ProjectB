@@ -23,6 +23,11 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	virtual float GetKitCooldownSeconds(const UBwayKorrynKitConfig& Config) const override
+	{
+		return Config.AuraCooldown;
+	}
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Aura")
 	TSubclassOf<UGameplayEffect> SilenceEffectClass;
 

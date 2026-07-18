@@ -2,6 +2,8 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayAbility_KorrynBase)
 
+DEFINE_LOG_CATEGORY_STATIC(LogBwayKorrynKit, Log, All);
+
 UBwayGameplayAbility_KorrynBase::UBwayGameplayAbility_KorrynBase(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -15,5 +17,26 @@ const UBwayKorrynKitConfig* UBwayGameplayAbility_KorrynBase::ResolveKitConfig() 
 	{
 		return nullptr;
 	}
-	return KitConfig.LoadSynchronous();
+
+	const UBwayKorrynKitConfig* Config = KitConfig.LoadSynchronous();
+	if (Config)
+	{
+		UE_LOG(LogBwayKorrynKit, Log, TEXT("[%s] Resolved kit config: %s"),
+			*GetClass()->GetName(), *Config->GetPathName());
+	}
+	return Config;
+}
+
+void UBwayGameplayAbility_KorrynBase::ApplyCooldown(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	float DurationSeconds = -1.f;
+	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
+	{
+		DurationSeconds = GetKitCooldownSeconds(*Config);
+	}
+
+	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, DurationSeconds);
 }

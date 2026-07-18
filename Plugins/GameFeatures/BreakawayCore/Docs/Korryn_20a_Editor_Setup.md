@@ -14,7 +14,7 @@ C++ lives in `HeroMorganRuntime` plus shared BreakawayCore status/damage/movemen
 | **Per-hero** | `DA_BW_AbilitySet_Hexweaver` | LMB Primary · F Flock · Q Burden · E Circle · R Aura |
 | **Hero DA** | `DA_BW_HeroData_Hexweaver` | Leave buildable empty until **20b** (Cursed Ward). Script clears stale Elder Stone but preserves a future Cursed Ward path |
 
-**Do not** put Request Relic or movement slide on the per-hero set. **Do not** grant PlaceBuildable in 20a.
+**Do not** put Request Relic or movement slide on the per-hero set. **Do not** grant PlaceBuildable in 20a (that is **20b** — see [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md)). After 20b is wired, 20a script reruns **preserve** the Hexweaver / Cursed Ward buildable.
 
 ## Input layout
 

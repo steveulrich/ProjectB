@@ -1,5 +1,6 @@
 #include "Zones/BwayKorrynSpiteZone.h"
 
+#include "Abilities/BwayGameplayEffect_KorrynEffects.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "BwayCharacterWithAbilities.h"
@@ -38,12 +39,16 @@ void ABwayKorrynSpiteZone::ConfigureZone(
 	float InRadius,
 	float InDuration,
 	TSubclassOf<UGameplayEffect> InSlowEffectClass,
-	TSubclassOf<UGameplayEffect> InDamageAmpEffectClass)
+	TSubclassOf<UGameplayEffect> InDamageAmpEffectClass,
+	float InSlowMultiplier,
+	float InDamageAmpMultiplier)
 {
 	CasterCharacter = InCaster;
 	ReplicatedRadius = InRadius;
 	SlowEffectClass = InSlowEffectClass;
 	DamageAmpEffectClass = InDamageAmpEffectClass;
+	SlowMultiplier = InSlowMultiplier;
+	DamageAmpMultiplier = InDamageAmpMultiplier;
 
 	if (InCaster)
 	{
@@ -189,8 +194,9 @@ void ABwayKorrynSpiteZone::ApplyZoneEffects(ABwayCharacterWithAbilities* Enemy)
 	if (SlowEffectClass)
 	{
 		const FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(SlowEffectClass, 1.f, Context);
-		if (Spec.IsValid())
+		if (Spec.IsValid() && Spec.Data.IsValid())
 		{
+			Spec.Data->SetSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier, SlowMultiplier);
 			Handles.SlowHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 		}
 	}
@@ -198,8 +204,9 @@ void ABwayKorrynSpiteZone::ApplyZoneEffects(ABwayCharacterWithAbilities* Enemy)
 	if (DamageAmpEffectClass)
 	{
 		const FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(DamageAmpEffectClass, 1.f, Context);
-		if (Spec.IsValid())
+		if (Spec.IsValid() && Spec.Data.IsValid())
 		{
+			Spec.Data->SetSetByCallerMagnitude(TAG_SetByCaller_Korryn_IncomingDamageMultiplier, DamageAmpMultiplier);
 			Handles.AmpHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 		}
 	}

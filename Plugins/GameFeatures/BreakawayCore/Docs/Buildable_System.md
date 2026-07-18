@@ -64,7 +64,7 @@ Invalid confirm (red ghost) keeps preview active; player can reposition and retr
 |--------------------|-----------------|-----------|
 | Argus | `Hero_Spartacus` / `Argus` | **Siege Engine** — 250 HP; 200 dmg/s vs buildables; 10s roll · [18b](./Argus_18b_Editor_Setup.md) |
 | Alona | `Hero_Alona` | **Sun Shrine** — 750 HP, 35 HP/s, 5m, non-stack · [19b](./Alona_19b_Editor_Setup.md) |
-| Korryn | `Hero_Morgan` / `Hexweaver` | **Cursed Ward** — 600 HP, 50% slow, 6m |
+| Korryn | `Hero_Morgan` / `Hexweaver` | **Cursed Ward** — 600 HP, 50% slow, 6m · [20b/20c](./Korryn_20b_20c_Editor_Setup.md) |
 | Rawlins | `Hero_Rawlins` / `Gunslinger` | **Jail** — 450 HP, cage trap |
 
 Authority: [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md).

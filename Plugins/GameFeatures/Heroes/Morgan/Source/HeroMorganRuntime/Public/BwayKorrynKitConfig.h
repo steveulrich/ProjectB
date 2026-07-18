@@ -4,8 +4,8 @@
 #include "BwayKorrynKitConfig.generated.h"
 
 /**
- * Data-driven Korryn kit values for Step 20a.
- * Seeded with sheet defaults; Step 20c is the formal parity audit.
+ * Data-driven Korryn kit values for Steps 20a–20c.
+ * Sheet defaults are authoritative when the DA is present; C++ ability defaults are fallbacks.
  */
 UCLASS(BlueprintType)
 class HEROMORGANRUNTIME_API UBwayKorrynKitConfig : public UPrimaryDataAsset
@@ -106,4 +106,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Aura", meta = (ClampMin = "0.05"))
 	float AuraSilenceDuration = 5.f;
+
+	// --- Cursed Ward ---
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|CursedWard", meta = (ClampMin = "1.0"))
+	float WardMaxHealth = 600.f;
+
+	/** Sheet: 6m. Project convention is ~100 uu per meter. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|CursedWard", meta = (ClampMin = "50.0"))
+	float WardSlowRadius = 600.f;
+
+	/** MoveSpeedMultiplier while enemies remain in radius (0.5 = 50% slow). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|CursedWard", meta = (ClampMin = "0.05", ClampMax = "1.0"))
+	float WardSlowMultiplier = 0.5f;
 };

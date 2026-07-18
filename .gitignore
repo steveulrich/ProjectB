@@ -74,6 +74,9 @@ DerivedDataCache/*
 # AI Scripts
 Scripts/*
 !Scripts/setup-step19-5-match-hud.mjs
+!Scripts/setup-korryn-20a-functional.mjs
+!Scripts/setup-korryn-20b-cursed-ward.mjs
+!Scripts/lib/
 
 # AI Planning probe / setup artifacts (keep markdown plans tracked)
 AI_Planning/*.json

@@ -67,11 +67,15 @@ void UBwayGameplayAbility_KorrynCircleOfSpite::ActivateAbility(
 	float LocalRadius = ZoneRadius;
 	float LocalDuration = ZoneDuration;
 	float LocalOffset = SpawnForwardOffset;
+	float LocalSlowMultiplier = 0.85f;
+	float LocalDamageAmpMultiplier = 1.35f;
 	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
 	{
 		LocalRadius = Config->CircleRadius;
 		LocalDuration = Config->CircleDuration;
 		LocalOffset = Config->CircleSpawnForwardOffset;
+		LocalSlowMultiplier = Config->CircleSlowMultiplier;
+		LocalDamageAmpMultiplier = Config->CircleIncomingDamageMultiplier;
 	}
 
 	FVector Forward = CachedCharacter->GetActorForwardVector().GetSafeNormal2D();
@@ -110,7 +114,14 @@ void UBwayGameplayAbility_KorrynCircleOfSpite::ActivateAbility(
 		return;
 	}
 
-	Zone->ConfigureZone(CachedCharacter, LocalRadius, LocalDuration, SlowEffectClass, DamageAmpEffectClass);
+	Zone->ConfigureZone(
+		CachedCharacter,
+		LocalRadius,
+		LocalDuration,
+		SlowEffectClass,
+		DamageAmpEffectClass,
+		LocalSlowMultiplier,
+		LocalDamageAmpMultiplier);
 	Zone->FinishSpawning(SpawnTransform);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

@@ -13,6 +13,19 @@ UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_BurdenOfSin, "Cooldown.Korryn.
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_CircleOfSpite, "Cooldown.Korryn.CircleOfSpite");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_AuraOfSilence, "Cooldown.Korryn.AuraOfSilence");
 
+UE_DEFINE_GAMEPLAY_TAG(TAG_SetByCaller_Korryn_MoveSpeedMultiplier, "Data.SetByCaller.Korryn.MoveSpeedMultiplier");
+UE_DEFINE_GAMEPLAY_TAG(TAG_SetByCaller_Korryn_IncomingDamageMultiplier, "Data.SetByCaller.Korryn.IncomingDamageMultiplier");
+
+namespace
+{
+	FGameplayEffectModifierMagnitude MakeSetByCallerMagnitude(const FGameplayTag& DataTag)
+	{
+		FSetByCallerFloat SetByCaller;
+		SetByCaller.DataTag = DataTag;
+		return FGameplayEffectModifierMagnitude(SetByCaller);
+	}
+}
+
 UGE_Bway_KorrynEffectBase::UGE_Bway_KorrynEffectBase()
 {
 	DurationPolicy = EGameplayEffectDurationType::HasDuration;
@@ -111,7 +124,7 @@ UGE_Bway_KorrynBurdenSlow::UGE_Bway_KorrynBurdenSlow()
 	FGameplayModifierInfo& Mod = Modifiers.AddDefaulted_GetRef();
 	Mod.Attribute = UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute();
 	Mod.ModifierOp = EGameplayModOp::MultiplyCompound;
-	Mod.ModifierMagnitude = FScalableFloat(0.5f);
+	Mod.ModifierMagnitude = MakeSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier);
 }
 
 UGE_Bway_KorrynCircleSlow::UGE_Bway_KorrynCircleSlow()
@@ -122,7 +135,7 @@ UGE_Bway_KorrynCircleSlow::UGE_Bway_KorrynCircleSlow()
 	FGameplayModifierInfo& Mod = Modifiers.AddDefaulted_GetRef();
 	Mod.Attribute = UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute();
 	Mod.ModifierOp = EGameplayModOp::MultiplyCompound;
-	Mod.ModifierMagnitude = FScalableFloat(0.85f);
+	Mod.ModifierMagnitude = MakeSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier);
 }
 
 UGE_Bway_KorrynCircleDamageAmp::UGE_Bway_KorrynCircleDamageAmp()
@@ -133,7 +146,18 @@ UGE_Bway_KorrynCircleDamageAmp::UGE_Bway_KorrynCircleDamageAmp()
 	FGameplayModifierInfo& Mod = Modifiers.AddDefaulted_GetRef();
 	Mod.Attribute = UBwayHeroAttributeSet::GetIncomingDamageMultiplierAttribute();
 	Mod.ModifierOp = EGameplayModOp::Override;
-	Mod.ModifierMagnitude = FScalableFloat(1.35f);
+	Mod.ModifierMagnitude = MakeSetByCallerMagnitude(TAG_SetByCaller_Korryn_IncomingDamageMultiplier);
+}
+
+UGE_Bway_KorrynCursedWardSlow::UGE_Bway_KorrynCursedWardSlow()
+{
+	DurationPolicy = EGameplayEffectDurationType::Infinite;
+	ConfigureGrantedTag(BwayGameplayTags::State_Status_Slowed);
+
+	FGameplayModifierInfo& Mod = Modifiers.AddDefaulted_GetRef();
+	Mod.Attribute = UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute();
+	Mod.ModifierOp = EGameplayModOp::MultiplyCompound;
+	Mod.ModifierMagnitude = MakeSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier);
 }
 
 UGE_Bway_KorrynSilence::UGE_Bway_KorrynSilence()

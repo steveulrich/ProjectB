@@ -24,7 +24,9 @@ public:
 		float InRadius,
 		float InDuration,
 		TSubclassOf<UGameplayEffect> InSlowEffectClass,
-		TSubclassOf<UGameplayEffect> InDamageAmpEffectClass);
+		TSubclassOf<UGameplayEffect> InDamageAmpEffectClass,
+		float InSlowMultiplier = 0.85f,
+		float InDamageAmpMultiplier = 1.35f);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -59,6 +61,9 @@ protected:
 
 	UPROPERTY(Transient)
 	TSubclassOf<UGameplayEffect> DamageAmpEffectClass;
+
+	float SlowMultiplier = 0.85f;
+	float DamageAmpMultiplier = 1.35f;
 
 	struct FZoneEffectHandles
 	{

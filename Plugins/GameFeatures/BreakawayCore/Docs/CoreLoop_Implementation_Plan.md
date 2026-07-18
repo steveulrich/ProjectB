@@ -1276,7 +1276,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
 | **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
 | **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
-| **20** | **20a C++ landed; Editor wiring + PIE open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) |
+| **20** | **20b/20c C++ landed; Editor wiring + PIE + 3/3 open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md) |
 | **20.5** | **Assets wired; PIE + 3/3 cold starts open** | Argus + Alona kit configs; [Step20_5_KitConfig_Editor_Setup.md](./Step20_5_KitConfig_Editor_Setup.md) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
@@ -1514,7 +1514,7 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 
 **DisplayName:** Korryn (official). Plugin folder **`Hexweaver`** unchanged until rename pass.
 
-**20a status:** C++ kit + shared status/damage/movement support landed. Editor wiring via `Scripts/setup-korryn-20a-functional.mjs`. PIE + 3/3 cold starts still required before marking 20a passed. See [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md).
+**20a–20c status:** C++ kit, Cursed Ward (`ABwayKorrynCursedWardBuildable`), and kit-driven parity landed. Editor wiring via `Scripts/setup-korryn-20a-functional.mjs` + `Scripts/setup-korryn-20b-cursed-ward.mjs`. Manual rebuild + PIE + **3/3** cold starts still required before marking Step 20 passed. See [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md).
 
 | Slot | Ability | Buildable |
 |------|---------|-----------|
@@ -1522,9 +1522,9 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 | RMB→**F** | Flock | |
 | Q | Burden of Sin | |
 | E | Circle of Spite | |
-| R | Aura of Silence | **Cursed Ward** (20b) — 600 HP, 50% slow, 6m |
+| R | Aura of Silence | **Cursed Ward** — 600 HP, 50% slow, 6m |
 
-**Pass:** 20a–20c; **3/3** cold starts.
+**Pass:** 20a–20c; **3/3** cold starts; then record `core-loop: step 20c passed (Korryn parity)`.
 
 ---
 

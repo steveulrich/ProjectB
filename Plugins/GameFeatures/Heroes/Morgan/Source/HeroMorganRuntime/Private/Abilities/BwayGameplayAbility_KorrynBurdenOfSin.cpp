@@ -61,12 +61,16 @@ void UBwayGameplayAbility_KorrynBurdenOfSin::ActivateAbility(
 	float LocalScale = DamageScaling;
 	float LocalRange = ConeRange;
 	float LocalHalfAngle = ConeHalfAngleDegrees;
+	float LocalSlowDuration = 2.f;
+	float LocalSlowMultiplier = 0.5f;
 	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
 	{
 		LocalBase = Config->BurdenBaseDamage;
 		LocalScale = Config->BurdenDamageScaling;
 		LocalRange = Config->BurdenConeRange;
 		LocalHalfAngle = Config->BurdenConeHalfAngleDegrees;
+		LocalSlowDuration = Config->BurdenSlowDuration;
+		LocalSlowMultiplier = Config->BurdenSlowMultiplier;
 	}
 	ConeRange = LocalRange;
 	ConeHalfAngleDegrees = LocalHalfAngle;
@@ -99,8 +103,10 @@ void UBwayGameplayAbility_KorrynBurdenOfSin::ActivateAbility(
 			{
 				FGameplayEffectContextHandle Context = MakeEffectContextForAbility();
 				const FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(SlowEffectClass, 1.f, Context);
-				if (Spec.IsValid())
+				if (Spec.IsValid() && Spec.Data.IsValid())
 				{
+					Spec.Data->SetDuration(LocalSlowDuration, /*bLockDuration*/ true);
+					Spec.Data->SetSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier, LocalSlowMultiplier);
 					TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 				}
 			}
