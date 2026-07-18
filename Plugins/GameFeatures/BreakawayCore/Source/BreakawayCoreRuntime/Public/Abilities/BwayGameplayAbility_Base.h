@@ -67,6 +67,16 @@ protected:
 	/** Get cached character from actor info */
 	ABwayCharacterWithAbilities* GetBwayCharacterFromActorInfo() const;
 
+	/**
+	 * Apply CooldownGameplayEffectClass with an optional duration override via FGameplayEffectSpec::SetDuration.
+	 * Falls back to UGameplayAbility::ApplyCooldown when DurationSeconds <= 0 or no cooldown GE is set.
+	 */
+	void ApplyCooldownWithOptionalDuration(
+		const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo,
+		float DurationSeconds) const;
+
 protected:
 	/** Stored ability spec handle for use in callbacks */
 	FGameplayAbilitySpecHandle StoredSpecHandle;

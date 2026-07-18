@@ -451,3 +451,32 @@ ABwayCharacterWithAbilities* UBwayGameplayAbility_Base::GetBwayCharacterFromActo
 	return nullptr;
 }
 
+void UBwayGameplayAbility_Base::ApplyCooldownWithOptionalDuration(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	float DurationSeconds) const
+{
+	if (DurationSeconds <= 0.f || !CooldownGameplayEffectClass)
+	{
+		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+		return;
+	}
+
+	const FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+		Handle,
+		ActorInfo,
+		ActivationInfo,
+		CooldownGameplayEffectClass,
+		GetAbilityLevel(Handle, ActorInfo));
+
+	if (!SpecHandle.IsValid() || !SpecHandle.Data.IsValid())
+	{
+		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
+		return;
+	}
+
+	SpecHandle.Data->SetDuration(DurationSeconds, /*bLockDuration*/ true);
+	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
+}
+

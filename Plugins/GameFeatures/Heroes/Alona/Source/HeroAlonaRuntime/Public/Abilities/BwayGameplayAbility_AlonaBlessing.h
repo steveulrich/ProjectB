@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_AlonaBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_AlonaBlessing.generated.h"
 
@@ -12,7 +12,7 @@ HEROALONARUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Alona_Blessing);
  * Alona R — Blessing of the Sun. Ground heal circle in front of Alona. CD 25s.
  */
 UCLASS()
-class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaBlessing : public UBwayGameplayAbility_Base
+class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaBlessing : public UBwayGameplayAbility_AlonaBase
 {
 	GENERATED_BODY()
 
@@ -23,7 +23,12 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-	FVector ResolveGroundTargetLocation() const;
+	virtual float GetKitCooldownSeconds(const UBwayAlonaKitConfig& Config) const override
+	{
+		return Config.BlessingCooldown;
+	}
+
+	FVector ResolveGroundTargetLocation(float ForwardDistance) const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Blessing")
 	TSubclassOf<ABwayAlonaBlessingZone> BlessingZoneClass;

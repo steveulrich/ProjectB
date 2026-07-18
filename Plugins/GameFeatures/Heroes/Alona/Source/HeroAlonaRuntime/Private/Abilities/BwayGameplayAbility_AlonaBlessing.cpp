@@ -44,6 +44,20 @@ void UBwayGameplayAbility_AlonaBlessing::ActivateAbility(
 		return;
 	}
 
+	float LocalForward = ForwardPlacementDistance;
+	float LocalRadius = ZoneRadius;
+	float LocalDuration = ZoneDuration;
+	float LocalInitialHeal = InitialHeal;
+	float LocalHealPerSecond = HealPerSecond;
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		LocalForward = Config->BlessingForwardPlacementDistance;
+		LocalRadius = Config->BlessingZoneRadius;
+		LocalDuration = Config->BlessingZoneDuration;
+		LocalInitialHeal = Config->BlessingInitialHeal;
+		LocalHealPerSecond = Config->BlessingHealPerSecond;
+	}
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -55,7 +69,7 @@ void UBwayGameplayAbility_AlonaBlessing::ActivateAbility(
 		UWorld* World = GetWorld();
 		if (World && BlessingZoneClass)
 		{
-			const FVector TargetLocation = ResolveGroundTargetLocation();
+			const FVector TargetLocation = ResolveGroundTargetLocation(LocalForward);
 			const FTransform SpawnTransform(FRotator::ZeroRotator, TargetLocation);
 
 			ABwayAlonaBlessingZone* Zone = World->SpawnActorDeferred<ABwayAlonaBlessingZone>(
@@ -67,7 +81,7 @@ void UBwayGameplayAbility_AlonaBlessing::ActivateAbility(
 
 			if (Zone)
 			{
-				Zone->ConfigureZone(CachedCharacter, ZoneRadius, ZoneDuration, InitialHeal, HealPerSecond);
+				Zone->ConfigureZone(CachedCharacter, LocalRadius, LocalDuration, LocalInitialHeal, LocalHealPerSecond);
 				Zone->FinishSpawning(SpawnTransform);
 			}
 		}
@@ -76,7 +90,7 @@ void UBwayGameplayAbility_AlonaBlessing::ActivateAbility(
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
 
-FVector UBwayGameplayAbility_AlonaBlessing::ResolveGroundTargetLocation() const
+FVector UBwayGameplayAbility_AlonaBlessing::ResolveGroundTargetLocation(float ForwardDistance) const
 {
 	if (!CachedCharacter)
 	{
@@ -92,7 +106,7 @@ FVector UBwayGameplayAbility_AlonaBlessing::ResolveGroundTargetLocation() const
 		Forward = YawOnly.Vector().GetSafeNormal2D();
 	}
 
-	const FVector IdealPoint = CachedCharacter->GetActorLocation() + Forward * ForwardPlacementDistance;
+	const FVector IdealPoint = CachedCharacter->GetActorLocation() + Forward * ForwardDistance;
 	UWorld* World = GetWorld();
 	if (!World)
 	{

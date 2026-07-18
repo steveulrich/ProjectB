@@ -45,6 +45,14 @@ void UBwayGameplayAbility_AlonaSunsGrace::ActivateAbility(
 		return;
 	}
 
+	float LocalTeleportDistance = TeleportDistance;
+	float LocalInvulnDuration = InvulnerabilityDuration;
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		LocalTeleportDistance = Config->SunsGraceTeleportDistance;
+		LocalInvulnDuration = Config->SunsGraceInvulnerabilityDuration;
+	}
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -54,7 +62,7 @@ void UBwayGameplayAbility_AlonaSunsGrace::ActivateAbility(
 	if (HasAuthority(&ActivationInfo))
 	{
 		const FVector Direction = ResolveTeleportDirection();
-		const FVector Destination = ResolveTeleportDestination(Direction);
+		const FVector Destination = ResolveTeleportDestination(Direction, LocalTeleportDistance);
 		CachedCharacter->TeleportTo(Destination, CachedCharacter->GetActorRotation(), false, false);
 	}
 
@@ -67,7 +75,7 @@ void UBwayGameplayAbility_AlonaSunsGrace::ActivateAbility(
 			{
 				EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 			},
-			InvulnerabilityDuration,
+			LocalInvulnDuration,
 			false);
 	}
 	else
@@ -103,7 +111,7 @@ FVector UBwayGameplayAbility_AlonaSunsGrace::ResolveTeleportDirection() const
 	return Direction;
 }
 
-FVector UBwayGameplayAbility_AlonaSunsGrace::ResolveTeleportDestination(const FVector& Direction) const
+FVector UBwayGameplayAbility_AlonaSunsGrace::ResolveTeleportDestination(const FVector& Direction, float Distance) const
 {
 	if (!CachedCharacter)
 	{
@@ -114,7 +122,7 @@ FVector UBwayGameplayAbility_AlonaSunsGrace::ResolveTeleportDestination(const FV
 	UCapsuleComponent* Capsule = CachedCharacter->GetCapsuleComponent();
 	if (!World || !Capsule)
 	{
-		return CachedCharacter->GetActorLocation() + Direction * TeleportDistance;
+		return CachedCharacter->GetActorLocation() + Direction * Distance;
 	}
 
 	float CapsuleRadius = 0.f;
@@ -122,7 +130,7 @@ FVector UBwayGameplayAbility_AlonaSunsGrace::ResolveTeleportDestination(const FV
 	Capsule->GetScaledCapsuleSize(CapsuleRadius, CapsuleHalfHeight);
 
 	const FVector Start = CachedCharacter->GetActorLocation();
-	const FVector IdealEnd = Start + Direction * TeleportDistance;
+	const FVector IdealEnd = Start + Direction * Distance;
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(AlonaSunsGraceTeleport), false, CachedCharacter);
 	FHitResult SweepHit;

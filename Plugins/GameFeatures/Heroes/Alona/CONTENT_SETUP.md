@@ -13,6 +13,7 @@
 | Place GA | `Abilities/GA_BW_Alona_BuildablePlacement` → `UBwayGameplayAbility_PlaceBuildable` |
 | GFD | `/Hero_Alona/Hero_Alona` (`UBwayGameFeatureData`) |
 | Runtime module | `HeroAlonaRuntime` |
+| Kit config (20.5) | `/Hero_Alona/Kit/DA_BW_AlonaKitConfig` (`UBwayAlonaKitConfig`) |
 
 ## Hero DA (19b)
 
@@ -46,8 +47,9 @@ Common humanoid set still owns Left Shift slide + RMB Request Relic + Confirm/Ca
 - [ ] 19b Sun Shrine (C++ + scripts done; Editor wire + PIE pass open)
 - [ ] 19c sheet parity
 - [x] **3/3** cold-start PIE (19a); re-run for 19b after Editor wire
+- [ ] 20.5 kit config DA — [Step20_5_KitConfig_Editor_Setup.md](../../BreakawayCore/Docs/Step20_5_KitConfig_Editor_Setup.md) · `Scripts/setup-step20-5-kit-configs.mjs`
 
 ## Related
 
 - Stats authority: [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md)
-- Automated wiring: `Scripts/setup-alona-19b-sun-shrine.mjs` · `Scripts/setup-alona-19a-functional.mjs` (preserves buildable after 19b)
+- Automated wiring: `Scripts/setup-alona-19b-sun-shrine.mjs` · `Scripts/setup-alona-19a-functional.mjs` (preserves buildable after 19b) · `Scripts/setup-step20-5-kit-configs.mjs`

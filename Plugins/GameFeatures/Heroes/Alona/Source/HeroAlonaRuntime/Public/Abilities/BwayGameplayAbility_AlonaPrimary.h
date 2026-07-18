@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_AlonaBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_AlonaPrimary.generated.h"
 
@@ -12,7 +12,7 @@ HEROALONARUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Alona_PrimaryAtt
  * Alona LMB — light projectile. Sheet: Base 28, Scaling 0.25.
  */
 UCLASS()
-class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaPrimary : public UBwayGameplayAbility_Base
+class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaPrimary : public UBwayGameplayAbility_AlonaBase
 {
 	GENERATED_BODY()
 

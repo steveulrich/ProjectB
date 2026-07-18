@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_ArgusBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_NoRetreat.generated.h"
 
@@ -11,7 +11,7 @@ BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Argus_NoRetr
  * Straight-line shoulder charge; damages + knocks back first enemy hit. CD 12s. Damage 2 / 0.4.
  */
 UCLASS()
-class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_NoRetreat : public UBwayGameplayAbility_Base
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_NoRetreat : public UBwayGameplayAbility_ArgusBase
 {
 	GENERATED_BODY()
 
@@ -23,6 +23,11 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+	virtual float GetKitCooldownSeconds(const UBwayArgusKitConfig& Config) const override
+	{
+		return Config.NoRetreatCooldown;
+	}
 
 	UFUNCTION()
 	void PerformChargeTrace();
@@ -56,4 +61,12 @@ private:
 	FVector ChargeDirection = FVector::ForwardVector;
 	bool bHasHitEnemy = false;
 	static constexpr float ChargeTraceInterval = 0.016f;
+
+	float ActiveChargeDistance = 1000.f;
+	float ActiveChargeDuration = 0.4f;
+	float ActiveTraceRadius = 120.f;
+	float ActiveBaseDamage = 2.f;
+	float ActiveDamageScaling = 0.4f;
+	float ActiveKnockbackStrength = 1200.f;
+	float ActiveKnockbackUpward = 250.f;
 };

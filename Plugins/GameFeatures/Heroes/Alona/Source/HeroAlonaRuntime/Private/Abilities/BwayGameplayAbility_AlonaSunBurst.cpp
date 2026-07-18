@@ -60,9 +60,23 @@ void UBwayGameplayAbility_AlonaSunBurst::PerformBurst()
 		return;
 	}
 
+	float LocalRadius = BurstRadius;
+	float LocalBaseDamage = AbilityBaseDamage;
+	float LocalScaling = DamageScaling;
+	float LocalKnockbackStrength = KnockbackStrength;
+	float LocalKnockbackUpward = KnockbackUpward;
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		LocalRadius = Config->SunBurstRadius;
+		LocalBaseDamage = Config->SunBurstBaseDamage;
+		LocalScaling = Config->SunBurstDamageScaling;
+		LocalKnockbackStrength = Config->SunBurstKnockbackStrength;
+		LocalKnockbackUpward = Config->SunBurstKnockbackUpward;
+	}
+
 	const FVector Origin = CachedCharacter->GetActorLocation();
-	const float Damage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
-	TArray<ABwayCharacterWithAbilities*> Enemies = GetEnemiesInRadius(Origin, BurstRadius);
+	const float Damage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
+	TArray<ABwayCharacterWithAbilities*> Enemies = GetEnemiesInRadius(Origin, LocalRadius);
 
 	for (ABwayCharacterWithAbilities* Enemy : Enemies)
 	{
@@ -79,6 +93,6 @@ void UBwayGameplayAbility_AlonaSunBurst::PerformBurst()
 			KnockDir = CachedCharacter->GetActorForwardVector().GetSafeNormal2D();
 		}
 
-		ApplyKnockbackToEnemy(Enemy, KnockDir * KnockbackStrength + FVector(0.f, 0.f, KnockbackUpward));
+		ApplyKnockbackToEnemy(Enemy, KnockDir * LocalKnockbackStrength + FVector(0.f, 0.f, LocalKnockbackUpward));
 	}
 }

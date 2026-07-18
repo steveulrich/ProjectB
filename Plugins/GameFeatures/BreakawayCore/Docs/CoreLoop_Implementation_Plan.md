@@ -1277,7 +1277,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
 | **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
 | **20** | **20a C++ landed; Editor wiring + PIE open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) |
-| **20.5** | **Open** | Retrofit Argus + Alona kit config DAs (match Korryn `UBwayKorrynKitConfig` pattern) |
+| **20.5** | **Assets wired; PIE + 3/3 cold starts open** | Argus + Alona kit configs; [Step20_5_KitConfig_Editor_Setup.md](./Step20_5_KitConfig_Editor_Setup.md) |
 | **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
 
@@ -1529,6 +1529,8 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 ---
 
 ### Step 20.5 — Hero kit config retrofit (Argus + Alona)
+
+**Status:** **Assets wired** — manual PIE + 3/3 cold starts open. See [Step20_5_KitConfig_Editor_Setup.md](./Step20_5_KitConfig_Editor_Setup.md).
 
 **Goal:** Give Argus and Alona the same **one DA per hero** kit-tuning pattern introduced for Korryn in 20a (`UBwayKorrynKitConfig` + soft ref from abilities).
 

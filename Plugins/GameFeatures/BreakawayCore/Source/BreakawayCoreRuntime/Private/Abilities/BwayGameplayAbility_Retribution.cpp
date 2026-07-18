@@ -42,6 +42,32 @@ void UBwayGameplayAbility_Retribution::ActivateAbility(
 		return;
 	}
 
+	ActiveTraceRadius = TraceRadius;
+	ActiveTraceDistance = TraceDistance;
+	ActiveUppercutBaseDamage = UppercutBaseDamage;
+	ActiveDownSmashBaseDamage = DownSmashBaseDamage;
+	ActiveDamageScaling = DamageScaling;
+	ActiveUppercutKnockback = UppercutKnockback;
+	ActiveUppercutUpward = UppercutUpward;
+	ActiveDownSmashKnockback = DownSmashKnockback;
+	ActiveDownSmashDownward = DownSmashDownward;
+	float LocalUppercutDelay = UppercutDelay;
+	float LocalDownSmashDelay = DownSmashDelay;
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		ActiveTraceRadius = Config->RetributionTraceRadius;
+		ActiveTraceDistance = Config->RetributionTraceDistance;
+		ActiveUppercutBaseDamage = Config->RetributionUppercutBaseDamage;
+		ActiveDownSmashBaseDamage = Config->RetributionDownSmashBaseDamage;
+		ActiveDamageScaling = Config->RetributionDamageScaling;
+		LocalUppercutDelay = Config->RetributionUppercutDelay;
+		LocalDownSmashDelay = Config->RetributionDownSmashDelay;
+		ActiveUppercutKnockback = Config->RetributionUppercutKnockback;
+		ActiveUppercutUpward = Config->RetributionUppercutUpward;
+		ActiveDownSmashKnockback = Config->RetributionDownSmashKnockback;
+		ActiveDownSmashDownward = Config->RetributionDownSmashDownward;
+	}
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -63,14 +89,14 @@ void UBwayGameplayAbility_Retribution::ActivateAbility(
 		UppercutTimerHandle,
 		this,
 		&UBwayGameplayAbility_Retribution::PerformUppercut,
-		UppercutDelay,
+		LocalUppercutDelay,
 		false);
 
 	World->GetTimerManager().SetTimer(
 		DownSmashTimerHandle,
 		this,
 		&UBwayGameplayAbility_Retribution::PerformDownSmash,
-		DownSmashDelay,
+		LocalDownSmashDelay,
 		false);
 
 	World->GetTimerManager().SetTimer(
@@ -79,7 +105,7 @@ void UBwayGameplayAbility_Retribution::ActivateAbility(
 		{
 			EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		},
-		DownSmashDelay + 0.05f,
+		LocalDownSmashDelay + 0.05f,
 		false);
 }
 
@@ -90,7 +116,7 @@ void UBwayGameplayAbility_Retribution::PerformUppercut()
 		return;
 	}
 
-	ApplyMeleeHit(UppercutBaseDamage, DamageScaling, UppercutKnockback, UppercutUpward);
+	ApplyMeleeHit(ActiveUppercutBaseDamage, ActiveDamageScaling, ActiveUppercutKnockback, ActiveUppercutUpward);
 }
 
 void UBwayGameplayAbility_Retribution::PerformDownSmash()
@@ -100,7 +126,7 @@ void UBwayGameplayAbility_Retribution::PerformDownSmash()
 		return;
 	}
 
-	ApplyMeleeHit(DownSmashBaseDamage, DamageScaling, DownSmashKnockback, -DownSmashDownward);
+	ApplyMeleeHit(ActiveDownSmashBaseDamage, ActiveDamageScaling, ActiveDownSmashKnockback, -ActiveDownSmashDownward);
 }
 
 void UBwayGameplayAbility_Retribution::ApplyMeleeHit(float InAbilityBaseDamage, float Scaling, float KnockbackStrength, float KnockbackZ)
@@ -111,7 +137,7 @@ void UBwayGameplayAbility_Retribution::ApplyMeleeHit(float InAbilityBaseDamage, 
 	}
 
 	const FVector Start = CachedCharacter->GetActorLocation();
-	const FVector End = Start + CachedCharacter->GetActorForwardVector() * TraceDistance;
+	const FVector End = Start + CachedCharacter->GetActorForwardVector() * ActiveTraceDistance;
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(RetributionHit), false, CachedCharacter);
 	TArray<FHitResult> Hits;
@@ -123,7 +149,7 @@ void UBwayGameplayAbility_Retribution::ApplyMeleeHit(float InAbilityBaseDamage, 
 			End,
 			FQuat::Identity,
 			ECC_Pawn,
-			FCollisionShape::MakeSphere(TraceRadius),
+			FCollisionShape::MakeSphere(ActiveTraceRadius),
 			QueryParams);
 	}
 

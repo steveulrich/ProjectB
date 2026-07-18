@@ -63,8 +63,24 @@ void UBwayGameplayAbility_ForGlory::PerformKick()
 		return;
 	}
 
+	float LocalTraceRadius = TraceRadius;
+	float LocalTraceDistance = TraceDistance;
+	float LocalBaseDamage = AbilityBaseDamage;
+	float LocalScaling = DamageScaling;
+	float LocalKnockbackStrength = KnockbackStrength;
+	float LocalKnockbackUpward = KnockbackUpward;
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		LocalTraceRadius = Config->ForGloryTraceRadius;
+		LocalTraceDistance = Config->ForGloryTraceDistance;
+		LocalBaseDamage = Config->ForGloryBaseDamage;
+		LocalScaling = Config->ForGloryDamageScaling;
+		LocalKnockbackStrength = Config->ForGloryKnockbackStrength;
+		LocalKnockbackUpward = Config->ForGloryKnockbackUpward;
+	}
+
 	const FVector Start = CachedCharacter->GetActorLocation();
-	const FVector End = Start + CachedCharacter->GetActorForwardVector() * TraceDistance;
+	const FVector End = Start + CachedCharacter->GetActorForwardVector() * LocalTraceDistance;
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(ForGloryKick), false, CachedCharacter);
 	TArray<FHitResult> Hits;
@@ -76,11 +92,11 @@ void UBwayGameplayAbility_ForGlory::PerformKick()
 			End,
 			FQuat::Identity,
 			ECC_Pawn,
-			FCollisionShape::MakeSphere(TraceRadius),
+			FCollisionShape::MakeSphere(LocalTraceRadius),
 			QueryParams);
 	}
 
-	const float Damage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
+	const float Damage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
 	TSet<TObjectPtr<ABwayCharacterWithAbilities>> Damaged;
 	for (const FHitResult& Hit : Hits)
 	{
@@ -94,7 +110,7 @@ void UBwayGameplayAbility_ForGlory::PerformKick()
 		ApplyDamageToEnemy(HitCharacter, Damage);
 
 		FVector KnockDir = CachedCharacter->GetActorForwardVector().GetSafeNormal2D();
-		ApplyKnockbackToEnemy(HitCharacter, KnockDir * KnockbackStrength + FVector(0.f, 0.f, KnockbackUpward));
+		ApplyKnockbackToEnemy(HitCharacter, KnockDir * LocalKnockbackStrength + FVector(0.f, 0.f, LocalKnockbackUpward));
 		break; // Single-target kick
 	}
 }

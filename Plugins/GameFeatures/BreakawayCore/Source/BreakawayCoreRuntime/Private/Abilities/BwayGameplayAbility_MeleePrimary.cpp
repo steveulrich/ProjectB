@@ -42,11 +42,23 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 		return;
 	}
 
+	float LocalBaseDamage = AbilityBaseDamage;
+	float LocalScaling = DamageScaling;
+	float LocalTraceRadius = TraceRadius;
+	float LocalTraceDistance = TraceDistance;
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		LocalBaseDamage = Config->PrimaryBaseDamage;
+		LocalScaling = Config->PrimaryDamageScaling;
+		LocalTraceRadius = Config->PrimaryTraceRadius;
+		LocalTraceDistance = Config->PrimaryTraceDistance;
+	}
+
 	const FVector Start = Character->GetActorLocation();
-	const FVector End = Start + Character->GetActorForwardVector() * TraceDistance;
+	const FVector End = Start + Character->GetActorForwardVector() * LocalTraceDistance;
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(MeleePrimary), false, Character);
-	FCollisionShape Shape = FCollisionShape::MakeSphere(TraceRadius);
+	FCollisionShape Shape = FCollisionShape::MakeSphere(LocalTraceRadius);
 
 	TArray<FHitResult> Hits;
 	if (UWorld* World = Character->GetWorld())
@@ -54,7 +66,7 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 		World->SweepMultiByChannel(Hits, Start, End, FQuat::Identity, ECC_Pawn, Shape, QueryParams);
 	}
 
-	const float AppliedDamage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
+	const float AppliedDamage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
 
 	TSet<TObjectPtr<ABwayCharacterWithAbilities>> DamagedTargets;
 	for (const FHitResult& Hit : Hits)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_AlonaBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_AlonaSunsGrace.generated.h"
 
@@ -10,7 +10,7 @@ HEROALONARUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Alona_SunsGrace)
  * Alona F — Sun's Grace. Invulnerable short-range teleport dodge. CD 22s.
  */
 UCLASS()
-class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaSunsGrace : public UBwayGameplayAbility_Base
+class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaSunsGrace : public UBwayGameplayAbility_AlonaBase
 {
 	GENERATED_BODY()
 
@@ -23,8 +23,13 @@ protected:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
+	virtual float GetKitCooldownSeconds(const UBwayAlonaKitConfig& Config) const override
+	{
+		return Config.SunsGraceCooldown;
+	}
+
 	FVector ResolveTeleportDirection() const;
-	FVector ResolveTeleportDestination(const FVector& Direction) const;
+	FVector ResolveTeleportDestination(const FVector& Direction, float Distance) const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|SunsGrace", meta = (ClampMin = "0.0"))
 	float TeleportDistance = 750.f;

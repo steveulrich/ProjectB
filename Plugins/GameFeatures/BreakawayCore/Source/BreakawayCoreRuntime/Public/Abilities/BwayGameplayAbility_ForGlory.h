@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_ArgusBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_ForGlory.generated.h"
 
@@ -11,7 +11,7 @@ BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Argus_ForGlo
  * Unstoppable kick that damages and knocks the opponent backwards. CD 25s. Damage 2 / 0.4.
  */
 UCLASS()
-class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_ForGlory : public UBwayGameplayAbility_Base
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_ForGlory : public UBwayGameplayAbility_ArgusBase
 {
 	GENERATED_BODY()
 
@@ -21,6 +21,11 @@ public:
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	virtual float GetKitCooldownSeconds(const UBwayArgusKitConfig& Config) const override
+	{
+		return Config.ForGloryCooldown;
+	}
 
 	void PerformKick();
 

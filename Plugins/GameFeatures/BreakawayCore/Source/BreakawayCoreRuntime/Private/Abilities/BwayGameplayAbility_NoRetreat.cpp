@@ -48,6 +48,24 @@ void UBwayGameplayAbility_NoRetreat::ActivateAbility(
 		return;
 	}
 
+	ActiveChargeDistance = ChargeDistance;
+	ActiveChargeDuration = ChargeDuration;
+	ActiveTraceRadius = TraceRadius;
+	ActiveBaseDamage = AbilityBaseDamage;
+	ActiveDamageScaling = DamageScaling;
+	ActiveKnockbackStrength = KnockbackStrength;
+	ActiveKnockbackUpward = KnockbackUpward;
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		ActiveChargeDistance = Config->NoRetreatChargeDistance;
+		ActiveChargeDuration = Config->NoRetreatChargeDuration;
+		ActiveTraceRadius = Config->NoRetreatTraceRadius;
+		ActiveBaseDamage = Config->NoRetreatBaseDamage;
+		ActiveDamageScaling = Config->NoRetreatDamageScaling;
+		ActiveKnockbackStrength = Config->NoRetreatKnockbackStrength;
+		ActiveKnockbackUpward = Config->NoRetreatKnockbackUpward;
+	}
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -67,7 +85,7 @@ void UBwayGameplayAbility_NoRetreat::ActivateAbility(
 		ChargeDirection = CachedCharacter->GetActorForwardVector().GetSafeNormal2D();
 	}
 
-	const FVector ChargeVelocity = ChargeDirection * (ChargeDistance / FMath::Max(ChargeDuration, 0.05f));
+	const FVector ChargeVelocity = ChargeDirection * (ActiveChargeDistance / FMath::Max(ActiveChargeDuration, 0.05f));
 	CachedCharacter->LaunchCharacter(ChargeVelocity, true, true);
 
 	if (UWorld* World = GetWorld())
@@ -88,7 +106,7 @@ void UBwayGameplayAbility_NoRetreat::ActivateAbility(
 			{
 				EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 			},
-			ChargeDuration,
+			ActiveChargeDuration,
 			false);
 	}
 }
@@ -107,7 +125,7 @@ void UBwayGameplayAbility_NoRetreat::PerformChargeTrace()
 	}
 
 	const FVector TraceStart = CachedCharacter->GetActorLocation();
-	const FVector TraceEnd = TraceStart + (ChargeDirection * TraceRadius);
+	const FVector TraceEnd = TraceStart + (ChargeDirection * ActiveTraceRadius);
 
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(NoRetreatCharge), false, CachedCharacter);
 	TArray<FHitResult> Hits;
@@ -117,7 +135,7 @@ void UBwayGameplayAbility_NoRetreat::PerformChargeTrace()
 		TraceEnd,
 		FQuat::Identity,
 		ECC_Pawn,
-		FCollisionShape::MakeSphere(TraceRadius),
+		FCollisionShape::MakeSphere(ActiveTraceRadius),
 		QueryParams);
 
 	for (const FHitResult& Hit : Hits)
@@ -148,7 +166,7 @@ void UBwayGameplayAbility_NoRetreat::ApplyHitToEnemy(ABwayCharacterWithAbilities
 		return;
 	}
 
-	const float Damage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
+	const float Damage = CalculateScaledDamage(ActiveBaseDamage, ActiveDamageScaling);
 	ApplyDamageToEnemy(Enemy, Damage);
 
 	FVector KnockDir = ChargeDirection;
@@ -156,7 +174,7 @@ void UBwayGameplayAbility_NoRetreat::ApplyHitToEnemy(ABwayCharacterWithAbilities
 	{
 		KnockDir = (Enemy->GetActorLocation() - CachedCharacter->GetActorLocation()).GetSafeNormal2D();
 	}
-	ApplyKnockbackToEnemy(Enemy, KnockDir * KnockbackStrength + FVector(0.f, 0.f, KnockbackUpward));
+	ApplyKnockbackToEnemy(Enemy, KnockDir * ActiveKnockbackStrength + FVector(0.f, 0.f, ActiveKnockbackUpward));
 }
 
 void UBwayGameplayAbility_NoRetreat::EndAbility(

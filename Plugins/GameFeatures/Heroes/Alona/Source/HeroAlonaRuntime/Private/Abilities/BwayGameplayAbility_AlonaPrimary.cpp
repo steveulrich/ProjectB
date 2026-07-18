@@ -56,7 +56,21 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 		return;
 	}
 
-	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * SpawnForwardOffset;
+	float LocalBaseDamage = AbilityBaseDamage;
+	float LocalScaling = DamageScaling;
+	float LocalSpeed = ProjectileSpeed;
+	float LocalLife = ProjectileLifeSpan;
+	float LocalOffset = SpawnForwardOffset;
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		LocalBaseDamage = Config->PrimaryBaseDamage;
+		LocalScaling = Config->PrimaryDamageScaling;
+		LocalSpeed = Config->PrimaryProjectileSpeed;
+		LocalLife = Config->PrimaryProjectileLifeSpan;
+		LocalOffset = Config->PrimarySpawnForwardOffset;
+	}
+
+	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * LocalOffset;
 	FRotator SpawnRotation = CachedCharacter->GetActorRotation();
 	if (const AController* Controller = CachedCharacter->GetController())
 	{
@@ -64,7 +78,7 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 		FRotator ViewRot;
 		Controller->GetPlayerViewPoint(ViewLoc, ViewRot);
 		SpawnRotation = ViewRot;
-		SpawnLocation = CachedCharacter->GetActorLocation() + ViewRot.Vector() * SpawnForwardOffset;
+		SpawnLocation = CachedCharacter->GetActorLocation() + ViewRot.Vector() * LocalOffset;
 	}
 
 	const FTransform SpawnTransform(SpawnRotation, SpawnLocation);
@@ -81,8 +95,8 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 		return;
 	}
 
-	const float Damage = CalculateScaledDamage(AbilityBaseDamage, DamageScaling);
-	Projectile->ConfigureProjectile(CachedCharacter, Damage, ProjectileSpeed, ProjectileLifeSpan);
+	const float Damage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
+	Projectile->ConfigureProjectile(CachedCharacter, Damage, LocalSpeed, LocalLife);
 	Projectile->FinishSpawning(SpawnTransform);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_ArgusBase.h"
 #include "BwayGameplayAbility_MeleePrimary.generated.h"
 
 /**
@@ -9,7 +9,7 @@
  * Blocked when relic carrier (via UBwayGameplayAbility_Base).
  */
 UCLASS()
-class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_MeleePrimary : public UBwayGameplayAbility_Base
+class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_MeleePrimary : public UBwayGameplayAbility_ArgusBase
 {
 	GENERATED_BODY()
 

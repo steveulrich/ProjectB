@@ -46,6 +46,14 @@ void UBwayGameplayAbility_ArgusSlide::ActivateAbility(
 		return;
 	}
 
+	float LocalDashDistance = DashDistance;
+	float LocalDashDuration = DashDuration;
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		LocalDashDistance = Config->SlideDashDistance;
+		LocalDashDuration = Config->SlideDashDuration;
+	}
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -68,7 +76,7 @@ void UBwayGameplayAbility_ArgusSlide::ActivateAbility(
 		DashDirection = CachedCharacter->GetActorForwardVector().GetSafeNormal2D();
 	}
 
-	const FVector DashVelocity = DashDirection * (DashDistance / FMath::Max(DashDuration, 0.05f));
+	const FVector DashVelocity = DashDirection * (LocalDashDistance / FMath::Max(LocalDashDuration, 0.05f));
 	CachedCharacter->LaunchCharacter(DashVelocity, true, true);
 
 	if (UWorld* World = GetWorld())
@@ -80,7 +88,7 @@ void UBwayGameplayAbility_ArgusSlide::ActivateAbility(
 			{
 				EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 			},
-			DashDuration,
+			LocalDashDuration,
 			false);
 	}
 	else

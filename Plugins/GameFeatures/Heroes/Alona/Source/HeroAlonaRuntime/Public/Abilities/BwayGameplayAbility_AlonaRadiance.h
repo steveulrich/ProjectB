@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Abilities/BwayGameplayAbility_Base.h"
+#include "Abilities/BwayGameplayAbility_AlonaBase.h"
 #include "NativeGameplayTags.h"
 #include "BwayGameplayAbility_AlonaRadiance.generated.h"
 
@@ -11,7 +11,7 @@ HEROALONARUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Alona_Radiance);
  * Sheet heal formula: BaseHealPerTick * clamp(AttackStrength / 52, 0, 1.75).
  */
 UCLASS()
-class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaRadiance : public UBwayGameplayAbility_Base
+class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaRadiance : public UBwayGameplayAbility_AlonaBase
 {
 	GENERATED_BODY()
 
@@ -23,6 +23,11 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+	virtual float GetKitCooldownSeconds(const UBwayAlonaKitConfig& Config) const override
+	{
+		return Config.RadianceCooldown;
+	}
 
 	ABwayCharacterWithAbilities* FindClosestAllyToReticule() const;
 
@@ -61,4 +66,7 @@ private:
 	FTimerHandle EndAbilityTimerHandle;
 	float ResolvedHealPerTick = 0.f;
 	int32 RemainingHealTicks = 0;
+
+	float ActiveMaxTargetRange = 2500.f;
+	float ActiveMaxRayDistance = 400.f;
 };

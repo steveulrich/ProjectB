@@ -27,6 +27,7 @@ C++ lives in `BreakawayCoreRuntime`. Content targets this plugin mount (`/Hero_S
 | PlaceBuildable BP | `…/Abilities/GA_BW_Spartacus_BuildablePlacement` |
 | Siege Engine DA | `…/Buildables/DA_BW_BuildableData_SiegeEngine` |
 | Siege Engine actor | `…/Buildables/BP_BW_Buildable_SiegeEngine` |
+| Kit config (20.5) | `/Hero_Spartacus/Kit/DA_BW_ArgusKitConfig` (`UBwayArgusKitConfig`) |
 | GFD | `GFD_Hero_Spartacus` (`UBwayGameFeatureData`) |
 
 ### Hero DA fields (18a + 18b)

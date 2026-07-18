@@ -46,6 +46,29 @@ void UBwayGameplayAbility_AlonaRadiance::ActivateAbility(
 		return;
 	}
 
+	float LocalActiveDuration = ActiveDuration;
+	float LocalHealTickInterval = HealTickInterval;
+	float LocalHealPerTick = HealPerTick;
+	float LocalStrengthDivisor = StrengthDivisor;
+	float LocalMaxHealMultiplier = MaxHealMultiplier;
+	ActiveMaxTargetRange = MaxTargetRange;
+	ActiveMaxRayDistance = MaxRayDistance;
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		LocalActiveDuration = Config->RadianceActiveDuration;
+		LocalHealTickInterval = Config->RadianceHealTickInterval;
+		LocalHealPerTick = Config->RadianceHealPerTick;
+		LocalStrengthDivisor = Config->RadianceStrengthDivisor;
+		LocalMaxHealMultiplier = Config->RadianceMaxHealMultiplier;
+		ActiveMaxTargetRange = Config->RadianceMaxTargetRange;
+		ActiveMaxRayDistance = Config->RadianceMaxRayDistance;
+	}
+
+	// Stash kit-resolved formula inputs onto the UPROPERTY members used by CalculateScaledHealPerTick.
+	HealPerTick = LocalHealPerTick;
+	StrengthDivisor = LocalStrengthDivisor;
+	MaxHealMultiplier = LocalMaxHealMultiplier;
+
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -64,10 +87,10 @@ void UBwayGameplayAbility_AlonaRadiance::ActivateAbility(
 		float AttackStrength = 0.f;
 		float HealMultiplier = 0.f;
 		ResolvedHealPerTick = CalculateScaledHealPerTick(AttackStrength, HealMultiplier);
-		const float SafeTickInterval = FMath::Max(HealTickInterval, KINDA_SMALL_NUMBER);
+		const float SafeTickInterval = FMath::Max(LocalHealTickInterval, KINDA_SMALL_NUMBER);
 		RemainingHealTicks = FMath::Max(
 			1,
-			FMath::FloorToInt((ActiveDuration / SafeTickInterval) + KINDA_SMALL_NUMBER));
+			FMath::FloorToInt((LocalActiveDuration / SafeTickInterval) + KINDA_SMALL_NUMBER));
 
 		UE_LOG(
 			LogBwayAlonaRadiance,
@@ -80,7 +103,7 @@ void UBwayGameplayAbility_AlonaRadiance::ActivateAbility(
 			MaxHealMultiplier,
 			ResolvedHealPerTick,
 			RemainingHealTicks,
-			ActiveDuration);
+			LocalActiveDuration);
 
 		ApplyHealTick();
 
@@ -110,7 +133,7 @@ void UBwayGameplayAbility_AlonaRadiance::ActivateAbility(
 			{
 				EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 			},
-			ActiveDuration,
+			LocalActiveDuration,
 			false);
 	}
 	else
@@ -135,7 +158,7 @@ ABwayCharacterWithAbilities* UBwayGameplayAbility_AlonaRadiance::FindClosestAlly
 		ViewDirection = ViewRotation.Vector().GetSafeNormal();
 	}
 
-	TArray<ABwayCharacterWithAbilities*> Allies = GetAlliesInRadius(CachedCharacter->GetActorLocation(), MaxTargetRange);
+	TArray<ABwayCharacterWithAbilities*> Allies = GetAlliesInRadius(CachedCharacter->GetActorLocation(), ActiveMaxTargetRange);
 
 	// Include self as a valid fallback candidate only if already closest.
 	ABwayCharacterWithAbilities* BestAlly = nullptr;
@@ -150,14 +173,14 @@ ABwayCharacterWithAbilities* UBwayGameplayAbility_AlonaRadiance::FindClosestAlly
 
 		const FVector ToAlly = Ally->GetActorLocation() - ViewLocation;
 		const float DistanceAlongRay = FVector::DotProduct(ToAlly, ViewDirection);
-		if (DistanceAlongRay < 0.f || DistanceAlongRay > MaxTargetRange)
+		if (DistanceAlongRay < 0.f || DistanceAlongRay > ActiveMaxTargetRange)
 		{
 			return;
 		}
 
 		const FVector ClosestPointOnRay = ViewLocation + ViewDirection * DistanceAlongRay;
 		const float DistToRay = FVector::Dist(Ally->GetActorLocation(), ClosestPointOnRay);
-		if (DistToRay > MaxRayDistance)
+		if (DistToRay > ActiveMaxRayDistance)
 		{
 			return;
 		}
