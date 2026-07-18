@@ -14,10 +14,10 @@ struct FOnAttributeChangeData;
 
 /**
  * UBwayCurrencyDisplayWidget
- * 
+ *
  * A widget for displaying currency amounts with an icon.
  * Used for showing purchase costs, player balance, etc.
- * 
+ *
  * Designed to be extended in Blueprint for visual customization.
  */
 UCLASS(Abstract, Blueprintable)
