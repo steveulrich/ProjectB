@@ -22,4 +22,7 @@ namespace BwayGameplayTags
 
 	/** Incoming damage amplification (Circle of Spite). */
 	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Status_DamageAmplified);
+
+	/** Encaged by Rawlins Jail — movement locked; abilities remain usable. */
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Status_Jailed);
 }

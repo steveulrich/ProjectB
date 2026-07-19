@@ -3,7 +3,9 @@
 Persistent arena structures. **Vertical slice:** one buildable per hero, **once per round**, **free** (no gold). Gold spend is deferred to post-slice stat enhancers/items — see [Economy_Gold.md](./Economy_Gold.md).
 
 **Editor wiring (Argus):** [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md)  
-**Editor wiring (Alona):** [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md)
+**Editor wiring (Alona):** [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md)  
+**Editor wiring (Korryn):** [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md)  
+**Editor wiring (Rawlins):** [Rawlins_21b_Editor_Setup.md](./Rawlins_21b_Editor_Setup.md)
 
 ## Core Types
 
@@ -12,6 +14,9 @@ Persistent arena structures. **Vertical slice:** one buildable per hero, **once 
 | `ABuildableActor` | Base — build time, team, persistence flag |
 | `ABwaySiegeEngineBuildable` | Argus rolling barrel — buildable-only DPS, 10s roll |
 | `ABwayAlonaSunShrineBuildable` | Alona heal shrine — 750 HP, 35 HP/s ally aura, 5 m, non-stack |
+| `ABwayKorrynCursedWardBuildable` | Korryn slow ward — 600 HP, 50% slow, 6m |
+| `ABwayRawlinsJailBuildable` | Rawlins Jail floor trap — one-shot, persists until trigger |
+| `ABwayRawlinsJailCage` | Rawlins per-victim cage — 450 HP, movement lock only |
 | `ATurretBase` | AI perception auto-target |
 | `ATrapBase` | Overlap trigger trap |
 | `UBwayBuildableDataAsset` | Class, cost (unused for slice), mesh, per-player cap |
@@ -65,7 +70,7 @@ Invalid confirm (red ghost) keeps preview active; player can reposition and retr
 | Argus | `Hero_Spartacus` / `Argus` | **Siege Engine** — 250 HP; 200 dmg/s vs buildables; 10s roll · [18b](./Argus_18b_Editor_Setup.md) |
 | Alona | `Hero_Alona` | **Sun Shrine** — 750 HP, 35 HP/s, 5m, non-stack · [19b](./Alona_19b_Editor_Setup.md) |
 | Korryn | `Hero_Morgan` / `Hexweaver` | **Cursed Ward** — 600 HP, 50% slow, 6m · [20b/20c](./Korryn_20b_20c_Editor_Setup.md) |
-| Rawlins | `Hero_Rawlins` / `Gunslinger` | **Jail** — 450 HP, cage trap |
+| Rawlins | `Hero_Rawlins` / `Gunslinger` | **Jail** — one-shot floor trap → 450 HP cages · [21b](./Rawlins_21b_Editor_Setup.md) |
 
 Authority: [Breakaway_Hero_Stats_Sheet.md](../../../AI_Planning/Breakaway_Hero_Stats_Sheet.md).
 

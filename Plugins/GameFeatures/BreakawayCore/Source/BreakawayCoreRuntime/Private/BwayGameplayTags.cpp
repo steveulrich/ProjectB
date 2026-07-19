@@ -19,4 +19,6 @@ namespace BwayGameplayTags
 		"MoveSpeedMultiplier reduced by a slow effect.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Status_DamageAmplified, "State.Status.DamageAmplified",
 		"IncomingDamageMultiplier increased (Circle of Spite).");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Status_Jailed, "State.Status.Jailed",
+		"Encaged by Rawlins Jail: Gameplay.MovementStopped while abilities remain usable.");
 }

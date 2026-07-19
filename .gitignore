@@ -76,6 +76,9 @@ Scripts/*
 !Scripts/setup-step19-5-match-hud.mjs
 !Scripts/setup-korryn-20a-functional.mjs
 !Scripts/setup-korryn-20b-cursed-ward.mjs
+!Scripts/setup-rawlins-21a-functional.mjs
+!Scripts/setup-rawlins-21b-jail.mjs
+!Scripts/setup-rawlins-21c-parity.mjs
 !Scripts/lib/
 
 # AI Planning probe / setup artifacts (keep markdown plans tracked)

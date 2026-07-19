@@ -1278,7 +1278,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
 | **20** | **20b/20c C++ landed; Editor wiring + PIE + 3/3 open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md) |
 | **20.5** | **Assets wired; PIE + 3/3 cold starts open** | Argus + Alona kit configs; [Step20_5_KitConfig_Editor_Setup.md](./Step20_5_KitConfig_Editor_Setup.md) |
-| **21** | **Open** | Rawlins (`Hero_Rawlins` / `Gunslinger` folder) |
+| **21** | **Passed** | Rawlins (`Hero_Rawlins` / `Gunslinger`) 21a–21c; all four slice heroes on `B_BW_Experience_Dev`; [Rawlins_21a_Editor_Setup.md](./Rawlins_21a_Editor_Setup.md) · [Rawlins_21b_Editor_Setup.md](./Rawlins_21b_Editor_Setup.md) · [Rawlins_21c_Editor_Setup.md](./Rawlins_21c_Editor_Setup.md) |
 | **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
 
 ---
