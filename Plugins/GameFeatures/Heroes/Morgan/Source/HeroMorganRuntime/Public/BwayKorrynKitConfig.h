@@ -3,6 +3,8 @@
 #include "Engine/DataAsset.h"
 #include "BwayKorrynKitConfig.generated.h"
 
+class UBwayProjectilePresentationData;
+
 /**
  * Data-driven Korryn kit values for Steps 20a–20c.
  * Sheet defaults are authoritative when the DA is present; C++ ability defaults are fallbacks.
@@ -39,6 +41,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary", meta = (ClampMin = "1"))
 	int32 ArmorShredMaxStacks = 5;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary|Presentation")
+	TSoftObjectPtr<UBwayProjectilePresentationData> PrimaryProjectilePresentation;
 
 	// --- Flock ---
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Flock", meta = (ClampMin = "0.05"))

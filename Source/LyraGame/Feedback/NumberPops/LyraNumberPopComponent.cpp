@@ -9,3 +9,8 @@ ULyraNumberPopComponent::ULyraNumberPopComponent(const FObjectInitializer& Objec
 {
 }
 
+void ULyraNumberPopComponent::AddNumberPop(const FLyraNumberPopRequest& NewRequest)
+{
+	(void)NewRequest;
+}
+

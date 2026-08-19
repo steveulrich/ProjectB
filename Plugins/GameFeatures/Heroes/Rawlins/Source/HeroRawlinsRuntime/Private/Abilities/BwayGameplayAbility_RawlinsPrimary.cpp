@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayAbility_RawlinsPrimary.h"
 
 #include "BwayGameplayTags.h"
+#include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "Projectiles/BwayRawlinsBulletProjectile.h"
@@ -57,6 +58,7 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 	ActiveSpawnForwardOffset = SpawnForwardOffset;
 	ActiveShotCount = ShotCount;
 	ActiveShotInterval = ShotInterval;
+	ActiveProjectilePresentation.Reset();
 	if (const UBwayRawlinsKitConfig* Config = ResolveKitConfig())
 	{
 		ActiveBaseDamage = Config->PrimaryBaseDamage;
@@ -66,6 +68,7 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 		ActiveSpawnForwardOffset = Config->PrimarySpawnForwardOffset;
 		ActiveShotCount = Config->PrimaryShotCount;
 		ActiveShotInterval = Config->PrimaryShotInterval;
+		ActiveProjectilePresentation = Config->PrimaryProjectilePresentation;
 	}
 
 	if (!ProjectileClass || ActiveShotCount < 1)
@@ -156,6 +159,10 @@ void UBwayGameplayAbility_RawlinsPrimary::SpawnShot()
 	}
 
 	const float Damage = CalculateScaledDamage(ActiveBaseDamage, ActiveDamageScaling);
+	if (UBwayProjectilePresentationData* Presentation = ActiveProjectilePresentation.LoadSynchronous())
+	{
+		Projectile->ApplyPresentation(Presentation);
+	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, ActiveProjectileSpeed, ActiveProjectileLifeSpan);
 	Projectile->FinishSpawning(SpawnTransform);
 	++ShotsFired;

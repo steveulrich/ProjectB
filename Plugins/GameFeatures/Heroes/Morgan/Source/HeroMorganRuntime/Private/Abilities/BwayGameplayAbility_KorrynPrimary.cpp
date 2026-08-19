@@ -2,6 +2,7 @@
 
 #include "Abilities/BwayGameplayEffect_KorrynEffects.h"
 #include "BwayGameplayTags.h"
+#include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "Projectiles/BwayKorrynPrimaryProjectile.h"
@@ -62,12 +63,14 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 	float LocalScaling = DamageScaling;
 	float LocalSpeed = ProjectileSpeed;
 	float LocalLife = ProjectileLifeSpan;
+	TSoftObjectPtr<UBwayProjectilePresentationData> PresentationSoft;
 	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
 	{
 		LocalBaseDamage = Config->PrimaryBaseDamage;
 		LocalScaling = Config->PrimaryDamageScaling;
 		LocalSpeed = Config->PrimaryProjectileSpeed;
 		LocalLife = Config->PrimaryProjectileLifeSpan;
+		PresentationSoft = Config->PrimaryProjectilePresentation;
 	}
 
 	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * SpawnForwardOffset;
@@ -96,6 +99,10 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 	}
 
 	const float Damage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
+	if (UBwayProjectilePresentationData* Presentation = PresentationSoft.LoadSynchronous())
+	{
+		Projectile->ApplyPresentation(Presentation);
+	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, LocalSpeed, LocalLife, ArmorShredEffectClass);
 	Projectile->FinishSpawning(SpawnTransform);
 

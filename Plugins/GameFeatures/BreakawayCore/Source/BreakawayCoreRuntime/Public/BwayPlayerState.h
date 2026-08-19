@@ -152,6 +152,22 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void AddObjectiveScore(int32 Amount = 1);
 
+	/** Server-only: Record damage dealt this match */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddDamageDealt(int32 Amount);
+
+	/** Server-only: Record healing done this match */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddHealingDone(int32 Amount);
+
+	/** Get damage dealt this match */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetDamageDealt() const { return DamageDealt; }
+
+	/** Get healing done this match */
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetHealingDone() const { return HealingDone; }
+
 	/** Server-only: Reset all match stats (between matches) */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void ResetMatchStats();

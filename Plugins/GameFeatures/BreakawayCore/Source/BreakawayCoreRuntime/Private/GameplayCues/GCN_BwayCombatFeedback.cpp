@@ -1,10 +1,13 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GameplayCues/GCN_BwayCombatFeedback.h"
+
+#include "Combat/BwayCombatReadabilityConfig.h"
+#include "Combat/BwayCombatReadabilityLibrary.h"
+#include "GameFramework/PlayerController.h"
 #include "GameplayEffectTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "NiagaraFunctionLibrary.h"
-#include "GameFramework/PlayerController.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(GCN_BwayCombatFeedback)
 
@@ -19,22 +22,25 @@ bool UGCN_BwayCombatFeedback::OnExecute_Implementation(AActor* MyTarget, const F
 		return false;
 	}
 
+	const UBwayCombatReadabilityConfig* FeedbackConfig =
+		UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(MyTarget);
+
 	FVector EffectLocation = MyTarget->GetActorLocation();
 	if (!Parameters.Location.IsNearlyZero())
 	{
 		EffectLocation = FVector(Parameters.Location);
 	}
 
-	// Play feedback sound
 	if (FeedbackSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(MyTarget, FeedbackSound, EffectLocation);
 	}
 
-	// Apply camera shake to the instigator
-	if (FeedbackCameraShake)
+	const bool bSkipShake = FeedbackConfig && FeedbackConfig->bReduceCameraShake;
+	const bool bSkipHaptics = FeedbackConfig && FeedbackConfig->bReduceMotionHaptics;
+
+	if (FeedbackCameraShake && !bSkipShake)
 	{
-		// Get the instigator's player controller for client camera shake
 		if (const AActor* Instigator = Parameters.EffectContext.GetInstigator())
 		{
 			if (const APawn* InstigatorPawn = Cast<APawn>(Instigator))
@@ -47,7 +53,20 @@ bool UGCN_BwayCombatFeedback::OnExecute_Implementation(AActor* MyTarget, const F
 		}
 	}
 
-	// Spawn VFX
+	if (FeedbackForceFeedback && !bSkipHaptics)
+	{
+		if (const AActor* Instigator = Parameters.EffectContext.GetInstigator())
+		{
+			if (const APawn* InstigatorPawn = Cast<APawn>(Instigator))
+			{
+				if (APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController()))
+				{
+					PC->ClientPlayForceFeedback(FeedbackForceFeedback);
+				}
+			}
+		}
+	}
+
 	if (FeedbackVFX)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -58,8 +77,7 @@ bool UGCN_BwayCombatFeedback::OnExecute_Implementation(AActor* MyTarget, const F
 			FVector::OneVector,
 			true,
 			true,
-			ENCPoolMethod::AutoRelease
-		);
+			ENCPoolMethod::AutoRelease);
 	}
 
 	return true;

@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayAbility_AlonaPrimary.h"
 
 #include "BwayGameplayTags.h"
+#include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "Projectiles/BwayAlonaPrimaryProjectile.h"
@@ -61,6 +62,7 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 	float LocalSpeed = ProjectileSpeed;
 	float LocalLife = ProjectileLifeSpan;
 	float LocalOffset = SpawnForwardOffset;
+	TSoftObjectPtr<UBwayProjectilePresentationData> PresentationSoft;
 	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
 	{
 		LocalBaseDamage = Config->PrimaryBaseDamage;
@@ -68,6 +70,7 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 		LocalSpeed = Config->PrimaryProjectileSpeed;
 		LocalLife = Config->PrimaryProjectileLifeSpan;
 		LocalOffset = Config->PrimarySpawnForwardOffset;
+		PresentationSoft = Config->PrimaryProjectilePresentation;
 	}
 
 	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * LocalOffset;
@@ -96,6 +99,10 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 	}
 
 	const float Damage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
+	if (UBwayProjectilePresentationData* Presentation = PresentationSoft.LoadSynchronous())
+	{
+		Projectile->ApplyPresentation(Presentation);
+	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, LocalSpeed, LocalLife);
 	Projectile->FinishSpawning(SpawnTransform);
 

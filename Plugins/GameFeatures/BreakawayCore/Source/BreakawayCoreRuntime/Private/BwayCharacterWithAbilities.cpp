@@ -15,12 +15,15 @@
 #include "GameFramework/PlayerState.h"
 #include "BwayPlayerState.h"
 #include "AbilitySystem/LyraAbilitySet.h"
-#include "AbilitySystem/LyraAbilitySystemComponent.h" // Assuming Lyra's ASC
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroStatsLibrary.h"
-#include "Animation/AnimBlueprint.h" // For UAnimBlueprint
-#include "Materials/MaterialInstanceDynamic.h"
+#include "Movement/BwayMovementFeelConfig.h"
+#include "Animation/AnimBlueprint.h"
+#include "Player/LyraPlayerState.h"
+#include "Teams/LyraTeamDisplayAsset.h"
+#include "Teams/LyraTeamSubsystem.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -161,27 +164,76 @@ FCollisionQueryParams ABwayCharacterWithAbilities::GetIgnoreCharacterParams() co
 // Optional method to update character appearance based on team
 void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 {
-	const APlayerState* PS = GetPlayerState();
-	const ABwayGameState* BwayGS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
-	const int32 TeamIndex = (BwayGS && PS) ? BwayGS->GetPlayerTeam(PS) : -1;
-
 	USkeletalMeshComponent* MeshComp = GetMesh();
-	if (!MeshComp || TeamIndex < 0)
+	if (!MeshComp)
 	{
 		return;
 	}
 
-	const float TeamScalar = static_cast<float>(TeamIndex);
-	const FLinearColor TeamColor = (TeamIndex == 0) ? FLinearColor::Blue : FLinearColor::Red;
-
-	for (int32 MaterialIndex = 0; MaterialIndex < MeshComp->GetNumMaterials(); ++MaterialIndex)
+	UWorld* World = GetWorld();
+	if (!World)
 	{
-		if (UMaterialInstanceDynamic* MID = MeshComp->CreateAndSetMaterialInstanceDynamic(MaterialIndex))
+		return;
+	}
+
+	ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>();
+	if (!TeamSubsystem)
+	{
+		return;
+	}
+
+	bool bIsPartOfTeam = false;
+	int32 TeamId = INDEX_NONE;
+	TeamSubsystem->FindTeamFromActor(this, bIsPartOfTeam, TeamId);
+	if (!bIsPartOfTeam || TeamId == INDEX_NONE)
+	{
+		if (const ALyraPlayerState* LPS = GetPlayerState<ALyraPlayerState>())
 		{
-			MID->SetScalarParameterValue(FName("TeamColor"), TeamScalar);
-			MID->SetVectorParameterValue(FName("TeamTint"), TeamColor);
+			TeamId = LPS->GetTeamId();
 		}
 	}
+
+	if (TeamId == INDEX_NONE)
+	{
+		return;
+	}
+
+	// Prefer Lyra team display assets (Green=1 / Blue=2 for B_BW_TeamSetup_TwoTeams)
+	// instead of hardcoded Blue/Red Breakaway indices that fought the nameplate colors.
+	if (ULyraTeamDisplayAsset* DisplayAsset = TeamSubsystem->GetTeamDisplayAsset(TeamId, INDEX_NONE))
+	{
+		DisplayAsset->ApplyToMeshComponent(MeshComp);
+	}
+}
+
+void ABwayCharacterWithAbilities::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	BindTeamAppearanceListener();
+	UpdateAppearanceForTeam();
+}
+
+void ABwayCharacterWithAbilities::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	BindTeamAppearanceListener();
+	UpdateAppearanceForTeam();
+}
+
+void ABwayCharacterWithAbilities::BindTeamAppearanceListener()
+{
+	if (bBoundTeamAppearanceListener)
+	{
+		return;
+	}
+
+	GetTeamChangedDelegateChecked().AddDynamic(this, &ThisClass::HandleTeamAppearanceChanged);
+	bBoundTeamAppearanceListener = true;
+}
+
+void ABwayCharacterWithAbilities::HandleTeamAppearanceChanged(UObject* /*ObjectChangingTeam*/, int32 /*OldTeamID*/, int32 /*NewTeamID*/)
+{
+	UpdateAppearanceForTeam();
 }
 
 void ABwayCharacterWithAbilities::TryPickupOverlappingRelic()
@@ -347,6 +399,7 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 			MainMesh->SetHiddenInGame(false);
 			MainMesh->SetVisibility(true);
 			MainMesh->SetSkeletalMesh(HeroData->HeroMesh);
+			MainMesh->SetRelativeTransform(HeroData->HeroMeshRelativeTransform);
 		}
 		else
 		{
@@ -373,6 +426,17 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 	}
 
 	UpdateAppearanceForTeam();
+
+	if (!HeroData->MovementFeelConfig.IsNull())
+	{
+		if (const UBwayMovementFeelConfig* FeelConfig = HeroData->MovementFeelConfig.LoadSynchronous())
+		{
+			if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
+			{
+				MoveComp->ApplyMovementFeelConfig(FeelConfig);
+			}
+		}
+	}
 }
 
 void ABwayCharacterWithAbilities::OnRep_ReplicatedHeroId()

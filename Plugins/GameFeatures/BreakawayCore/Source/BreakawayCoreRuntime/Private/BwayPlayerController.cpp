@@ -14,6 +14,8 @@
 #include "CommonActivatableWidget.h"
 #include "CommonUIExtensions.h"
 #include "Development/BwayCheatManager.h"
+#include "Combat/BwayCombatNumberPopComponent.h"
+#include "Combat/BwayNameplatePolicyComponent.h"
 #include "GameplayTagContainer.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
 #include "GameFramework/Pawn.h"
@@ -27,6 +29,9 @@ ABwayPlayerController::ABwayPlayerController(const FObjectInitializer& ObjectIni
 	// Override the cheat manager with our Breakaway-specific one
 	CheatClass = UBwayCheatManager::StaticClass();
 #endif
+
+	CombatNumberPopComponent = CreateDefaultSubobject<UBwayCombatNumberPopComponent>(TEXT("CombatNumberPopComponent"));
+	NameplatePolicyComponent = CreateDefaultSubobject<UBwayNameplatePolicyComponent>(TEXT("NameplatePolicyComponent"));
 }
 
 void ABwayPlayerController::ShowHeroSelect()

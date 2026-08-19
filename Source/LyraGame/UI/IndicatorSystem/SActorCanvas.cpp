@@ -357,6 +357,10 @@ void SActorCanvas::OnArrangeChildren(const FGeometry& AllottedGeometry, FArrange
 			FVector2D SlotSize, SlotOffset, SlotPaddingMin, SlotPaddingMax;
 			GetOffsetAndSize(Indicator, SlotSize, SlotOffset, SlotPaddingMin, SlotPaddingMax);
 
+			const float IndicatorScale = Indicator->GetScreenScale();
+			SlotSize *= IndicatorScale;
+			SlotOffset *= IndicatorScale;
+
 			bool bWasIndicatorClamped = false;
 
 			// If we don't have to clamp this thing, we can skip a lot of work

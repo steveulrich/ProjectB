@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Character/LyraCharacterMovementComponent.h"
-#include "InputAction.h" // Add this include
+#include "InputAction.h"
 #include "GameplayTagContainer.h"
 #include "AbilitySystemComponent.h"
 #include "BwayCharacterMovementComponent.generated.h"
 
 class UAbilitySystemComponent;
+class UBwayMovementFeelConfig;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDashStartDelegate);
 
@@ -41,6 +42,10 @@ public:
 	virtual void PhysFalling(float DeltaTime, int32 Iterations) override;
 	virtual void ProcessLanded(const FHitResult& Hit, float RemainingTime, int32 Iterations) override;
 	virtual bool IsCustomMovementMode(uint8 TestCustomMovementMode) const { return MovementMode == MOVE_Custom && CustomMovementMode == TestCustomMovementMode; }
+	virtual bool CanAttemptJump() const override;
+	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
+	virtual class FNetworkPredictionData_Client* GetPredictionData_Client() const override;
+	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	//~ End UCharacterMovementComponent Interface
 
 	// --- Slide Parameters (Derived from Lua, exposed for tuning) ---
@@ -75,7 +80,7 @@ public:
 
 	/** Base friction factor used in slope calculation. Adjusted by slope power curve. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
-	float SlideBaseFrictionFactor = 8.0f; // Needs tuning, replaces implicit Lua base
+	float SlideBaseFrictionFactor = 8.0f;
 
 	/** High friction factor applied immediately upon hitting a wall during slide. Lua: 20.0 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
@@ -85,7 +90,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ClampMax = "90.0", ForceUnits="degrees"))
 	float SlideWalkableFloorAngle = 60.0f;
 
-	/** Gravity scale multiplier applied when falling *if* the fall originated from a slide and input is held. Lua: fSlideGravity */
+	/** Legacy slide gravity scale (kept for existing content). Prefer SlideJumpGravityScale for slide-jump. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
 	float SlideGravityScale = 1.0f;
 
@@ -93,17 +98,33 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="cm/s"))
 	float MinSlideSpeed = 100.0f;
 
-	/** Multiplier applied to horizontal velocity when landing shortly after a slide-jump. Lua: 0.5 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	/** Multiplier applied to horizontal velocity when landing from a slide-jump. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float SlideJumpLandedVelocityFactor = 0.5f;
 
-	/** Time window after a slide-jump during which the landing velocity penalty applies (seconds). Corresponds to Lua's fSlideJumpTimer check. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="s"))
-	float SlideJumpLandingGracePeriod = 0.2f;
-
 	/** Multiplier applied to horizontal velocity when jumping out of a slide. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "1.0"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "1.0"))
 	float SlideJumpMomentumBoost = 1.2f;
+
+	/** Minimum horizontal speed after a successful slide-jump (cm/s). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0", ForceUnits = "cm/s"))
+	float SlideJumpMinHorizontalSpeed = 400.0f;
+
+	/** Maximum horizontal speed after a successful slide-jump (cm/s). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0", ForceUnits = "cm/s"))
+	float SlideJumpMaxHorizontalSpeed = 2000.0f;
+
+	/** Absolute AirControl while slide-jumping (normal jumps use CMC AirControl). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float SlideJumpAirControl = 0.15f;
+
+	/** GravityScale applied only while slide-jump state is active. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0"))
+	float SlideJumpGravityScale = 1.0f;
+
+	/** If true, keep slide-jump state until landing (or hard mode interrupt). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump")
+	bool bPreserveSlideJumpUntilLanding = true;
 
 	// --- Slide Juice (Camera) ---
 	/** Maximum FOV offset to add when sliding at maximum speed. */
@@ -121,7 +142,7 @@ public:
 	// --- Loot Modifiers (Optional) ---
 	/** Gameplay Tag checked on the ASC to determine if loot modifiers should apply. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Modifiers")
-	FGameplayTag CarryingLootTag; // Assign State.Condition.CarryingLoot in BP
+	FGameplayTag CarryingLootTag;
 
 	/** Multiplier applied to SlideMaxSpeedFactor when carrying loot. Lua: 0.7 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Modifiers", meta = (ClampMin = "0.0"))
@@ -144,13 +165,30 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding")
 	bool IsSliding() const { return IsCustomMovementMode((uint8)ECustomMovementMode::CMOVE_Slide); }
 
+	/** Returns true while in the predicted slide-jump aerial state. */
+	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding|Slide Jump")
+	bool IsSlideJumping() const { return bIsSlideJumping; }
+
 	/** Returns a normalized value (0.0 to 1.0) representing the current slide intensity based on velocity. */
 	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding")
 	float GetSlideIntensity() const;
 
-	// Optional delegate if needed by GA
-	// UPROPERTY(BlueprintAssignable, Category = "Character Movement: Sliding")
-	// FSlideEndDelegate OnSlideEndDelegate;
+	/** Applies tunable slide-jump feel values from a data asset (component defaults remain as fallbacks). */
+	UFUNCTION(BlueprintCallable, Category = "Character Movement: Sliding|Slide Jump")
+	void ApplyMovementFeelConfig(const UBwayMovementFeelConfig* Config);
+
+	/**
+	 * Pure helper: boosts and clamps horizontal speed for a slide-jump launch.
+	 * If JumpZ > 0, sets OutVelocity.Z = max(InVelocity.Z, JumpZ). Returns false if MinH > MaxH.
+	 */
+	UFUNCTION(BlueprintPure, Category = "Character Movement: Sliding|Slide Jump")
+	static bool ComputeSlideJumpLaunchVelocity(
+		FVector InVelocity,
+		float JumpZ,
+		float MomentumBoost,
+		float MinHorizontalSpeed,
+		float MaxHorizontalSpeed,
+		UPARAM(ref) FVector& OutVelocity);
 
 protected:
 	//~ Begin UObject Interface
@@ -179,13 +217,15 @@ protected:
 	/** Performs cleanup when exiting the slide state (e.g., capsule restore). */
 	virtual void EndSlide();
 
+	void ClearSlideJumpState();
+
 	// Cached default values restored when exiting slide
 	float DefaultWalkableFloorAngle;
 	FRotator DefaultRotationRate;
 	float DefaultGravityScale;
 
-	// State for slide-jump landing penalty
-	float LastSlideJumpTime = -1.0f;
+	/** Predicted slide-jump aerial state (carried via compressed move flags). */
+	bool bIsSlideJumping = false;
 
 	/** Cached Ability System Component for tag checking. */
 	UPROPERTY(Transient)
@@ -195,6 +235,8 @@ protected:
 
 	void HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData);
 
+	friend class FSavedMove_BwayCharacter;
+
 	// -- END NEW SLIDE -- //
 
 public:
@@ -202,4 +244,35 @@ public:
 	void BindAbilitySystem(UAbilitySystemComponent* InASC);
 	void UnbindAbilitySystem();
 
+};
+
+/** Saved move that carries slide-jump state for client prediction. */
+class FSavedMove_BwayCharacter : public FSavedMove_Character
+{
+public:
+	typedef FSavedMove_Character Super;
+
+	FSavedMove_BwayCharacter()
+		: bSavedIsSlideJumping(0)
+	{
+	}
+
+	virtual void Clear() override;
+	virtual void SetMoveFor(ACharacter* C, float InDeltaTime, FVector const& NewAccel, FNetworkPredictionData_Client_Character& ClientData) override;
+	virtual void PrepMoveFor(ACharacter* C) override;
+	virtual void PostUpdate(ACharacter* C, EPostUpdateMode PostUpdateMode) override;
+	virtual bool CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const override;
+	virtual uint8 GetCompressedFlags() const override;
+
+	uint8 bSavedIsSlideJumping : 1;
+};
+
+class FNetworkPredictionData_Client_BwayCharacter : public FNetworkPredictionData_Client_Character
+{
+public:
+	typedef FNetworkPredictionData_Client_Character Super;
+
+	FNetworkPredictionData_Client_BwayCharacter(const UCharacterMovementComponent& ClientMovement);
+
+	virtual FSavedMovePtr AllocateNewMove() override;
 };

@@ -3,6 +3,7 @@
 #include "Abilities/BwayGameplayEffect_RawlinsCooldowns.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "Character/LyraHealthComponent.h"
+#include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "Projectiles/BwayRawlinsBulletProjectile.h"
@@ -56,6 +57,7 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::ActivateAbility(
 	ActiveProjectileLifeSpan = ProjectileLifeSpan;
 	ActiveSpawnForwardOffset = SpawnForwardOffset;
 	ActiveJuggleUpward = JuggleUpward;
+	ActiveProjectilePresentation.Reset();
 	if (const UBwayRawlinsKitConfig* Config = ResolveKitConfig())
 	{
 		ActiveBaseDamage = Config->BarrageBaseDamagePerBullet;
@@ -66,6 +68,7 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::ActivateAbility(
 		ActiveProjectileLifeSpan = Config->BarrageProjectileLifeSpan;
 		ActiveSpawnForwardOffset = Config->BarrageSpawnForwardOffset;
 		ActiveJuggleUpward = Config->BarrageJuggleUpward;
+		ActiveProjectilePresentation = Config->BarrageProjectilePresentation;
 	}
 
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
@@ -187,6 +190,10 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::SpawnShot()
 
 	const float Damage = CalculateScaledDamage(ActiveBaseDamage, ActiveDamageScaling);
 	const FVector JuggleImpulse(0.f, 0.f, ActiveJuggleUpward);
+	if (UBwayProjectilePresentationData* Presentation = ActiveProjectilePresentation.LoadSynchronous())
+	{
+		Projectile->ApplyPresentation(Presentation);
+	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, ActiveProjectileSpeed, ActiveProjectileLifeSpan, JuggleImpulse);
 	Projectile->FinishSpawning(SpawnTransform);
 	++ShotsFired;

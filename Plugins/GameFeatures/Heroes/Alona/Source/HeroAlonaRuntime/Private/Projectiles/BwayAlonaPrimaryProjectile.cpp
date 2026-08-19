@@ -13,31 +13,17 @@
 
 ABwayAlonaPrimaryProjectile::ABwayAlonaPrimaryProjectile()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	bReplicates = true;
-	SetReplicateMovement(true);
-	SetLifeSpan(3.f);
+	SphereRadius = 12.f;
+	if (CollisionSphere)
+	{
+		CollisionSphere->InitSphereRadius(SphereRadius);
+	}
 
-	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-	SetRootComponent(CollisionSphere);
-	CollisionSphere->InitSphereRadius(SphereRadius);
-	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionSphere->SetCollisionObjectType(ECC_WorldDynamic);
-	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
-	CollisionSphere->SetGenerateOverlapEvents(true);
-	CollisionSphere->CanCharacterStepUpOn = ECB_No;
-
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->UpdatedComponent = CollisionSphere;
-	ProjectileMovement->InitialSpeed = 3200.f;
-	ProjectileMovement->MaxSpeed = 3200.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0.f;
-	ProjectileMovement->bSweepCollision = true;
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->InitialSpeed = 3200.f;
+		ProjectileMovement->MaxSpeed = 3200.f;
+	}
 }
 
 void ABwayAlonaPrimaryProjectile::ConfigureProjectile(
@@ -55,68 +41,21 @@ void ABwayAlonaPrimaryProjectile::ConfigureProjectile(
 		SetOwner(InInstigatorCharacter);
 	}
 
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->InitialSpeed = InSpeed;
-		ProjectileMovement->MaxSpeed = InSpeed;
-		ProjectileMovement->Velocity = GetActorForwardVector() * InSpeed;
-	}
-
-	SetLifeSpan(InLifeSpan);
+	ConfigureMovement(InSpeed, InLifeSpan);
 }
 
-void ABwayAlonaPrimaryProjectile::BeginPlay()
+bool ABwayAlonaPrimaryProjectile::HandleDamageHit(const FHitResult& Hit)
 {
-	Super::BeginPlay();
-
-	if (CollisionSphere)
-	{
-		CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABwayAlonaPrimaryProjectile::OnSphereBeginOverlap);
-	}
-
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->OnProjectileStop.AddDynamic(this, &ABwayAlonaPrimaryProjectile::OnProjectileStop);
-	}
-}
-
-void ABwayAlonaPrimaryProjectile::OnProjectileStop(const FHitResult& ImpactResult)
-{
-	TryApplyDamageToActor(ImpactResult.GetActor());
-	ExpireProjectile();
-}
-
-void ABwayAlonaPrimaryProjectile::OnSphereBeginOverlap(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	if (!OtherActor || OtherActor == this || OtherActor == InstigatorCharacter || OtherActor == GetOwner())
-	{
-		return;
-	}
-
-	TryApplyDamageToActor(OtherActor);
-	if (bHasAppliedDamage)
-	{
-		ExpireProjectile();
-	}
-}
-
-void ABwayAlonaPrimaryProjectile::TryApplyDamageToActor(AActor* HitActor)
-{
+	AActor* HitActor = Hit.GetActor();
 	if (!HasAuthority() || bHasAppliedDamage || !HitActor || HitActor == InstigatorCharacter)
 	{
-		return;
+		return false;
 	}
 
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
 	if (!HitCharacter || !InstigatorCharacter)
 	{
-		return;
+		return false;
 	}
 
 	bool bIsEnemy = false;
@@ -134,20 +73,15 @@ void ABwayAlonaPrimaryProjectile::TryApplyDamageToActor(AActor* HitActor)
 
 	if (!bIsEnemy || DamageAmount <= 0.f)
 	{
-		return;
+		return false;
 	}
 
 	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
 	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter))
 	{
 		bHasAppliedDamage = true;
+		return true;
 	}
-}
 
-void ABwayAlonaPrimaryProjectile::ExpireProjectile()
-{
-	if (HasAuthority())
-	{
-		Destroy();
-	}
+	return false;
 }

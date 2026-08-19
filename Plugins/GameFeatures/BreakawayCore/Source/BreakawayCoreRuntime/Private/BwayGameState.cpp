@@ -17,6 +17,7 @@
 #include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameState/BwayTeamBridgeComponent.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
+#include "Combat/BwayCombatFeedbackRouterComponent.h"
 #include "CommonSessionSubsystem.h"
 
 #include "Engine/Engine.h"
@@ -36,6 +37,7 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	MidfieldDividerComponent = CreateDefaultSubobject<UBwayMidfieldDividerComponent>(TEXT("MidfieldDividerComponent"));
 	TeamBridgeComponent = CreateDefaultSubobject<UBwayTeamBridgeComponent>(TEXT("TeamBridgeComponent"));
 	BuildableRegistryComponent = CreateDefaultSubobject<UBwayBuildableRegistryComponent>(TEXT("BuildableRegistryComponent"));
+	CombatFeedbackRouterComponent = CreateDefaultSubobject<UBwayCombatFeedbackRouterComponent>(TEXT("CombatFeedbackRouterComponent"));
 }
 
 void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

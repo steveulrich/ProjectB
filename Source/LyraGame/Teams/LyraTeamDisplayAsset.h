@@ -5,6 +5,8 @@
 #include "Engine/DataAsset.h"
 #include "LyraTeamDisplayAsset.generated.h"
 
+#define UE_API LYRAGAME_API
+
 struct FPropertyChangedEvent;
 
 class UMaterialInstanceDynamic;
@@ -14,7 +16,7 @@ class AActor;
 class UTexture;
 
 // Represents the display information for team definitions (e.g., colors, display names, textures, etc...)
-UCLASS(BlueprintType)
+UCLASS(MinimalAPI, BlueprintType)
 class ULyraTeamDisplayAsset : public UDataAsset
 {
 	GENERATED_BODY()
@@ -34,16 +36,16 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category=Teams)
-	void ApplyToMaterial(UMaterialInstanceDynamic* Material);
+	UE_API void ApplyToMaterial(UMaterialInstanceDynamic* Material);
 
 	UFUNCTION(BlueprintCallable, Category=Teams)
-	void ApplyToMeshComponent(UMeshComponent* MeshComponent);
+	UE_API void ApplyToMeshComponent(UMeshComponent* MeshComponent);
 
 	UFUNCTION(BlueprintCallable, Category=Teams)
-	void ApplyToNiagaraComponent(UNiagaraComponent* NiagaraComponent);
+	UE_API void ApplyToNiagaraComponent(UNiagaraComponent* NiagaraComponent);
 
 	UFUNCTION(BlueprintCallable, Category=Teams, meta=(DefaultToSelf="TargetActor"))
-	void ApplyToActor(AActor* TargetActor, bool bIncludeChildActors = true);
+	UE_API void ApplyToActor(AActor* TargetActor, bool bIncludeChildActors = true);
 
 public:
 
@@ -53,3 +55,5 @@ public:
 #endif
 	//~End of UObject interface
 };
+
+#undef UE_API

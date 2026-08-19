@@ -12,6 +12,8 @@
 class UUserWidget;
 class UBwayPostRoundSummaryWidget;
 class UBwayRoundManagementComponent;
+class UBwayCombatNumberPopComponent;
+class UBwayNameplatePolicyComponent;
 
 /**
  * ABwayPlayerController
@@ -97,6 +99,12 @@ public:
 	/** Restores mouse capture and hides the cursor for local gameplay (e.g. after frontend UI or hero select). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Input")
 	void RestoreGameplayInputMode();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Combat")
+	TObjectPtr<UBwayCombatNumberPopComponent> CombatNumberPopComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Combat")
+	TObjectPtr<UBwayNameplatePolicyComponent> NameplatePolicyComponent;
 
 protected:
 	virtual void BeginPlay() override;

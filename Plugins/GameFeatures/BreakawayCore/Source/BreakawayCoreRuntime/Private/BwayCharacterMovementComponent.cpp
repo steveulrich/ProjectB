@@ -8,15 +8,26 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "GameFramework/PlayerController.h"
+#include "DrawDebugHelpers.h"
+#include "Engine/World.h"
+#include "Movement/BwayMovementFeelConfig.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBreakawayMovement, Log, All);
+
+namespace BwayMovementCVars
+{
+	static TAutoConsoleVariable<int32> CVarDebugSlideJump(
+		TEXT("bway.Movement.DebugSlideJump"),
+		0,
+		TEXT("When non-zero, draw slide-jump debug state above the character."),
+		ECVF_Cheat);
+}
 
 // --- Constructor ---
 UBwayCharacterMovementComponent::UBwayCharacterMovementComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	// Sensible defaults can be set here, but primarily configured in BP Details panel
-	NavAgentProps.bCanCrouch = true; // Ensure crouching is enabled if slide uses crouch height
+	NavAgentProps.bCanCrouch = true;
 }
 
 // --- Initialization ---
@@ -24,95 +35,139 @@ void UBwayCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 
-	// Cache ASC for efficient tag checking
 	if (GetCharacterOwner())
 	{
 		AbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetCharacterOwner());
 	}
-	DefaultGravityScale = GravityScale; // Cache default gravity
+	DefaultGravityScale = GravityScale;
+}
+
+void UBwayCharacterMovementComponent::ApplyMovementFeelConfig(const UBwayMovementFeelConfig* Config)
+{
+	if (!Config)
+	{
+		return;
+	}
+
+	SlideJumpMomentumBoost = Config->SlideJumpMomentumBoost;
+	SlideJumpMinHorizontalSpeed = Config->SlideJumpMinHorizontalSpeed;
+	SlideJumpMaxHorizontalSpeed = Config->SlideJumpMaxHorizontalSpeed;
+	SlideJumpAirControl = Config->SlideJumpAirControl;
+	SlideJumpGravityScale = Config->SlideJumpGravityScale;
+	SlideJumpLandedVelocityFactor = Config->SlideJumpLandedVelocityFactor;
+	bPreserveSlideJumpUntilLanding = Config->bPreserveSlideJumpUntilLanding;
+}
+
+bool UBwayCharacterMovementComponent::ComputeSlideJumpLaunchVelocity(
+	FVector InVelocity,
+	float JumpZ,
+	float MomentumBoost,
+	float MinHorizontalSpeed,
+	float MaxHorizontalSpeed,
+	FVector& OutVelocity)
+{
+	if (MinHorizontalSpeed > MaxHorizontalSpeed)
+	{
+		OutVelocity = InVelocity;
+		return false;
+	}
+
+	OutVelocity = InVelocity;
+	OutVelocity.X *= MomentumBoost;
+	OutVelocity.Y *= MomentumBoost;
+
+	if (JumpZ > 0.f)
+	{
+		OutVelocity.Z = FMath::Max(OutVelocity.Z, JumpZ);
+	}
+
+	const float HorizSpeedSq = OutVelocity.SizeSquared2D();
+	if (HorizSpeedSq > KINDA_SMALL_NUMBER)
+	{
+		const float HorizSpeed = FMath::Sqrt(HorizSpeedSq);
+		const float ClampedSpeed = FMath::Clamp(HorizSpeed, MinHorizontalSpeed, MaxHorizontalSpeed);
+		const float Scale = ClampedSpeed / HorizSpeed;
+		OutVelocity.X *= Scale;
+		OutVelocity.Y *= Scale;
+	}
+
+	return true;
+}
+
+void UBwayCharacterMovementComponent::ClearSlideJumpState()
+{
+	bIsSlideJumping = false;
 }
 
 // --- Movement Mode Change Handling ---
 void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode PreviousMovementMode, uint8 PreviousCustomMode)
 {
 	UE_LOG(LogBreakawayMovement, Verbose, TEXT("MovementMode Changed: %s"), *UEnum::GetDisplayValueAsText(MovementMode).ToString());
-	// Check if entering the slide mode
-	if (IsSliding()) // Use helper function for clarity
+
+	if (IsSliding())
 	{
-		// --- Entering Slide Mode ---
-		// Cache defaults before changing them
 		DefaultWalkableFloorAngle = GetWalkableFloorAngle();
 		DefaultRotationRate = RotationRate;
 
-		// Apply slide-specific settings
-		SetWalkableFloorAngle(SlideWalkableFloorAngle); // Change ground interaction
-		bOrientRotationToMovement = true; // Character should face velocity
-		RotationRate = FRotator(0.f, SlideCharacterRotationSpeed, 0.f); // Set high rotation rate
+		SetWalkableFloorAngle(SlideWalkableFloorAngle);
+		bOrientRotationToMovement = true;
+		RotationRate = FRotator(0.f, SlideCharacterRotationSpeed, 0.f);
 
-		StartSlide(); // Handle capsule resize, etc.
+		StartSlide();
 	}
-	// Check if exiting the slide mode
 	else if (PreviousMovementMode == MOVE_Custom && PreviousCustomMode == (uint8)ECustomMovementMode::CMOVE_Slide)
 	{
-		// --- Exiting Slide Mode ---
-		// Restore default settings
 		SetWalkableFloorAngle(DefaultWalkableFloorAngle);
 		RotationRate = DefaultRotationRate;
-		// Restore orientation based on the new mode (e.g., true for Walking, false for Falling)
 		bOrientRotationToMovement = (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking);
 
-		EndSlide(); // Handle capsule restore
-
-		// Broadcast delegate if used by GA
-		// OnSlideEndDelegate.Broadcast();
+		EndSlide();
 	}
 
-	// Call Super last AFTER handling custom logic for the new mode
+	// Clear slide-jump on mode interruption / non-preserve leaving Falling.
+	// Landing velocity factor is owned by ProcessLanded (captures flag before Super).
+	if (bIsSlideJumping && PreviousMovementMode == MOVE_Falling && MovementMode != MOVE_Falling)
+	{
+		const bool bLandedOnGround = (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking);
+		if (!bPreserveSlideJumpUntilLanding || !bLandedOnGround)
+		{
+			ClearSlideJumpState();
+		}
+	}
+
 	Super::OnMovementModeChanged(PreviousMovementMode, PreviousCustomMode);
 }
 
 // --- Pre-Physics Update ---
 void UBwayCharacterMovementComponent::UpdateCharacterStateBeforeMovement(float DeltaSeconds)
 {
-	// Check for slide end conditions BEFORE physics simulation for this frame
 	if (IsSliding())
 	{
 		if (CheckShouldEndSlide())
 		{
-			// Transition out of slide mode
-			// Determine new mode based on current state (e.g., Falling if airborne)
-			const EMovementMode NewMode = IsFalling()? MOVE_Falling : MOVE_Walking;
-			SetMovementMode(NewMode); // This will call OnMovementModeChanged to handle cleanup
-
-			// Important: Return early as movement mode has changed, physics for the *new* mode will run.
-			// Avoid calling Super::UpdateCharacterStateBeforeMovement for the old (sliding) mode.
+			const EMovementMode NewMode = IsFalling() ? MOVE_Falling : MOVE_Walking;
+			SetMovementMode(NewMode);
 			return;
 		}
 	}
 
-	// Call Super for standard state updates (like crouch checks) if not exiting slide
 	Super::UpdateCharacterStateBeforeMovement(DeltaSeconds);
 }
 
 // --- Slide End Condition Check ---
 bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 {
-	// Already checked IsSliding() before calling this in UpdateCharacterStateBeforeMovement
-
 	ACharacter* Owner = GetCharacterOwner();
 	if (!Owner) return true;
 
-	// 1. Check Speed: End if speed drops below minimum threshold
 	if (Velocity.SizeSquared() < FMath::Square(MinSlideSpeed))
 	{
 		UE_LOG(LogBreakawayMovement, Verbose, TEXT("CheckShouldEndSlide: TRUE Velocity too low"));
 		return true;
 	}
 
-	// 2. Check if Falling: This is handled implicitly by PhysSliding transitioning to MOVE_Falling.
-	// No explicit check needed here as PhysSliding runs after this check.
 	UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("CheckShouldEndSlide: FALSE - continue slide"));
-	return false; // Conditions met to continue sliding
+	return false;
 }
 
 // --- Speed and Braking Overrides ---
@@ -147,11 +202,9 @@ float UBwayCharacterMovementComponent::GetMaxSpeed() const
 
 float UBwayCharacterMovementComponent::GetMaxBrakingDeceleration() const
 {
-	// Standard braking deceleration is not used in PhysSliding due to custom friction.
-	// Return a high value if needed by other systems, but it won't directly affect slide physics.
 	if (IsSliding())
 	{
-		return BrakingDecelerationWalking * 5.0f; // Arbitrary high value
+		return BrakingDecelerationWalking * 5.0f;
 	}
 	return Super::GetMaxBrakingDeceleration();
 }
@@ -167,7 +220,7 @@ void UBwayCharacterMovementComponent::PhysCustom(float deltaTime, int32 Iteratio
 	else
 	{
 		UE_LOG(LogBreakawayMovement, Verbose, TEXT("In different custom mode: %u"), CustomMovementMode);
-		Super::PhysCustom(deltaTime, Iterations); // Handle other custom modes if any
+		Super::PhysCustom(deltaTime, Iterations);
 	}
 }
 
@@ -194,81 +247,60 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		return;
 	}
 
-	// --- Ground Check ---
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
+	if (!CurrentFloor.bBlockingHit)
 	{
 		UE_LOG(LogBreakawayMovement, Verbose, TEXT("PhysSlide - not on walkable floor"));
-		// Became airborne - Transition to Falling
 		SetMovementMode(MOVE_Falling);
-		StartNewPhysics(deltaTime, Iterations); // Immediately recalculate physics for the new mode
+		StartNewPhysics(deltaTime, Iterations);
 		return;
 	}
 
-	// --- Calculate Physics Inputs ---
 	UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
 
 	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
-	const FVector InputAccelDir = Acceleration.GetSafeNormal(); // Raw input direction for steering
+	const FVector InputAccelDir = Acceleration.GetSafeNormal();
 
-	// --- Apply Forces and Steering ---
-	// Reset acceleration for this frame's calculations
 	Acceleration = FVector::ZeroVector;
 
-	// Order matters: Apply driving forces first, then resistance (friction)
-	ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees); // Adds to Acceleration
-	Acceleration.Z += GetGravityZ() * deltaTime; // Adds standard gravity force to Acceleration
+	ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees);
+	Acceleration.Z += GetGravityZ() * deltaTime;
 
-	// Apply accumulated acceleration (slope + gravity) to velocity
 	Velocity += Acceleration * deltaTime;
 
-	// Apply friction *after* acceleration forces
-	ApplySlideFriction(deltaTime, SlopeAngleDegrees); // Modifies Velocity directly or via opposing accel
-
-	// Apply steering *after* forces and friction (directly rotates Velocity)
+	ApplySlideFriction(deltaTime, SlopeAngleDegrees);
 	ApplySlideSteering(deltaTime, InputAccelDir);
 
-	// Clamp speed after all modifications
 	Velocity = Velocity.GetClampedToMaxSize(GetMaxSpeed());
 
-	// --- Perform Movement Update ---
 	bJustTeleported = false;
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
 
-	// --- Handle Movement Results ---
-	if (Hit.Time < 1.f) // Hit something
+	if (Hit.Time < 1.f)
 	{
-		// Apply wall friction if hitting a wall significantly opposing movement
 		float CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier;
 		GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
-		if (FVector::DotProduct(Velocity.GetSafeNormal(), Hit.Normal) < -0.5f) // Check angle of impact
+		if (FVector::DotProduct(Velocity.GetSafeNormal(), Hit.Normal) < -0.5f)
 		{
-			// Apply high wall friction using VInterpTo for immediate effect
 			Velocity = FMath::VInterpTo(Velocity, FVector::ZeroVector, deltaTime * (1.f - Hit.Time), SlideWallHitFriction * CurrentFrictionMultiplier);
 		}
 
-		// Standard impact handling and surface sliding
 		HandleImpact(Hit, deltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
 	}
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
-	// Re-check ground state after movement, might have slid off an edge
-	if (!CurrentFloor.bBlockingHit) // If there's no blocking hit, we are airborne
+	if (!CurrentFloor.bBlockingHit)
 	{
 		SetMovementMode(MOVE_Falling);
-		// No need for StartNewPhysics here, will happen next tick
 	}
 	else if (Velocity.SizeSquared() < KINDA_SMALL_NUMBER && Acceleration.IsNearlyZero())
 	{
-		// Came to a stop naturally
 		Velocity = FVector::ZeroVector;
 		Acceleration = FVector::ZeroVector;
-		// CheckShouldEndSlide will likely catch this via MinSlideSpeed next frame, but zeroing here is cleaner.
 	}
 
-	// Store root motion if applicable
 	if (HasAnimRootMotion())
 	{
 		//PreAdditiveRootMotionVelocity = Velocity;
@@ -283,27 +315,21 @@ void UBwayCharacterMovementComponent::ApplySlideSlopeAcceleration(float DeltaTim
 
 	if (SlopeAngleDegrees >= MinSlopeAngleForAccel)
 	{
-		// Calculate direction down the slope (perpendicular to floor normal and horizontal plane)
 		const FVector FloorNormal = CurrentFloor.HitResult.ImpactNormal;
 		const FVector RightVector = FVector::CrossProduct(FloorNormal, FVector::UpVector);
 		const FVector DownSlopeDirection = FVector::CrossProduct(FloorNormal, RightVector).GetSafeNormal();
 
 		if (!DownSlopeDirection.IsNearlyZero())
 		{
-			// Calculate acceleration magnitude based on parameters
 			const float SlopeAccelMagnitude = BaseSlideSpeed * CurrentSlopeAccelFactor;
-			// Add to the Acceleration vector for standard integration in PhysSliding
-			// This approach integrates better with CMC's prediction than directly adding to Velocity
 			Acceleration += DownSlopeDirection * SlopeAccelMagnitude;
 		}
 	}
-	// Note: Acceleration is applied to Velocity later in PhysSliding
 }
 
 // --- Steering Logic (Direct Velocity Rotation) ---
 void UBwayCharacterMovementComponent::ApplySlideSteering(float DeltaTime, const FVector& InputAccelDir)
 {
-	// No steering if no input or not moving
 	if (InputAccelDir.IsNearlyZero() || Velocity.SizeSquared() < KINDA_SMALL_NUMBER)
 	{
 		return;
@@ -314,26 +340,18 @@ void UBwayCharacterMovementComponent::ApplySlideSteering(float DeltaTime, const 
 
 	if (CurrentVelDir2D.IsNearlyZero() || InputDir2D.IsNearlyZero()) return;
 
-	// Check if input direction is significantly different from velocity direction
-	// Lua used cos(5 deg), meaning steer if angle > 5 degrees.
 	const float Dot = FVector::DotProduct(CurrentVelDir2D, InputDir2D);
 	const float SteerThresholdCosine = FMath::Cos(FMath::DegreesToRadians(5.0f));
 
 	if (Dot < SteerThresholdCosine)
 	{
-		// Calculate angle between vectors
-		const float AngleRad = FMath::Acos(Dot); // Angle is always positive [0, PI]
-
-		// Determine rotation direction (sign) using cross product Z component
+		const float AngleRad = FMath::Acos(Dot);
 		const float CrossZ = FVector::CrossProduct(CurrentVelDir2D, InputDir2D).Z;
 		const float RotationSign = FMath::Sign(CrossZ);
 
-		// Clamp maximum rotation angle based on steer speed and delta time
 		const float MaxAngleThisFrame = SlideSteerSpeed * DeltaTime;
 		const float ClampedAngleRad = FMath::Min(AngleRad, MaxAngleThisFrame);
 
-		// Rotate the full 3D velocity vector around the Z axis
-		// This direct velocity modification replicates the Lua behavior but may challenge prediction
 		Velocity = Velocity.RotateAngleAxisRad(ClampedAngleRad * RotationSign, FVector::UpVector);
 	}
 }
@@ -344,19 +362,13 @@ void UBwayCharacterMovementComponent::ApplySlideFriction(float DeltaTime, float 
 	float CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier;
 	GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
 
-	// Use the base friction factor defined in properties, scaled by the Lua power curve
 	const float ClampedSlopeFactor = FMath::Clamp(SlopeAngleDegrees / 90.0f, 0.0f, 1.0f);
-	// Lua: math.pow(1.0 - clamp(slopeAngle / 90.0, 0.0, 1.0), 15.0)
-	// This factor approaches 1 on flat ground and 0 on 90-degree slopes.
 	const float SlopePowerFactor = FMath::Pow(1.0f - ClampedSlopeFactor, SlideFrictionPower);
 
-	// Combine base friction, slope factor, and loot modifier
 	float FrictionToApply = SlideBaseFrictionFactor * SlopePowerFactor * CurrentFrictionMultiplier;
 
-	// Apply friction using VInterpTo (approximates exponential decay like Lua's VariableInterpolate)
 	if (FrictionToApply > KINDA_SMALL_NUMBER && Velocity.SizeSquared() > KINDA_SMALL_NUMBER)
 	{
-		// VInterpTo provides a smooth, frame-rate somewhat independent deceleration towards zero.
 		Velocity = FMath::VInterpTo(Velocity, FVector::ZeroVector, DeltaTime, FrictionToApply);
 	}
 }
@@ -364,59 +376,122 @@ void UBwayCharacterMovementComponent::ApplySlideFriction(float DeltaTime, float 
 // --- Falling Physics Override ---
 void UBwayCharacterMovementComponent::PhysFalling(float deltaTime, int32 Iterations)
 {
-	GravityScale = SlideGravityScale;
+	const float PreviousGravityScale = GravityScale;
+	const float PreviousAirControl = AirControl;
 
-	// Execute standard falling physics with potentially modified gravity scale
+	if (bIsSlideJumping)
+	{
+		GravityScale = SlideJumpGravityScale;
+		AirControl = SlideJumpAirControl;
+	}
+
 	Super::PhysFalling(deltaTime, Iterations);
 
-	// IMPORTANT: Restore default gravity scale AFTER Super call so it doesn't persist
-	GravityScale = DefaultGravityScale;
+	GravityScale = PreviousGravityScale;
+	AirControl = PreviousAirControl;
 }
 
 // --- Landing Logic Override ---
 void UBwayCharacterMovementComponent::ProcessLanded(const FHitResult& Hit, float remainingTime, int32 Iterations)
 {
+	const bool bApplySlideJumpLanding = bIsSlideJumping;
+
 	Super::ProcessLanded(Hit, remainingTime, Iterations);
 
-	// Check if landing occurred shortly after a slide-jump
-	if (LastSlideJumpTime > 0 && (GetWorld()->GetTimeSeconds() - LastSlideJumpTime) <= SlideJumpLandingGracePeriod)
+	if (bApplySlideJumpLanding)
 	{
-		// Apply velocity penalty as per Lua logic
 		Velocity.X *= SlideJumpLandedVelocityFactor;
 		Velocity.Y *= SlideJumpLandedVelocityFactor;
-		// Velocity.Z is already handled by landing logic in Super
-
-		LastSlideJumpTime = -1.0f; // Consume the timer
+		ClearSlideJumpState();
 	}
+}
+
+bool UBwayCharacterMovementComponent::CanAttemptJump() const
+{
+	// Lyra removes crouch gate but still requires Walking/Falling; allow jump from slide.
+	return IsJumpAllowed() && (IsMovingOnGround() || IsFalling() || IsSliding());
 }
 
 bool UBwayCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
-	if (IsSliding())
-	{
-		// Set the jump time so we can apply the landing penalty or other logic
-		LastSlideJumpTime = GetWorld()->GetTimeSeconds();
+	const bool bJumpingFromSlide = IsSliding();
 
-		// Apply horizontal momentum boost
-		Velocity.X *= SlideJumpMomentumBoost;
-		Velocity.Y *= SlideJumpMomentumBoost;
+	if (!Super::DoJump(bReplayingMoves, DeltaTime))
+	{
+		return false;
 	}
 
-	return Super::DoJump(bReplayingMoves, DeltaTime);
+	if (bJumpingFromSlide)
+	{
+		FVector LaunchVelocity;
+		if (ComputeSlideJumpLaunchVelocity(
+			Velocity,
+			/*JumpZ already applied by Super*/ 0.f,
+			SlideJumpMomentumBoost,
+			SlideJumpMinHorizontalSpeed,
+			SlideJumpMaxHorizontalSpeed,
+			LaunchVelocity))
+		{
+			Velocity = LaunchVelocity;
+		}
+
+		bIsSlideJumping = true;
+	}
+
+	return true;
+}
+
+void UBwayCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
+{
+	Super::OnMovementUpdated(DeltaSeconds, OldLocation, OldVelocity);
+
+	if (BwayMovementCVars::CVarDebugSlideJump.GetValueOnGameThread() != 0 && CharacterOwner && GetWorld())
+	{
+		const FString DebugText = FString::Printf(
+			TEXT("SlideJump:%d Slide:%d AirCtrl:%.2f Grav:%.2f Speed2D:%.0f"),
+			bIsSlideJumping ? 1 : 0,
+			IsSliding() ? 1 : 0,
+			bIsSlideJumping ? SlideJumpAirControl : AirControl,
+			bIsSlideJumping ? SlideJumpGravityScale : GravityScale,
+			Velocity.Size2D());
+
+		DrawDebugString(
+			GetWorld(),
+			CharacterOwner->GetActorLocation() + FVector(0.f, 0.f, 100.f),
+			DebugText,
+			nullptr,
+			FColor::Cyan,
+			0.f,
+			true);
+	}
+}
+
+void UBwayCharacterMovementComponent::UpdateFromCompressedFlags(uint8 Flags)
+{
+	Super::UpdateFromCompressedFlags(Flags);
+	bIsSlideJumping = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+}
+
+FNetworkPredictionData_Client* UBwayCharacterMovementComponent::GetPredictionData_Client() const
+{
+	if (ClientPredictionData == nullptr)
+	{
+		UBwayCharacterMovementComponent* MutableThis = const_cast<UBwayCharacterMovementComponent*>(this);
+		MutableThis->ClientPredictionData = new FNetworkPredictionData_Client_BwayCharacter(*this);
+	}
+
+	return ClientPredictionData;
 }
 
 // --- Modifier Calculation ---
 void UBwayCharacterMovementComponent::GetCurrentSlideModifiers(float& OutMaxSpeedFactor, float& OutSlopeAccelFactor, float& OutFrictionMultiplier) const
 {
-	// Start with base values
 	OutMaxSpeedFactor = SlideMaxSpeedFactor;
 	OutSlopeAccelFactor = SlideSlopeAccelerationFactor;
-	OutFrictionMultiplier = 1.0f; // Base friction multiplier is 1
+	OutFrictionMultiplier = 1.0f;
 
-	// Check ASC for the carrying loot tag
 	if (AbilitySystemComponent && CarryingLootTag.IsValid() && AbilitySystemComponent->HasMatchingGameplayTag(CarryingLootTag))
 	{
-		// Apply multipliers if tag is present
 		OutMaxSpeedFactor *= LootMaxSpeedFactorMultiplier;
 		OutSlopeAccelFactor *= LootSlopeAccelFactorMultiplier;
 		OutFrictionMultiplier *= LootFrictionMultiplier;
@@ -426,19 +501,14 @@ void UBwayCharacterMovementComponent::GetCurrentSlideModifiers(float& OutMaxSpee
 // --- Slide Start/End Helpers ---
 void UBwayCharacterMovementComponent::StartSlide()
 {
-	// Example: Shrink capsule height for slide pose
 	if (CharacterOwner)
 	{
-		CharacterOwner->Crouch(true); // Use standard crouch mechanism for capsule size change
-		// Adjust CrouchedHalfHeight if needed, or ensure it's set appropriately for sliding
+		CharacterOwner->Crouch(true);
 	}
-	// Optional: Apply initial boost if desired (simpler than setting specific speed)
-	// Velocity += Velocity.GetSafeNormal() * SlidingInitialBoost;
 }
 
 void UBwayCharacterMovementComponent::EndSlide()
 {
-	// Example: Restore capsule height
 	if (CharacterOwner)
 	{
 		CharacterOwner->UnCrouch(true);
@@ -472,7 +542,76 @@ void UBwayCharacterMovementComponent::UnbindAbilitySystem()
 
 void UBwayCharacterMovementComponent::HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData)
 {
-	// GetMaxSpeed() reads the attribute live; this callback exists so clients/server
-	// refresh velocity clamping immediately when slows apply/expire.
 	(void)ChangeData;
+}
+
+// ---------------------------------------------------------------------------
+// Prediction: FSavedMove_BwayCharacter
+// ---------------------------------------------------------------------------
+
+void FSavedMove_BwayCharacter::Clear()
+{
+	Super::Clear();
+	bSavedIsSlideJumping = 0;
+}
+
+void FSavedMove_BwayCharacter::SetMoveFor(ACharacter* C, float InDeltaTime, FVector const& NewAccel, FNetworkPredictionData_Client_Character& ClientData)
+{
+	Super::SetMoveFor(C, InDeltaTime, NewAccel, ClientData);
+
+	if (const UBwayCharacterMovementComponent* MoveComp = Cast<UBwayCharacterMovementComponent>(C->GetCharacterMovement()))
+	{
+		bSavedIsSlideJumping = MoveComp->bIsSlideJumping ? 1 : 0;
+	}
+}
+
+void FSavedMove_BwayCharacter::PrepMoveFor(ACharacter* C)
+{
+	Super::PrepMoveFor(C);
+
+	if (UBwayCharacterMovementComponent* MoveComp = Cast<UBwayCharacterMovementComponent>(C->GetCharacterMovement()))
+	{
+		MoveComp->bIsSlideJumping = bSavedIsSlideJumping != 0;
+	}
+}
+
+void FSavedMove_BwayCharacter::PostUpdate(ACharacter* C, EPostUpdateMode PostUpdateMode)
+{
+	Super::PostUpdate(C, PostUpdateMode);
+
+	if (const UBwayCharacterMovementComponent* MoveComp = Cast<UBwayCharacterMovementComponent>(C->GetCharacterMovement()))
+	{
+		bSavedIsSlideJumping = MoveComp->bIsSlideJumping ? 1 : 0;
+	}
+}
+
+bool FSavedMove_BwayCharacter::CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* InCharacter, float MaxDelta) const
+{
+	const FSavedMove_BwayCharacter* NewBwayMove = static_cast<const FSavedMove_BwayCharacter*>(NewMove.Get());
+	if (bSavedIsSlideJumping != NewBwayMove->bSavedIsSlideJumping)
+	{
+		return false;
+	}
+
+	return Super::CanCombineWith(NewMove, InCharacter, MaxDelta);
+}
+
+uint8 FSavedMove_BwayCharacter::GetCompressedFlags() const
+{
+	uint8 Result = Super::GetCompressedFlags();
+	if (bSavedIsSlideJumping)
+	{
+		Result |= FLAG_Custom_0;
+	}
+	return Result;
+}
+
+FNetworkPredictionData_Client_BwayCharacter::FNetworkPredictionData_Client_BwayCharacter(const UCharacterMovementComponent& ClientMovement)
+	: Super(ClientMovement)
+{
+}
+
+FSavedMovePtr FNetworkPredictionData_Client_BwayCharacter::AllocateNewMove()
+{
+	return FSavedMovePtr(new FSavedMove_BwayCharacter());
 }

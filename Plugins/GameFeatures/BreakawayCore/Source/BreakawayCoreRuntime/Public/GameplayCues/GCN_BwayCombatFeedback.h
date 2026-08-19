@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayCueNotify_Static.h"
 #include "Camera/CameraShakeBase.h"
+#include "GameFramework/ForceFeedbackEffect.h"
 #include "NiagaraSystem.h"
 #include "GCN_BwayCombatFeedback.generated.h"
 
@@ -47,6 +48,10 @@ protected:
 	/** Camera shake scale multiplier */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Camera")
 	float CameraShakeScale = 1.0f;
+
+	/** Optional gamepad force feedback. Honors accessibility reduced-motion when config is present. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Haptics")
+	TObjectPtr<UForceFeedbackEffect> FeedbackForceFeedback;
 
 	/** Niagara system to spawn at the effect location */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|VFX")

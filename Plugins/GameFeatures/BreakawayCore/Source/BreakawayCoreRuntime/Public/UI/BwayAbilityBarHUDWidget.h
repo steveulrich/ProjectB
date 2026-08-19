@@ -12,6 +12,7 @@ class UAbilitySystemComponent;
 class UEnhancedInputLocalPlayerSubsystem;
 class UHorizontalBox;
 class UInputAction;
+class ULyraGameplayAbility;
 
 /**
  * Lyra HUD-slot ability bar. It renders six stable, non-interactive positions:
@@ -47,6 +48,12 @@ protected:
 	FText ResolveKeyLabel(const UInputAction* InputAction) const;
 	FText CompactKeyDisplayName(const FKey& Key) const;
 
+	/** Fills cooldown fields on the view model from the live ASC + ability CDO. */
+	void FillCooldownState(
+		UAbilitySystemComponent* ASC,
+		TSubclassOf<ULyraGameplayAbility> AbilityClass,
+		FBwayMatchAbilitySlotViewModel& InOutViewModel) const;
+
 	UFUNCTION()
 	void HandleRelicPossessionChanged(bool bHasRelic);
 
@@ -69,6 +76,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD|Ability Bar", meta = (ClampMin = "0.05"))
 	float AbilityRefreshInterval = 0.25f;
 
+	/** Faster refresh while any ability slot is cooling down. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD|Ability Bar", meta = (ClampMin = "0.016"))
+	float CooldownRefreshInterval = 0.05f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HUD|Ability Bar")
 	FMargin AbilitySlotPadding = FMargin(3.0f, 0.0f);
 
@@ -87,4 +98,5 @@ private:
 
 	float TimeSinceLastAbilityRefresh = 0.0f;
 	bool bRefreshRequested = true;
+	bool bAnySlotOnCooldown = false;
 };

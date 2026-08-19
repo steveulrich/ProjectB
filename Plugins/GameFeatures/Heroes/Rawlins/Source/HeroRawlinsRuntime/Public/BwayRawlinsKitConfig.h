@@ -3,6 +3,8 @@
 #include "Engine/DataAsset.h"
 #include "BwayRawlinsKitConfig.generated.h"
 
+class UBwayProjectilePresentationData;
+
 /**
  * Data-driven Rawlins kit values for Steps 21a–21c.
  * Sheet defaults are authoritative when the DA is present; C++ ability defaults are fallbacks.
@@ -44,6 +46,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|Primary", meta = (ClampMin = "0.01"))
 	float PrimaryShotInterval = 0.12f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|Primary|Presentation")
+	TSoftObjectPtr<UBwayProjectilePresentationData> PrimaryProjectilePresentation;
 
 	// --- Double Down (F / Ability4) ---
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|DoubleDown", meta = (ClampMin = "0.0"))
@@ -129,6 +134,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|BlazingBarrage", meta = (ClampMin = "0.1"))
 	float BarrageCooldown = 25.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|BlazingBarrage|Presentation")
+	TSoftObjectPtr<UBwayProjectilePresentationData> BarrageProjectilePresentation;
 
 	// --- Jail ---
 	/** Per-victim cage HP (sheet: 450). */

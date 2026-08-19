@@ -1,5 +1,7 @@
 #pragma once
 #include "Buildable/BuildableBase.h"
+#include "Animation/Skeleton.h"
+#include "Movement/BwayMovementFeelConfig.h"
 #include "BwayHeroDataAsset.generated.h"
 
 // Forward declarations
@@ -135,6 +137,32 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<UAnimBlueprint> AnimationBP;
 
+    /**
+     * Relative transform applied to the character mesh when this hero is equipped.
+     * Use for per-hero scale / offset without forking the pawn BP.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
+    FTransform HeroMeshRelativeTransform = FTransform::Identity;
+
+    /**
+     * Optional expected skeleton. When set, IsDataValid fails if HeroMesh uses a different skeleton
+     * (forces retarget before shipping an incompatible stub).
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Validation")
+    TObjectPtr<USkeleton> ExpectedSkeleton;
+
+    /** Socket names that must exist on HeroMesh (weapon, VFX attach, etc.). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Validation")
+    TArray<FName> RequiredMeshSockets;
+
+    /** When true, warn if the mesh has no physics asset. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Validation")
+    bool bRequirePhysicsAsset = false;
+
+    /** When true, warn if the mesh has fewer than 2 LODs. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Validation")
+    bool bRequireMultipleLODs = false;
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Stats")
     FHeroStats HeroStats;
     
@@ -157,6 +185,11 @@ public:
     /* -------- Audio -------- */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Audio")
     TObjectPtr<USoundBase> VoiceBank;
+
+    /* -------- Movement -------- */
+    /** Optional per-hero slide-jump / movement feel overrides applied with hero visuals. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Movement")
+    TSoftObjectPtr<UBwayMovementFeelConfig> MovementFeelConfig;
 
 #if WITH_EDITOR
     virtual EDataValidationResult IsDataValid(FDataValidationContext& Context) const override;

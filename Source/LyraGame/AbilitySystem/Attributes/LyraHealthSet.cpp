@@ -17,6 +17,7 @@ UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_DamageImmunity, "Gameplay.DamageImmunity");
 UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_DamageSelfDestruct, "Gameplay.Damage.SelfDestruct");
 UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_FellOutOfWorld, "Gameplay.Damage.FellOutOfWorld");
 UE_DEFINE_GAMEPLAY_TAG(TAG_Lyra_Damage_Message, "Lyra.Damage.Message");
+UE_DEFINE_GAMEPLAY_TAG(TAG_Lyra_Heal_Message, "Lyra.Heal.Message");
 
 ULyraHealthSet::ULyraHealthSet()
 	: Health(100.0f)
@@ -124,35 +125,50 @@ void ULyraHealthSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackD
 	const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
 	AActor* Instigator = EffectContext.GetOriginalInstigator();
 	AActor* Causer = EffectContext.GetEffectCauser();
+	AActor* MessageInstigator = Instigator ? Instigator : Causer;
 
 	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
 	{
-		// Send a standardized verb message that other systems can observe
-		if (Data.EvaluatedData.Magnitude > 0.0f)
+		// Convert into -Health and then clamp
+		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
+		SetDamage(0.0f);
+
+		// Broadcast effective (post-clamp) damage so UI/stat systems do not over-report overkill.
+		const float EffectiveDamage = HealthBeforeAttributeChange - GetHealth();
+		if (EffectiveDamage > 0.0f)
 		{
 			FLyraVerbMessage Message;
 			Message.Verb = TAG_Lyra_Damage_Message;
-			Message.Instigator = Data.EffectSpec.GetEffectContext().GetEffectCauser();
+			Message.Instigator = MessageInstigator;
 			Message.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
 			Message.Target = GetOwningActor();
 			Message.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
-			//@TODO: Fill out context tags, and any non-ability-system source/instigator tags
-			//@TODO: Determine if it's an opposing team kill, self-own, team kill, etc...
-			Message.Magnitude = Data.EvaluatedData.Magnitude;
+			Message.Magnitude = EffectiveDamage;
 
 			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
 			MessageSystem.BroadcastMessage(Message.Verb, Message);
 		}
-
-		// Convert into -Health and then clamp
-		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
-		SetDamage(0.0f);
 	}
 	else if (Data.EvaluatedData.Attribute == GetHealingAttribute())
 	{
-		// Convert into +Health and then clamo
+		// Convert into +Health and then clamp
 		SetHealth(FMath::Clamp(GetHealth() + GetHealing(), MinimumHealth, GetMaxHealth()));
 		SetHealing(0.0f);
+
+		const float EffectiveHealing = GetHealth() - HealthBeforeAttributeChange;
+		if (EffectiveHealing > 0.0f)
+		{
+			FLyraVerbMessage Message;
+			Message.Verb = TAG_Lyra_Heal_Message;
+			Message.Instigator = MessageInstigator;
+			Message.InstigatorTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
+			Message.Target = GetOwningActor();
+			Message.TargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
+			Message.Magnitude = EffectiveHealing;
+
+			UGameplayMessageSubsystem& MessageSystem = UGameplayMessageSubsystem::Get(GetWorld());
+			MessageSystem.BroadcastMessage(Message.Verb, Message);
+		}
 	}
 	else if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{

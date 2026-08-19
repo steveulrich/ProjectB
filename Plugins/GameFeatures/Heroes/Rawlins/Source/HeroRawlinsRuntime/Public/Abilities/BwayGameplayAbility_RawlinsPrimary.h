@@ -5,6 +5,7 @@
 #include "BwayGameplayAbility_RawlinsPrimary.generated.h"
 
 class ABwayRawlinsBulletProjectile;
+class UBwayProjectilePresentationData;
 
 HERORAWLINSRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Rawlins_PrimaryAttack);
 
@@ -64,4 +65,5 @@ private:
 	float ActiveSpawnForwardOffset = 80.f;
 	int32 ActiveShotCount = 2;
 	float ActiveShotInterval = 0.12f;
+	TSoftObjectPtr<UBwayProjectilePresentationData> ActiveProjectilePresentation;
 };

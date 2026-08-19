@@ -42,6 +42,9 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+
 	virtual void OnDeathStarted(AActor* OwningActor) override;
 
 	/** Set the last actor that dealt damage to this character. Called from health component callbacks. */
@@ -74,6 +77,13 @@ protected:
 
 	/** Apply visual-only hero data (mesh/anim). Called on both server and clients. */
 	void ApplyHeroVisuals(const UBwayHeroDataAsset* HeroData);
+
+	void BindTeamAppearanceListener();
+
+	UFUNCTION()
+	void HandleTeamAppearanceChanged(UObject* ObjectChangingTeam, int32 OldTeamID, int32 NewTeamID);
+
+	bool bBoundTeamAppearanceListener = false;
 
 	virtual void OnAbilitySystemInitialized() override;
 	virtual void OnAbilitySystemUninitialized() override;

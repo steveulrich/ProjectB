@@ -106,9 +106,8 @@ void UBwayHealthHUDWidget::UpdateBoundHealthTexts(float NewHealth, float MaxHeal
 	if (Text_HealthValues)
 	{
 		Text_HealthValues->SetText(FText::Format(
-			NSLOCTEXT("BwayHealthHUD", "HealthValues", "{0} / {1}"),
-			FText::AsNumber(FMath::RoundToInt(NewHealth)),
-			FText::AsNumber(FMath::RoundToInt(MaxHealth))));
+			NSLOCTEXT("BwayHealthHUD", "HealthValues", "{0}"),
+			FText::AsNumber(FMath::RoundToInt(NewHealth))));
 	}
 }
 

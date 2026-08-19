@@ -5,6 +5,7 @@
 #include "BwayGameplayAbility_RawlinsBlazingBarrage.generated.h"
 
 class ABwayRawlinsBulletProjectile;
+class UBwayProjectilePresentationData;
 class ULyraHealthComponent;
 
 HERORAWLINSRUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Ability_Rawlins_BlazingBarrage);
@@ -85,4 +86,5 @@ private:
 	float ActiveProjectileLifeSpan = 1.5f;
 	float ActiveSpawnForwardOffset = 80.f;
 	float ActiveJuggleUpward = 350.f;
+	TSoftObjectPtr<UBwayProjectilePresentationData> ActiveProjectilePresentation;
 };

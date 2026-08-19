@@ -3,6 +3,8 @@
 #include "BwayPlayerState.h"
 #include "AbilitySystem/Abilities/LyraGameplayAbility.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
 #include "Character/LyraPawnData.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
@@ -72,7 +74,8 @@ void UBwayAbilityBarHUDWidget::NativeTick(const FGeometry& MyGeometry, const flo
 	}
 
 	TimeSinceLastAbilityRefresh += InDeltaTime;
-	if (bRefreshRequested || TimeSinceLastAbilityRefresh >= AbilityRefreshInterval)
+	const float RefreshInterval = bAnySlotOnCooldown ? CooldownRefreshInterval : AbilityRefreshInterval;
+	if (bRefreshRequested || TimeSinceLastAbilityRefresh >= RefreshInterval)
 	{
 		TimeSinceLastAbilityRefresh = 0.0f;
 		bRefreshRequested = false;
@@ -303,6 +306,72 @@ FText UBwayAbilityBarHUDWidget::CompactKeyDisplayName(const FKey& Key) const
 	return Key.IsValid() ? Key.GetDisplayName(/*bLongDisplayName*/ false) : LOCTEXT("UnboundKey", "—");
 }
 
+void UBwayAbilityBarHUDWidget::FillCooldownState(
+	UAbilitySystemComponent* ASC,
+	TSubclassOf<ULyraGameplayAbility> AbilityClass,
+	FBwayMatchAbilitySlotViewModel& InOutViewModel) const
+{
+	InOutViewModel.bIsOnCooldown = false;
+	InOutViewModel.CooldownPercent = 0.f;
+	InOutViewModel.CountdownTime = 0.f;
+
+	if (!ASC || !*AbilityClass)
+	{
+		return;
+	}
+
+	const ULyraGameplayAbility* AbilityCDO = AbilityClass.GetDefaultObject();
+	if (!AbilityCDO)
+	{
+		return;
+	}
+
+	const FGameplayTagContainer* CooldownTags = AbilityCDO->GetCooldownTags();
+	if (!CooldownTags || CooldownTags->IsEmpty())
+	{
+		return;
+	}
+
+	if (!ASC->HasAnyMatchingGameplayTags(*CooldownTags))
+	{
+		return;
+	}
+
+	const FGameplayEffectQuery Query = FGameplayEffectQuery::MakeQuery_MatchAnyOwningTags(*CooldownTags);
+	const TArray<FActiveGameplayEffectHandle> ActiveHandles = ASC->GetActiveEffects(Query);
+	if (ActiveHandles.Num() <= 0)
+	{
+		return;
+	}
+
+	float BestRemaining = 0.f;
+	float BestDuration = 0.f;
+	const float WorldTime = ASC->GetWorld() ? ASC->GetWorld()->GetTimeSeconds() : 0.f;
+
+	for (const FActiveGameplayEffectHandle& Handle : ActiveHandles)
+	{
+		if (const FActiveGameplayEffect* ActiveGE = ASC->GetActiveGameplayEffect(Handle))
+		{
+			const float Remaining = ActiveGE->GetTimeRemaining(WorldTime);
+			const float Duration = ActiveGE->GetDuration();
+			if (Remaining > BestRemaining)
+			{
+				BestRemaining = Remaining;
+				BestDuration = Duration;
+			}
+		}
+	}
+
+	if (BestRemaining <= KINDA_SMALL_NUMBER || BestDuration <= KINDA_SMALL_NUMBER)
+	{
+		return;
+	}
+
+	InOutViewModel.bIsOnCooldown = true;
+	InOutViewModel.CountdownTime = FMath::Clamp(BestRemaining, 0.f, BestDuration);
+	InOutViewModel.CooldownPercent = FMath::Clamp((BestRemaining / BestDuration), 0.f, 1.f);
+}
+
 void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 {
 	if (SlotWidgets.Num() != BwayMatchAbilityBar::SlotCount)
@@ -325,6 +394,8 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 	const bool bIsRelicCarrier = BoundPlayerState.IsValid() && BoundPlayerState->bHasRelic;
 	const bool bBuildableConsumed =
 		BoundPlayerState.IsValid() && BoundPlayerState->HasPlacedBuildableThisRound();
+
+	bool bFoundCooldown = false;
 
 	for (int32 Position = 0; Position < BwayMatchAbilityBar::SlotCount; ++Position)
 	{
@@ -380,6 +451,9 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 			{
 				ViewModel.DisplayInfo.AbilityName = FallbackLabel;
 			}
+
+			FillCooldownState(BoundAbilitySystemComponent.Get(), AbilityClass, ViewModel);
+			bFoundCooldown = bFoundCooldown || ViewModel.bIsOnCooldown;
 		}
 
 		const UInputAction* InputAction = ResolveInputAction(InputTag, FallbackInputAction);
@@ -388,6 +462,8 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 
 		SlotWidgets[Position]->SetSlotViewModel(ViewModel);
 	}
+
+	bAnySlotOnCooldown = bFoundCooldown;
 }
 
 void UBwayAbilityBarHUDWidget::HandleRelicPossessionChanged(bool bHasRelic)

@@ -480,3 +480,78 @@ void UBwayGameplayAbility_Base::ApplyCooldownWithOptionalDuration(
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 }
 
+void UBwayGameplayAbility_Base::ExecuteAbilityCue(FGameplayTag CueTag, const FVector& Location, float Magnitude) const
+{
+	if (!CueTag.IsValid())
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		return;
+	}
+
+	FGameplayCueParameters Params;
+	Params.Location = FVector_NetQuantize10(Location);
+	Params.RawMagnitude = Magnitude;
+	Params.NormalizedMagnitude = Magnitude;
+	Params.Instigator = GetAvatarActorFromActorInfo();
+	Params.EffectCauser = GetAvatarActorFromActorInfo();
+	Params.SourceObject = this;
+
+	FGameplayEffectContextHandle Context = MakeEffectContextForAbility();
+	if (Context.IsValid())
+	{
+		Context.AddSourceObject(this);
+		Params.EffectContext = Context;
+	}
+
+	ASC->ExecuteGameplayCue(CueTag, Params);
+}
+
+void UBwayGameplayAbility_Base::AddAbilityCue(FGameplayTag CueTag, const FVector& Location, float Magnitude) const
+{
+	if (!CueTag.IsValid())
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		return;
+	}
+
+	FGameplayCueParameters Params;
+	Params.Location = FVector_NetQuantize10(Location);
+	Params.RawMagnitude = Magnitude;
+	Params.NormalizedMagnitude = Magnitude;
+	Params.Instigator = GetAvatarActorFromActorInfo();
+	Params.EffectCauser = GetAvatarActorFromActorInfo();
+	Params.SourceObject = this;
+
+	FGameplayEffectContextHandle Context = MakeEffectContextForAbility();
+	if (Context.IsValid())
+	{
+		Context.AddSourceObject(this);
+		Params.EffectContext = Context;
+	}
+
+	ASC->AddGameplayCue(CueTag, Params);
+}
+
+void UBwayGameplayAbility_Base::RemoveAbilityCue(FGameplayTag CueTag) const
+{
+	if (!CueTag.IsValid())
+	{
+		return;
+	}
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		ASC->RemoveGameplayCue(CueTag);
+	}
+}
+

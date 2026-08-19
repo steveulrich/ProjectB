@@ -14,31 +14,17 @@
 
 ABwayRawlinsBulletProjectile::ABwayRawlinsBulletProjectile()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	bReplicates = true;
-	SetReplicateMovement(true);
-	SetLifeSpan(1.5f);
+	SphereRadius = 10.f;
+	if (CollisionSphere)
+	{
+		CollisionSphere->InitSphereRadius(SphereRadius);
+	}
 
-	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-	SetRootComponent(CollisionSphere);
-	CollisionSphere->InitSphereRadius(SphereRadius);
-	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	CollisionSphere->SetCollisionObjectType(ECC_WorldDynamic);
-	CollisionSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
-	CollisionSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
-	CollisionSphere->SetGenerateOverlapEvents(true);
-	CollisionSphere->CanCharacterStepUpOn = ECB_No;
-
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
-	ProjectileMovement->UpdatedComponent = CollisionSphere;
-	ProjectileMovement->InitialSpeed = 3600.f;
-	ProjectileMovement->MaxSpeed = 3600.f;
-	ProjectileMovement->bRotationFollowsVelocity = true;
-	ProjectileMovement->bShouldBounce = false;
-	ProjectileMovement->ProjectileGravityScale = 0.f;
-	ProjectileMovement->bSweepCollision = true;
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->InitialSpeed = 3600.f;
+		ProjectileMovement->MaxSpeed = 3600.f;
+	}
 }
 
 void ABwayRawlinsBulletProjectile::ConfigureProjectile(
@@ -58,83 +44,26 @@ void ABwayRawlinsBulletProjectile::ConfigureProjectile(
 		SetOwner(InInstigatorCharacter);
 	}
 
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->InitialSpeed = InSpeed;
-		ProjectileMovement->MaxSpeed = InSpeed;
-		ProjectileMovement->Velocity = GetActorForwardVector() * InSpeed;
-	}
-
-	SetLifeSpan(InLifeSpan);
+	ConfigureMovement(InSpeed, InLifeSpan);
 }
 
-void ABwayRawlinsBulletProjectile::BeginPlay()
+bool ABwayRawlinsBulletProjectile::HandleDamageHit(const FHitResult& Hit)
 {
-	Super::BeginPlay();
-
-	if (CollisionSphere)
-	{
-		CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &ABwayRawlinsBulletProjectile::OnSphereBeginOverlap);
-		if (InstigatorCharacter)
-		{
-			CollisionSphere->IgnoreActorWhenMoving(InstigatorCharacter, true);
-		}
-	}
-
-	if (ProjectileMovement)
-	{
-		ProjectileMovement->OnProjectileStop.AddDynamic(this, &ABwayRawlinsBulletProjectile::OnProjectileStop);
-	}
-}
-
-void ABwayRawlinsBulletProjectile::OnProjectileStop(const FHitResult& ImpactResult)
-{
-	TryApplyHitToActor(ImpactResult.GetActor());
-	ExpireProjectile();
-}
-
-void ABwayRawlinsBulletProjectile::OnSphereBeginOverlap(
-	UPrimitiveComponent* OverlappedComponent,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex,
-	bool bFromSweep,
-	const FHitResult& SweepResult)
-{
-	(void)OverlappedComponent;
-	(void)OtherComp;
-	(void)OtherBodyIndex;
-	(void)bFromSweep;
-	(void)SweepResult;
-
-	if (!OtherActor || OtherActor == this || OtherActor == InstigatorCharacter || OtherActor == GetOwner())
-	{
-		return;
-	}
-
-	TryApplyHitToActor(OtherActor);
-	if (bHasAppliedHit)
-	{
-		ExpireProjectile();
-	}
-}
-
-void ABwayRawlinsBulletProjectile::TryApplyHitToActor(AActor* HitActor)
-{
+	AActor* HitActor = Hit.GetActor();
 	if (!HasAuthority() || bHasAppliedHit || !HitActor || HitActor == InstigatorCharacter)
 	{
-		return;
+		return false;
 	}
 
 	if (!InstigatorCharacter || DamageAmount <= 0.f)
 	{
-		return;
+		return false;
 	}
 
 	UWorld* World = GetWorld();
 	if (!World)
 	{
-		return;
+		return false;
 	}
 
 	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
@@ -153,20 +82,21 @@ void ABwayRawlinsBulletProjectile::TryApplyHitToActor(AActor* HitActor)
 
 		if (!bIsEnemyCage)
 		{
-			return;
+			return false;
 		}
 
 		if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCage, DamageAmount, this, InstigatorCharacter))
 		{
 			bHasAppliedHit = true;
+			return true;
 		}
-		return;
+		return false;
 	}
 
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
 	if (!HitCharacter)
 	{
-		return;
+		return false;
 	}
 
 	bool bIsEnemy = false;
@@ -181,7 +111,7 @@ void ABwayRawlinsBulletProjectile::TryApplyHitToActor(AActor* HitActor)
 
 	if (!bIsEnemy)
 	{
-		return;
+		return false;
 	}
 
 	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter))
@@ -191,13 +121,8 @@ void ABwayRawlinsBulletProjectile::TryApplyHitToActor(AActor* HitActor)
 			HitCharacter->LaunchCharacter(LaunchImpulse, true, true);
 		}
 		bHasAppliedHit = true;
+		return true;
 	}
-}
 
-void ABwayRawlinsBulletProjectile::ExpireProjectile()
-{
-	if (HasAuthority())
-	{
-		Destroy();
-	}
+	return false;
 }

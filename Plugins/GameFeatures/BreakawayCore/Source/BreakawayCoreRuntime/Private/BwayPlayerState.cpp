@@ -275,6 +275,24 @@ void ABwayPlayerState::AddObjectiveScore(int32 Amount)
 	}
 }
 
+void ABwayPlayerState::AddDamageDealt(int32 Amount)
+{
+	if (HasAuthority() && Amount > 0)
+	{
+		DamageDealt += Amount;
+		OnRep_MatchStats();
+	}
+}
+
+void ABwayPlayerState::AddHealingDone(int32 Amount)
+{
+	if (HasAuthority() && Amount > 0)
+	{
+		HealingDone += Amount;
+		OnRep_MatchStats();
+	}
+}
+
 void ABwayPlayerState::ResetMatchStats()
 {
 	if (HasAuthority())

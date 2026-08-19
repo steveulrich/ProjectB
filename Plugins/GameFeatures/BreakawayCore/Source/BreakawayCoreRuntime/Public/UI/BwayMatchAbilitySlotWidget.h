@@ -7,6 +7,7 @@
 
 class UImage;
 class UTextBlock;
+class UProgressBar;
 
 /**
  * Complete presentation state for one stable in-match ability-bar position.
@@ -37,6 +38,22 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchAbilitySlotViewModel
 
 	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
 	bool bIsRelicAbility = false;
+
+	/** True while the ability's cooldown gameplay effect is active. */
+	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
+	bool bIsOnCooldown = false;
+
+	/**
+	 * Cooldown fill progress in [0,1].
+	 * 0 = just entered cooldown, 1 = about to become ready.
+	 * Computed as 1 - (Remaining / Duration).
+	 */
+	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float CooldownPercent = 0.f;
+
+	/** Seconds remaining on cooldown. Meaningful only while bIsOnCooldown is true. */
+	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
+	float CountdownTime = 0.f;
 };
 
 /**
@@ -68,6 +85,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
 	TObjectPtr<UImage> Image_DisabledOverlay;
 
+	/** Grey-out overlay shown while the ability is on cooldown. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
+	TObjectPtr<UImage> Image_CooldownOverlay;
+
+	/** Vertical cooldown fill (bottom→top). Hidden when ready. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
+	TObjectPtr<UProgressBar> ProgressBar_Cooldown;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
 	TObjectPtr<UImage> Image_RelicFrame;
 
@@ -79,6 +104,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
 	TObjectPtr<UTextBlock> Text_State;
+
+	/** Seconds remaining; shown only while on cooldown. Collapsed when ready. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Ability Bar|Widgets")
+	TObjectPtr<UTextBlock> Text_CooldownTimer;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
 	FBwayMatchAbilitySlotViewModel ViewModel;

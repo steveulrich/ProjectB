@@ -1,7 +1,11 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 
 #include "AbilitySystem/Abilities/LyraGameplayAbility.h"
+#include "Animation/AnimBlueprint.h"
+#include "Animation/Skeleton.h"
+#include "Engine/SkeletalMesh.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 #include "UI/BwayAbilityUISettings.h"
 
 #if WITH_EDITOR
@@ -14,6 +18,53 @@
 EDataValidationResult UBwayHeroDataAsset::IsDataValid(FDataValidationContext& Context) const
 {
 	EDataValidationResult Result = Super::IsDataValid(Context);
+
+	if (!HeroMesh)
+	{
+		Context.AddWarning(FText::FromString(TEXT("HeroMesh is null — character will keep the experience default mesh.")));
+	}
+	else
+	{
+		if (ExpectedSkeleton && HeroMesh->GetSkeleton() != ExpectedSkeleton)
+		{
+			Context.AddError(FText::Format(
+				NSLOCTEXT("BwayHeroDataAsset", "SkeletonMismatch",
+					"HeroMesh skeleton '{0}' does not match ExpectedSkeleton '{1}'. Retarget or update the mesh slot."),
+				FText::FromString(GetNameSafe(HeroMesh->GetSkeleton())),
+				FText::FromString(GetNameSafe(ExpectedSkeleton))));
+			Result = EDataValidationResult::Invalid;
+		}
+
+		for (const FName& SocketName : RequiredMeshSockets)
+		{
+			if (SocketName.IsNone())
+			{
+				continue;
+			}
+			if (!HeroMesh->FindSocket(SocketName))
+			{
+				Context.AddError(FText::Format(
+					NSLOCTEXT("BwayHeroDataAsset", "MissingSocket", "HeroMesh is missing required socket '{0}'."),
+					FText::FromName(SocketName)));
+				Result = EDataValidationResult::Invalid;
+			}
+		}
+
+		if (bRequirePhysicsAsset && !HeroMesh->GetPhysicsAsset())
+		{
+			Context.AddWarning(FText::FromString(TEXT("HeroMesh has no Physics Asset (bRequirePhysicsAsset is set).")));
+		}
+
+		if (bRequireMultipleLODs && HeroMesh->GetLODNum() < 2)
+		{
+			Context.AddWarning(FText::FromString(TEXT("HeroMesh has fewer than 2 LODs (bRequireMultipleLODs is set).")));
+		}
+	}
+
+	if (!AnimationBP)
+	{
+		Context.AddWarning(FText::FromString(TEXT("AnimationBP is null — mesh may T-pose after hero swap.")));
+	}
 
 	if (AbilitySets.IsEmpty())
 	{

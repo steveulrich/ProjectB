@@ -1,18 +1,16 @@
 #pragma once
 
-#include "GameFramework/Actor.h"
+#include "Combat/BwayHeroProjectileBase.h"
+#include "GameplayEffect.h"
 #include "BwayKorrynPrimaryProjectile.generated.h"
 
 class ABwayCharacterWithAbilities;
-class UProjectileMovementComponent;
-class USphereComponent;
-class UGameplayEffect;
 
 /**
  * Korryn LMB projectile — deals scaled damage then applies armor shred GE.
  */
 UCLASS()
-class HEROMORGANRUNTIME_API ABwayKorrynPrimaryProjectile : public AActor
+class HEROMORGANRUNTIME_API ABwayKorrynPrimaryProjectile : public ABwayHeroProjectileBase
 {
 	GENERATED_BODY()
 
@@ -27,27 +25,7 @@ public:
 		TSubclassOf<UGameplayEffect> InArmorShredEffectClass);
 
 protected:
-	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnSphereHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse, const FHitResult& Hit);
-
-	UFUNCTION()
-	void OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
-	void TryApplyHitToActor(AActor* HitActor);
-	void ExpireProjectile();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Korryn|Primary")
-	TObjectPtr<USphereComponent> CollisionSphere;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Korryn|Primary")
-	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary", meta = (ClampMin = "1.0"))
-	float SphereRadius = 18.f;
+	virtual bool HandleDamageHit(const FHitResult& Hit) override;
 
 	UPROPERTY(Transient)
 	TObjectPtr<ABwayCharacterWithAbilities> InstigatorCharacter;

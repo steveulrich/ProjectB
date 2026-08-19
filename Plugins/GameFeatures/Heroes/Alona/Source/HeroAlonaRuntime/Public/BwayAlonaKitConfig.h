@@ -3,6 +3,8 @@
 #include "Engine/DataAsset.h"
 #include "BwayAlonaKitConfig.generated.h"
 
+class UBwayProjectilePresentationData;
+
 /**
  * Data-driven Alona kit values for Step 20.5.
  * Seeded with sheet / existing ability defaults; Step 19c remains the formal parity audit.
@@ -37,6 +39,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary", meta = (ClampMin = "0.0"))
 	float PrimarySpawnForwardOffset = 80.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary|Presentation")
+	TSoftObjectPtr<UBwayProjectilePresentationData> PrimaryProjectilePresentation;
 
 	// --- Sun's Grace ---
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|SunsGrace", meta = (ClampMin = "0.0"))

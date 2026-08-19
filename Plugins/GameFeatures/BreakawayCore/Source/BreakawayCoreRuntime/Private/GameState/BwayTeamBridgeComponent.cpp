@@ -3,6 +3,8 @@
 #include "GameState/BwayTeamBridgeComponent.h"
 #include "BwayGameState.h"
 #include "GameFramework/PlayerState.h"
+#include "GameModes/LyraExperienceDefinition.h"
+#include "GameModes/LyraExperienceManagerComponent.h"
 #include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayTeamBridgeComponent)
@@ -19,9 +21,20 @@ void UBwayTeamBridgeComponent::BeginPlay()
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		BindToTeamEvents();
-		
-		// Do initial sync
 		SyncAllTeamsToLyra();
+
+		// LyraTeamCreationComponent assigns teams on HighPriority experience-loaded.
+		// Re-assert Breakaway roster afterward so Lyra GenericTeamId stays aligned
+		// (otherwise nameplates/cosmetics use Lyra IDs that no longer match FTeamInfo).
+		if (AGameStateBase* GS = GetGameState<AGameStateBase>())
+		{
+			if (ULyraExperienceManagerComponent* ExperienceComponent =
+					GS->FindComponentByClass<ULyraExperienceManagerComponent>())
+			{
+				ExperienceComponent->CallOrRegister_OnExperienceLoaded(
+					FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::HandleExperienceLoaded));
+			}
+		}
 	}
 }
 
@@ -30,13 +43,22 @@ void UBwayTeamBridgeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void UBwayTeamBridgeComponent::HandleExperienceLoaded(const ULyraExperienceDefinition* /*Experience*/)
+{
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Experience loaded — re-syncing Breakaway teams onto Lyra"));
+		SyncAllTeamsToLyra();
+	}
+}
+
 void UBwayTeamBridgeComponent::BindToTeamEvents()
 {
 	if (ABwayGameState* BwayGS = Cast<ABwayGameState>(GetOwner()))
 	{
 		BwayGS->OnTeamsUpdated.AddDynamic(this, &UBwayTeamBridgeComponent::SyncAllTeamsToLyra);
 	}
-	
+
 	UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Listening for team changes"));
 }
 
@@ -48,7 +70,6 @@ void UBwayTeamBridgeComponent::SyncAllTeamsToLyra()
 		return;
 	}
 
-	// Sync each team's members
 	for (int32 TeamIndex = 0; TeamIndex < 2; ++TeamIndex)
 	{
 		const FTeamInfo& TeamInfo = BwayGS->GetTeamInfo(TeamIndex);
@@ -76,7 +97,7 @@ void UBwayTeamBridgeComponent::SyncPlayerTeamToLyra(APlayerState* PlayerState, i
 		// Offset by 1 since Breakaway uses indices 0/1 but Lyra expects TeamIDs 1/2
 		TeamSS->ChangeTeamForActor(PlayerState, TeamIndex + 1);
 	}
-	
-	UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Synced player %s to Lyra team %d"), 
+
+	UE_LOG(LogTemp, Log, TEXT("BwayTeamBridge: Synced player %s to Lyra team %d"),
 		*PlayerState->GetPlayerName(), TeamIndex + 1);
 }

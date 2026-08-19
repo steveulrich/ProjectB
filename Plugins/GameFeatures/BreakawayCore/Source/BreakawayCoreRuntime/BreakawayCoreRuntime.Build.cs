@@ -51,6 +51,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"CommonGame",
 				"CommonUser",
 				"DeveloperSettings",
+				"GameplayMessageRuntime",
 				"MediaAssets",
 				"NetCore",
 				"PhysicsCore",

@@ -17,6 +17,7 @@ class UBwayRelicManagerComponent;
 class UBwayMidfieldDividerComponent;
 class UBwayTeamBridgeComponent;
 class UBwayBuildableRegistryComponent;
+class UBwayCombatFeedbackRouterComponent;
 class UUserWidget;
 class ULyraGamePhaseAbility;
 
@@ -85,6 +86,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Buildables")
 	TObjectPtr<UBwayBuildableRegistryComponent> BuildableRegistryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Combat")
+	TObjectPtr<UBwayCombatFeedbackRouterComponent> CombatFeedbackRouterComponent;
 
 	// ========================================
 	// Team Management

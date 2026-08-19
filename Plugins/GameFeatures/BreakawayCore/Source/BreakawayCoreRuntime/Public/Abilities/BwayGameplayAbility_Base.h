@@ -77,12 +77,36 @@ protected:
 		const FGameplayAbilityActivationInfo ActivationInfo,
 		float DurationSeconds) const;
 
-protected:
+	/**
+	 * One-shot GameplayCue via ASC->ExecuteGameplayCue (same pattern as UGCN_BwayCombatFeedback triggers).
+	 * No-ops when CueTag is invalid or ASC is missing.
+	 */
+	void ExecuteAbilityCue(FGameplayTag CueTag, const FVector& Location = FVector::ZeroVector, float Magnitude = 0.f) const;
+
+	/** Persistent cue via ASC->AddGameplayCue (use for Cue_Loop). */
+	void AddAbilityCue(FGameplayTag CueTag, const FVector& Location = FVector::ZeroVector, float Magnitude = 0.f) const;
+
+	/** Remove a previously added persistent cue. */
+	void RemoveAbilityCue(FGameplayTag CueTag) const;
+
 	/** Stored ability spec handle for use in callbacks */
 	FGameplayAbilitySpecHandle StoredSpecHandle;
 
 	/** Cached character for convenience */
 	UPROPERTY(Transient)
 	mutable TObjectPtr<ABwayCharacterWithAbilities> CachedCharacter;
+
+	/** Optional one-shot cast / impact / end tags and a loop tag for duration abilities. */
+	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
+	FGameplayTag Cue_Cast;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
+	FGameplayTag Cue_Loop;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
+	FGameplayTag Cue_Impact;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
+	FGameplayTag Cue_End;
 };
 

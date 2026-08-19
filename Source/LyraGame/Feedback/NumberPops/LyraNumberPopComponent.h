@@ -7,6 +7,8 @@
 
 #include "LyraNumberPopComponent.generated.h"
 
+#define UE_API LYRAGAME_API
+
 class UObject;
 struct FFrame;
 
@@ -42,16 +44,18 @@ struct FLyraNumberPopRequest
 };
 
 
-UCLASS(Abstract)
+UCLASS(MinimalAPI, Abstract, Blueprintable)
 class ULyraNumberPopComponent : public UControllerComponent
 {
 	GENERATED_BODY()
 
 public:
 
-	ULyraNumberPopComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UE_API ULyraNumberPopComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	/** Adds a damage number to the damage number list for visualization */
-	UFUNCTION(BlueprintCallable, Category = Foo)
-	virtual void AddNumberPop(const FLyraNumberPopRequest& NewRequest) {}
+	UFUNCTION(BlueprintCallable, Category = "Lyra|Number Pops")
+	UE_API virtual void AddNumberPop(const FLyraNumberPopRequest& NewRequest);
 };
+
+#undef UE_API

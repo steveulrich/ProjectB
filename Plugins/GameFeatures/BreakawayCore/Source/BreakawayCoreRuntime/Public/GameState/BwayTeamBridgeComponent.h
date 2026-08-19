@@ -8,6 +8,8 @@
 
 class ABwayGameState;
 
+class ULyraExperienceDefinition;
+
 /**
  * Bridge component that synchronizes Breakaway's custom team system
  * (FTeamInfo arrays on BwayGameState) with Lyra's team subsystem.
@@ -45,4 +47,7 @@ protected:
 
 	/** Bind to BwayGameState team change events */
 	void BindToTeamEvents();
+
+	/** After Lyra TeamCreation assigns players, re-push Breakaway roster onto Lyra. */
+	void HandleExperienceLoaded(const ULyraExperienceDefinition* Experience);
 };

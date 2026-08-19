@@ -133,6 +133,15 @@ public:
 		bClampToScreen = bValue;
 	}
 
+	// Screen-space scale applied when arranging this indicator on the actor canvas.
+	UFUNCTION(BlueprintCallable)
+	float GetScreenScale() const { return ScreenScale; }
+	UFUNCTION(BlueprintCallable)
+	void SetScreenScale(float InScale)
+	{
+		ScreenScale = FMath::Max(0.01f, InScale);
+	}
+
 	// Show the arrow if clamping to the edge of the screen?
 	UFUNCTION(BlueprintCallable)
 	bool GetShowClampToScreenArrow() const { return bShowClampToScreenArrow; }
@@ -200,6 +209,9 @@ private:
 	bool bOverrideScreenPosition = false;
 	UPROPERTY()
 	bool bAutoRemoveWhenIndicatorComponentIsNull = false;
+
+	UPROPERTY()
+	float ScreenScale = 1.0f;
 
 	UPROPERTY()
 	EActorCanvasProjectionMode ProjectionMode = EActorCanvasProjectionMode::ComponentPoint;
