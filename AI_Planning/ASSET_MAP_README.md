@@ -1,6 +1,12 @@
-# Breakaway Vertical Slice - Asset Map & Interactive Visualization
+# Breakaway vertical slice asset map (historical)
 
-> **Scope:** [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md) · **Audit:** [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
+> **Obsolete as of August 19, 2026.** This HTML visualization dates to November 2025. Hero names, buildable counts, roadmap phases, and completion stats do not match the current project.
+>
+> For current status, see [Planning docs](./README.md) and [Project roadmap](./PROJECT_ROADMAP.md).
+>
+> Keep `VerticalSlice_AssetMap.html` only as a historical artifact. Do not update it as a source of truth.
+
+The remainder of this file describes how the archived HTML map worked.
 
 ## Overview
 

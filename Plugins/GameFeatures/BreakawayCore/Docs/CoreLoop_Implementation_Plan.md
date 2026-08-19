@@ -1,8 +1,11 @@
-# Breakaway Core Loop — Implementation & Testing Plan
+# Breakaway core loop implementation plan
 
 Iterative, step-by-step plan for getting Capture-the-Relic playable on **`L_BW_DevMap`** using **`B_BW_Experience_Dev`**, humanoid pawns only, and Lyra bots. Each step builds on the last; **do not advance until a step passes its checklist 3 cold starts in a row**.
 
-Decisions captured from design review (May 2026).
+**Planning hub (status and priorities):** [AI_Planning/README.md](../../../AI_Planning/README.md)  
+**Slice scope:** [Vertical slice definition](../../../AI_Planning/VERTICAL_SLICE_DEFINITION.md)
+
+Decisions captured from design review (May 2026). Section 3 roster and one-buildable rules captured June 2026. Status tables last reviewed August 19, 2026.
 
 ---
 
@@ -1272,14 +1275,14 @@ Design review decisions captured **Jun 2026** (grill-me).
 
 | Step | Status | Notes |
 |------|--------|-------|
-| **17** | **C++ done** | ForceHumanoid, SkipHeroSelection refactor, Hero= URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables — editor checklists open |
-| **18** | **18a/18b done; 18c C++ done** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R C++; editor reparent per [Argus_18c](./Argus_18c_Editor_Setup.md); 3/3 PIE open |
-| **19** | **19a done; 19b C++/scripts done; Editor+PIE open; 19c open** | Alona functional pass; Sun Shrine C++ + setup script; [Alona_19b_Editor_Setup.md](./Alona_19b_Editor_Setup.md); parity (19c) next |
-| **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy single-team portrait rows, HUD slots/EAS, setup script |
-| **20** | **20b/20c C++ landed; Editor wiring + PIE + 3/3 open** | Korryn (`Hero_Morgan` / `Hexweaver`); [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md) |
-| **20.5** | **Assets wired; PIE + 3/3 cold starts open** | Argus + Alona kit configs; [Step20_5_KitConfig_Editor_Setup.md](./Step20_5_KitConfig_Editor_Setup.md) |
-| **21** | **Passed** | Rawlins (`Hero_Rawlins` / `Gunslinger`) 21a–21c; all four slice heroes on `B_BW_Experience_Dev`; [Rawlins_21a_Editor_Setup.md](./Rawlins_21a_Editor_Setup.md) · [Rawlins_21b_Editor_Setup.md](./Rawlins_21b_Editor_Setup.md) · [Rawlins_21c_Editor_Setup.md](./Rawlins_21c_Editor_Setup.md) |
-| **22** | **Open** | Capstone: fumble-on-damage, staging E2E, four-hero match |
+| **17** | **C++ done** | `ForceHumanoid`, SkipHeroSelection refactor, `Hero=` URL, RM hero-lock gate, direct PIE Argus bots, once-per-round buildables. Editor checklists still open; no formal pass commit. |
+| **18** | **C++ complete** | Argus functional + Siege Engine + sheet-accurate F/Q/E/R. Formal `18c` pass commit. Editor 3/3 PIE may still be open. |
+| **19** | **C++ complete** | Alona functional pass commit (`19a`). Sun Shrine + parity C++ landed (`19b`/`19c`). Editor 3/3 PIE may still be open. |
+| **19.5** | **Passed** | Six-slot ability bar, live gold, Friendly/Enemy portrait rows. Formal pass commit. |
+| **20** | **C++ complete** | Korryn kit, Cursed Ward, kit-driven parity. No formal `20c` pass commit. Editor 3/3 PIE may still be open. |
+| **20.5** | **Assets wired** | Argus + Alona kit configs. Commit landed; PIE + 3/3 cold starts may still be open. |
+| **21** | **Passed** | Rawlins 21a–21c. Formal `21c` pass commit. |
+| **22** | **Open** | **Next feature gate:** fumble-on-damage, staging E2E, four-hero match, HUD regression. |
 
 ---
 
@@ -1392,7 +1395,7 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 
 **Editor checklists:** [Argus_18a_Editor_Setup.md](./Argus_18a_Editor_Setup.md) · [Argus_18b_Editor_Setup.md](./Argus_18b_Editor_Setup.md) · [Argus_18c_Editor_Setup.md](./Argus_18c_Editor_Setup.md)
 
-**18c status:** Sheet-accurate C++ kit landed (`ArgusSlide`, `NoRetreat`, `ForGlory`, `Retribution` + cooldown GEs + Primary `Base+Atk×Scale`). Reparent Argus ability BPs per 18c editor checklist; PIE 3/3 still open.
+**18c status:** Sheet-accurate C++ kit landed (`ArgusSlide`, `NoRetreat`, `ForGlory`, `Retribution` + cooldown GEs + Primary `Base+Atk×Scale`). Formal `18c` pass commit. Editor 3/3 PIE may still be open.
 
 **Pass:** sub-steps 18a–18c + relic pickup/score regression; **3/3** cold starts.
 
@@ -1408,9 +1411,9 @@ Regression:  ForceHumanoid=1 → humanoid only, relic loop unchanged
 | E | Sun Burst | |
 | R | Blessing of the Sun | **Sun Shrine** — 750 HP, 35 HP/s, 5m |
 
-**19a status:** Functional kit + editor wiring landed; listen-server PIE pass confirmed (abilities fire, relic carrier gating, Argus regression).
+**19a status:** Functional kit + editor wiring landed; listen-server PIE pass confirmed (abilities fire, relic carrier gating, Argus regression). Formal `19a` pass commit.
 
-**19b status:** `ABwayAlonaSunShrineBuildable` + `Scripts/setup-alona-19b-sun-shrine.mjs` landed; Editor wire + listen-server place/heal/persist pass open.
+**19b / 19c status:** Sun Shrine C++ and sheet-parity setup landed (`0210ae2a`). Editor 3/3 PIE confirmation may still be open.
 
 **Pass:** 19a–19c; **3/3** cold starts.
 
@@ -1514,7 +1517,7 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 
 **DisplayName:** Korryn (official). Plugin folder **`Hexweaver`** unchanged until rename pass.
 
-**20a–20c status:** C++ kit, Cursed Ward (`ABwayKorrynCursedWardBuildable`), and kit-driven parity landed. Editor wiring via `Scripts/setup-korryn-20a-functional.mjs` + `Scripts/setup-korryn-20b-cursed-ward.mjs`. Manual rebuild + PIE + **3/3** cold starts still required before marking Step 20 passed. See [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md).
+**20a–20c status:** C++ kit, Cursed Ward (`ABwayKorrynCursedWardBuildable`), and kit-driven parity landed (July 2026). Editor wiring via `Scripts/setup-korryn-20a-functional.mjs` + `Scripts/setup-korryn-20b-cursed-ward.mjs`. No formal `20c` pass commit; Editor 3/3 PIE may still be open. See [Korryn_20a_Editor_Setup.md](./Korryn_20a_Editor_Setup.md) · [Korryn_20b_20c_Editor_Setup.md](./Korryn_20b_20c_Editor_Setup.md).
 
 | Slot | Ability | Buildable |
 |------|---------|-----------|
@@ -2037,8 +2040,9 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-1. Finish open editor/PIE gates for **Steps 18–19** (Argus + Alona).
-2. **Section 3 Steps 20–21** — Korryn then Rawlins; enable GF plugins on experience incrementally.
-3. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, four-hero HUD regression, and doc updates.
-4. Optional: **11-8** front-end E2E (queue/custom tile → match → results → menu, **3/3** cold starts).
-5. Optional cleanup: clear stale `FrontEndLevel` on `BP_BW_GameState`; standalone packaging pass for **11-1**.
+Reviewed August 19, 2026. For a shorter priority list, see [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
+
+1. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, four-hero HUD regression, and four-hero listen-server match.
+2. Optional: close remaining editor 3/3 PIE gates for **Steps 17, 19c, 20c, and 20.5** if you need a formal pass before 22.
+3. Optional: **11-8** front-end E2E (queue or custom tile → match → results → menu, **3/3** cold starts).
+4. Optional: Dorado parity, 200 ms relic latency, packaging.

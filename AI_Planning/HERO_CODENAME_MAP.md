@@ -1,7 +1,10 @@
-# Hero Codename Map
+# Hero codename map
 
-> **Paths / plugin names:** locked policy **I2** — codenames in folders/asset names.  
-> **DisplayName (UI):** Section 3 / [Breakaway_Hero_Stats_Sheet.md](./Breakaway_Hero_Stats_Sheet.md) / [CoreLoop_Implementation_Plan.md](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) — **not** older “Spartacus / Morgan Le Fay” marketing names for the slice roster.
+> **Paths / plugin names:** locked policy **I2** — codenames in folders and asset names.  
+> **DisplayName (UI):** Section 3 / [Breakaway hero stats sheet](./Breakaway_Hero_Stats_Sheet.md) / [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) — not older “Spartacus / Morgan Le Fay” marketing names for the slice roster.
+
+**Last reviewed:** August 19, 2026  
+**Planning hub:** [Planning docs](./README.md)
 
 ## Roster
 
@@ -46,10 +49,13 @@ Per hero, after verify:
 
 ## Implementation order (Section 3)
 
-1. Argus (`Hero_Spartacus`) — **in progress** (Step 18)
-2. Alona
-3. Korryn (`Hero_Morgan` / Hexweaver)
-4. Rawlins (`Hero_Rawlins` / Gunslinger)
+1. Argus (`Hero_Spartacus`) — C++ complete (Step 18)
+2. Alona — C++ complete (Step 19)
+3. Korryn (`Hero_Morgan` / Hexweaver) — C++ complete (Step 20)
+4. Rawlins (`Hero_Rawlins` / Gunslinger) — passed (Step 21)
+5. Capstone — **open** (Step 22)
+
+For more information, see [Project roadmap](./PROJECT_ROADMAP.md).
 
 ## Content bars (Section 3)
 
@@ -68,4 +74,4 @@ Hero registry uses **primary asset IDs** from hero DAs (e.g. `HeroDataAsset:Argu
 - [Spartacus CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md)
 - [Argus_18b_Editor_Setup.md](../Plugins/GameFeatures/BreakawayCore/Docs/Argus_18b_Editor_Setup.md)
 - [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
-- [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md) — may still say Spartacus; prefer this map + Core Loop for DisplayName
+- [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)

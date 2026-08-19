@@ -1,8 +1,12 @@
-# Hero Game Feature Plugins
+# Hero Game Feature plugins
 
 Per-hero content lives in optional Game Feature plugins under `Plugins/GameFeatures/Heroes/`.
 
-## Why Separate Plugins
+**Last reviewed:** August 19, 2026  
+**Status and next work:** [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md)  
+**Codenames:** [Hero codename map](../../../AI_Planning/HERO_CODENAME_MAP.md)
+
+## Why separate plugins
 
 - Hot-reload hero content without touching BreakawayCore
 - Experience `GameFeaturesToEnable` loads only roster heroes needed for a mode
@@ -46,7 +50,7 @@ Codenames / paths: [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP
 
 ## Current focus
 
-**Argus / Step 18** — [Spartacus/CONTENT_SETUP.md](./Spartacus/CONTENT_SETUP.md) · [Argus_18b_Editor_Setup.md](../BreakawayCore/Docs/Argus_18b_Editor_Setup.md)
+**Step 22 capstone** — fumble-on-damage, staging E2E, four-hero match. All four plugins exist with C++ kits and one buildable each. For remaining work, see [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
 
 ## Loader
 
