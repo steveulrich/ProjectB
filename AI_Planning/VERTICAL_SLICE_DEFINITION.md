@@ -1,55 +1,58 @@
-# Vertical Slice Definition (Source of Truth)
+# Vertical slice definition
 
-Locked scope from planning session — **2026-05-25**.
+Locked scope for the Capture-the-Relic vertical slice.
 
-## Slice Bar
+**Last reviewed:** August 19, 2026  
+**Planning hub:** [Planning docs](./README.md)  
+**Status and next work:** [Project roadmap](./PROJECT_ROADMAP.md)
 
-Design-spec Capture-the-Relic: **4v4**, **4 heroes**, **buildables**, **match-only gold**.
+Decisions in this file are the slice bar. A larger project plan may replace them later. Until then, prefer this document over older “2 buildables per hero” or “gold spends on buildables” wording.
 
-## Scope Table
+## Slice bar
+
+Design-spec Capture-the-Relic: **4v4**, **four heroes**, **one persistable buildable per hero**, **match-only gold (earn, no spend)**.
+
+## Scope table
 
 | Area | In scope | Out of scope |
 |------|----------|--------------|
-| Mode | 4v4 listen server, bots fill to 8 | Dedicated server hardening |
-| Heroes | Spartacus, Morgan, Alona, Rawlins | Full roster, campaign liberation |
-| Buildables | 2 per hero, persist across rounds in match | SaveGame / meta |
-| Gold | Persists between rounds; resets on match end | Campaign SaveGame |
-| Maps | L_BW_DevMap + L_BW_Dorado parity | New arena |
-| Campaign | — | Ascension Rites entirely |
-| Art polish | Functional slice | Production mythological theming |
+| Mode | 4v4 listen server; bots fill to 8 | Dedicated server hardening |
+| Heroes | Argus, Alona, Korryn, Rawlins | Full roster; campaign liberation |
+| Buildables | **One** per hero; persist across rounds in a Best-of-5 match | Second buildable; SaveGame / meta |
+| Gold | Earn in-match; persist between rounds; reset on match end | Spend on buildables or items; campaign SaveGame |
+| Maps | `L_BW_DevMap` (CI / integration) and `L_BW_Dorado` (demo) at parity | New arena |
+| Campaign | — | Ascension Rites |
+| Art polish | Functional slice; placeholder or kit art OK | Production mythological theming |
 
-## Definition of Done
+Hero plugin names and folders: [Hero codename map](./HERO_CODENAME_MAP.md). Ability numbers: [Breakaway hero stats sheet](./Breakaway_Hero_Stats_Sheet.md).
+
+## Definition of done
+
+Status reflects the August 19, 2026, doc refresh. Editor 3/3 PIE is still required where noted.
 
 ### DevMap / Dorado gates
 
-- [ ] 8 players (human + bot) listen server
-- [ ] 4 distinct heroes selectable (duplicate-hero rule)
-- [ ] Best-of-5 rounds, 3 win conditions
-- [ ] Relic pass/throw/score/fumble (content-dependent)
-- [ ] Gold earned/spent between rounds within match
-- [ ] 2 buildables per hero; persist Round 1 → Round 2
-- [ ] Results → Lyra front-end
+| Gate | Status |
+|------|--------|
+| 8 players (human + bot) listen server | C++ ready; prove on Step 22 mini-match |
+| 4 distinct heroes selectable (duplicate-hero rule per team) | Kits landed; prove on Step 22 |
+| Best-of-5 rounds, 3 win conditions | Implemented |
+| Relic pass / throw / score | Implemented |
+| Relic fumble-on-damage | **Open** (Step 22) |
+| Gold earned in-match; persists round-to-round | Implemented (no spend in slice) |
+| One buildable per hero; persist Round 1 → Round 2 | C++ ready; prove on Step 22 |
+| Results → Lyra front-end | Widgets exist; `11-8` E2E still deferred |
+| Dorado parity with DevMap | **Open** |
 
 ### Documentation gate
 
-- [ ] [BreakawayCore/Docs/SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md) complete
-- [ ] [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md) Editor-verified
-
-## Doc Locations
-
-| Purpose | Path |
-|---------|------|
-| System reference | `Plugins/GameFeatures/BreakawayCore/Docs/` |
-| Planning / schedule | `AI_Planning/` |
-
-## Hero content gates (before A1c)
-
-All four heroes (**E2 + F3**) must pass plugin migration gates. Order: Spartacus → Alona → Morgan → Rawlins.  
-Codenames: [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md). Gate 1 checklist: [Spartacus CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md).
+| Gate | Status |
+|------|--------|
+| [BreakawayCore systems index](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md) | Living |
+| [Blueprint asset audit](./BLUEPRINT_ASSET_AUDIT.md) Editor-verified | **Stale** (May 25, 2026). Re-run after Step 22. |
 
 ## Related
 
-- [HERO_CODENAME_MAP.md](./HERO_CODENAME_MAP.md)
-- [project_architecture_overview.md](./project_architecture_overview.md)
-- [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md)
-- [Breakaway_Reborn_Design_Spec.md](./Breakaway_Reborn_Design_Spec.md)
+- [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)
+- [Project architecture overview](./project_architecture_overview.md)
+- [Breakaway Reborn design spec](./Breakaway_Reborn_Design_Spec.md)

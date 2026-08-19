@@ -1,56 +1,35 @@
-# Breakaway: Reborn - Vertical Slice Roadmap
+# Breakaway vertical slice roadmap
 
-> **Scope:** [VERTICAL_SLICE_DEFINITION.md](./VERTICAL_SLICE_DEFINITION.md)  
-> **Systems detail:** [BreakawayCore/Docs/SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)
+Short priority list for the design-spec slice. For status tables and remaining tasks, see [Project roadmap](./PROJECT_ROADMAP.md). For PIE checklists, see [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md).
 
-## Current State (2026-05-25)
+**Last reviewed:** August 19, 2026  
+**Scope:** [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)
 
-- **C++ match loop:** Round/score/relic/teams on GameState components (default subobjects)
-- **Buildables:** Persistence flag + `UBwayBuildableRegistryComponent`
-- **4v4 bots:** Auto-scale to 8 players
-- **Relic carrier:** Combat abilities blocked via `Gameplay.State.RelicCarrier`
-- **Docs:** Dual-location dev + planning docs synced
-- **Content gap:** Editor assets not in git — use [BLUEPRINT_ASSET_AUDIT.md](./BLUEPRINT_ASSET_AUDIT.md)
+## Current state
 
-## Priority Order (Design-Spec Slice)
+- **Match loop:** Rounds, scoring, relic, teams, bots, and sudden death run on `ABwayGameState` components.
+- **HUD:** Slot-injected match HUD (Steps 12–16 and 19.5).
+- **Heroes:** Argus, Alona, Korryn, and Rawlins each have a C++ kit, kit config, and one buildable.
+- **Capstone:** Step 22 is open (fumble-on-damage, staging E2E, four-hero match).
+- **Content in git:** `.uasset` files are Editor-local. Treat [Blueprint asset audit](./BLUEPRINT_ASSET_AUDIT.md) as stale until re-run.
 
-### 1. Playable Loop (DevMap)
-- [x] C++ GameState components wired
-- [ ] Experience + map assets verified in Editor
-- [ ] End-to-end PIE — [DEVMAP_PLAYTEST_GUIDE.md](./DEVMAP_PLAYTEST_GUIDE.md)
+## Priority order
 
-### 2. Spartacus Content
-- [x] C++ abilities
-- [x] Relic carrier restrictions
-- [ ] BP ability assets, mesh, 2 buildables — [Heroes/Spartacus/CONTENT_SETUP.md](../Plugins/GameFeatures/Heroes/Spartacus/CONTENT_SETUP.md)
+1. **Step 22 capstone** — fumble, staging E2E, four-hero match, HUD regression, `ForceHumanoid` relic loop.
+2. **Open editor 3/3 gates** — Steps 17, 19c, 20c, and 20.5 if you need a formal pass before 22.
+3. **Front-end E2E (`11-8`)** — menu → match → results → menu.
+4. **Dorado parity** — same spawn, goal, and relic wiring as DevMap.
+5. **Net polish** — 200 ms relic latency; slide steering if jitter shows up.
 
-### 3. Heroes 2–4
-- [x] GF plugin templates (Morgan, Alona, Rawlins)
-- [ ] Ability + buildable content per hero CONTENT_SETUP.md
-
-### 4. Relic & Net Polish
-- [x] Scoring cooldown, LastPossessingTeam, movement replication component
-- [ ] 200ms latency playtest
-- [ ] Fumble-on-damage (design spec)
-
-### 5. Buildables & Between-Round UI
-- [x] Registry, planning delegate `OnBetweenRoundPlanningStarted`
-- [ ] BP planning/shop widget
-- [ ] 8 buildable data assets
-
-### 6. Dorado Parity + Polish
-- [ ] Mirror DevMap spawn/goals on L_BW_Dorado
-- [ ] HUD/scoreboard BP polish
-- [ ] Slide juice (FOV/VFX/audio) — post-slice gate optional
-
-## Explicitly Deferred
+## Explicitly deferred
 
 - Ascension Rites campaign
 - SaveGame / meta gold
+- Second buildable per hero
 - Production art pass
 
-## Technical Debt
+## Technical debt
 
-- Consolidate duplicate GameState vs component state
+- Consolidate duplicate GameState versus component state
 - Migrate off ShooterCTF spawn tag coupling
 - Slide net steering under latency

@@ -1,10 +1,14 @@
-# Breakaway Core HUD - Detailed UMG Layout Guide
+# Breakaway core HUD visual layout
 
-This guide provides exact settings for recreating the Breakaway HUD layout shown in the reference screenshot.
+Visual UMG layout notes from a reference screenshot. This is not the live C++ HUD contract.
+
+**Last reviewed:** August 19, 2026 (banner only)
+
+For widget classes, slots, and Step 19.5 behavior, see [UI system](../Plugins/GameFeatures/BreakawayCore/Docs/UI_System.md) and [Core HUD layout setup](../Plugins/GameFeatures/BreakawayCore/Docs/CoreHUD_Layout_Setup.md). Minimap, buff timers, and some chrome in this guide are still post-slice.
 
 ---
 
-## Overview: UI Sections
+## Overview: UI sections
 
 The HUD consists of these main sections:
 

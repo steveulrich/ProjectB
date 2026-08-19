@@ -1,7 +1,9 @@
-# Breakaway Blueprint & Content Asset Audit
+# Breakaway Blueprint and content asset audit
 
 > **Purpose:** Track Editor-only assets required for the design-spec vertical slice. `.uasset` files are not in git; this document is filled from **ue-mcp live Editor reads**, config references, and C++ defaults.
->
+
+> **Stale:** Last Editor-verified **May 25, 2026**. Hero plugins (Korryn, Rawlins), kit configs, and Step 19.5 HUD assets landed after this audit. Do not use the tables in this file as current roster status. For live status, see [Planning docs](./README.md). Re-run this audit in Editor after Step 22.
+
 > **Last audited (code/config):** 2026-05-25  
 > **Last verified (Editor via ue-mcp):** 2026-05-25 — ProjectB loaded, bridge connected  
 > **Raw MCP output:** `AI_Planning/ue_mcp_audit_raw.json`, `AI_Planning/ue_mcp_audit_extra.json`, `AI_Planning/ue_mcp_audit_summary.json`
@@ -209,7 +211,9 @@ All five assets exist under `/BreakawayCore/Experiences/Phases/`, parent `LyraGa
 
 ---
 
-## 9. Known Gaps (ue-mcp + code review)
+## 9. Known gaps (ue-mcp + code review, May 25, 2026)
+
+These rows are the **May 2026** audit snapshot. They are **not** current. Four hero plugins and HUD widgets landed afterward. Re-run the audit before treating any row as a blocker.
 
 | Gap | Severity |
 |-----|----------|

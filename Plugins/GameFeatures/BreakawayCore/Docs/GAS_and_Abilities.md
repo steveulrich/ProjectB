@@ -56,8 +56,9 @@ Templates: [`Plugins/GameFeatures/Heroes/README.md`](../../Heroes/README.md)
 
 ## Argus / Spartacus
 
-- **Current path:** Core Loop Step 18 — [Argus_18a](./Argus_18a_Editor_Setup.md) / [Argus_18b](./Argus_18b_Editor_Setup.md); DisplayName **Argus**; plugin `Hero_Spartacus`
-- **Legacy C++ kit notes:** [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md) (ShieldBash/WarCry/etc. — 18a stand-ins until 18c)
+- **Current path:** Core Loop Step 18 complete in C++. DisplayName **Argus**; plugin `Hero_Spartacus`.
+- **Editor checklists:** [Argus_18a](./Argus_18a_Editor_Setup.md) / [18b](./Argus_18b_Editor_Setup.md) / [18c](./Argus_18c_Editor_Setup.md)
+- **Legacy C++ kit notes:** [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md) (ShieldBash/WarCry stand-ins replaced by 18c sheet names)
 
 ## Slide
 
@@ -77,5 +78,5 @@ Placement Confirm/Cancel dual-bind on LMB/RMB alongside Primary / RelicRequest �
 
 ## TODO
 
-- Alona 19b Sun Shrine + 19c parity; Morgan/Rawlins sheet-accurate kits (Steps 20–21)
 - Fumble-on-damage gameplay effect for relic carrier (Step 22)
+- Optional: Alona 19c / Korryn 20c editor 3/3 PIE confirmation

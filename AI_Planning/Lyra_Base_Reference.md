@@ -1,17 +1,20 @@
-# Lyra Base Reference (ProjectB)
+# Lyra base reference (ProjectB)
 
-What Lyra provides vs what BreakawayCore adds — onboarding for new contributors.
+What Lyra provides versus what BreakawayCore adds. Use this as onboarding for new contributors.
 
-## Lyra Modules (ProjectB)
+**Last reviewed:** August 19, 2026  
+**Planning hub:** [Planning docs](./README.md)
+
+## Lyra modules (ProjectB)
 
 | Path | Module |
 |------|--------|
 | `Source/LyraGame/` | Main game runtime |
 | `Source/LyraEditor/` | Editor utilities |
 
-## Lyra Responsibilities
+## Lyra responsibilities
 
-### Boot & Shell
+### Boot and shell
 
 - `ULyraGameInstance`, front-end map `L_LyraFrontEnd`
 - `B_LyraFrontEnd_Experience` — menu, playlists, sessions
@@ -29,7 +32,7 @@ What Lyra provides vs what BreakawayCore adds — onboarding for new contributor
 - Health/combat attribute sets, `ULyraGameplayAbility`
 - `ULyraGamePhaseSubsystem` — phase tags gate gameplay
 
-### Teams & Social
+### Teams and social
 
 - `ULyraTeamSubsystem`, `ILyraTeamAgentInterface`
 - Session plugins (Steam/EOS) — unchanged by Breakaway
@@ -38,7 +41,7 @@ What Lyra provides vs what BreakawayCore adds — onboarding for new contributor
 
 - **`ULyraAssetManager`** — primary asset scanning (Breakaway paths added in config)
 
-## Lyra Sample Game Features (Reference Only)
+## Lyra sample game features (reference only)
 
 | Plugin | Use in ProjectB |
 |--------|-----------------|
@@ -47,16 +50,17 @@ What Lyra provides vs what BreakawayCore adds — onboarding for new contributor
 | ShooterMaps / ShooterExplorer | Lyra sample content |
 | TopDownArena | Unrelated sample mode |
 
-## BreakawayCore Responsibilities
+## BreakawayCore responsibilities
 
-Everything in [SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md):
+Everything in [BreakawayCore systems index](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md):
 
 - Capture-the-Relic rules, rounds, scoring
-- Hero selection, 4-hero roster content
+- Hero selection (staging + direct PIE)
+- Four-hero roster content (Argus, Alona, Korryn, Rawlins) in per-hero Game Feature plugins
 - Relic, buildables, gold economy
-- Custom movement (slide), Spartacus C++ abilities
+- Custom movement (slide)
 
-## Integration Rule
+## Integration rule
 
 **Never replace Lyra front-end or experience manager.** Breakaway injects via:
 

@@ -1,6 +1,12 @@
-# Hero Selection System — Architecture & Integration Guide
+# Hero selection system
 
-> Consolidated reference for the hero selection phase. Covers C++ architecture, Lyra phase system integration, Blueprint wiring, and Experience configuration.
+Architecture for the in-match hero selection **phase component**. Section 3 production travel uses **`L_BW_HeroSelect_Staging`** instead of this in-match phase.
+
+**Last reviewed:** August 19, 2026
+
+- Production: front-end tile → staging map → lock → seamless travel. See [Hero select staging setup](../Plugins/GameFeatures/BreakawayCore/Docs/HeroSelect_Staging_Setup.md).
+- Direct PIE: `Hero=` URL or auto `WBP_BW_HeroSelect`; round management waits for human lock.
+- This document still describes `UBwayHeroSelectionPhaseComponent` and Lyra `GamePhase.HeroSelection`, which exist for the skip/apply paths.
 
 ---
 
