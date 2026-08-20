@@ -49,6 +49,10 @@
 			"Enabled": true
 		},
 		{
+			"Name": "CommonStartupLoadingScreen",
+			"Enabled": true
+		},
+		{
 			"Name": "CommonConversation",
 			"Enabled": true
 		},
@@ -352,27 +356,42 @@
 			"Enabled": true
 		},
 		{
-			"Name": "UE_MCP_Bridge",
+			"Name": "XInputDevice",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"WinGDK"
+			]
+		},
+		{
+			"Name": "GameInputWindows",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"WinGDK"
+			]
+		},
+		{
+			"Name": "AIAssistant",
 			"Enabled": true
 		},
 		{
-			"Name": "PCG",
+			"Name": "ToolsetRegistry",
 			"Enabled": true
 		},
 		{
-			"Name": "Hero_Spartacus",
+			"Name": "AllToolsets",
 			"Enabled": true
 		},
 		{
-			"Name": "Hero_Alona",
-			"Enabled": true
+			"Name": "PlayerInputDebugger",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		},
 		{
-			"Name": "Hero_Morgan",
-			"Enabled": true
-		},
-		{
-			"Name": "Hero_Rawlins",
+			"Name": "PlatformDLC",
 			"Enabled": true
 		}
 	]

@@ -2,17 +2,13 @@
   <Import Project="Lyra.Automation.csproj.props" Condition="Exists('Lyra.Automation.csproj.props')" />
   <Import Project="$(EngineDir)\Source\Programs\Shared\UnrealEngine.csproj.props" />
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <Configurations>Debug;Release;Development</Configurations>
     <RootNamespace>Lyra.Automation</RootNamespace>
     <AssemblyName>Lyra.Automation</AssemblyName>
     <OutputPath>..\..\Binaries\DotNET\AutomationTool\AutomationScripts</OutputPath>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsNotAsErrors>612,618</WarningsNotAsErrors>
-    <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="$(EngineDir)\Source\Programs\AutomationTool\AutomationUtils\AutomationUtils.Automation.csproj" />
