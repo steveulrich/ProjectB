@@ -26,6 +26,7 @@
 
 	<Option Name="SymbolServerPath" DefaultValue="" Description="A shared symbols server for your office, debugging shipped builds."/>
 	
+	<Option Name="CookerTestTargetPlatforms" DefaultValue="Win64+Mac+Linux" Description="Platforms permitted for running the cooker tests. The final set of platforms will be determined as the intersection of CookerTestTargetPlatforms and TargetPlatforms." />
 	<Option Name="RunAllCookTests" DefaultValue="false" Description="To run all cook tests"/>
 	<Option Name="RunCookOnTheFlyTest" DefaultValue="$(RunAllCookTests)" Description="To run cook on the fly test"/>
 	<Option Name="RunCookByTheBookTest" DefaultValue="$(RunAllCookTests)" Description="To run cook by the book test"/>
@@ -38,6 +39,8 @@
 	<Option Name="RunCookSinglePackageByTheBookTest" DefaultValue="$(RunAllCookTests)" Description="To run the cook by the book test with cooksinglepackagenorefs parameter, it is required to specify a map name and the WorldPartitionMap parameter if a map is WorldPartition"/>
 	<Option Name="RunIncrementalCookByTheBookTest" DefaultValue="$(RunAllCookTests)" Description="To run the incremental cook by the book test"/>
 	<Option Name="RunProjectTests" DefaultValue="false" Description="To run all tests under the Project Group"/>
+	<Option Name="RunAllGameTests" DefaultValue="false" Description="To run all Game tests"/>
+	<Option Name="RunEliminationTest" DefaultValue="$(RunAllGameTests)" Description="To run Elimination Game test"/>
 	
 	<Option Name="SourceBuildVersion" DefaultValue="" Description="The source build version for diffing"/>
 	
@@ -54,6 +57,7 @@
 	<Property Name="NetworkPublishRootOverride" Value="" />
 	<Property Name="NetworkReportRootOverride" Value="" />
 	<Property Name="WithInterchangeWorker" Value="true" />
+	<Property Name="CookerTestList" Value="" />
 
 	<!-- If a build machine, turn off all defaults. Settings should be specified via the website UI -->
 	<Do If="$(IsBuildMachine)">
@@ -64,19 +68,27 @@
 		<Property Name="DefaultTargetTestList" Value="" />
 	</Do>
 
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.CookOnTheFly(Map=L_Expanse)" If="$(RunCookOnTheFlyTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.CookByTheBook(Map=L_Expanse)" If="$(RunCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.FastCookByTheBook(Map=L_Expanse)" If="$(RunFastCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.ColdCookByTheBook(Map=L_Expanse)" If="$(RunColdCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.CookByTheBookCacheSettings(Map=L_Expanse)" If="$(RunCookByTheBookCacheSettingsTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.UnversionedCookByTheBook(Map=L_Expanse)" If="$(RunUnversionedCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.IterativeCookByTheBook" If="$(RunIterativeCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.InterruptedCookByTheBook" If="$(RunInterruptedCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.CookSinglePackageByTheBook(Map=L_Expanse, WorldPartitionMap)" If="$(RunCookSinglePackageByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.CookSinglePackageByTheBook(Map=L_ShooterGym)" If="$(RunCookSinglePackageByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.IncrementalCookByTheBook(Map=L_Expanse)" If="$(RunIncrementalCookByTheBookTest)" />
-	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.TargetAutomation(RunTest=Group:Project)" If="$(RunProjectTests)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.CookOnTheFly(Map=L_Expanse)" If="$(RunCookOnTheFlyTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.CookByTheBook(Map=L_Expanse)" If="$(RunCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.FastCookByTheBook(Map=L_Expanse)" If="$(RunFastCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.ColdCookByTheBook(Map=L_Expanse)" If="$(RunColdCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.CookByTheBookCacheSettings(Map=L_Expanse)" If="$(RunCookByTheBookCacheSettingsTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.UnversionedCookByTheBook(Map=L_Expanse)" If="$(RunUnversionedCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.IterativeCookByTheBook" If="$(RunIterativeCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.InterruptedCookByTheBook" If="$(RunInterruptedCookByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.CookSinglePackageByTheBook(Map=L_Expanse, WorldPartitionMap)" If="$(RunCookSinglePackageByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.CookSinglePackageByTheBook(Map=L_ShooterGym)" If="$(RunCookSinglePackageByTheBookTest)" />
+	<Property Name="CookerTestList" Value="$(CookerTestList)+UE.IncrementalCookByTheBook(Map=L_Expanse)" If="$(RunIncrementalCookByTheBookTest)" />
+	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+$(CookerTestList)" />
+	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+LyraTest.StartElimination" If="$(RunEliminationTest)" />
+	<Property Name="DefaultTargetTestList" Value="$(DefaultTargetTestList)+UE.TargetAutomation(RunTest=Group:Project)" If="$(RunProjectTests) Or $(RunAllGameTests)" />
 	<Property Name="DefaultEditorTestList" Value="$(DefaultEditorTestList)+UE.EditorAutomation(RunTest=Group:Project)" If="$(RunProjectTests)" />
+
+	<!-- Cooker tests launch -->
+	<Include Script="$(RootDir)/Engine/Build/Graph/Tasks/Inc/TestConfigs.xml" />
+	<ForEach Name="CookerTest" Values="$(CookerTestList)" Separator="+">
+		<Expand Name="AllowTestOnPlatforms" TestName="$(CookerTest)" Platforms="$(CookerTestTargetPlatforms)" />
+	</ForEach>
 
 	<!-- -noentitlements is needed for macOS Lyra: currently Gauntlet doesn't work with sandboxing on macOS !-->
 	<!-- and this prevents the app from getting the sandbox entitlement added. !-->
@@ -90,8 +102,18 @@
 	<!-- Setup -->
 	<!-- =============================================================================== -->
 
+	<!-- Customized the project configurations to enable project-specific performance testing using the 
+	AutomatedPerfTesting/Build/Inc/TestConfigs provided macro 'AddPerfTestConfig'. 
+
+	For example, on Windows this can be used to validate non-default RHIs such as Vulkan. -->
+	<Include Script="$(RootDir)/Engine/Plugins/Performance/AutomatedPerfTesting/Build/Inc/TestConfigs.xml" />
+	<Include Script="../Platforms/*/Build/PerfTestConfigs.xml" />
+	<Include Script="../Restricted/*/Build/PerfTestConfigs.xml" />
+	
+	<Property Name="EnablePerfTestConfigFiltering" Value="true" />
+	
 	<!-- Configure specific AutomatedPerfTest runs -->
-	<Include Script="../../../../Engine/Plugins/Performance/AutomatedPerfTesting/Build/Inc/AutomatedPerfTestProjectSettings.xml" />
+	<Include Script="$(RootDir)/Engine/Plugins/Performance/AutomatedPerfTesting/Build/Inc/AutomatedPerfTestProjectSettings.xml" />
 	<Do If="'$(ReplayName)' == ''">
 		<Property Name="ReplayName" Value="$(RootDir)/Samples/Games/Lyra/Build/Replays/LyraSample.replay" />
 	</Do>
@@ -102,10 +124,17 @@
 	<Property Name="NullOSSPlatforms" Value="Android" />
 
 	<!-- This will declare an aggregate called BuildAndTest Lyra -->
-	<Include Script="../../../../Engine/Build/Graph/Tasks/BuildAndTestProject.xml" />
+	<Include Script="$(RootDir)/Engine/Build/Graph/Tasks/BuildAndTestProject.xml" />
 
 	<!-- Add BuildAndTest project target node as the base requirement.  We append items to BuildAndTestExtendedRequirements, that need to be performed. -->
-	<Property Name="BuildAndTestExtendedRequirements" Value="BuildAndTest $(ProjectName)" />
+	<Property Name="BuildAndTestExtendedRequirements" Value="BuildAndTest $(ProjectName)"/>
+
+	<!-- Add the APT Zen Streaming AutomatedPerfTests -->
+	<Include Script="$(RootDir)/Engine/Plugins/Performance/AutomatedPerfTesting/Build/Inc/AutomatedPerfTestZenStreaming.xml" />
+
+	<Do If="$(DoBuildZenStreaming)">	
+		<Property Name="BuildAndTestExtendedRequirements" Value="$(BuildAndTestExtendedRequirements);Zen Streaming $(ProjectName)"/>
+	</Do>
 
 	<!-- =============================================================================== -->
 	<!-- CONTENT VALIDATION -->
@@ -235,7 +264,8 @@
 			
 		<Agent Name="Upload $(TargetName)" Type="Win64">
 			<Property Name="PublishNodeName" Value="$(PreNodeName)Publish Staged $(UploadTargetPlatform)" />
-			<Property Name="PublishNodeName" Value="$(PublishNodeName) (Horde)" If="$(Horde)"/>
+			<Property Name="PublishNodeName" Value="$(PublishNodeName) (Horde)" If="$(ShouldPublishHordeArtifact)"/>
+			<Property Name="PublishNodeName" Value="$(PublishNodeName) (Cloud)" If="!$(ShouldPublishHordeArtifact) AND $(PublishCloudArtifacts)"/>
 		
 			<!-- Set UploadPlatform since it isn't always the same as the target -->
 			<Property Name="UploadPlatform" Value="$(UploadTargetPlatform)" />
@@ -250,8 +280,11 @@
 
 				<!-- Copy published files to local agent and tag them for upload -->
 				<Switch>
-					<Case If="$(Horde)">
+					<Case If="$(ShouldPublishHordeArtifact)">
 						<RetrieveArtifact Name="$(ProjectName)-Staged-$(UploadPlatform)" Type="staged-build" OutputDir="$(ProjectOutputDirectory)/$(UploadPlatform)" />
+					</Case>
+					<Case If="$(PublishCloudArtifacts)">
+						<RetrieveCloudArtifact Name="$(ProjectName)-$(UploadTargetPlatform)-Staged" Type="staged-build" OutputDir="$(ProjectOutputDirectory)/$(UploadPlatform)" Project="$(TargetProject)" Platform="$(UploadPlatform)"/>
 					</Case>
 					<Default>
 						<Copy From="$(NetworkOutputDirectory)/$(UploadPlatform)/Staged/..." To="$(ProjectOutputDirectory)/$(UploadPlatform)/..."  />
