@@ -296,6 +296,22 @@
 			"Enabled": true
 		},
 		{
+			"Name": "Hero_Spartacus",
+			"Enabled": true
+		},
+		{
+			"Name": "Hero_Alona",
+			"Enabled": true
+		},
+		{
+			"Name": "Hero_Morgan",
+			"Enabled": true
+		},
+		{
+			"Name": "Hero_Rawlins",
+			"Enabled": true
+		},
+		{
 			"Name": "ShooterCore",
 			"Enabled": true
 		},

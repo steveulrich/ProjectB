@@ -1172,8 +1172,8 @@ TSharedPtr<FJsonValue> FLevelHandlers::SetComponentProperty(const TSharedPtr<FJs
 		return MCPError(FString::Printf(TEXT("Property '%s' not found on component"), *PropertyName));
 	}
 
-	const TSharedPtr<FJsonValue>* ValueField = Params->Values.Find(TEXT("value"));
-	if (!ValueField || !(*ValueField).IsValid())
+	const TSharedPtr<FJsonValue> ValueField = Params->TryGetField(TEXT("value"));
+	if (!ValueField.IsValid())
 	{
 		return MCPError(TEXT("Missing 'value' parameter"));
 	}
@@ -1184,14 +1184,14 @@ TSharedPtr<FJsonValue> FLevelHandlers::SetComponentProperty(const TSharedPtr<FJs
 		Prop->ContainerPtrToValuePtr<void>(TargetComp), TargetComp, PPF_None);
 
 	FString ValueStr;
-	if ((*ValueField)->TryGetString(ValueStr))
+	if (ValueField->TryGetString(ValueStr))
 	{
 		Prop->ImportText_Direct(*ValueStr, Prop->ContainerPtrToValuePtr<void>(TargetComp), TargetComp, PPF_None);
 	}
 	else
 	{
 		double NumValue;
-		if ((*ValueField)->TryGetNumber(NumValue))
+		if (ValueField->TryGetNumber(NumValue))
 		{
 			ValueStr = FString::SanitizeFloat(NumValue);
 			Prop->ImportText_Direct(*ValueStr, Prop->ContainerPtrToValuePtr<void>(TargetComp), TargetComp, PPF_None);
@@ -1199,7 +1199,7 @@ TSharedPtr<FJsonValue> FLevelHandlers::SetComponentProperty(const TSharedPtr<FJs
 		else
 		{
 			bool BoolValue;
-			if ((*ValueField)->TryGetBool(BoolValue))
+			if (ValueField->TryGetBool(BoolValue))
 			{
 				ValueStr = BoolValue ? TEXT("true") : TEXT("false");
 				Prop->ImportText_Direct(*ValueStr, Prop->ContainerPtrToValuePtr<void>(TargetComp), TargetComp, PPF_None);
@@ -1283,8 +1283,8 @@ TSharedPtr<FJsonValue> FLevelHandlers::SetVolumeProperties(const TSharedPtr<FJso
 
 			if (bApplied)
 			{
-				Changes.Add(MakeShared<FJsonValueString>(Pair.Key));
-				PreviousValues->SetStringField(Pair.Key, PrevStr);
+				Changes.Add(MakeShared<FJsonValueString>(FString(Pair.Key.ToView())));
+				PreviousValues->SetStringField(FStringView(Pair.Key), PrevStr);
 			}
 		}
 	}

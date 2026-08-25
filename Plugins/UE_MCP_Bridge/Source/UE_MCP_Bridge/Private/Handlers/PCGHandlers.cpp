@@ -459,23 +459,23 @@ TSharedPtr<FJsonValue> FPCGHandlers::SetPCGNodeSettings(const TSharedPtr<FJsonOb
 			FString ValStr;
 			if (Pair.Value->TryGetString(ValStr))
 			{
-				PropertiesToSet.Add(TPair<FString, FString>(Pair.Key, ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
 			}
 			else if (Pair.Value->Type == EJson::Number)
 			{
 				ValStr = FString::SanitizeFloat(Pair.Value->AsNumber());
-				PropertiesToSet.Add(TPair<FString, FString>(Pair.Key, ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
 			}
 			else if (Pair.Value->Type == EJson::Boolean)
 			{
 				ValStr = Pair.Value->AsBool() ? TEXT("true") : TEXT("false");
-				PropertiesToSet.Add(TPair<FString, FString>(Pair.Key, ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
 			}
 			else
 			{
 				// For complex types, serialize to string
 				ValStr = Pair.Value->AsString();
-				PropertiesToSet.Add(TPair<FString, FString>(Pair.Key, ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
 			}
 		}
 	}

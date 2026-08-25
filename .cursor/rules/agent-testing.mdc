@@ -21,7 +21,7 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 .\Run-Tier.ps1 -Tier 1
 ```
 
-- Target: **`LyraEditor`** (not `ProjectBEditor`).
+- Target: **`LyraEditor`** or **`ProjectBEditor`** (alias of `LyraEditorTarget` in `Source/ProjectBEditor.Target.cs`).
 - Exit 0 = compile OK. Non-zero = fix before claiming done.
 - Path check only: `.\Run-Tier.ps1 -Tier 1 -ValidateOnly`
 - Engine override: `$env:UE_ENGINE_ROOT = 'E:\Github\UnrealEngine'`
