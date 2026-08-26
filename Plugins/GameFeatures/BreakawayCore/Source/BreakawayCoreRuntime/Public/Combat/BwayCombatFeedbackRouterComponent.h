@@ -34,7 +34,7 @@ protected:
 	void RouteHealFeedback(const FLyraVerbMessage& Payload);
 
 	static ABwayPlayerState* ResolvePlayerState(UObject* Object);
-	static FVector ResolveWorldLocation(UObject* TargetObject);
+	FVector ResolveWorldLocation(UObject* TargetObject) const;
 
 	void SendNumberPopToPlayer(
 		ABwayPlayerState* RecipientPS,

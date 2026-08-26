@@ -95,7 +95,7 @@ ABwayPlayerState* UBwayCombatFeedbackRouterComponent::ResolvePlayerState(UObject
 	return nullptr;
 }
 
-FVector UBwayCombatFeedbackRouterComponent::ResolveWorldLocation(UObject* TargetObject)
+FVector UBwayCombatFeedbackRouterComponent::ResolveWorldLocation(UObject* TargetObject) const
 {
 	const UBwayCombatReadabilityConfig* Config =
 		UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(this);

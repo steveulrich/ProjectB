@@ -153,9 +153,9 @@ bool FBwayCombatNumberColorTagsTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Outgoing damage white"), Config->ResolveOutgoingDamageColor().Equals(FLinearColor::White));
 	TestTrue(TEXT("Incoming heal green"), Config->ResolveIncomingHealColor().Equals(FLinearColor(0.f, 1.f, 0.f)));
 
-	TestTrue(TEXT("Incoming damage tag registered"), BwayCombatFeedbackTags::Number_IncomingDamage.IsValid());
-	TestTrue(TEXT("Outgoing damage tag registered"), BwayCombatFeedbackTags::Number_OutgoingDamage.IsValid());
-	TestTrue(TEXT("Incoming heal tag registered"), BwayCombatFeedbackTags::Number_IncomingHeal.IsValid());
+	TestTrue(TEXT("Incoming damage tag registered"), BwayCombatFeedbackTags::Number_IncomingDamage.GetTag().IsValid());
+	TestTrue(TEXT("Outgoing damage tag registered"), BwayCombatFeedbackTags::Number_OutgoingDamage.GetTag().IsValid());
+	TestTrue(TEXT("Incoming heal tag registered"), BwayCombatFeedbackTags::Number_IncomingHeal.GetTag().IsValid());
 
 	return true;
 }
