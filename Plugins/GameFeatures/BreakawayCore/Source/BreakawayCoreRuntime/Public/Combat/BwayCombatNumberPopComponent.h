@@ -8,12 +8,26 @@
 #include "BwayCombatNumberPopComponent.generated.h"
 
 class UBwayCombatReadabilityConfig;
-class UNiagaraComponent;
-class UNiagaraSystem;
+class UTextRenderComponent;
+
+/** One live world-space combat number. */
+USTRUCT()
+struct FBwayLiveCombatNumberPop
+{
+	GENERATED_BODY()
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextRenderComponent> TextComponent;
+
+	FVector BaseLocation = FVector::ZeroVector;
+	FLinearColor BaseColor = FLinearColor::White;
+	float SpawnWorldTime = 0.f;
+};
 
 /**
- * Local-controller combat number display using Niagara with data-driven colors.
- * Listens for Breakaway number-pop verb messages replicated via ClientBroadcastMessage.
+ * Local-controller combat number display.
+ * Listens for Breakaway number-pop verb messages (ClientBroadcastMessage on remote clients).
+ * Listen-server / standalone hosts are presented directly by UBwayCombatFeedbackRouterComponent.
  */
 UCLASS(Blueprintable, meta = (BlueprintSpawnableComponent))
 class BREAKAWAYCORERUNTIME_API UBwayCombatNumberPopComponent : public ULyraNumberPopComponent
@@ -25,15 +39,21 @@ public:
 
 	virtual void AddNumberPop(const FLyraNumberPopRequest& NewRequest) override;
 
+	/** Present a number from a routed verb message (local host or ClientBroadcastMessage). */
+	void PresentCombatNumber(FGameplayTag NumberTag, const FLyraVerbMessage& Payload);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void OnCombatNumberMessage(FGameplayTag Channel, const FLyraVerbMessage& Payload);
 	void EnsureConfig() const;
 	FVector ResolvePopLocation(const FLyraVerbMessage& Payload) const;
 	FLinearColor ResolveColor(const FGameplayTagContainer& TargetTags) const;
-	UNiagaraComponent* GetOrCreateNiagaraComponent();
+	UTextRenderComponent* AcquireTextComponent();
+	void RecycleTextComponent(UTextRenderComponent* TextComponent);
+	void UpdateLiveNumber(FBwayLiveCombatNumberPop& LivePop, float Now, const FVector& CameraLocation, const FRotator& BillboardRotation, float Lifespan, float RiseDistance) const;
 
 	FGameplayMessageListenerHandle IncomingDamageHandle;
 	FGameplayMessageListenerHandle OutgoingDamageHandle;
@@ -42,15 +62,12 @@ protected:
 	UPROPERTY(Transient)
 	mutable TObjectPtr<const UBwayCombatReadabilityConfig> CachedConfig;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Number Pop")
-	TSoftObjectPtr<UNiagaraSystem> NumberNiagaraSystem;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Number Pop")
-	FName NiagaraArrayName = TEXT("User.DamageInfo");
-
-	UPROPERTY(EditDefaultsOnly, Category = "Number Pop")
-	FName NiagaraColorParamName = TEXT("User.Color");
+	UPROPERTY(Transient)
+	TArray<FBwayLiveCombatNumberPop> LivePops;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UNiagaraComponent> NiagaraComp;
+	TArray<TObjectPtr<UTextRenderComponent>> PooledTextComponents;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Number Pop", meta = (ClampMin = "4"))
+	int32 MaxPooledNumbers = 24;
 };

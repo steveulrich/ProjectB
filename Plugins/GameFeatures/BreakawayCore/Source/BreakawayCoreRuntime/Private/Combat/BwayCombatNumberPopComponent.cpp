@@ -2,22 +2,31 @@
 
 #include "Combat/BwayCombatNumberPopComponent.h"
 
+#include "Camera/PlayerCameraManager.h"
 #include "Combat/BwayCombatFeedbackTags.h"
 #include "Combat/BwayCombatReadabilityConfig.h"
 #include "Combat/BwayCombatReadabilityLibrary.h"
-#include "GameFramework/Pawn.h"
-#include "GameFramework/PlayerState.h"
-#include "NiagaraComponent.h"
-#include "NiagaraDataInterfaceArrayFunctionLibrary.h"
-#include "NiagaraSystem.h"
+#include "Components/TextRenderComponent.h"
+#include "Engine/CollisionProfile.h"
+#include "GameFramework/PlayerController.h"
+#include "HAL/IConsoleManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCombatNumberPopComponent)
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayCombatNumbers, Log, All);
+
+static TAutoConsoleVariable<int32> CVarBwayDebugCombatNumbers(
+	TEXT("bway.Combat.DebugNumbers"),
+	0,
+	TEXT("Log combat number-pop present/routing (0=off, 1=on)."),
+	ECVF_Default);
 
 UBwayCombatNumberPopComponent::UBwayCombatNumberPopComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	NumberNiagaraSystem = TSoftObjectPtr<UNiagaraSystem>(
-		FSoftObjectPath(TEXT("/Game/Effects/Particles/Impacts/NS_DamageNumbers.NS_DamageNumbers")));
+	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
+	PrimaryComponentTick.TickGroup = TG_PostUpdateWork;
 }
 
 void UBwayCombatNumberPopComponent::BeginPlay()
@@ -25,7 +34,7 @@ void UBwayCombatNumberPopComponent::BeginPlay()
 	Super::BeginPlay();
 
 	APlayerController* PC = GetController<APlayerController>();
-	if (!PC || !PC->IsLocalController())
+	if (!PC || !PC->IsLocalPlayerController())
 	{
 		return;
 	}
@@ -51,6 +60,24 @@ void UBwayCombatNumberPopComponent::EndPlay(const EEndPlayReason::Type EndPlayRe
 		MessageSubsystem.UnregisterListener(IncomingHealHandle);
 	}
 
+	for (FBwayLiveCombatNumberPop& LivePop : LivePops)
+	{
+		if (LivePop.TextComponent)
+		{
+			LivePop.TextComponent->DestroyComponent();
+		}
+	}
+	LivePops.Reset();
+
+	for (UTextRenderComponent* Pooled : PooledTextComponents)
+	{
+		if (Pooled)
+		{
+			Pooled->DestroyComponent();
+		}
+	}
+	PooledTextComponents.Reset();
+
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -64,22 +91,8 @@ void UBwayCombatNumberPopComponent::EnsureConfig() const
 
 FVector UBwayCombatNumberPopComponent::ResolvePopLocation(const FLyraVerbMessage& Payload) const
 {
-	FVector Offset = CachedConfig ? CachedConfig->NumberWorldOffset : FVector(0.f, 0.f, 90.f);
-
-	if (const AActor* TargetActor = Cast<AActor>(Payload.Target))
-	{
-		return TargetActor->GetActorLocation() + Offset;
-	}
-
-	if (const APlayerState* PS = Cast<APlayerState>(Payload.Target))
-	{
-		if (const APawn* Pawn = PS->GetPawn())
-		{
-			return Pawn->GetActorLocation() + Offset;
-		}
-	}
-
-	return Offset;
+	const FVector Offset = CachedConfig ? CachedConfig->NumberWorldOffset : FVector(0.f, 0.f, 90.f);
+	return UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(Payload.Target, Offset);
 }
 
 FLinearColor UBwayCombatNumberPopComponent::ResolveColor(const FGameplayTagContainer& TargetTags) const
@@ -106,74 +119,220 @@ FLinearColor UBwayCombatNumberPopComponent::ResolveColor(const FGameplayTagConta
 	return CachedConfig->ResolveOutgoingDamageColor();
 }
 
-UNiagaraComponent* UBwayCombatNumberPopComponent::GetOrCreateNiagaraComponent()
+UTextRenderComponent* UBwayCombatNumberPopComponent::AcquireTextComponent()
 {
-	if (NiagaraComp)
-	{
-		return NiagaraComp;
-	}
-
-	UNiagaraSystem* System = NumberNiagaraSystem.LoadSynchronous();
-	if (!System)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("UBwayCombatNumberPopComponent: Failed to load Niagara system %s"),
-			*NumberNiagaraSystem.ToString());
-		return nullptr;
-	}
-
 	AActor* OwnerActor = GetOwner();
 	if (!OwnerActor)
 	{
 		return nullptr;
 	}
 
-	NiagaraComp = NewObject<UNiagaraComponent>(OwnerActor);
-	NiagaraComp->SetAsset(System);
-	NiagaraComp->bAutoActivate = false;
-	NiagaraComp->SetupAttachment(nullptr);
-	NiagaraComp->RegisterComponent();
-	return NiagaraComp;
+	UTextRenderComponent* Text = nullptr;
+	while (PooledTextComponents.Num() > 0 && !Text)
+	{
+		Text = PooledTextComponents.Pop(EAllowShrinking::No);
+		if (!Text)
+		{
+			continue;
+		}
+	}
+
+	if (!Text)
+	{
+		Text = NewObject<UTextRenderComponent>(OwnerActor);
+		Text->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+		Text->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Text->SetCastShadow(false);
+		Text->SetMobility(EComponentMobility::Movable);
+		Text->SetHorizontalAlignment(EHTA_Center);
+		Text->SetVerticalAlignment(EVRTA_TextCenter);
+		Text->SetHiddenInGame(false);
+		Text->SetCanEverAffectNavigation(false);
+		Text->SetRenderCustomDepth(true);
+		Text->SetCustomDepthStencilValue(123);
+		Text->SetupAttachment(nullptr);
+		Text->RegisterComponent();
+	}
+	else if (!Text->IsRegistered())
+	{
+		Text->RegisterComponent();
+	}
+
+	Text->SetHiddenInGame(false);
+	Text->SetVisibility(true, true);
+	return Text;
+}
+
+void UBwayCombatNumberPopComponent::RecycleTextComponent(UTextRenderComponent* TextComponent)
+{
+	if (!TextComponent)
+	{
+		return;
+	}
+
+	TextComponent->SetVisibility(false, true);
+	TextComponent->SetHiddenInGame(true);
+
+	if (PooledTextComponents.Num() < MaxPooledNumbers)
+	{
+		PooledTextComponents.Add(TextComponent);
+	}
+	else
+	{
+		TextComponent->DestroyComponent();
+	}
+}
+
+void UBwayCombatNumberPopComponent::UpdateLiveNumber(
+	FBwayLiveCombatNumberPop& LivePop,
+	float Now,
+	const FVector& CameraLocation,
+	const FRotator& BillboardRotation,
+	float Lifespan,
+	float RiseDistance) const
+{
+	if (!LivePop.TextComponent)
+	{
+		return;
+	}
+
+	const float Alpha = FMath::Clamp((Now - LivePop.SpawnWorldTime) / FMath::Max(Lifespan, KINDA_SMALL_NUMBER), 0.f, 1.f);
+	const FVector WorldLocation = LivePop.BaseLocation + FVector(0.f, 0.f, RiseDistance * Alpha);
+
+	FLinearColor DrawColor = LivePop.BaseColor;
+	DrawColor.A = 1.f - Alpha;
+	FColor SRGB = DrawColor.ToFColor(true);
+	SRGB.A = static_cast<uint8>(FMath::Clamp(DrawColor.A * 255.f, 0.f, 255.f));
+
+	const float Distance = FVector::Distance(CameraLocation, WorldLocation);
+	const float DistanceScale = FMath::Clamp(Distance / 800.f, 1.f, 8.f);
+	const float WorldSize = (CachedConfig ? CachedConfig->NumberPopWorldSize : 72.f)
+		* DistanceScale
+		* (CachedConfig ? CachedConfig->CombatFeedbackScaleMultiplier : 1.f);
+
+	LivePop.TextComponent->SetWorldLocationAndRotation(WorldLocation, BillboardRotation);
+	LivePop.TextComponent->SetTextRenderColor(SRGB);
+	LivePop.TextComponent->SetWorldSize(WorldSize);
+}
+
+void UBwayCombatNumberPopComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (LivePops.Num() == 0)
+	{
+		SetComponentTickEnabled(false);
+		return;
+	}
+
+	EnsureConfig();
+	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
+	const float RiseDistance = CachedConfig ? CachedConfig->NumberPopRiseDistance : 80.f;
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const float Now = World->GetTimeSeconds();
+	FVector CameraLocation = FVector::ZeroVector;
+	FRotator BillboardRotation = FRotator::ZeroRotator;
+	if (const APlayerController* PC = GetController<APlayerController>())
+	{
+		if (const APlayerCameraManager* CameraManager = PC->PlayerCameraManager)
+		{
+			CameraLocation = CameraManager->GetCameraLocation();
+			BillboardRotation = CameraManager->GetCameraRotation();
+			BillboardRotation.Yaw += 180.f;
+			BillboardRotation.Pitch = -BillboardRotation.Pitch;
+		}
+	}
+
+	for (int32 Index = LivePops.Num() - 1; Index >= 0; --Index)
+	{
+		FBwayLiveCombatNumberPop& LivePop = LivePops[Index];
+		if ((Now - LivePop.SpawnWorldTime) >= Lifespan)
+		{
+			RecycleTextComponent(LivePop.TextComponent);
+			LivePops.RemoveAtSwap(Index, EAllowShrinking::No);
+			continue;
+		}
+
+		UpdateLiveNumber(LivePop, Now, CameraLocation, BillboardRotation, Lifespan, RiseDistance);
+	}
+
+	if (LivePops.Num() == 0)
+	{
+		SetComponentTickEnabled(false);
+	}
 }
 
 void UBwayCombatNumberPopComponent::AddNumberPop(const FLyraNumberPopRequest& NewRequest)
 {
 	APlayerController* PC = GetController<APlayerController>();
-	if (PC && !PC->IsLocalController())
+	if (!PC || !PC->IsLocalPlayerController())
 	{
 		return;
 	}
 
-	UNiagaraComponent* Comp = GetOrCreateNiagaraComponent();
-	if (!Comp)
+	if (NewRequest.NumberToDisplay <= 0)
 	{
+		return;
+	}
+
+	EnsureConfig();
+
+	UTextRenderComponent* Text = AcquireTextComponent();
+	if (!Text)
+	{
+		UE_LOG(LogBwayCombatNumbers, Warning, TEXT("UBwayCombatNumberPopComponent: failed to create text component"));
 		return;
 	}
 
 	const FLinearColor Color = ResolveColor(NewRequest.TargetTags);
-	Comp->SetVariableLinearColor(NiagaraColorParamName, Color);
-	Comp->SetWorldLocation(NewRequest.WorldLocation);
-	Comp->Activate(false);
+	Text->SetText(FText::AsNumber(NewRequest.NumberToDisplay));
+	Text->SetTextRenderColor(Color.ToFColor(true));
 
-	int32 LocalDamage = NewRequest.NumberToDisplay;
-	if (NewRequest.bIsCriticalDamage)
+	UWorld* World = GetWorld();
+	const float Now = World ? World->GetTimeSeconds() : 0.f;
+
+	FBwayLiveCombatNumberPop LivePop;
+	LivePop.TextComponent = Text;
+	LivePop.BaseLocation = NewRequest.WorldLocation;
+	LivePop.BaseColor = Color;
+	LivePop.SpawnWorldTime = Now;
+	LivePops.Add(LivePop);
+
+	FVector CameraLocation = NewRequest.WorldLocation;
+	FRotator BillboardRotation = FRotator::ZeroRotator;
+	if (const APlayerCameraManager* CameraManager = PC->PlayerCameraManager)
 	{
-		LocalDamage *= -1;
+		CameraLocation = CameraManager->GetCameraLocation();
+		BillboardRotation = CameraManager->GetCameraRotation();
+		BillboardRotation.Yaw += 180.f;
+		BillboardRotation.Pitch = -BillboardRotation.Pitch;
 	}
 
-	TArray<FVector4> DamageList =
-		UNiagaraDataInterfaceArrayFunctionLibrary::GetNiagaraArrayVector4(Comp, NiagaraArrayName);
-	DamageList.Add(FVector4(
-		NewRequest.WorldLocation.X,
-		NewRequest.WorldLocation.Y,
-		NewRequest.WorldLocation.Z,
-		static_cast<float>(LocalDamage)));
-	UNiagaraDataInterfaceArrayFunctionLibrary::SetNiagaraArrayVector4(Comp, NiagaraArrayName, DamageList);
+	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
+	const float RiseDistance = CachedConfig ? CachedConfig->NumberPopRiseDistance : 80.f;
+	UpdateLiveNumber(LivePops.Last(), Now, CameraLocation, BillboardRotation, Lifespan, RiseDistance);
+
+	if (CVarBwayDebugCombatNumbers.GetValueOnGameThread() > 0)
+	{
+		UE_LOG(LogBwayCombatNumbers, Log, TEXT("Number pop %d at %s tags=%s"),
+			NewRequest.NumberToDisplay,
+			*NewRequest.WorldLocation.ToCompactString(),
+			*NewRequest.TargetTags.ToStringSimple());
+	}
+
+	SetComponentTickEnabled(true);
 }
 
-void UBwayCombatNumberPopComponent::OnCombatNumberMessage(FGameplayTag Channel, const FLyraVerbMessage& Payload)
+void UBwayCombatNumberPopComponent::PresentCombatNumber(FGameplayTag NumberTag, const FLyraVerbMessage& Payload)
 {
 	const int32 Magnitude = FMath::RoundToInt(static_cast<float>(Payload.Magnitude));
-	if (Magnitude <= 0)
+	if (Magnitude <= 0 || !NumberTag.IsValid())
 	{
 		return;
 	}
@@ -184,8 +343,12 @@ void UBwayCombatNumberPopComponent::OnCombatNumberMessage(FGameplayTag Channel, 
 	Request.WorldLocation = ResolvePopLocation(Payload);
 	Request.NumberToDisplay = Magnitude;
 	Request.bIsCriticalDamage = false;
-	Request.TargetTags.AddTag(Channel);
+	Request.TargetTags.AddTag(NumberTag);
 	Request.SourceTags = Payload.InstigatorTags;
-
 	AddNumberPop(Request);
+}
+
+void UBwayCombatNumberPopComponent::OnCombatNumberMessage(FGameplayTag Channel, const FLyraVerbMessage& Payload)
+{
+	PresentCombatNumber(Channel, Payload);
 }

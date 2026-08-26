@@ -3,7 +3,9 @@
 #include "Misc/AutomationTest.h"
 
 #include "BwayCharacterMovementComponent.h"
+#include "Combat/BwayCombatFeedbackTags.h"
 #include "Combat/BwayCombatReadabilityConfig.h"
+#include "Combat/BwayCombatReadabilityLibrary.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 
@@ -108,6 +110,52 @@ bool FBwayCooldownPercentMathTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Halfway"), FMath::IsNearlyEqual(CalcPercent(5.f, 10.f), 0.5f));
 	TestTrue(TEXT("Almost ready treated as ready"), FMath::IsNearlyEqual(CalcPercent(0.f, 10.f), 0.f));
 	TestTrue(TEXT("Near end fills"), CalcPercent(1.f, 10.f) > 0.85f);
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FBwayCombatNumberLocationHelperTest,
+	"Breakaway.CombatPolish.Numbers.LocationHelper",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayCombatNumberLocationHelperTest::RunTest(const FString& Parameters)
+{
+	(void)Parameters;
+
+	const FVector Offset(1.f, 2.f, 90.f);
+	TestTrue(TEXT("Null target uses offset"),
+		UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(nullptr, Offset).Equals(Offset));
+
+	UObject* Dummy = NewObject<UObject>();
+	TestTrue(TEXT("Non-actor uses offset"),
+		UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(Dummy, Offset).Equals(Offset));
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FBwayCombatNumberColorTagsTest,
+	"Breakaway.CombatPolish.Numbers.ColorTags",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayCombatNumberColorTagsTest::RunTest(const FString& Parameters)
+{
+	(void)Parameters;
+
+	UBwayCombatReadabilityConfig* Config = NewObject<UBwayCombatReadabilityConfig>();
+	Config->IncomingDamageColor = FLinearColor(1.f, 0.f, 0.f);
+	Config->OutgoingDamageColor = FLinearColor::White;
+	Config->IncomingHealColor = FLinearColor(0.f, 1.f, 0.f);
+	Config->bUseColorblindPalette = false;
+
+	TestTrue(TEXT("Incoming damage red"), Config->ResolveIncomingDamageColor().Equals(FLinearColor(1.f, 0.f, 0.f)));
+	TestTrue(TEXT("Outgoing damage white"), Config->ResolveOutgoingDamageColor().Equals(FLinearColor::White));
+	TestTrue(TEXT("Incoming heal green"), Config->ResolveIncomingHealColor().Equals(FLinearColor(0.f, 1.f, 0.f)));
+
+	TestTrue(TEXT("Incoming damage tag registered"), BwayCombatFeedbackTags::Number_IncomingDamage.IsValid());
+	TestTrue(TEXT("Outgoing damage tag registered"), BwayCombatFeedbackTags::Number_OutgoingDamage.IsValid());
+	TestTrue(TEXT("Incoming heal tag registered"), BwayCombatFeedbackTags::Number_IncomingHeal.IsValid());
 
 	return true;
 }
