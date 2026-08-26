@@ -8,7 +8,11 @@
 #include "GameModes/LyraExperienceActionSet.h"
 #include "GameModes/LyraExperienceDefinition.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
+#include "GameFramework/Actor.h"
+#include "GameFramework/Controller.h"
 #include "GameFramework/GameStateBase.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerState.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCombatReadabilityLibrary)
 
@@ -108,4 +112,38 @@ const UBwayCombatReadabilityConfig* UBwayCombatReadabilityLibrary::ResolveCombat
 	UE_LOG(LogTemp, Warning,
 		TEXT("UBwayCombatReadabilityLibrary: No combat readability config found on experience or fallback path."));
 	return nullptr;
+}
+
+FVector UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(const UObject* TargetObject, const FVector& WorldOffset)
+{
+	if (const APawn* TargetPawn = Cast<APawn>(TargetObject))
+	{
+		return TargetPawn->GetActorLocation() + WorldOffset;
+	}
+
+	// LyraHealthSet broadcasts GetOwningActor() = PlayerState (ASC owner). Do not use PS location.
+	if (const APlayerState* TargetPS = Cast<APlayerState>(TargetObject))
+	{
+		if (const APawn* Pawn = TargetPS->GetPawn())
+		{
+			return Pawn->GetActorLocation() + WorldOffset;
+		}
+		return WorldOffset;
+	}
+
+	if (const AController* TargetController = Cast<AController>(TargetObject))
+	{
+		if (const APawn* Pawn = TargetController->GetPawn())
+		{
+			return Pawn->GetActorLocation() + WorldOffset;
+		}
+		return WorldOffset;
+	}
+
+	if (const AActor* TargetActor = Cast<AActor>(TargetObject))
+	{
+		return TargetActor->GetActorLocation() + WorldOffset;
+	}
+
+	return WorldOffset;
 }

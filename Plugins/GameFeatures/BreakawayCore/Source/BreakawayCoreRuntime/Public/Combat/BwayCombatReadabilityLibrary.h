@@ -19,4 +19,11 @@ public:
 	static const UBwayCombatReadabilityConfig* ResolveCombatReadabilityConfig(
 		const UObject* WorldContextObject,
 		const ULyraExperienceDefinition* LoadedExperience = nullptr);
+
+	/**
+	 * World location for a combat number pop.
+	 * Prefers the possessed pawn when Target is a PlayerState (Lyra HealthSet owns the ASC on PS).
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Combat Readability")
+	static FVector ResolveNumberPopWorldLocation(const UObject* TargetObject, const FVector& WorldOffset);
 };

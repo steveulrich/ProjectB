@@ -8,14 +8,25 @@
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
 #include "Combat/BwayCombatFeedbackTags.h"
+#include "Combat/BwayCombatNumberPopComponent.h"
 #include "Combat/BwayCombatReadabilityConfig.h"
 #include "Combat/BwayCombatReadabilityLibrary.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerController.h"
 #include "GameplayEffectTypes.h"
+#include "HAL/IConsoleManager.h"
 #include "Messages/LyraVerbMessageHelpers.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayCombatFeedbackRouterComponent)
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayCombatFeedback, Log, All);
+
+static TAutoConsoleVariable<int32> CVarBwayDebugCombatNumbersRouter(
+	TEXT("bway.Combat.DebugNumbersRouter"),
+	0,
+	TEXT("Log combat number-pop routing (0=off, 1=on)."),
+	ECVF_Default);
 
 UBwayCombatFeedbackRouterComponent::UBwayCombatFeedbackRouterComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -86,31 +97,10 @@ ABwayPlayerState* UBwayCombatFeedbackRouterComponent::ResolvePlayerState(UObject
 
 FVector UBwayCombatFeedbackRouterComponent::ResolveWorldLocation(UObject* TargetObject)
 {
-	if (const AActor* TargetActor = Cast<AActor>(TargetObject))
-	{
-		FVector Location = TargetActor->GetActorLocation();
-		if (const APawn* TargetPawn = Cast<APawn>(TargetActor))
-		{
-			Location.Z += TargetPawn->GetDefaultHalfHeight() * 1.5f;
-		}
-		else
-		{
-			Location.Z += 90.f;
-		}
-		return Location;
-	}
-
-	if (const APlayerState* PS = Cast<APlayerState>(TargetObject))
-	{
-		if (const APawn* Pawn = PS->GetPawn())
-		{
-			FVector Location = Pawn->GetActorLocation();
-			Location.Z += Pawn->GetDefaultHalfHeight() * 1.5f;
-			return Location;
-		}
-	}
-
-	return FVector::ZeroVector;
+	const UBwayCombatReadabilityConfig* Config =
+		UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(this);
+	const FVector Offset = Config ? Config->NumberWorldOffset : FVector(0.f, 0.f, 90.f);
+	return UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(TargetObject, Offset);
 }
 
 void UBwayCombatFeedbackRouterComponent::SendNumberPopToPlayer(
@@ -133,12 +123,53 @@ void UBwayCombatFeedbackRouterComponent::SendNumberPopToPlayer(
 	ClientMessage.Magnitude = static_cast<double>(Magnitude);
 	ClientMessage.ContextTags.AddTag(NumberTag);
 
-	// Encode world location into ContextTags is not possible; stash via Magnitude + Verb.
-	// Clients resolve location from Target actor. Also push location via a dedicated path:
-	// ClientBroadcastMessage only carries FLyraVerbMessage. Target actor location is used client-side.
-	(void)WorldLocation;
+	// ClientBroadcastMessage_Implementation only broadcasts when NetMode == NM_Client.
+	// Listen-server hosts and standalone never take that path, so present locally instead.
+	APlayerController* RecipientPC = RecipientPS->GetPlayerController();
+	if (!RecipientPC)
+	{
+		if (CVarBwayDebugCombatNumbersRouter.GetValueOnGameThread() > 0)
+		{
+			UE_LOG(LogBwayCombatFeedback, Verbose,
+				TEXT("Skip number pop for %s (no PlayerController — bot or disconnected)"),
+				*GetNameSafe(RecipientPS));
+		}
+		return;
+	}
 
+	if (RecipientPC->IsLocalPlayerController())
+	{
+		if (UBwayCombatNumberPopComponent* NumberPop =
+			RecipientPC->FindComponentByClass<UBwayCombatNumberPopComponent>())
+		{
+			NumberPop->PresentCombatNumber(NumberTag, ClientMessage);
+		}
+		else
+		{
+			UE_LOG(LogBwayCombatFeedback, Warning,
+				TEXT("Local player %s has no UBwayCombatNumberPopComponent"),
+				*GetNameSafe(RecipientPC));
+		}
+
+		if (CVarBwayDebugCombatNumbersRouter.GetValueOnGameThread() > 0)
+		{
+			UE_LOG(LogBwayCombatFeedback, Log,
+				TEXT("Local number pop %s mag=%d loc=%s for %s"),
+				*NumberTag.ToString(), Magnitude, *WorldLocation.ToCompactString(),
+				*GetNameSafe(RecipientPS));
+		}
+		return;
+	}
+
+	(void)WorldLocation;
 	RecipientPS->ClientBroadcastMessage(ClientMessage);
+
+	if (CVarBwayDebugCombatNumbersRouter.GetValueOnGameThread() > 0)
+	{
+		UE_LOG(LogBwayCombatFeedback, Log,
+			TEXT("RPC number pop %s mag=%d for %s"),
+			*NumberTag.ToString(), Magnitude, *GetNameSafe(RecipientPS));
+	}
 }
 
 void UBwayCombatFeedbackRouterComponent::RouteDamageFeedback(const FLyraVerbMessage& Payload)

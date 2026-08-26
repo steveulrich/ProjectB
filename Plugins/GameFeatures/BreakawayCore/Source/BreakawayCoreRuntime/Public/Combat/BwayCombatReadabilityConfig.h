@@ -46,6 +46,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers")
 	FVector NumberWorldOffset = FVector(0.f, 0.f, 90.f);
 
+	/** Seconds a floating number stays visible. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.15"))
+	float NumberPopLifespan = 1.0f;
+
+	/** World-Z rise over the number's lifespan (uu). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.0"))
+	float NumberPopRiseDistance = 80.f;
+
+	/** Base world size of the floating number text (scaled up with camera distance). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "8.0"))
+	float NumberPopWorldSize = 72.f;
+
 	/** Mesh-text styles matched via TargetTags on FLyraNumberPopRequest. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers")
 	TArray<TObjectPtr<ULyraDamagePopStyle>> NumberPopStyles;

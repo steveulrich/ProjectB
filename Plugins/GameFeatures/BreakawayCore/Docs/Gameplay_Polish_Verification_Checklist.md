@@ -35,6 +35,9 @@ Session Frontend → Automation → filter `Breakaway.CombatPolish`:
 - [ ] Enemy heals → **no** green numbers for local viewer
 - [ ] Projectile damage attributes to owner (stats + white numbers)
 - [ ] Listen-server + dedicated: only owning clients see their numbers (no host duplicates)
+- [ ] Listen-server **host** sees numbers (do not rely on `ClientBroadcastMessage` alone)
+- [ ] Numbers spawn on the **pawn**, not at the map origin / PlayerState actor
+- [ ] Optional: `bway.Combat.DebugNumbers 1` and `bway.Combat.DebugNumbersRouter 1` log presents
 
 ### Nameplates
 
