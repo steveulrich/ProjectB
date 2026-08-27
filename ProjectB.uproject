@@ -409,6 +409,10 @@
 		{
 			"Name": "PlatformDLC",
 			"Enabled": true
+		},
+		{
+			"Name": "UE_MCP_Bridge",
+			"Enabled": true
 		}
 	]
 }
