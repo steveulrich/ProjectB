@@ -456,26 +456,27 @@ TSharedPtr<FJsonValue> FPCGHandlers::SetPCGNodeSettings(const TSharedPtr<FJsonOb
 	{
 		for (const auto& Pair : (*SettingsObj)->Values)
 		{
+			const FString PropertyNameFromJson(Pair.Key.ToView());
 			FString ValStr;
 			if (Pair.Value->TryGetString(ValStr))
 			{
-				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(PropertyNameFromJson, ValStr));
 			}
 			else if (Pair.Value->Type == EJson::Number)
 			{
 				ValStr = FString::SanitizeFloat(Pair.Value->AsNumber());
-				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(PropertyNameFromJson, ValStr));
 			}
 			else if (Pair.Value->Type == EJson::Boolean)
 			{
 				ValStr = Pair.Value->AsBool() ? TEXT("true") : TEXT("false");
-				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(PropertyNameFromJson, ValStr));
 			}
 			else
 			{
 				// For complex types, serialize to string
 				ValStr = Pair.Value->AsString();
-				PropertiesToSet.Add(TPair<FString, FString>(FString(Pair.Key.ToView()), ValStr));
+				PropertiesToSet.Add(TPair<FString, FString>(PropertyNameFromJson, ValStr));
 			}
 		}
 	}

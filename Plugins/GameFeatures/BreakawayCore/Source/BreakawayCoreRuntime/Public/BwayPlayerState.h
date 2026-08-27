@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystem/LyraAbilitySet.h"
 #include "Player/LyraPlayerState.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "Stats/BwayMatchStatsTypes.h"
@@ -210,7 +211,16 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 
+	/**
+	 * Handles for hero ability sets granted onto this PlayerState ASC.
+	 * Lives here (not on the pawn) so TakeFromAbilitySystem survives pawn destroy/respawn.
+	 */
+	FLyraAbilitySet_GrantedHandles& GetHeroAbilityGrantedHandles() { return HeroAbilityGrantedHandles; }
+
 protected:
+	/** Tracks hero AbilitySet grants on the persistent PlayerState ASC. */
+	FLyraAbilitySet_GrantedHandles HeroAbilityGrantedHandles;
+
 	// The selected hero asset ID
 	UPROPERTY(ReplicatedUsing=OnRep_SelectedHeroId)
 	FPrimaryAssetId SelectedHeroId;

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "Character/LyraCharacter.h"
-#include "AbilitySystem/LyraAbilitySet.h"
 #include "Net/UnrealNetwork.h"
 #include "BwayCharacterWithAbilities.generated.h"
 
@@ -64,9 +63,6 @@ protected:
 	/** The last actor that dealt damage to us — used for kill attribution */
 	UPROPERTY()
 	TWeakObjectPtr<AActor> LastDamageInstigator;
-
-	/** Handles for hero ability sets granted via InitializeHeroData (cleared on death to prevent double-grant) */
-	FLyraAbilitySet_GrantedHandles HeroAbilityGrantedHandles;
 
 	/** Replicated hero ID — clients use this to apply visuals */
 	UPROPERTY(ReplicatedUsing = OnRep_ReplicatedHeroId)

@@ -56,6 +56,17 @@ void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 		MoveComp->UnbindAbilitySystem();
 	}
 
+	if (HasAuthority())
+	{
+		if (ABwayPlayerState* BwayPS = GetPlayerState<ABwayPlayerState>())
+		{
+			if (ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent())
+			{
+				BwayPS->GetHeroAbilityGrantedHandles().TakeFromAbilitySystem(ASC);
+			}
+		}
+	}
+
 	Super::OnAbilitySystemUninitialized();
 }
 
@@ -318,8 +329,18 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
 		if (!HeroData->AbilitySets.IsEmpty())
 		{
 			UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Processing %d AbilitySets"), HeroData->AbilitySets.Num());
-			
-			// Clear any previously granted abilities (prevents double-grant on respawn)
+
+			ABwayPlayerState* BwayPS = GetPlayerState<ABwayPlayerState>();
+			if (!BwayPS)
+			{
+				UE_LOG(LogTemp, Error, TEXT("InitializeHeroData: BwayPlayerState is null for %s — cannot track hero ability grants."), *GetName());
+				UE_LOG(LogTemp, Warning, TEXT("InitializeHeroData: END (FAILED - No PlayerState)"));
+				return;
+			}
+
+			FLyraAbilitySet_GrantedHandles& HeroAbilityGrantedHandles = BwayPS->GetHeroAbilityGrantedHandles();
+
+			// Clear any previously granted hero abilities on the persistent ASC (survives pawn respawn).
 			HeroAbilityGrantedHandles.TakeFromAbilitySystem(ASC);
 			
 			for (int32 i = 0; i < HeroData->AbilitySets.Num(); ++i)
@@ -329,7 +350,7 @@ void ABwayCharacterWithAbilities::InitializeHeroData(const UBwayHeroDataAsset* H
 				{
 					UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: Granting AbilitySet[%d] = %s"), i, *GetNameSafe(Set));
 
-					// Grant the ability set (tracked for cleanup)
+					// Grant the ability set (tracked on PlayerState for cleanup)
 					Set->GiveToAbilitySystem(ASC, &HeroAbilityGrantedHandles);
 					
 					UE_LOG(LogTemp, Log, TEXT("InitializeHeroData: AbilitySet[%d] granted successfully"), i);
