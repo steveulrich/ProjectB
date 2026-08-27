@@ -12,7 +12,8 @@ struct FGameplayEffectContextHandle;
 /**
  * Shared Breakaway damage application.
  * Applies sheet armor (1 Armor = 1% reduction; negative Armor increases damage)
- * and IncomingDamageMultiplier before Lyra SetByCaller damage GE.
+ * and IncomingDamageMultiplier, then applies UGE_Bway_Damage_SetByCaller
+ * (pure SetByCaller→Damage — not Lyra's execution-based damage GE).
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayDamageLibrary : public UBlueprintFunctionLibrary

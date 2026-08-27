@@ -3,11 +3,12 @@
 #include "AbilitySystemGlobals.h"
 #include "Attributes/BwayHeroAttributeSet.h"
 #include "BwayCharacterWithAbilities.h"
+#include "Combat/BwayGameplayEffect_DamageSetByCaller.h"
 #include "LyraGameplayTags.h"
-#include "System/LyraAssetManager.h"
-#include "System/LyraGameData.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayDamageLibrary)
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayDamage, Log, All);
 
 float UBwayDamageLibrary::ResolveFinalDamage(float RawDamage, const UAbilitySystemComponent* TargetASC)
 {
@@ -58,12 +59,9 @@ bool UBwayDamageLibrary::ApplyDamageFromSource(
 		return false;
 	}
 
-	const ULyraGameData& GameData = ULyraGameData::Get();
-	const TSubclassOf<UGameplayEffect> DamageEffectClass = ULyraAssetManager::GetSubclass(GameData.DamageGameplayEffect_SetByCaller);
-	if (!DamageEffectClass)
-	{
-		return false;
-	}
+	// Use Breakaway's pure SetByCaller→Damage GE. Lyra's GameData damage GE runs
+	// ULyraDamageExecution and adds Source CombatSet::BaseDamage on top of SetByCaller.
+	const TSubclassOf<UGameplayEffect> DamageEffectClass = UGE_Bway_Damage_SetByCaller::StaticClass();
 
 	FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
 	EffectContext.AddSourceObject(EffectCauser ? EffectCauser : SourceASC->GetOwnerActor());
@@ -85,6 +83,8 @@ bool UBwayDamageLibrary::ApplyDamageFromSource(
 	}
 
 	Spec->SetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, FinalDamage);
+	UE_LOG(LogBwayDamage, Verbose, TEXT("ApplyDamageFromSource: raw=%.1f final=%.1f target=%s"),
+		RawDamage, FinalDamage, *GetNameSafe(TargetActor));
 	TargetASC->ApplyGameplayEffectSpecToSelf(*Spec);
 	return true;
 }

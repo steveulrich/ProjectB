@@ -54,7 +54,8 @@ protected:
 
 	/**
 	 * Sheet formula: Final = AbilityBaseDamage + AttackStrength * ScalingCoefficient.
-	 * AttackStrength is ULyraCombatSet::BaseDamage (hero DA Attack Str).
+	 * AttackStrength is UBwayHeroAttributeSet::AttackStrength (hero DA Attack Str),
+	 * falling back to ULyraCombatSet::BaseDamage when the hero set is absent.
 	 */
 	float CalculateScaledDamage(float AbilityBaseDamage, float ScalingCoefficient) const;
 
