@@ -46,13 +46,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers")
 	FVector NumberWorldOffset = FVector(0.f, 0.f, 90.f);
 
-	/** Seconds a floating number stays visible. */
+	/** Seconds a floating number stays visible and scales down. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.15"))
 	float NumberPopLifespan = 1.0f;
 
 	/** World-Z rise over the number's lifespan (uu). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.0"))
 	float NumberPopRiseDistance = 80.f;
+
+	/** Camera-relative left/right start offset so consecutive pops do not spawn stacked (uu). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.0"))
+	float NumberPopLateralOffset = 35.f;
+
+	/** Extra camera-relative outward travel over the lifespan (uu). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.0"))
+	float NumberPopOutwardDistance = 45.f;
+
+	/** World-size multiplier at the end of the lifespan (1 = no shrink, 0 = shrink away). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+	float NumberPopEndScale = 0.f;
 
 	/** Base world size of the floating number text (scaled up with camera distance). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "8.0"))

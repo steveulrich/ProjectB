@@ -66,6 +66,18 @@ EDataValidationResult UBwayCombatReadabilityConfig::IsDataValid(FDataValidationC
 		Result = EDataValidationResult::Invalid;
 	}
 
+	if (NumberPopLifespan <= 0.f)
+	{
+		Context.AddError(FText::FromString(TEXT("NumberPopLifespan must be > 0.")));
+		Result = EDataValidationResult::Invalid;
+	}
+
+	if (NumberPopEndScale < 0.f || NumberPopEndScale > 1.f)
+	{
+		Context.AddError(FText::FromString(TEXT("NumberPopEndScale must be in [0, 1].")));
+		Result = EDataValidationResult::Invalid;
+	}
+
 	return Result;
 }
 #endif

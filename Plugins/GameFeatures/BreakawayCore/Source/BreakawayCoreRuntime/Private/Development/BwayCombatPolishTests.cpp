@@ -4,6 +4,7 @@
 
 #include "BwayCharacterMovementComponent.h"
 #include "Combat/BwayCombatFeedbackTags.h"
+#include "Combat/BwayCombatNumberPopComponent.h"
 #include "Combat/BwayCombatReadabilityConfig.h"
 #include "Combat/BwayCombatReadabilityLibrary.h"
 
@@ -156,6 +157,54 @@ bool FBwayCombatNumberColorTagsTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Incoming damage tag registered"), BwayCombatFeedbackTags::Number_IncomingDamage.GetTag().IsValid());
 	TestTrue(TEXT("Outgoing damage tag registered"), BwayCombatFeedbackTags::Number_OutgoingDamage.GetTag().IsValid());
 	TestTrue(TEXT("Incoming heal tag registered"), BwayCombatFeedbackTags::Number_IncomingHeal.GetTag().IsValid());
+
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+	FBwayCombatNumberPopAnimationTest,
+	"Breakaway.CombatPolish.Numbers.StaggeredPopAnimation",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayCombatNumberPopAnimationTest::RunTest(const FString& Parameters)
+{
+	(void)Parameters;
+
+	const FVector Base(0.f, 0.f, 100.f);
+	const FVector RightDir = FVector::RightVector;
+	const FVector LeftDir = -FVector::RightVector;
+	const float Lifespan = 1.f;
+	const float LateralOffset = 35.f;
+	const float OutwardDistance = 45.f;
+	const float RiseDistance = 80.f;
+	const float EndScale = 0.f;
+
+	FVector RightStart = FVector::ZeroVector;
+	FVector RightEnd = FVector::ZeroVector;
+	FVector LeftStart = FVector::ZeroVector;
+	FVector MidLocation = FVector::ZeroVector;
+	float ScaleStart = -1.f;
+	float ScaleMid = -1.f;
+	float ScaleEnd = -1.f;
+	float UnusedScale = 0.f;
+
+	UBwayCombatNumberPopComponent::EvaluateNumberPopAnimation(
+		0.f, Lifespan, Base, RightDir, LateralOffset, OutwardDistance, RiseDistance, EndScale, RightStart, ScaleStart);
+	UBwayCombatNumberPopComponent::EvaluateNumberPopAnimation(
+		Lifespan, Lifespan, Base, RightDir, LateralOffset, OutwardDistance, RiseDistance, EndScale, RightEnd, ScaleEnd);
+	UBwayCombatNumberPopComponent::EvaluateNumberPopAnimation(
+		0.f, Lifespan, Base, LeftDir, LateralOffset, OutwardDistance, RiseDistance, EndScale, LeftStart, UnusedScale);
+	UBwayCombatNumberPopComponent::EvaluateNumberPopAnimation(
+		0.5f, Lifespan, Base, RightDir, LateralOffset, OutwardDistance, RiseDistance, EndScale, MidLocation, ScaleMid);
+
+	TestTrue(TEXT("Spawn scale is 1"), FMath::IsNearlyEqual(ScaleStart, 1.f));
+	TestTrue(TEXT("End scale matches config"), FMath::IsNearlyEqual(ScaleEnd, EndScale));
+	TestTrue(TEXT("Mid scale is between start and end"), ScaleMid > EndScale && ScaleMid < 1.f);
+	TestTrue(TEXT("Right spawn is offset +Y"), RightStart.Y > Base.Y + 1.f);
+	TestTrue(TEXT("Left spawn is offset -Y"), LeftStart.Y < Base.Y - 1.f);
+	TestTrue(TEXT("Opposite sides at spawn"), RightStart.Y > 0.f && LeftStart.Y < 0.f);
+	TestTrue(TEXT("Right flies further out"), RightEnd.Y > RightStart.Y);
+	TestTrue(TEXT("Rises over lifespan"), RightEnd.Z > RightStart.Z);
 
 	return true;
 }

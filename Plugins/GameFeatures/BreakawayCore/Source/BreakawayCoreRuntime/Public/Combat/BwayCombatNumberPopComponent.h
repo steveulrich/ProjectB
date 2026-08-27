@@ -7,6 +7,7 @@
 #include "Messages/LyraVerbMessage.h"
 #include "BwayCombatNumberPopComponent.generated.h"
 
+class APlayerController;
 class UBwayCombatReadabilityConfig;
 class UTextRenderComponent;
 
@@ -20,6 +21,8 @@ struct FBwayLiveCombatNumberPop
 	TObjectPtr<UTextRenderComponent> TextComponent;
 
 	FVector BaseLocation = FVector::ZeroVector;
+	/** Flattened camera-right at spawn, already signed for left (-1) or right (+1). */
+	FVector OutwardDirection = FVector::RightVector;
 	FLinearColor BaseColor = FLinearColor::White;
 	float SpawnWorldTime = 0.f;
 };
@@ -42,6 +45,19 @@ public:
 	/** Present a number from a routed verb message (local host or ClientBroadcastMessage). */
 	void PresentCombatNumber(FGameplayTag NumberTag, const FLyraVerbMessage& Payload);
 
+	/** Location and scale (1→EndScale) for a live pop at Age seconds. */
+	static void EvaluateNumberPopAnimation(
+		float Age,
+		float Lifespan,
+		const FVector& BaseLocation,
+		const FVector& OutwardDirection,
+		float LateralOffset,
+		float OutwardDistance,
+		float RiseDistance,
+		float EndScale,
+		FVector& OutLocation,
+		float& OutScaleMultiplier);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -53,7 +69,8 @@ protected:
 	FLinearColor ResolveColor(const FGameplayTagContainer& TargetTags) const;
 	UTextRenderComponent* AcquireTextComponent();
 	void RecycleTextComponent(UTextRenderComponent* TextComponent);
-	void UpdateLiveNumber(FBwayLiveCombatNumberPop& LivePop, float Now, const FVector& CameraLocation, const FRotator& BillboardRotation, float Lifespan, float RiseDistance) const;
+	void UpdateLiveNumber(FBwayLiveCombatNumberPop& LivePop, float Now, const FVector& CameraLocation, const FRotator& BillboardRotation) const;
+	FVector ResolveOutwardDirection(const APlayerController* PC, int32 SideSign) const;
 
 	FGameplayMessageListenerHandle IncomingDamageHandle;
 	FGameplayMessageListenerHandle OutgoingDamageHandle;
@@ -70,4 +87,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Number Pop", meta = (ClampMin = "4"))
 	int32 MaxPooledNumbers = 24;
+
+	/** +1 = camera right, -1 = camera left. Flipped after each spawn. */
+	int32 NextLateralSideSign = 1;
 };

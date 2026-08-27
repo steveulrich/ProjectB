@@ -183,22 +183,81 @@ void UBwayCombatNumberPopComponent::RecycleTextComponent(UTextRenderComponent* T
 	}
 }
 
+void UBwayCombatNumberPopComponent::EvaluateNumberPopAnimation(
+	float Age,
+	float Lifespan,
+	const FVector& BaseLocation,
+	const FVector& OutwardDirection,
+	float LateralOffset,
+	float OutwardDistance,
+	float RiseDistance,
+	float EndScale,
+	FVector& OutLocation,
+	float& OutScaleMultiplier)
+{
+	const float Alpha = FMath::Clamp(Age / FMath::Max(Lifespan, KINDA_SMALL_NUMBER), 0.f, 1.f);
+	const float MotionAlpha = FMath::InterpEaseOut(0.f, 1.f, Alpha, 2.f);
+	const float Lateral = LateralOffset + (OutwardDistance * MotionAlpha);
+
+	OutLocation = BaseLocation
+		+ (OutwardDirection * Lateral)
+		+ FVector(0.f, 0.f, RiseDistance * MotionAlpha);
+	OutScaleMultiplier = FMath::Lerp(1.f, EndScale, Alpha);
+}
+
+FVector UBwayCombatNumberPopComponent::ResolveOutwardDirection(const APlayerController* PC, int32 SideSign) const
+{
+	const float Sign = (SideSign >= 0) ? 1.f : -1.f;
+	FVector CameraRight = FVector::RightVector;
+
+	if (PC && PC->PlayerCameraManager)
+	{
+		const FRotator CameraRotation = PC->PlayerCameraManager->GetCameraRotation();
+		CameraRight = CameraRotation.Quaternion().GetRightVector();
+		CameraRight.Z = 0.f;
+		if (!CameraRight.Normalize())
+		{
+			CameraRight = FVector::RightVector;
+		}
+	}
+
+	return CameraRight * Sign;
+}
+
 void UBwayCombatNumberPopComponent::UpdateLiveNumber(
 	FBwayLiveCombatNumberPop& LivePop,
 	float Now,
 	const FVector& CameraLocation,
-	const FRotator& BillboardRotation,
-	float Lifespan,
-	float RiseDistance) const
+	const FRotator& BillboardRotation) const
 {
 	if (!LivePop.TextComponent)
 	{
 		return;
 	}
 
-	const float Alpha = FMath::Clamp((Now - LivePop.SpawnWorldTime) / FMath::Max(Lifespan, KINDA_SMALL_NUMBER), 0.f, 1.f);
-	const FVector WorldLocation = LivePop.BaseLocation + FVector(0.f, 0.f, RiseDistance * Alpha);
+	EnsureConfig();
 
+	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
+	const float RiseDistance = CachedConfig ? CachedConfig->NumberPopRiseDistance : 80.f;
+	const float LateralOffset = CachedConfig ? CachedConfig->NumberPopLateralOffset : 35.f;
+	const float OutwardDistance = CachedConfig ? CachedConfig->NumberPopOutwardDistance : 45.f;
+	const float EndScale = CachedConfig ? CachedConfig->NumberPopEndScale : 0.f;
+
+	FVector WorldLocation = LivePop.BaseLocation;
+	float ScaleMultiplier = 1.f;
+	EvaluateNumberPopAnimation(
+		Now - LivePop.SpawnWorldTime,
+		Lifespan,
+		LivePop.BaseLocation,
+		LivePop.OutwardDirection,
+		LateralOffset,
+		OutwardDistance,
+		RiseDistance,
+		EndScale,
+		WorldLocation,
+		ScaleMultiplier);
+
+	const float Alpha = FMath::Clamp((Now - LivePop.SpawnWorldTime) / FMath::Max(Lifespan, KINDA_SMALL_NUMBER), 0.f, 1.f);
 	FLinearColor DrawColor = LivePop.BaseColor;
 	DrawColor.A = 1.f - Alpha;
 	FColor SRGB = DrawColor.ToFColor(true);
@@ -206,9 +265,11 @@ void UBwayCombatNumberPopComponent::UpdateLiveNumber(
 
 	const float Distance = FVector::Distance(CameraLocation, WorldLocation);
 	const float DistanceScale = FMath::Clamp(Distance / 800.f, 1.f, 8.f);
-	const float WorldSize = (CachedConfig ? CachedConfig->NumberPopWorldSize : 72.f)
+	const float WorldSize = FMath::Max(0.01f,
+		(CachedConfig ? CachedConfig->NumberPopWorldSize : 72.f)
 		* DistanceScale
-		* (CachedConfig ? CachedConfig->CombatFeedbackScaleMultiplier : 1.f);
+		* (CachedConfig ? CachedConfig->CombatFeedbackScaleMultiplier : 1.f)
+		* ScaleMultiplier);
 
 	LivePop.TextComponent->SetWorldLocationAndRotation(WorldLocation, BillboardRotation);
 	LivePop.TextComponent->SetTextRenderColor(SRGB);
@@ -226,8 +287,6 @@ void UBwayCombatNumberPopComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	}
 
 	EnsureConfig();
-	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
-	const float RiseDistance = CachedConfig ? CachedConfig->NumberPopRiseDistance : 80.f;
 
 	UWorld* World = GetWorld();
 	if (!World)
@@ -236,6 +295,7 @@ void UBwayCombatNumberPopComponent::TickComponent(float DeltaTime, ELevelTick Ti
 	}
 
 	const float Now = World->GetTimeSeconds();
+	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
 	FVector CameraLocation = FVector::ZeroVector;
 	FRotator BillboardRotation = FRotator::ZeroRotator;
 	if (const APlayerController* PC = GetController<APlayerController>())
@@ -259,7 +319,7 @@ void UBwayCombatNumberPopComponent::TickComponent(float DeltaTime, ELevelTick Ti
 			continue;
 		}
 
-		UpdateLiveNumber(LivePop, Now, CameraLocation, BillboardRotation, Lifespan, RiseDistance);
+		UpdateLiveNumber(LivePop, Now, CameraLocation, BillboardRotation);
 	}
 
 	if (LivePops.Num() == 0)
@@ -300,9 +360,11 @@ void UBwayCombatNumberPopComponent::AddNumberPop(const FLyraNumberPopRequest& Ne
 	FBwayLiveCombatNumberPop LivePop;
 	LivePop.TextComponent = Text;
 	LivePop.BaseLocation = NewRequest.WorldLocation;
+	LivePop.OutwardDirection = ResolveOutwardDirection(PC, NextLateralSideSign);
 	LivePop.BaseColor = Color;
 	LivePop.SpawnWorldTime = Now;
 	LivePops.Add(LivePop);
+	NextLateralSideSign *= -1;
 
 	FVector CameraLocation = NewRequest.WorldLocation;
 	FRotator BillboardRotation = FRotator::ZeroRotator;
@@ -314,9 +376,7 @@ void UBwayCombatNumberPopComponent::AddNumberPop(const FLyraNumberPopRequest& Ne
 		BillboardRotation.Pitch = -BillboardRotation.Pitch;
 	}
 
-	const float Lifespan = CachedConfig ? CachedConfig->NumberPopLifespan : 1.f;
-	const float RiseDistance = CachedConfig ? CachedConfig->NumberPopRiseDistance : 80.f;
-	UpdateLiveNumber(LivePops.Last(), Now, CameraLocation, BillboardRotation, Lifespan, RiseDistance);
+	UpdateLiveNumber(LivePops.Last(), Now, CameraLocation, BillboardRotation);
 
 	if (CVarBwayDebugCombatNumbers.GetValueOnGameThread() > 0)
 	{
