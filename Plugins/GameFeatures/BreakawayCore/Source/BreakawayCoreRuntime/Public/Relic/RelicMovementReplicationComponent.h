@@ -116,10 +116,11 @@ protected:
 
 	/**
 	 * Maximum allowed position error before snapping
-	 * If client is further than this from server, instantly correct
+	 * If client is further than this from server, instantly correct.
+	 * Sized for 200 ms one-way lag at throw speed (~1000 cm/s) plus physics divergence.
 	 */
-	UPROPERTY(EditDefaultsOnly, Category = "Replication", meta = (ClampMin = "50.0", ClampMax = "500.0"))
-	float SnapThreshold = 200.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Replication", meta = (ClampMin = "50.0", ClampMax = "1000.0"))
+	float SnapThreshold = 600.0f;
 
 	/**
 	 * Position error threshold for applying velocity prediction
@@ -134,7 +135,7 @@ protected:
 	 * 0.0 = no prediction, 1.0 = full velocity prediction
 	 */
 	UPROPERTY(EditDefaultsOnly, Category = "Replication", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-	float VelocityPredictionScale = 0.5f;
+	float VelocityPredictionScale = 0.7f;
 
 	/**
 	 * How often the server updates movement state (in seconds)

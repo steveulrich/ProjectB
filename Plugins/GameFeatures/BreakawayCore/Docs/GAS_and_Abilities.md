@@ -78,5 +78,4 @@ Placement Confirm/Cancel dual-bind on LMB/RMB alongside Primary / RelicRequest â
 
 ## TODO
 
-- Fumble-on-damage gameplay effect for relic carrier (Step 22)
-- Optional: Alona 19c / Korryn 20c editor 3/3 PIE confirmation
+- Optional: Alona 19c / Korryn 20c editor 3/3 PIE confirmation (folded into Step 22 playtest)

@@ -293,6 +293,16 @@ void ABwayPlayerState::AddHealingDone(int32 Amount)
 	}
 }
 
+void ABwayPlayerState::AddForcedFumble()
+{
+	if (HasAuthority())
+	{
+		ForcedFumbles++;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded forced fumble (total: %d)"), *GetPlayerName(), ForcedFumbles);
+	}
+}
+
 void ABwayPlayerState::ResetMatchStats()
 {
 	if (HasAuthority())

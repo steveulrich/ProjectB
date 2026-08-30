@@ -1,15 +1,20 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GameState/BwayRelicManagerComponent.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
+#include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "Messages/LyraVerbMessageHelpers.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
-#include "BwayCharacterWithAbilities.h"
 #include "SpawnSystem/BwaySpawnPoint.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayRelicManagerComponent)
+
+DEFINE_LOG_CATEGORY_STATIC(LogBwayRelic, Log, All);
 
 UBwayRelicManagerComponent::UBwayRelicManagerComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -32,6 +37,24 @@ void UBwayRelicManagerComponent::BeginPlay()
 	{
 		RelicSpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"));
 	}
+
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(this);
+		DamageListenerHandle = MessageSubsystem.RegisterListener(
+			TAG_Lyra_Damage_Message, this, &ThisClass::OnCarrierDamageMessage);
+	}
+}
+
+void UBwayRelicManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (UWorld* World = GetWorld())
+	{
+		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(World);
+		MessageSubsystem.UnregisterListener(DamageListenerHandle);
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 void UBwayRelicManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -63,6 +86,39 @@ const URelicSettings* UBwayRelicManagerComponent::GetRelicSettings() const
 	}
 
 	return nullptr;
+}
+
+bool UBwayRelicManagerComponent::GetRelicSpawnLocationForPosition(const FVector& WorldPosition, FVector& OutSpawnLocation) const
+{
+	UBwaySpawnPointManagerComponent* SpawnManager = CachedSpawnPointManager;
+	if (!SpawnManager)
+	{
+		if (const AActor* Owner = GetOwner())
+		{
+			SpawnManager = Owner->FindComponentByClass<UBwaySpawnPointManagerComponent>();
+		}
+	}
+
+	if (!SpawnManager)
+	{
+		return false;
+	}
+
+	FGameplayTag SpawnTag = RelicSpawnTag;
+	if (!SpawnTag.IsValid())
+	{
+		SpawnTag = FGameplayTag::RequestGameplayTag(FName("SpawnPoint.Relic"), /*ErrorIfNotFound*/ false);
+	}
+
+	SpawnManager->DiscoverSpawnPoints();
+
+	if (const ABwaySpawnPoint* SpawnPoint = SpawnManager->GetClosestSpawnPoint(WorldPosition, SpawnTag))
+	{
+		OutSpawnLocation = SpawnPoint->GetActorLocation();
+		return true;
+	}
+
+	return false;
 }
 
 ARelicActor* UBwayRelicManagerComponent::SpawnRelic()
@@ -190,6 +246,61 @@ void UBwayRelicManagerComponent::ResetRelic()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("BwayRelicManager: No relic spawn points found for reset"));
+}
+
+void UBwayRelicManagerComponent::OnCarrierDamageMessage(FGameplayTag Channel, const FLyraVerbMessage& Payload)
+{
+	(void)Channel;
+
+	if (GetOwnerRole() != ROLE_Authority || !ActiveRelic)
+	{
+		return;
+	}
+
+	if (ActiveRelic->GetCurrentState() != ERelicState::Carried || !ActiveRelic->CurrentCarrier)
+	{
+		return;
+	}
+
+	const URelicSettings* Settings = GetRelicSettings();
+	if (Settings && !Settings->bFumbleOnDamage)
+	{
+		return;
+	}
+
+	if (Payload.Magnitude <= 0.0)
+	{
+		return;
+	}
+
+	ABwayCharacterWithAbilities* Carrier = ActiveRelic->CurrentCarrier;
+	APlayerState* TargetPS = ULyraVerbMessageHelpers::GetPlayerStateFromObject(Payload.Target);
+	const bool bTargetIsCarrierPawn = (Cast<AActor>(Payload.Target) == Carrier);
+	const bool bTargetIsCarrierPS = (TargetPS && TargetPS == Carrier->GetPlayerState());
+	if (!bTargetIsCarrierPawn && !bTargetIsCarrierPS)
+	{
+		return;
+	}
+
+	UE_LOG(LogBwayRelic, Log, TEXT("Fumble-on-damage: %s took %.1f damage while carrying — dropping relic"),
+		*GetNameSafe(Carrier), static_cast<float>(Payload.Magnitude));
+
+	ActiveRelic->ForceFumbleFromDamage();
+}
+
+void UBwayRelicManagerComponent::DropRelicIfCarriedBy(ABwayCharacterWithAbilities* Character)
+{
+	if (GetOwnerRole() != ROLE_Authority || !ActiveRelic || !Character)
+	{
+		return;
+	}
+
+	if (ActiveRelic->CurrentCarrier == Character && ActiveRelic->GetCurrentState() == ERelicState::Carried)
+	{
+		UE_LOG(LogBwayRelic, Log, TEXT("DropRelicIfCarriedBy: %s died while carrying — dropping relic (not a fumble)"),
+			*GetNameSafe(Character));
+		ActiveRelic->OnDropped();
+	}
 }
 
 void UBwayRelicManagerComponent::OnRelicCarrierChanged(ABwayCharacterWithAbilities* NewCarrier)

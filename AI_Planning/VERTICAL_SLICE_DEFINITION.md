@@ -2,7 +2,7 @@
 
 Locked scope for the Capture-the-Relic vertical slice.
 
-**Last reviewed:** August 19, 2026  
+**Last reviewed:** August 27, 2026  
 **Planning hub:** [Planning docs](./README.md)  
 **Status and next work:** [Project roadmap](./PROJECT_ROADMAP.md)
 
@@ -38,7 +38,7 @@ Status reflects the August 19, 2026, doc refresh. Editor 3/3 PIE is still requir
 | 4 distinct heroes selectable (duplicate-hero rule per team) | Kits landed; prove on Step 22 |
 | Best-of-5 rounds, 3 win conditions | Implemented |
 | Relic pass / throw / score | Implemented |
-| Relic fumble-on-damage | **Open** (Step 22) |
+| Relic fumble-on-damage | **C++ landed** (Step 22 PIE) |
 | Gold earned in-match; persists round-to-round | Implemented (no spend in slice) |
 | One buildable per hero; persist Round 1 → Round 2 | C++ ready; prove on Step 22 |
 | Results → Lyra front-end | Widgets exist; `11-8` E2E still deferred |

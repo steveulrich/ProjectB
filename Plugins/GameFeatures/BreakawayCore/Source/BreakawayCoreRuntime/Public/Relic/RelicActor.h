@@ -90,6 +90,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
     virtual void OnDropped();
 
+    /**
+     * Server-only: drop the relic because the carrier took damage.
+     * Increments ABwayPlayerState::ForcedFumbles and knocks the relic off the carrier.
+     * No-op if not currently Carried.
+     */
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Relic|Interaction")
+    void ForceFumbleFromDamage();
+
     // Called when relic enters a goal volume (server only)
     UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
     void OnEnteredGoal(int32 ScoringTeam);
@@ -168,6 +176,13 @@ protected:
 
     // Internal helper to handle detachment and physics setup
     void DetachFromCarrier(const FVector* InitialVelocity = nullptr);
+
+    /**
+     * Shared drop path used by OnDropped (voluntary / reset) and ForceFumbleFromDamage.
+     * @param InitialVelocity Optional velocity change applied after physics is enabled.
+     * @param bRecordForcedFumble When true, increments ForcedFumbles on the current carrier.
+     */
+    void DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble);
 
     //Helper to apply visual/audio configuration from settings
     void ApplyRelicConfiguration();

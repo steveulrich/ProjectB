@@ -11,6 +11,7 @@
 #include "Relic/RelicSettings.h"
 #include "AbilitySystemGlobals.h"
 #include "BwayGameState.h"
+#include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "BwayPlayerState.h"
@@ -117,6 +118,11 @@ void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 				// For now, only direct killer gets credit
 
 				RoundMgmt->OnPlayerDied(VictimController, KillerController);
+			}
+
+			if (UBwayRelicManagerComponent* RelicMgr = GS->FindComponentByClass<UBwayRelicManagerComponent>())
+			{
+				RelicMgr->DropRelicIfCarriedBy(this);
 			}
 		}
 	}

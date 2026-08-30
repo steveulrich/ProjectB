@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/GameStateComponent.h"
+#include "GameFramework/GameplayMessageSubsystem.h"
 #include "GameplayTagContainer.h"
+#include "Messages/LyraVerbMessage.h"
 #include "BwayRelicManagerComponent.generated.h"
 
 class ARelicActor;
@@ -46,6 +48,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Relic")
 	void OnRelicCarrierChanged(ABwayCharacterWithAbilities* NewCarrier);
 
+	/**
+	 * Server-only: drop the relic if Character is the current carrier (no ForcedFumbles increment).
+	 * Used on death after a non-damage kill, or after fumble already cleared the carrier.
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Relic")
+	void DropRelicIfCarriedBy(ABwayCharacterWithAbilities* Character);
+
 	// ========================================
 	// Accessors
 	// ========================================
@@ -63,6 +72,10 @@ public:
 	/** Get which team currently possesses the relic (-1 if neutral) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
 	int32 GetRelicPossessingTeam() const { return RelicPossessingTeam; }
+
+	/** World location of the closest relic spawn point to WorldPosition (for fumble attract). */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Relic")
+	bool GetRelicSpawnLocationForPosition(const FVector& WorldPosition, FVector& OutSpawnLocation) const;
 
 	/** Set the active relic actor (e.g., when spawned by GameMode) */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Relic")
@@ -97,6 +110,11 @@ public:
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	void OnCarrierDamageMessage(FGameplayTag Channel, const FLyraVerbMessage& Payload);
+
+	FGameplayMessageListenerHandle DamageListenerHandle;
 
 	/** Current active relic in the match */
 	UPROPERTY(Replicated)

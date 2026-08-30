@@ -2094,9 +2094,10 @@ TSharedPtr<FJsonValue> FGameplayHandlers::SetMappingModifiers(const TSharedPtr<F
 			// Set properties via reflection
 			for (const auto& Pair : (*ModObj)->Values)
 			{
-				if (Pair.Key == TEXT("type")) continue;
+				const FString PropName = JsonObjectKeyToFString(Pair.Key);
+				if (PropName == TEXT("type")) continue;
 
-				FProperty* Prop = ModClass->FindPropertyByName(FName(*Pair.Key));
+				FProperty* Prop = ModClass->FindPropertyByName(FName(*PropName));
 				if (!Prop) continue;
 
 				void* PropAddr = Prop->ContainerPtrToValuePtr<void>(Modifier);
@@ -2189,9 +2190,10 @@ TSharedPtr<FJsonValue> FGameplayHandlers::SetMappingModifiers(const TSharedPtr<F
 			// Set properties via reflection (same pattern as modifiers)
 			for (const auto& Pair : (*TrigObj)->Values)
 			{
-				if (Pair.Key == TEXT("type")) continue;
+				const FString PropName = JsonObjectKeyToFString(Pair.Key);
+				if (PropName == TEXT("type")) continue;
 
-				FProperty* Prop = TrigClass->FindPropertyByName(FName(*Pair.Key));
+				FProperty* Prop = TrigClass->FindPropertyByName(FName(*PropName));
 				if (!Prop) continue;
 
 				void* PropAddr = Prop->ContainerPtrToValuePtr<void>(Trigger);

@@ -2,7 +2,7 @@
 
 Developer reference for the BreakawayCore Game Feature plugin. Slice planning lives in [`AI_Planning/`](../../../AI_Planning/) — start with [the planning hub](../../../AI_Planning/README.md).
 
-**Last reviewed:** August 19, 2026
+**Last reviewed:** August 27, 2026
 
 ## Architecture overview
 
@@ -12,7 +12,7 @@ BreakawayCore extends Lyra via C++ subclasses and `UGameStateComponent`s. Match 
 Lyra FrontEnd → Experience (B_BW_Experience_Dev / CaptureTheRelic) → ABwayGameState + components → match loop
 ```
 
-**Living implementation plan:** [Core loop implementation plan](./CoreLoop_Implementation_Plan.md) (Section 3 = heroes + buildables). **Current next gate:** Step 22.
+**Living implementation plan:** [Core loop implementation plan](./CoreLoop_Implementation_Plan.md) (Section 3 = heroes + buildables). **Current next gate:** Step 22 editor PIE (C++ fumble landed).
 
 Four slice heroes (Argus, Alona, Korryn, Rawlins) ship as Game Feature plugins under `Plugins/GameFeatures/Heroes/`.
 
@@ -57,7 +57,7 @@ Four slice heroes (Argus, Alona, Korryn, Rawlins) ship as Game Feature plugins u
 |-----------|------|
 | `UBwayRoundManagementComponent` | Rounds, win conditions, gold awards |
 | `UBwayScoringComponent` | Team scores |
-| `UBwayRelicManagerComponent` | Relic spawn/reset/carrier |
+| `UBwayRelicManagerComponent` | Relic spawn/reset/carrier, fumble-on-damage |
 | `UBwayTeamBridgeComponent` | Sync to `ULyraTeamSubsystem` |
 | `UBwayBuildableRegistryComponent` | Match-wide buildable tracking |
 | `UBwayHeroSelectionManager` | Pick/lock rules |
@@ -79,4 +79,3 @@ Editor checklist: [`AI_Planning/BLUEPRINT_ASSET_AUDIT.md`](../../../AI_Planning/
 - Duplicate team/score paths on `ABwayGameState` vs components (consolidate over time)
 - `PlayingPhaseTag` defaults to `ShooterGame.GamePhase.Playing`
 - Asset management uses `ULyraAssetManager` (not a custom Bway asset manager)
-- Fumble-on-damage not implemented (Step 22)

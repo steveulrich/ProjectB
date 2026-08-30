@@ -118,12 +118,49 @@ public:
     // Auto-pickup when in radius (vs. requiring button press)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay")
     bool bAutoPickup = true;
+
+    /**
+     * When true, any effective health damage on the carrier immediately drops the relic
+     * (server-authoritative). Death after a fumble is a no-op.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble")
+    bool bFumbleOnDamage = true;
+
+    /**
+     * Horizontal speed (cm/s) toward the relic spawn point when fumbling at or beyond
+     * FumbleSpawnReferenceDistance from spawn.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleDropSpeed = 450.0f;
+
+    /**
+     * Horizontal speed (cm/s) toward the relic spawn point when fumbling on top of spawn.
+     * Keep low so the relic pops mostly straight up when close to center.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleMinHorizontalTowardSpawn = 0.0f;
+
+    /** Upward speed (cm/s) when fumbling on top of the relic spawn point. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleDropUpSpeed = 250.0f;
+
+    /** Upward speed (cm/s) when fumbling at or beyond FumbleSpawnReferenceDistance from spawn. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleMinUpTowardSpawn = 80.0f;
+
+    /**
+     * Horizontal distance (cm) from relic spawn used to scale fumble force.
+     * At 0 distance: FumbleMinHorizontalTowardSpawn + FumbleDropUpSpeed.
+     * At this distance (or farther): FumbleDropSpeed + FumbleMinUpTowardSpawn.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "1.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleSpawnReferenceDistance = 4000.0f;
     
     //-----------------------------------------------------------
     // Physics Settings
     //-----------------------------------------------------------
-    
-    // Multiplier for impulse applied when dropping the relic
+
+    // Multiplier for impulse applied when dropping the relic (also scales fumble knock-off)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Physics")
     float DropImpulseMultiplier = 1.0f;
     

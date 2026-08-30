@@ -2,7 +2,7 @@
 
 Current priorities for the Capture-the-Relic vertical slice.
 
-**Last reviewed:** August 19, 2026  
+**Last reviewed:** August 27, 2026  
 **Scope:** [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)  
 **Step-by-step checklists:** [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)  
 **Doc hub:** [Planning docs](./README.md)
@@ -11,7 +11,7 @@ This file is the status and priority list. The core loop plan is the implementat
 
 ## Current status
 
-The C++ match loop, match HUD, and four hero kits are in the repo. The next feature gate is **Section 3 Step 22** (capstone). Several editor 3/3 PIE checklists from Steps 17–20.5 have no matching `core-loop: step N passed` commit.
+The C++ match loop, match HUD, four hero kits, and relic fumble-on-damage are in the repo. **Section 3 Step 22** still needs editor PIE (staging E2E, four-hero HUD, 4v4 mini-match). Leftover 3/3 checklists from Steps 17–20.5 have no matching `core-loop: step N passed` commit — close them in the same PIE session as Step 22.
 
 | Area | Status | Evidence |
 |------|--------|----------|
@@ -20,10 +20,10 @@ The C++ match loop, match HUD, and four hero kits are in the repo. The next feat
 | In-match phase FSM | Complete | Steps 11-1–11-7 and 11b |
 | Front-end queue E2E | Deferred | Step `11-8`; matchmaking C++ (`11-MM-1`–`11-MM-4`) landed |
 | Argus, Alona, Korryn, Rawlins kits + one buildable each | C++ landed | Steps 18–21; Step 21 has a formal pass commit |
-| Fumble-on-damage | Not implemented | `ForcedFumbles` exists on `ABwayPlayerState`; no drop-on-damage gameplay |
+| Fumble-on-damage | C++ landed | `UBwayRelicManagerComponent` + `ARelicActor::ForceFumbleFromDamage`; PIE still required |
 | Hero-select staging E2E | Open | Map and routing exist; Step 22 checklist |
 | Dorado parity | Open | `L_BW_Dorado` exists; not gated against DevMap |
-| 200 ms relic latency test | Open | Relic polish remaining |
+| 200 ms relic latency test | C++ tuned | Snap threshold 600 cm; playtest `Net PktLag=200` remaining |
 
 ## Completed
 
@@ -60,21 +60,21 @@ The C++ match loop, match HUD, and four hero kits are in the repo. The next feat
 
 Tackle in this order unless a new project plan says otherwise.
 
-### 1. Section 3 capstone (Step 22)
+### 1. Section 3 capstone PIE (Step 22)
 
-Highest-priority feature work.
+C++ for 22-1 and 200 ms snap is landed. Remaining work is editor verification.
 
 | ID | Task |
 |----|------|
-| 22-1 | Fumble-on-damage: carrier drops relic on damage; increment `ForcedFumbles` |
-| 22-2 | Enable all four hero plugins on `B_BW_Experience_Dev` |
+| 22-1 | Fumble-on-damage — **C++ landed**; prove on listen server |
+| 22-2 | Enable all four hero plugins — run `node Scripts/setup-step22-capstone.mjs` |
 | 22-3 | Staging E2E: front-end tile → `L_BW_HeroSelect_Staging` → lock → match |
 | 22-4 | Step 19.5 HUD regression on all four heroes |
 | 22-5 | Four-hero 4v4 listen-server mini-match |
 | 22-6 | `ForceHumanoid=1` Section 1 relic regression |
-| 22-7 | Align design-spec wording for one buildable per hero and match-only gold |
+| 22-7 | Design-spec wording — already slice-correct in §2.2 |
 
-Pass criteria live in the [core loop plan, Step 22](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md#step-22--section-3-capstone).
+Also close leftover **17 / 19c / 20c / 20.5** 3/3 gates in the same session (URLs in the [core loop plan, Step 22](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md#step-22--section-3-capstone)).
 
 ### 2. Editor verification (optional before 22)
 

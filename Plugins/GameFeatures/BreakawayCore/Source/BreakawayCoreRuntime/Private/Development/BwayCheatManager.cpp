@@ -9,6 +9,8 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectWidget.h"
+#include "GameState/BwayRelicManagerComponent.h"
+#include "Relic/RelicActor.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Abilities/GameplayAbility.h"
@@ -618,6 +620,37 @@ void UBwayCheatManager::ForceInitHero()
 	
 	UE_LOG(LogBwayCheat, Display, TEXT("ForceInitHero: Called InitializeHeroData for %s on %s"), 
 		*HeroData->DisplayName.ToString(), *Character->GetName());
+#endif
+}
+
+void UBwayCheatManager::ForceFumbleRelic()
+{
+#if USING_CHEAT_MANAGER
+	APlayerController* PC = GetOwningPlayerController();
+	UWorld* World = PC ? PC->GetWorld() : nullptr;
+	ABwayGameState* GS = World ? World->GetGameState<ABwayGameState>() : nullptr;
+	UBwayRelicManagerComponent* RelicMgr = GS ? GS->FindComponentByClass<UBwayRelicManagerComponent>() : nullptr;
+	ARelicActor* Relic = RelicMgr ? RelicMgr->GetRelicActor() : nullptr;
+	if (!Relic)
+	{
+		CheatOutputText(TEXT("ForceFumbleRelic: no active relic"));
+		return;
+	}
+
+	if (!PC || !PC->HasAuthority())
+	{
+		CheatOutputText(TEXT("ForceFumbleRelic: server only"));
+		return;
+	}
+
+	if (Relic->GetCurrentState() != ERelicState::Carried || !Relic->CurrentCarrier)
+	{
+		CheatOutputText(TEXT("ForceFumbleRelic: relic is not carried"));
+		return;
+	}
+
+	Relic->ForceFumbleFromDamage();
+	CheatOutputText(TEXT("ForceFumbleRelic: dropped relic and incremented ForcedFumbles"));
 #endif
 }
 

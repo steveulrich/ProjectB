@@ -21,6 +21,32 @@
 
 namespace
 {
+FVector ComputeSpawnDirectedFumbleVelocity(const FVector& CarrierLocation, const FVector& SpawnLocation, const URelicSettings* RelicSettings)
+{
+	const float ImpulseScale = RelicSettings ? RelicSettings->DropImpulseMultiplier : 1.0f;
+	const float MinHorizontal = RelicSettings ? RelicSettings->FumbleMinHorizontalTowardSpawn : 0.0f;
+	const float MaxHorizontal = RelicSettings ? RelicSettings->FumbleDropSpeed : 450.0f;
+	const float MaxUp = RelicSettings ? RelicSettings->FumbleDropUpSpeed : 250.0f;
+	const float MinUp = RelicSettings ? RelicSettings->FumbleMinUpTowardSpawn : 80.0f;
+	const float RefDistance = RelicSettings ? FMath::Max(RelicSettings->FumbleSpawnReferenceDistance, 1.0f) : 4000.0f;
+
+	FVector ToSpawnHorizontal = SpawnLocation - CarrierLocation;
+	ToSpawnHorizontal.Z = 0.0f;
+
+	const float HorizontalDistance = ToSpawnHorizontal.Size();
+	FVector HorizontalDir = FVector::ZeroVector;
+	if (HorizontalDistance > KINDA_SMALL_NUMBER)
+	{
+		HorizontalDir = ToSpawnHorizontal / HorizontalDistance;
+	}
+
+	const float DistanceAlpha = FMath::Clamp(HorizontalDistance / RefDistance, 0.0f, 1.0f);
+	const float HorizontalSpeed = FMath::Lerp(MinHorizontal, MaxHorizontal, DistanceAlpha);
+	const float UpSpeed = FMath::Lerp(MaxUp, MinUp, DistanceAlpha);
+
+	return (HorizontalDir * HorizontalSpeed + FVector(0.0f, 0.0f, UpSpeed)) * ImpulseScale;
+}
+
 FGameplayTag ResolvePickupEventTag(const URelicSettings* RelicSettings)
 {
     if (RelicSettings && RelicSettings->PickupEventTag.IsValid())
@@ -464,9 +490,53 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 
 void ARelicActor::OnDropped()
 {
+    DropFromCarrierInternal(/*InitialVelocity=*/ nullptr, /*bRecordForcedFumble=*/ false);
+}
+
+void ARelicActor::ForceFumbleFromDamage()
+{
     if (!HasAuthority())
     {
         return;
+    }
+
+    if (CurrentState != ERelicState::Carried || !CurrentCarrier)
+    {
+        return;
+    }
+
+    ABwayCharacterWithAbilities* FumblingCarrier = CurrentCarrier;
+    const FVector CarrierLocation = FumblingCarrier->GetActorLocation();
+    FVector SpawnLocation = CarrierLocation;
+
+    if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+    {
+        if (UBwayRelicManagerComponent* RelicManager = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
+        {
+            RelicManager->GetRelicSpawnLocationForPosition(CarrierLocation, SpawnLocation);
+        }
+    }
+
+    const FVector DropVelocity = ComputeSpawnDirectedFumbleVelocity(CarrierLocation, SpawnLocation, RelicSettings);
+
+    DropFromCarrierInternal(&DropVelocity, /*bRecordForcedFumble=*/ true);
+
+    UE_LOG(LogTemp, Log, TEXT("Relic %s force-fumbled off %s"), *GetNameSafe(this), *GetNameSafe(FumblingCarrier));
+}
+
+void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble)
+{
+    if (!HasAuthority())
+    {
+        return;
+    }
+
+    if (bRecordForcedFumble && CurrentCarrier)
+    {
+        if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CurrentCarrier->GetPlayerState()))
+        {
+            BwayPS->AddForcedFumble();
+        }
     }
 
     if (CurrentCarrier && CurrentCarrier->GetPlayerState())
@@ -487,7 +557,7 @@ void ARelicActor::OnDropped()
     }
 
     // Detach from carrier (uses CurrentCarrier internally for ability cleanup)
-    DetachFromCarrier();
+    DetachFromCarrier(InitialVelocity);
 
     // Now clear the replicated carrier property
     CurrentCarrier = nullptr;

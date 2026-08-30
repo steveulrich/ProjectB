@@ -17,11 +17,11 @@ Breakaway is a Capture-the-Relic vertical slice on Lyra (Unreal Engine 5.5). Gam
 | Section 1 — Humanoid relic loop (Steps 0–10) | Complete |
 | Section 2 — Match HUD (Steps 12–16) | Complete |
 | Step 11 — In-match flow orchestrator | Complete (`11-8` front-end E2E deferred) |
-| Section 3 — Four heroes (Steps 17–21) | C++ kits landed; Step 21 passed; some editor 3/3 PIE gates still open |
-| Step 22 — Section 3 capstone | **Next feature gate** |
+| Section 3 — Four heroes (Steps 17–21) | C++ kits landed; Step 21 passed; leftover editor 3/3 PIE folded into Step 22 |
+| Step 22 — Section 3 capstone | **C++ landed** (fumble); editor PIE next |
 | Dorado map parity and packaged demo | Open |
 
-**Next feature work:** Step 22 (fumble-on-damage, staging end-to-end, four-hero match, HUD regression). For the step-by-step checklists, see [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md).
+**Next feature work:** Rebuild, run `Scripts/setup-step22-capstone.mjs`, then PIE Step 22 (fumble, staging E2E, four-hero match, HUD). For the step-by-step checklists, see [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md).
 
 ## Which document to use
 

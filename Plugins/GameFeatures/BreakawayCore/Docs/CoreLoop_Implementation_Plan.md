@@ -1282,7 +1282,7 @@ Design review decisions captured **Jun 2026** (grill-me).
 | **20** | **C++ complete** | Korryn kit, Cursed Ward, kit-driven parity. No formal `20c` pass commit. Editor 3/3 PIE may still be open. |
 | **20.5** | **Assets wired** | Argus + Alona kit configs. Commit landed; PIE + 3/3 cold starts may still be open. |
 | **21** | **Passed** | Rawlins 21a–21c. Formal `21c` pass commit. |
-| **22** | **Open** | **Next feature gate:** fumble-on-damage, staging E2E, four-hero match, HUD regression. |
+| **22** | **C++ landed** | Fumble-on-damage + 200 ms snap threshold. Enable four hero plugins via `Scripts/setup-step22-capstone.mjs`. Editor PIE (staging E2E, HUD, 4v4, leftover 17/19c/20c/20.5, 11-8, Dorado) still open. |
 
 ---
 
@@ -1575,24 +1575,50 @@ The bar always owns **six stable positions**. Resolution must preserve an empty/
 
 ## Step 22 — Section 3 capstone
 
+**Status:** **C++ landed** — fumble-on-damage is server-authoritative; four-hero experience wiring is scripted. Editor PIE (including leftover 17 / 19c / 20c / 20.5 3/3 gates, 11-8, Dorado, 200 ms) is the remaining pass.
+
 **Goal:** Full vertical-slice hero loop + cross-cutting relic rule.
 
 | Item | Work |
 |------|------|
-| **Fumble-on-damage** | Carrier drops relic when damaged; increment `ForcedFumbles` on `ABwayPlayerState` |
+| **Fumble-on-damage** | **Landed.** `UBwayRelicManagerComponent` listens for `Lyra.Damage.Message`; carrier drop via `ARelicActor::ForceFumbleFromDamage()` increments `ABwayPlayerState::ForcedFumbles`. Tunable on `URelicSettings` (`bFumbleOnDamage`, `FumbleDropSpeed`, `FumbleDropUpSpeed`). Death still drops without incrementing if the relic is still carried. Cheat: `ForceFumbleRelic`. |
 | **Staging E2E** | Front-end tile → staging → match; four heroes in select; duplicate-hero rule per team |
-| **Four-hero match** | All four GF plugins on experience; listen server 4v4 |
-| **HUD** | Regress Step 19.5 with all four heroes; add official-name/final-art polish only (do not rebuild the ability/gold/portrait data paths) |
-| **Docs** | `HERO_CODENAME_MAP.md`, `Breakaway_Reborn_Design_Spec.md` §2.2 buildable/gold wording |
+| **Four-hero match** | Enable all four GF plugins on `B_BW_Experience_Dev` **and** `B_BW_Experience_CaptureTheRelic` via `node Scripts/setup-step22-capstone.mjs` |
+| **HUD** | Regress Step 19.5 with all four heroes; official names from hero DA `DisplayName` (Argus / Alona / Korryn / Rawlins). Do not rebuild ability/gold/portrait data paths. |
+| **Docs** | `HERO_CODENAME_MAP.md`, `Breakaway_Reborn_Design_Spec.md` §2.2 (already slice-correct) |
 | **Regression** | `ForceHumanoid=1` Section 1 URL still passes |
+| **200 ms relic** | Snap threshold raised to 600 cm; velocity prediction 0.7 — playtest with `Net PktLag=200` |
+
+### Editor wiring
+
+```
+node Scripts/setup-step22-capstone.mjs
+node Scripts/setup-step22-capstone.mjs --probe-only
+```
 
 ### Pass checklist
 
-- [ ] Fumble-on-damage drops relic (listen server)
+- [ ] Fumble-on-damage drops relic (listen server). Log: `Fumble-on-damage:` / `recorded forced fumble`. Optional: `ForceFumbleRelic` cheat. Optional: `Net PktLag=100`.
 - [ ] Buildable placed round 1 **persists** round 2; second placement blocked until next round
 - [ ] Staging E2E **3/3** cold starts
 - [ ] Full mini-match with four heroes selectable; combat + relic loop
-- [ ] Step 19.5 ability, gold, and portrait widgets remain correct for all four heroes
+- [ ] Step 19.5 ability, gold, and portrait widgets remain correct for all four heroes (official names)
+
+### Leftover 3/3 gates (close in the same PIE session)
+
+Run these on listen-server `L_BW_DevMap?Experience=B_BW_Experience_Dev` after the C++ rebuild:
+
+| Gate | URL / path | Pass when |
+|------|------------|-----------|
+| **17** | `SkipHeroSelection=1&ForceHumanoid=1&NumBots=7` then `Hero=Argus&NumBots=7` | Humanoid relic loop; hero apply; once/round buildable |
+| **19c** | `Hero=Alona&NumBots=7` | Sheet spot-check Alona kit + Sun Shrine |
+| **20c** | `Hero=Korryn&NumBots=7` | Sheet spot-check Korryn kit + Cursed Ward |
+| **20.5** | Argus then Alona URLs | Combat activate logs `Resolved kit config`; Korryn unchanged |
+| **11-8** | Front-end `PlayList_BW_Dev` (direct, no staging) | Menu → match → results → menu **3/3** |
+| **Dorado** | Same experience on `L_BW_Dorado` | Spawn / goal / relic parity with DevMap |
+| **200 ms** | Listen server + `Net PktLag=200` | Throw / pass / fumble interpolate; no snap spam |
+
+Do **not** mark Section 3 complete until the Step 22 pass checklist is green.
 
 ---
 
@@ -2040,9 +2066,9 @@ Keep **`LAS_BW_SharedInput`**, **`B_BW_TeamSetup_TwoTeams`**, **`B_BW_BotSpawner
 
 ## Next actions
 
-Reviewed August 19, 2026. For a shorter priority list, see [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
+Reviewed August 27, 2026. For a shorter priority list, see [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
 
-1. **Section 3 Step 22** — Capstone: fumble-on-damage, staging E2E, four-hero HUD regression, and four-hero listen-server match.
-2. Optional: close remaining editor 3/3 PIE gates for **Steps 17, 19c, 20c, and 20.5** if you need a formal pass before 22.
-3. Optional: **11-8** front-end E2E (queue or custom tile → match → results → menu, **3/3** cold starts).
-4. Optional: Dorado parity, 200 ms relic latency, packaging.
+1. **Rebuild** BreakawayCoreRuntime, then `node Scripts/setup-step22-capstone.mjs` with the editor + MCP bridge open.
+2. **PIE the Step 22 pass checklist** (fumble, staging E2E, four-hero HUD, 4v4) — this session also closes leftover **17 / 19c / 20c / 20.5** 3/3 gates.
+3. **11-8** front-end E2E (queue or Dev tile → match → results → menu, **3/3** cold starts).
+4. **Dorado parity** + **200 ms** relic latency (`Net PktLag=200`).

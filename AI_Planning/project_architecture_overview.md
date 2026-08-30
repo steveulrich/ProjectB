@@ -460,7 +460,7 @@ PostGame phase:
 | Dimension | Status |
 |-----------|--------|
 | C++ match loop | Complete for DevMap core loop (Steps 0–11) |
-| Relic / rounds / gold | Functional. Fumble-on-damage is Step 22. |
+| Relic / rounds / gold | Functional. Fumble-on-damage C++ landed (Step 22 PIE). |
 | Buildable persistence | C++ flag, registry, once-per-round free placement |
 | 4 heroes | Argus, Alona, Korryn, Rawlins C++ kits + one buildable each |
 | Match HUD | Steps 12–16 and 19.5 complete |

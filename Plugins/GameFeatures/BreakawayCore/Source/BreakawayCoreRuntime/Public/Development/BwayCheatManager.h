@@ -114,6 +114,13 @@ public:
 	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Debug")
 	void ForceInitHero();
 
+	/**
+	 * Server: force-fumble the relic if the local pawn (or current carrier) is holding it.
+	 * Console command: ForceFumbleRelic
+	 */
+	UFUNCTION(Exec, BlueprintCallable, Category = "Breakaway|Cheats")
+	void ForceFumbleRelic();
+
 	/** Widget class to use for hero selection UI */
 	UPROPERTY(EditDefaultsOnly, Category = "Breakaway|Cheats")
 	TSoftClassPtr<UUserWidget> HeroSelectionWidgetClass;

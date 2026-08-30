@@ -3,7 +3,7 @@
 > **Paths / plugin names:** locked policy **I2** — codenames in folders and asset names.  
 > **DisplayName (UI):** Section 3 / [Breakaway hero stats sheet](./Breakaway_Hero_Stats_Sheet.md) / [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) — not older “Spartacus / Morgan Le Fay” marketing names for the slice roster.
 
-**Last reviewed:** August 19, 2026  
+**Last reviewed:** August 27, 2026  
 **Planning hub:** [Planning docs](./README.md)
 
 ## Roster
@@ -53,7 +53,7 @@ Per hero, after verify:
 2. Alona — C++ complete (Step 19)
 3. Korryn (`Hero_Morgan` / Hexweaver) — C++ complete (Step 20)
 4. Rawlins (`Hero_Rawlins` / Gunslinger) — passed (Step 21)
-5. Capstone — **open** (Step 22)
+5. Capstone — **C++ landed** (Step 22); editor PIE open
 
 For more information, see [Project roadmap](./PROJECT_ROADMAP.md).
 

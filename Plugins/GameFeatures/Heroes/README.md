@@ -50,7 +50,7 @@ Codenames / paths: [HERO_CODENAME_MAP.md](../../../AI_Planning/HERO_CODENAME_MAP
 
 ## Current focus
 
-**Step 22 capstone** — fumble-on-damage, staging E2E, four-hero match. All four plugins exist with C++ kits and one buildable each. For remaining work, see [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
+**Step 22 capstone** — fumble-on-damage C++ landed. Enable all four plugins with `Scripts/setup-step22-capstone.mjs`, then PIE staging E2E / four-hero match. See [Project roadmap](../../../AI_Planning/PROJECT_ROADMAP.md).
 
 ## Loader
 

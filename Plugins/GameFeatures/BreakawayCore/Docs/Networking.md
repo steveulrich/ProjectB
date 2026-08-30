@@ -23,7 +23,9 @@ Listen-server 4v4 target; server-authoritative gameplay.
 - Physics: **`URelicMovementReplicationComponent`** — server snapshots, client interpolation
 - Do not enable `AActor::bReplicateMovement` on relic (conflicts with custom component)
 
-**Test checklist:** 200ms latency, rapid pickup/drop/throw, simultaneous goal edge cases.
+**Test checklist:** 200ms latency (`Net PktLag=200`), rapid pickup/drop/throw/fumble, simultaneous goal edge cases.
+
+`URelicMovementReplicationComponent` snap threshold is **600 cm** (covers ~200 ms × throw speed plus physics divergence). Velocity prediction scale is 0.7.
 
 ## Buildable Replication
 

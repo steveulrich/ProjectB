@@ -161,6 +161,13 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void AddHealingDone(int32 Amount);
 
+	/** Server-only: Record a forced fumble (relic dropped because the carrier took damage) */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddForcedFumble();
+
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetForcedFumbles() const { return ForcedFumbles; }
+
 	/** Get damage dealt this match */
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	int32 GetDamageDealt() const { return DamageDealt; }

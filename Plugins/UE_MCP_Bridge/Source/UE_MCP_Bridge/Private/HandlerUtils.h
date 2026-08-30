@@ -5,6 +5,16 @@
 #include "Dom/JsonObject.h"
 #include "UObject/UObjectIterator.h"
 
+// ── UE 5.8 JSON key conversion ───────────────────────────────────────────────
+
+/** FJsonObject::Values keys are UE::FSharedString in UE 5.8+, not FString.
+ *  Convert once per loop before assignment, FJsonValueString, SetStringField, etc. */
+template<typename KeyType>
+inline FString JsonObjectKeyToFString(const KeyType& Key)
+{
+	return FString(Key.ToView());
+}
+
 // ── Quick result builders ────────────────────────────────────────────────────
 
 /** Return an error response: { success: false, error: "..." } */
