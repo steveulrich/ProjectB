@@ -1,5 +1,5 @@
 ---
-description: Optional automated test tiers after C++ or gameplay wiring changes.
+description: Agent-driven compile, error repair, editor restart, and gameplay verification.
 globs:
   - "**/*.cpp"
   - "**/*.h"
@@ -10,11 +10,11 @@ globs:
 
 # Agentic test ladder (ProjectB)
 
-After C++ or match-flow wiring changes, **ask the user to recompile and restart the editor manually**. Do not run Tier 1 as part of agent task completion — it is slow, error-prone (Live Coding conflicts, long UBT runs), and blocks the agent loop.
+After C++ changes, agents run Tier 1, inspect compiler errors, fix relevant failures, and rebuild. Agents may restart the project editor and run the relevant gameplay verification. User authorization for this workflow was established September 5, 2026.
 
-Optional scripted tiers live in `Scripts/Test/` when the user or CI wants them.
+Scripted tiers live in `Scripts/Test/`; Tier 2 and Tier 3 wrappers are currently planned, not implemented.
 
-## Tier 1 — compile gate (optional; user/CI only)
+## Tier 1 — compile gate (agents, users, and CI)
 
 ```powershell
 cd "E:\Unreal Projects\ProjectB\Scripts\Test"
@@ -26,7 +26,7 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 - Path check only: `.\Run-Tier.ps1 -Tier 1 -ValidateOnly`
 - Engine override: `$env:UE_ENGINE_ROOT = 'E:\Github\UnrealEngine'`
 
-**Agent rule:** Do **not** run Tier 1. After C++ edits, tell the user to rebuild (editor closed or Live Coding off) and verify in editor/PIE as needed.
+**Agent rule:** Preserve unsaved work and close this project's editor gracefully before a full rebuild when needed. Do not force-kill editors or discard changes. Inspect existing builds and wait for their process handles rather than launching duplicates. Run builds asynchronously and report meaningful progress. After build success, restart using the resolved engine executable and verify editor/bridge readiness. Follow sandbox escalation requirements; ask the user only when a concrete permission, unsaved-work conflict, or missing decision requires it.
 
 ## Tier 2 / 3 — when applicable (optional)
 
@@ -40,6 +40,6 @@ Full design: `Plugins/GameFeatures/BreakawayCore/Docs/Agent_Testing_Ladder.md`
 ## Reporting
 
 Include in the task summary:
-- Whether C++ changed and user was asked to recompile/restart editor
-- PIE or manual verification results if the user ran them
-- Do not block task completion on Tier 1 exit code
+- Build target, exit code, and relevant errors or remaining blockers
+- Editor restart and PIE/multiplayer results, distinguishing completed checks from pending ones
+- Do not claim C++ verification on a failed or unrun build; compile success alone does not prove gameplay correctness

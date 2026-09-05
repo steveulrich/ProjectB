@@ -13,6 +13,8 @@
 #include "Player/LyraPlayerState.h"
 #include "BwayGameState.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
+#include "Buildable/BwayBuildablePlacementLibrary.h"
+#include "GameFramework/PlayerController.h"
 
 
 const FName ABuildableActor::MeshComponentName = TEXT("MeshComponent");
@@ -26,6 +28,7 @@ ABuildableActor::ABuildableActor()
 
     MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(MeshComponentName);
     RootComponent = MeshComponent;
+    MeshComponent->SetIsReplicated(true);
 }
 
 void ABuildableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -35,6 +38,7 @@ void ABuildableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME(ABuildableActor, bIsDestroyed);
     DOREPLIFETIME(ABuildableActor, bIsActive);
     DOREPLIFETIME(ABuildableActor, CurrentBuildProgress);
+    DOREPLIFETIME(ABuildableActor, ReplicatedVisualMesh);
 }
 
 void ABuildableActor::InitializeAbilitySystem()
@@ -52,9 +56,68 @@ void ABuildableActor::InitializeAbilitySystem()
     }
 }
 
+void ABuildableActor::CommitReplicatedVisualMesh(USkeletalMesh* VisualMesh)
+{
+    if (!HasAuthority() || !VisualMesh)
+    {
+        return;
+    }
+
+    ReplicatedVisualMesh = VisualMesh;
+    OnRep_ReplicatedVisualMesh();
+    ForceNetUpdate();
+}
+
+void ABuildableActor::ApplyReplicatedVisualMeshToComponent()
+{
+    if (MeshComponent && ReplicatedVisualMesh)
+    {
+        MeshComponent->SetSkeletalMesh(ReplicatedVisualMesh);
+    }
+}
+
+void ABuildableActor::OnRep_ReplicatedVisualMesh()
+{
+    ApplyReplicatedVisualMeshToComponent();
+}
+
+void ABuildableActor::OnRep_Owner()
+{
+    Super::OnRep_Owner();
+    TryResolveMeshVisual();
+}
+
+void ABuildableActor::TryResolveMeshVisual()
+{
+    if (ReplicatedVisualMesh)
+    {
+        ApplyReplicatedVisualMeshToComponent();
+        return;
+    }
+
+    if (!MeshComponent || MeshComponent->GetSkeletalMeshAsset())
+    {
+        return;
+    }
+
+    APlayerController* OwningPC = Cast<APlayerController>(GetOwner());
+    if (!OwningPC)
+    {
+        return;
+    }
+
+    if (UBwayBuildableDataAsset* BuildableData = UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(this, OwningPC))
+    {
+        const int32 CosmeticIndex = UBwayBuildablePlacementLibrary::GetBuildableCosmeticIndexForPlayer(OwningPC);
+        UBwayBuildablePlacementLibrary::ApplyResolvedBuildableMesh(this, BuildableData, CosmeticIndex);
+    }
+}
+
 void ABuildableActor::BeginPlay()
 {
     Super::BeginPlay();
+
+    TryResolveMeshVisual();
 
     if (HasAuthority())
     {
@@ -140,6 +203,7 @@ void ABuildableActor::FinishBuilding()
 
 void ABuildableActor::OnRep_BuildState()
 {
+    TryResolveMeshVisual();
     SetCanBeDamaged(bIsActive || !bInvulnerableDuringBuild);
 }
 

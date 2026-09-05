@@ -121,9 +121,24 @@ void UBwayGameplayAbility_PlaceBuildable::ActivateAbility(const FGameplayAbility
 	}
 	else
 	{
-		UE_LOG(LogBwayPlaceBuildable, Error, TEXT("PlaceBuildable BeginSpawningActor failed for %s"), *GetNameSafe(TargetActorClass));
+		const AGameplayAbilityTargetActor* TargetDefaults = TargetActorClass->GetDefaultObject<AGameplayAbilityTargetActor>();
+		const bool bExpectedTargetActor = ActorInfo->IsLocallyControlled()
+			|| TargetDefaults->GetIsReplicated() || TargetDefaults->ShouldProduceTargetDataOnServer;
+		if (bExpectedTargetActor)
+		{
+			UE_LOG(LogBwayPlaceBuildable, Error, TEXT("PlaceBuildable BeginSpawningActor failed for %s"), *GetNameSafe(TargetActorClass));
+			EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+			return;
+		}
+		// The server for a remote player waits for GAS target data without a local preview actor.
 	}
 
+	// RegisterTargetDataCallbacks in BeginSpawningActor may consume an already-arrived
+	// remote submission synchronously and end this ability.
+	if (!IsActive())
+	{
+		return;
+	}
 	WaitTask->ReadyForActivation();
 
 	if (ABwayTargetActor_ActorPlacementFace* PlacementTargetActor = Cast<ABwayTargetActor_ActorPlacementFace>(SpawnedTargetActor))
@@ -215,7 +230,8 @@ void UBwayGameplayAbility_PlaceBuildable::OnTargetDataValid(const FGameplayAbili
 	const FGameplayAbilityActivationInfo ActivationInfo = GetCurrentActivationInfo();
 	bool bShouldEndAbility = false;
 
-	if (Data.IsValid(0))
+	if (Data.Num() == 1 && Data.IsValid(0)
+		&& Data.Get(0)->GetScriptStruct() == FGameplayAbilityTargetData_SingleTargetHit::StaticStruct())
 	{
 		if (const FGameplayAbilityTargetData_SingleTargetHit* HitData = static_cast<const FGameplayAbilityTargetData_SingleTargetHit*>(Data.Get(0)))
 		{
@@ -248,11 +264,10 @@ void UBwayGameplayAbility_PlaceBuildable::OnTargetDataValid(const FGameplayAbili
 		}
 	}
 
-	if (bShouldEndAbility)
-	{
-		ActiveWaitTargetDataTask = nullptr;
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
-	}
+	// UserConfirmed targeting ends its task after this callback, including on rejection.
+	// End the ability as well so a failed commit/spawn cannot retain placement tags or input bindings.
+	ActiveWaitTargetDataTask = nullptr;
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, !bShouldEndAbility);
 }
 
 void UBwayGameplayAbility_PlaceBuildable::OnTargetDataCancelled(const FGameplayAbilityTargetDataHandle& Data)

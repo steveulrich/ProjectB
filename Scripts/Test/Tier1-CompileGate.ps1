@@ -74,10 +74,14 @@ $buildProcess = Start-Process `
     -FilePath $Engine.BuildBat `
     -ArgumentList $buildArgs `
     -NoNewWindow `
-    -Wait `
     -PassThru `
     -RedirectStandardOutput $LogFile `
     -RedirectStandardError "${LogFile}.err"
+
+# Wait on this build process rather than Start-Process -Wait's process-tree job.
+# Under an agent host, the tree wait can remain blocked after UBT has exited.
+$buildProcess.WaitForExit()
+$buildProcess.Refresh()
 
 $stderrFile = "${LogFile}.err"
 if (Test-Path -LiteralPath $stderrFile) {

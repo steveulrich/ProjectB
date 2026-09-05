@@ -17,6 +17,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Buildable/BuildableBase.h"
 #include "Economy/BwayGoldAttributeSet.h"
+#include "Economy/BwayGameplayEffect_PassiveGold.h"
 #include "GameState/BwayScoringComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
@@ -1621,7 +1622,7 @@ void UBwayRoundManagementComponent::ApplyGoldDeltaToPlayerState(APlayerState* Pl
 
 FActiveGameplayEffectHandle UBwayRoundManagementComponent::ApplyPassiveGoldIncomeToPlayerState(APlayerState* PlayerState) const
 {
-	if (!PlayerState || PassiveGoldPerSecond <= 0.0f)
+	if (GetOwnerRole() != ROLE_Authority || !PlayerState || PassiveGoldPerSecond <= 0.0f)
 	{
 		return FActiveGameplayEffectHandle();
 	}
@@ -1632,17 +1633,16 @@ FActiveGameplayEffectHandle UBwayRoundManagementComponent::ApplyPassiveGoldIncom
 		return FActiveGameplayEffectHandle();
 	}
 
-	UGameplayEffect* PassiveEffect = NewObject<UGameplayEffect>(GetTransientPackage(), NAME_None);
-	PassiveEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
-	PassiveEffect->Period = FScalableFloat(1.0f);
-	PassiveEffect->bExecutePeriodicEffectOnApplication = false;
-
-	FGameplayModifierInfo& Modifier = PassiveEffect->Modifiers.AddDefaulted_GetRef();
-	Modifier.Attribute = UBwayGoldAttributeSet::GetCurrentGoldAttribute();
-	Modifier.ModifierOp = EGameplayModOp::Additive;
-	Modifier.ModifierMagnitude = FScalableFloat(PassiveGoldPerSecond);
-
-	return ASC->ApplyGameplayEffectToSelf(PassiveEffect, 1.0f, ASC->MakeEffectContext());
+	// Active effects replicate their definition; a transient server-only definition
+	// cannot be resolved by clients. Keep the rate on the spec, not the shared CDO.
+	FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(
+		UBwayGameplayEffect_PassiveGold::StaticClass(), 1.0f, ASC->MakeEffectContext());
+	if (!Spec.IsValid())
+	{
+		return FActiveGameplayEffectHandle();
+	}
+	Spec.Data->SetSetByCallerMagnitude(UBwayGameplayEffect_PassiveGold::IncomeMagnitudeName, PassiveGoldPerSecond);
+	return ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 }
 
 void UBwayRoundManagementComponent::RemovePassiveGoldIncome()

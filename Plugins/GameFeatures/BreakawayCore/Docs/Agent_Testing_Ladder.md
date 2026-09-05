@@ -3,7 +3,7 @@
 Automated verification for Cursor agents, mapped to [CoreLoop_Implementation_Plan.md](./CoreLoop_Implementation_Plan.md). Tiers increase in fidelity and runtime cost.
 
 ```
-Tier 1  Compile gate          ~2–15 min   optional (user/CI); agents do not run
+Tier 1  Compile gate          ~2–15 min   agents run after C++ changes
 Tier 2  Standalone log smoke   ~30–90 s    packaging / experience regressions
 Tier 3  CQTest (editor)        ~2–5 min    per core-loop sub-step (11-1, …)
 Tier 4  CI                     scheduled   PR compile + nightly smoke + step tests
@@ -30,7 +30,11 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 .\Run-Tier.ps1 -Tier 1                  # full compile
 ```
 
-**Agent rule:** Do **not** run Tier 1. After C++ edits, ask the user to recompile and restart the editor manually. Tier 1 remains available for local dev and CI when needed.
+**Agent rule (updated September 5, 2026):** Agents may compile, fix compiler errors, and restart the project editor as part of authorized development. Run Tier 1 after C++ changes and inspect its exit code and logs. Fix relevant errors and rerun until the build succeeds or a concrete external blocker remains. A successful compile does not replace the relevant PIE or multiplayer checks.
+
+Before building, inspect running editor/build processes. Preserve unsaved work, stop PIE, and close this project's editor gracefully when a full rebuild/restart is needed, especially for reflected header/class changes. Do not force-kill editors or discard unsaved changes. Wait for an existing build instead of starting duplicates. Use asynchronous process handles and report meaningful progress during long builds.
+
+After a successful build, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute ProjectB.uproject path and verify editor/bridge readiness before testing. The MCP launcher may not discover a source-built engine; use the engine resolver and launch the verified executable directly when needed. Respect sandbox escalation requirements. Ask the user only for missing decisions, unsaved-work conflicts, or permissions the available tools cannot satisfy.
 
 **Notes:**
 - Target is `LyraEditor`, not `ProjectBEditor` — Lyra keeps native target names.
@@ -165,7 +169,7 @@ Self-hosted Windows runners are typical for UE CI (long compile, large disk).
 
 | Change type | Suggested verification |
 |-------------|----------------------|
-| C++ only (BreakawayCoreRuntime, LyraGame) | User recompile + editor/PIE smoke |
+| C++ only (BreakawayCoreRuntime, LyraGame) | Agent compile gate + editor/PIE smoke |
 | `.ini` asset manager / cook paths | Recompile + **2** when package exists |
 | Experience / match-flow assets | PIE + optional **3** (`11-1` filter) |
 | Core-loop sub-step claim (“11-2 passes”) | PIE checklist + optional **3** (that step’s filter) |

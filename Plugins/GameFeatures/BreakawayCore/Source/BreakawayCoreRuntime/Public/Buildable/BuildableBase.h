@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Engine/SkeletalMesh.h"
 #include "BuildableBase.generated.h"
 
 /**
@@ -36,12 +37,16 @@ public:
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     virtual void Tick(float DeltaTime) override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    virtual void OnRep_Owner() override;
 
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buildable")
     void InitializeBuildable(AController* InOwningPlayerController, int32 InTeamId);
 
     UFUNCTION(BlueprintPure, Category = "Buildable")
     bool ShouldPersistBetweenRounds() const { return bPersistsBetweenRounds; }
+
+    /** Authority: publish resolved mesh so every client applies the same skeletal mesh asset. */
+    void CommitReplicatedVisualMesh(USkeletalMesh* VisualMesh);
     
 protected:
     /** Root Component is Skeletal Mesh */
@@ -71,12 +76,24 @@ protected:
     UPROPERTY(ReplicatedUsing = OnRep_BuildState, BlueprintReadOnly, Category = "Buildable|State")
     float CurrentBuildProgress = 0.0f;
 
+    /** Server-authoritative mesh for all clients (BP default or data-asset resolve). */
+    UPROPERTY(ReplicatedUsing = OnRep_ReplicatedVisualMesh)
+    TObjectPtr<USkeletalMesh> ReplicatedVisualMesh;
+
     UFUNCTION()
     void OnRep_BuildState();
+
+    UFUNCTION()
+    void OnRep_ReplicatedVisualMesh();
 
     FTimerHandle BuildTimerHandle;
 
     virtual void FinishBuilding();
+
+    void ApplyReplicatedVisualMeshToComponent();
+
+    /** Fallback when replicated mesh or owner arrives late on clients. */
+    void TryResolveMeshVisual();
 
 };
 

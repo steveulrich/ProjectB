@@ -23,6 +23,8 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 
 Exit code **0** = pass. Non-zero = fail; read the log path printed by the script.
 
+Agents may run the build, fix compiler errors, and restart the project editor. Preserve unsaved work and close the editor gracefully when a full rebuild is required. Wait for existing build processes; do not start duplicates. After success, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute `.uproject` path, verify bridge readiness, and run the relevant PIE checks. Follow sandbox permissions and report build results separately from gameplay results.
+
 ## Engine resolution
 
 Set `UE_ENGINE_ROOT` if auto-detection fails:

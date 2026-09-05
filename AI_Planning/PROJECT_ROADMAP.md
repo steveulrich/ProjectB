@@ -2,12 +2,24 @@
 
 Current priorities for the Capture-the-Relic vertical slice.
 
-**Last reviewed:** August 27, 2026  
+**Last reviewed:** September 5, 2026
 **Scope:** [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)  
 **Step-by-step checklists:** [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)  
 **Doc hub:** [Planning docs](./README.md)
 
 This file is the status and priority list. The core loop plan is the implementation checklist. A larger project plan is expected later; until then, use this page for “what next.”
+
+## September 5 priority update
+
+The owner requires original Breakaway system parity with fully integrated placeholder art, LAN sessions, and a complete front-end flow. See the updated slice definition for accepted direction and unresolved historical scope conflicts. Older “complete” labels below describe prior implementation milestones, not proof of the expanded completion bar.
+
+1. Reconcile the final public alpha system inventory against existing implementations, especially earlier earn-only gold/buildable exclusions. Record unknowns rather than inventing parity requirements or mixing alpha versions.
+2. Verify the compiled passive-gold and placement lifecycle fixes on the owner's four-player listen-server setup (one PIE player plus three separate clients).
+3. Verify real LAN host/find/join and selection → match → results → front-end flow. The current LyraMatchmakingSubsystem includes mock queue behavior; that is not evidence of real LAN discovery/join completion.
+4. Audit presentation integration: animation, hit/death feedback, effects, audio, HUD, buildable visibility, and documented asset replacement contracts. Placeholder art does not excuse unfinished integration.
+5. Close the remaining capstone, Dorado, latency, and packaged LAN gates with runtime evidence.
+
+The owner identified the other task as “Vertical Slice Implementation” and authorized treating its existing changes as complete and committing them. Agent-driven compile/error repair/editor restart is now authorized and documented in Agent_Testing_Ladder.md. LyraEditor Win64 Development compiled successfully on September 5; that build does not establish gameplay parity.
 
 ## Current status
 

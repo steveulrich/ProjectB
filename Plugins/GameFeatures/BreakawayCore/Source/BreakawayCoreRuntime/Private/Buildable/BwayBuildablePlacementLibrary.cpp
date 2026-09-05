@@ -171,14 +171,24 @@ void UBwayBuildablePlacementLibrary::ApplyResolvedBuildableMesh(ABuildableActor*
 	}
 
 	USkeletalMeshComponent* MeshComponent = Buildable->GetMesh();
-	if (!MeshComponent || MeshComponent->GetSkeletalMeshAsset() != nullptr)
+	if (!MeshComponent)
 	{
 		return;
 	}
 
-	if (USkeletalMesh* ResolvedMesh = BuildableData->ResolvePreviewMesh(CosmeticIndex))
+	USkeletalMesh* MeshToApply = MeshComponent->GetSkeletalMeshAsset();
+	if (!MeshToApply)
 	{
-		MeshComponent->SetSkeletalMesh(ResolvedMesh);
+		MeshToApply = BuildableData->ResolvePreviewMesh(CosmeticIndex);
+		if (MeshToApply)
+		{
+			MeshComponent->SetSkeletalMesh(MeshToApply);
+		}
+	}
+
+	if (MeshToApply && Buildable->HasAuthority())
+	{
+		Buildable->CommitReplicatedVisualMesh(MeshToApply);
 	}
 }
 
