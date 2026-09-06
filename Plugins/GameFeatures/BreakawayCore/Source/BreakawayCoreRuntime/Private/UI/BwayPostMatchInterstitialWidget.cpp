@@ -11,6 +11,7 @@
 UBwayPostMatchInterstitialWidget::UBwayPostMatchInterstitialWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	SetIsFocusable(true);
 }
 
 void UBwayPostMatchInterstitialWidget::ApplySummaryData(FBwayPostMatchSummaryData SummaryData)

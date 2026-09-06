@@ -380,17 +380,22 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 		return;
 	}
 
-	if (UBwayResultsScreenWidget* ResultsScreen = Cast<UBwayResultsScreenWidget>(ResultsWidget))
-	{
-		ResultsScreen->ApplyAuthoritativeResults(WinningTeam, Team1Score, Team2Score, TotalRounds);
-	}
-
 	ResultsWidget->AddToViewport(200);
 
 	SetShowMouseCursor(true);
 	FInputModeUIOnly InputMode;
-	InputMode.SetWidgetToFocus(ResultsWidget->TakeWidget());
 	SetInputMode(InputMode);
+
+	// The collapsed orchestration widget is not an input target. Its visible
+	// interstitial and breakdown take focus after their data and controls exist.
+	if (UBwayResultsScreenWidget* ResultsScreen = Cast<UBwayResultsScreenWidget>(ResultsWidget))
+	{
+		ResultsScreen->ApplyAuthoritativeResults(WinningTeam, Team1Score, Team2Score, TotalRounds);
+	}
+	else if (ResultsWidget->IsFocusable())
+	{
+		ResultsWidget->SetUserFocus(this);
+	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: Results screen shown — Team %d wins (%d-%d, %d rounds)"),
 		WinningTeam + 1, Team1Score, Team2Score, TotalRounds);
@@ -417,4 +422,3 @@ void ABwayPlayerController::Client_DismissResultsScreen_Implementation()
 
 	RestoreGameplayInputMode();
 }
-

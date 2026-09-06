@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayMatchBreakdownWidget.h"
+#include "CommonButtonBase.h"
 
 #include "Stats/BwayMatchStatsLibrary.h"
 #include "UI/BwayMatchHUDWidgetBase.h"
@@ -10,6 +11,16 @@
 UBwayMatchBreakdownWidget::UBwayMatchBreakdownWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	SetIsFocusable(true);
+}
+
+UWidget* UBwayMatchBreakdownWidget::NativeGetDesiredFocusTarget() const
+{
+	if (Btn_ReturnToLobby && Btn_ReturnToLobby->GetIsEnabled() && Btn_ReturnToLobby->IsVisible())
+	{
+		return Btn_ReturnToLobby;
+	}
+	return Super::NativeGetDesiredFocusTarget();
 }
 
 void UBwayMatchBreakdownWidget::ApplyBreakdownData(FBwayPostMatchSummaryData SummaryData)

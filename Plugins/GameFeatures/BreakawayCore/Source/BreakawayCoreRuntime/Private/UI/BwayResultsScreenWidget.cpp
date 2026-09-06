@@ -121,6 +121,8 @@ void UBwayResultsScreenWidget::ShowInterstitial()
 	}
 
 	InterstitialWidget->ApplySummaryData(CachedSummary);
+	InterstitialWidget->ActivateWidget();
+	InterstitialWidget->SetUserFocus(GetOwningPlayer());
 }
 
 void UBwayResultsScreenWidget::AdvanceToBreakdown()
@@ -132,6 +134,7 @@ void UBwayResultsScreenWidget::AdvanceToBreakdown()
 
 	if (InterstitialWidget)
 	{
+		InterstitialWidget->DeactivateWidget();
 		InterstitialWidget->RemoveFromParent();
 		InterstitialWidget = nullptr;
 	}
@@ -162,6 +165,9 @@ void UBwayResultsScreenWidget::ShowBreakdown()
 	}
 
 	BreakdownWidget->ApplyBreakdownData(CachedSummary);
+	BreakdownWidget->ActivateWidget();
+	UWidget* FocusTarget = BreakdownWidget->GetDesiredFocusTarget();
+	(FocusTarget ? FocusTarget : BreakdownWidget.Get())->SetUserFocus(GetOwningPlayer());
 }
 
 void UBwayResultsScreenWidget::CleanupChildWidgets()
@@ -173,12 +179,14 @@ void UBwayResultsScreenWidget::CleanupChildWidgets()
 
 	if (InterstitialWidget)
 	{
+		InterstitialWidget->DeactivateWidget();
 		InterstitialWidget->RemoveFromParent();
 		InterstitialWidget = nullptr;
 	}
 
 	if (BreakdownWidget)
 	{
+		BreakdownWidget->DeactivateWidget();
 		BreakdownWidget->OnReturnToLobbyRequested.RemoveDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownReturnToLobby);
 		BreakdownWidget->OnPlayAgainRequested.RemoveDynamic(this, &UBwayResultsScreenWidget::HandleBreakdownPlayAgain);
 		BreakdownWidget->RemoveFromParent();

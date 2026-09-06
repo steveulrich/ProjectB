@@ -9,6 +9,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPostMatchBreakdownActionRequested);
 
+class UCommonButtonBase;
+
 /**
  * Match breakdown — horizontal per-player columns (Step 16).
  * Blueprint child: WBP_BW_MatchBreakdown
@@ -46,6 +48,11 @@ public:
 	FOnPostMatchBreakdownActionRequested OnPlayAgainRequested;
 
 protected:
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "PostMatch|Widgets")
+	TObjectPtr<UCommonButtonBase> Btn_ReturnToLobby;
+
 	UFUNCTION(BlueprintImplementableEvent, Category = "PostMatch|Events")
 	void OnBreakdownReady(const FBwayPostMatchSummaryData& SummaryData);
 
