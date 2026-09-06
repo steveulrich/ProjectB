@@ -2,16 +2,17 @@
 
 ## Current candidate
 
-- Project commit: `e558167a` (September 6, 2026).
+- Project base: `e405d746` (September 6, 2026), plus the hero feature type registration in `DefaultGame.ini` and the uncommitted `Server_RequestReturnToFrontEnd` PostMatch guard. The exact source delta is saved in `Saved/Logs/codex-packaged-LAN-20260906-04-project.patch`; this candidate is not a clean-commit release.
 - Engine: local UE 5.8.1 source tree, `E:/Github/UnrealEngine`, HEAD `71fe36aac5a8df5ccd66c763ffc902b29b6a9c43`. Local engine modifications must also be captured before accepting the artifact; HEAD alone does not establish reproducibility.
 - Platform/configuration: Win64 Development, `LyraGame`, listen server and clients.
 - Pipeline: AutomationTool BuildCookRun, build, cook by the book, stage, Pak.
-- Stage: `Saved/StagedBuilds/LAN-20260906`; no release archive or deployment yet.
-- Logs: `Saved/Logs/codex-lan-package-20260906-closed-editor.log` and the referenced UBT log.
+- Stage: `Saved/StagedBuilds/LAN-20260906-04/Windows`; launch `LyraGame.exe`. The actual game binary is `ProjectB/Binaries/Win64/LyraGame.exe`. No release archive or deployment yet.
+- Logs: `Saved/Logs/codex-lan-package-20260906-feature-types-final.log` and the referenced UBT log.
+- SHA-256 inventory: `Saved/Logs/codex-packaged-LAN-20260906-04-sha256.csv`, covering every staged file, including binaries, Pak/IoStore files, symbols, configuration, and manifests. The earlier `-02` inventory is retained separately.
 - Existing cook roots: frontend, DevMap, Dorado, and the configured BreakawayCore content directory. No new broad cook inclusion was added.
-- Status: standalone build passed; cook running; no package or runtime acceptance claimed.
+- Status: build, cook, and stage passed with AutomationTool exit code 0. Candidate `-04` passed cold-load hero registration, activation, manual selection/lock, and travel checks. Two-process frontend host/discover/join and shop smoke checks passed on candidate `-02`; they have not been repeated on `-04`. Full multiplayer acceptance remains open.
 
-The first cook reported a missing `Alona` asset domain. Engine `AssetReferencingDomains.cpp` derives plugin domains from `IPlugin::GetName`; the registered plugin is `Hero_Alona`. The project reference rule has been corrected to that identifier. The running cook loaded the old rule, so a fresh cook must verify this correction. BF-069 records prevention. Engine tracked changes and status were captured in `Saved/Logs/codex-package-engine-tracked.patch` and `codex-package-engine-status.txt`; untracked engine content is not included in that patch.
+The first cook reported a missing `Alona` asset domain. Engine `AssetReferencingDomains.cpp` derives plugin domains from `IPlugin::GetName`; the registered plugin is `Hero_Alona`. The corrected identifier passed the fresh cook. BF-069 records prevention. Engine tracked changes and status were captured in `Saved/Logs/codex-package-engine-tracked.patch` and `codex-package-engine-status.txt`; untracked engine content is not included in that patch.
 
 Command issued with the editor closed:
 
@@ -21,16 +22,36 @@ Command issued with the editor closed:
   BuildCookRun '-project=E:/Unreal Projects/ProjectB/ProjectB.uproject' `
   -target=LyraGame -platform=Win64 -clientconfig=Development `
   -build -cook -stage -pak -utf8output -unattended `
-  '-stagingdirectory=E:/Unreal Projects/ProjectB/Saved/StagedBuilds/LAN-20260906'
+  '-stagingdirectory=E:/Unreal Projects/ProjectB/Saved/StagedBuilds/LAN-20260906-04'
 ```
-
-## Acceptance evidence required
 
 ## Cook repair evidence (September 6)
 
 The first cook exited with code 25 after the standalone build passed. Its terminal errors were the stale Alona domain, incompatible TopDownArena movement override, and failed relic redirector import. The domain correction is committed separately. A full asset-registry referencer scan established that `B_Bway_Ball_Interactable` had no referencers and that `BP_Bway_Relic` was referenced only by that obsolete redirector; both packages contained only redirectors leading to a deleted asset. Those two dead packages were removed. The live relic remains `/BreakawayCore/GameModes/BallMode/Relic/BP_BW_RelicActor`, referenced by game state, spawn data, and the grant pad.
 
-The shared hero parent now requires BwayCharacterMovementComponent. TopDownArenaMovementComponent derives from that class and declares its BreakawayCore module/plugin dependency, preserving its existing speed override. The editor build passed (`Saved/Logs/codex-cook-asset-repair-build.log`). After restart, B_Hero_Arena compiled, its movement default object had the correct class, the live relic loaded, and the removed redirectors were absent from the registry (`Saved/Logs/codex-cook-assets-editor-verified.log`). BF-072 records prevention. A fresh cook is still required; these editor checks do not prove packaging success.
+The shared hero parent now requires BwayCharacterMovementComponent. TopDownArenaMovementComponent derives from that class and declares its BreakawayCore module/plugin dependency, preserving its existing speed override. The editor build passed (`Saved/Logs/codex-cook-asset-repair-build.log`). After restart, B_Hero_Arena compiled, its movement default object had the correct class, the live relic loaded, and the removed redirectors were absent from the registry (`Saved/Logs/codex-cook-assets-editor-verified.log`). BF-072 records prevention. The subsequent fresh cook and stage passed; content warnings still require review.
+
+## Packaged smoke evidence (September 6, 04:22–04:32 UTC)
+
+The editor was closed. Candidate `-02` tests used two separate packaged game processes on the source machine, controlled through visible menus with Computer Use.
+
+- Host: **Play Lyra → Start a game → Network: LAN → Local / Listen server + bots** created a session and opened hero selection.
+- Client: **Play Lyra → Browse → Refresh search** discovered that session with 1/8 players and 63 ms ping. Selecting its row joined hero selection. Both peers travelled into Dorado after selection timed out. This does not verify manual hero locking; the attempted hero click overlapped timeout.
+- The host log reports a final bot target and count of six with the two humans. Team balance still needs an explicit roster check.
+- Client **B** opened the native upgrade shop. At 59 gold, the 75-gold purchase was disabled. In round two, a physical button click produced **Purchasing…**, followed by **Purchase complete**, owned attack rank 1/4, and upgrades 1/4. Passive gold continued during the observations, so screenshots alone do not establish the exact debit.
+- Evidence: `Saved/Logs/codex-packaged-host2-smoke.log` and `codex-packaged-client1-smoke.log`. Earlier single-host run: `codex-packaged-frontend-smoke.log`.
+
+Polish failures are visible: Lyra/sample and development menu entries, clipped labels, hero-selection TODO text and blank panels, duplicate neutral HUD labels, an in-match “Waiting for additional players” banner, floating hero mesh alignment, and missing Alona animation setup. Startup also records unprecached PSO hitches and invalid `BwayGameFeatureData` primary asset IDs. These are open issues, not acceptance passes.
+
+Initial overlapping game windows exhibited button nonresponse while console input worked. Closing the first process restored the remaining menu. Relaunching the other window at a separate position allowed both menus and the shop to work. Keep windows separated for automation; the cause is not yet established as a game defect.
+
+## Hero feature registration verification (04:38–04:39 UTC)
+
+The hero definitions report primary type `BwayGameFeatureData`. `UAssetManager::RegisterSpecificPrimaryAsset` rejects unknown types, while project settings previously registered only `GameFeatureData`. The fix registers the existing subclass type with four explicit asset paths and the engine GameFeatureData base class. IDs and gameplay state remain unchanged; the Game Features subsystem continues to own activation and unloading.
+
+Candidate `-04` passed a fresh build/cook/stage. A cold packaged launch with `AssetManager.DumpTypeSummary,bway.Test.HostLAN` reported exactly four feature definitions. All four hero plugins reached Active after travel, with no invalid BwayGameFeatureData ID warnings or scan conflicts. The host command is a native fixture, not frontend click evidence. Physical clicks then selected Korryn and locked the selection; logs confirm Hexweaver data on the human PlayerState and Korryn on the spawned match pawn. Evidence: `Saved/Logs/codex-packaged-feature-types-verified.log`. BF-073 records prevention.
+
+The first scan attempt used broad hero roots and encountered ignored conflicts with unrelated primary data types; explicit paths removed those conflicts. Zen briefly disconnected during staging and the existing retry recovered; both staging attempts ultimately exited successfully.
 
 ## Remaining acceptance checks
 
