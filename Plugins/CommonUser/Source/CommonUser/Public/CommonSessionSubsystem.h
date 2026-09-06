@@ -345,6 +345,10 @@ public:
 
 	// Config settings, these can overridden in child classes or config files
 
+	/** Default transport for factory-created requests; playlists may override hosting mode. */
+	UPROPERTY(Config)
+	ECommonSessionOnlineMode DefaultOnlineMode = ECommonSessionOnlineMode::Online;
+
 	/** Sets the default value of bUseLobbies for session search and host requests */
 	UPROPERTY(Config)
 	bool bUseLobbiesDefault = true;

@@ -434,12 +434,12 @@ UCommonSession_HostSessionRequest* UCommonSessionSubsystem::CreateOnlineHostSess
 	/** Game-specific subsystems can override this or you can modify after creation */
 
 	UCommonSession_HostSessionRequest* NewRequest = NewObject<UCommonSession_HostSessionRequest>(this);
-	NewRequest->OnlineMode = ECommonSessionOnlineMode::Online;
-	NewRequest->bUseLobbies = bUseLobbiesDefault;
-	NewRequest->bUseLobbiesVoiceChat = bUseLobbiesVoiceChatDefault;
+	NewRequest->OnlineMode = DefaultOnlineMode;
+	NewRequest->bUseLobbies = bUseLobbiesDefault && DefaultOnlineMode == ECommonSessionOnlineMode::Online;
+	NewRequest->bUseLobbiesVoiceChat = bUseLobbiesVoiceChatDefault && NewRequest->bUseLobbies;
 
 	// We enable presence by default in the primary session used for matchmaking. For online systems that care about presence, only the primary session should have presence enabled
-	NewRequest->bUsePresence = !IsRunningDedicatedServer();
+	NewRequest->bUsePresence = DefaultOnlineMode == ECommonSessionOnlineMode::Online && !IsRunningDedicatedServer();
 
 	return NewRequest;
 }
@@ -449,9 +449,9 @@ UCommonSession_SearchSessionRequest* UCommonSessionSubsystem::CreateOnlineSearch
 	/** Game-specific subsystems can override this or you can modify after creation */
 
 	UCommonSession_SearchSessionRequest* NewRequest = NewObject<UCommonSession_SearchSessionRequest>(this);
-	NewRequest->OnlineMode = ECommonSessionOnlineMode::Online;
+	NewRequest->OnlineMode = DefaultOnlineMode;
 
-	NewRequest->bUseLobbies = bUseLobbiesDefault;
+	NewRequest->bUseLobbies = bUseLobbiesDefault && DefaultOnlineMode == ECommonSessionOnlineMode::Online;
 
 	return NewRequest;
 }
@@ -893,10 +893,12 @@ void UCommonSessionSubsystem::QuickPlaySession(APlayerController* JoiningOrHosti
 
 	// We enable presence by default on the primary session used for matchmaking. For online systems that care about presence, only the primary session should have presence enabled
 
-	HostRequestPtr->bUseLobbies = bUseLobbiesDefault;
-	HostRequestPtr->bUseLobbiesVoiceChat = bUseLobbiesVoiceChatDefault;
-	HostRequestPtr->bUsePresence = true;
-	QuickPlayRequest->bUseLobbies = bUseLobbiesDefault;
+	const bool bOnlineQuickPlay = HostRequestPtr->OnlineMode == ECommonSessionOnlineMode::Online;
+	QuickPlayRequest->OnlineMode = HostRequestPtr->OnlineMode;
+	HostRequestPtr->bUseLobbies = bUseLobbiesDefault && bOnlineQuickPlay;
+	HostRequestPtr->bUseLobbiesVoiceChat = bUseLobbiesVoiceChatDefault && HostRequestPtr->bUseLobbies;
+	HostRequestPtr->bUsePresence = bOnlineQuickPlay;
+	QuickPlayRequest->bUseLobbies = HostRequestPtr->bUseLobbies;
 
 	NotifySessionInformationUpdated(ECommonSessionInformationState::Matchmaking);
 	FindSessionsInternal(JoiningOrHostingPlayer, CreateQuickPlaySearchSettings(HostRequest, QuickPlayRequest));

@@ -111,13 +111,13 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 
 void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (bPhaseActive)
+	// World teardown is not successful selection completion. Completing here can
+	// spawn pawns or initiate ServerTravel while PIE/shutdown destroys the world.
+	bPhaseActive = false;
+	if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
 	{
-		EndHeroSelectionPhase();
+		Manager->OnAllPlayersReady.RemoveDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
 	}
-
-
-
 	Super::EndPlay(EndPlayReason);
 }
 

@@ -143,14 +143,9 @@ FString BuildOptionsStringFromMap(const TMap<FString, FString>& OptionsMap)
 	FString Result;
 	for (const TPair<FString, FString>& Pair : OptionsMap)
 	{
-		if (!Result.IsEmpty())
-		{
-			Result += TEXT("&");
-		}
-		else
-		{
-			Result += TEXT("?");
-		}
+		// Engine travel and UGameplayStatics option readers require '?' per option.
+		// Accept '&' on input for convenience, but never write it into OptionsString.
+		Result += TEXT("?");
 
 		Result += FString::Printf(TEXT("%s=%s"), *Pair.Key, *Pair.Value);
 	}
@@ -170,37 +165,6 @@ bool TryFindOptionInSource(const FNamedOptionSource& Source, const FString& Key,
 
 	return false;
 }
-
-#if WITH_EDITOR
-UWorld* FindPieAuthorityWorld()
-{
-	if (!GEngine)
-	{
-		return nullptr;
-	}
-
-	UWorld* BestWorld = nullptr;
-	for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
-	{
-		if (WorldContext.WorldType != EWorldType::PIE || !WorldContext.World())
-		{
-			continue;
-		}
-
-		if (WorldContext.RunAsDedicated)
-		{
-			return WorldContext.World();
-		}
-
-		if (!BestWorld || WorldContext.World()->GetNetMode() < BestWorld->GetNetMode())
-		{
-			BestWorld = WorldContext.World();
-		}
-	}
-
-	return BestWorld;
-}
-#endif
 
 void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOptionSource>& OutSources)
 {
@@ -236,48 +200,22 @@ void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOp
 		AddSourceIfNonEmpty(OutSources, TEXT("Editor.AdditionalLaunchParameters"), NormalizeOptionsFragment(PlaySettings->AdditionalLaunchParameters));
 	}
 
-	if (GEngine)
-	{
-		if (UWorld* AuthorityPieWorld = FindPieAuthorityWorld())
-		{
-			if (const FWorldContext* AuthorityContext = GEngine->GetWorldContextFromWorld(AuthorityPieWorld))
-			{
-				AddSourceIfNonEmpty(OutSources, TEXT("PIE.LastURL[Authority]"), AuthorityContext->LastURL.ToString());
-			}
-		}
-
-		for (const FWorldContext& WorldContext : GEngine->GetWorldContexts())
-		{
-			if (WorldContext.WorldType != EWorldType::PIE || !WorldContext.World())
-			{
-				continue;
-			}
-
-			const FString PieLastUrl = WorldContext.LastURL.ToString();
-			if (PieLastUrl.IsEmpty())
-			{
-				continue;
-			}
-
-			const FString Label = FString::Printf(
-				TEXT("PIE.LastURL[%s]"),
-				WorldContext.World() == World ? TEXT("Current") : *WorldContext.World()->GetName());
-			AddSourceIfNonEmpty(OutSources, Label, PieLastUrl);
-		}
-	}
 #endif
 
 	if (World)
 	{
+		AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
 		if (GEngine)
 		{
 			if (const FWorldContext* WorldContext = GEngine->GetWorldContextFromWorld(World))
 			{
-				AddSourceIfNonEmpty(OutSources, TEXT("WorldContext.LastURL"), WorldContext->LastURL.ToString());
+				// LastURL can still describe the source map during seamless travel.
+				if (WorldContext->LastURL.Map == World->URL.Map)
+				{
+					AddSourceIfNonEmpty(OutSources, TEXT("WorldContext.LastURL"), WorldContext->LastURL.ToString());
+				}
 			}
 		}
-
-		AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
 	}
 
 	AddSourceIfNonEmpty(OutSources, TEXT("CommandLine"), FCommandLine::Get());

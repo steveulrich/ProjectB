@@ -86,6 +86,12 @@ void UBwayRoundManagementComponent::BeginPlay()
 		return;
 	}
 
+	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Hero staging owns selection; match rounds start after travel"));
+		return;
+	}
+
 	if (AGameStateBase* GameState = GetGameStateChecked<AGameStateBase>())
 	{
 		if (ULyraExperienceManagerComponent* ExperienceComponent = GameState->FindComponentByClass<ULyraExperienceManagerComponent>())
@@ -938,6 +944,11 @@ void UBwayRoundManagementComponent::OnRep_RoundDuration()
 
 bool UBwayRoundManagementComponent::IsRoundLifecycleActive() const
 {
+	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return false;
+	}
+
 	if (!bOrchestratorActive)
 	{
 		return true;

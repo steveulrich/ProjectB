@@ -70,9 +70,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Matchmaking", meta = (ClampMin = "0.1"))
 	float MockMatchDelaySeconds = 3.0f;
 
-	/** Session host mode for mock queue / custom dev travel until EOS backend lands. */
+	/** Session host mode for queue/custom travel. The slice uses LAN discovery. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Matchmaking")
-	ECommonSessionOnlineMode DevHostOnlineMode = ECommonSessionOnlineMode::Offline;
+	ECommonSessionOnlineMode DevHostOnlineMode = ECommonSessionOnlineMode::LAN;
 
 	/** Merged into queue travel URL (dev goals expect SkipHeroSelection=1). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Matchmaking")
