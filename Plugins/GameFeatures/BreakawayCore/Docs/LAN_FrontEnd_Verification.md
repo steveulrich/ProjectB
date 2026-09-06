@@ -90,3 +90,13 @@ Build Saved/Logs/codex-server-clock-build.log succeeded. A clean separate host p
 The first editor attempt crashed in Unreal Core InheritedContext/DevHttp/DDC worker code during PIE startup. Its log is preserved as codex-clock-editor-crash.log. Restarting the editor allowed this browser and countdown verification; the engine crash is not resolved by the gameplay changes.
 
 The unattended rounds repeatedly expired with the relic on midfield and no winner; this run does not validate scoring through match completion. PIE was stopped, the separate test host was stopped, and the editor was restored to DevMap, four-client listen PIE, and background throttling enabled. Dirty content and map package counts were both zero. Full scoring/results/return and four-human travel remain acceptance gates.
+
+## Results persistence and host return
+
+A PIE listen host and separate client reached a 3-0 result through three authority-injected EndRound calls, with normal PostRound transitions between them. Both logged the same final score and total rounds. This is a controlled results-flow fixture, not proof of relic scoring or player-driven hero selection. Evidence: codex-results-before-fix-host.log and codex-results-client.log.
+
+The run exposed BW_Phase_PostMatch automatically restarting the map ten seconds after results. Its Gameplay Ability Graph retained the legacy Delay/NewGameTime, delayed effect, and PlayNextGame chain, beside a TODO explicitly requesting postgame screens instead. Removed that timed chain while preserving the phase's initial global effect. The Blueprint compiled and saved successfully; no native source changed in this pass.
+
+A new single-host fixture set PointsToWin=1 at runtime and injected one round win. PostMatch began at 00:53:12 UTC on September 6 and still held the visible eight-column breakdown at 00:53:30, beyond the former restart deadline. Invoking the breakdown's RequestReturnToLobby action then loaded L_LyraFrontEnd with B_LyraFrontEnd_Experience. A subsequent probe confirmed W_LyraFrontEnd_C_0 active and visible. Evidence: codex-postmatch-restart-fixed-host.log. This proves results persistence and the local host action path; remote return, physical input navigation, rehosting, and four-human completion remain unverified.
+
+New follow-up defects from this fixture: a human joining after bot fill briefly produced a nine-player roster; the results controller attempts UIOnly focus on a non-focusable orchestration widget; the visible CommonUI breakdown is not activated. These require fixes before the UI is considered polished. Test processes were stopped, DevMap/four-client listen PIE/background throttle restored, and dirty package counts were zero. Prevention catalog BF-059 records the legacy restart failure.
