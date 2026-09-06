@@ -220,16 +220,9 @@ void UBwayResultsScreenWidget::PlayAgain()
 {
 	OnPlayAgainRequested();
 
-	if (!PlayAgainLevel.IsNull())
+	if (ABwayPlayerController* PC = Cast<ABwayPlayerController>(GetOwningPlayer()))
 	{
-		if (UWorld* World = GetWorld())
-		{
-			UGameplayStatics::OpenLevelBySoftObjectPtr(World, PlayAgainLevel);
-		}
-	}
-	else if (APlayerController* PC = GetOwningPlayer())
-	{
-		PC->ConsoleCommand(TEXT("restartlevel"));
+		PC->Server_RequestPlayAgain();
 	}
 }
 

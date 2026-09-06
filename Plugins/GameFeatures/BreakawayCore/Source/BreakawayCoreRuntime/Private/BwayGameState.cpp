@@ -19,9 +19,12 @@
 #include "GameState/BwayBuildableRegistryComponent.h"
 #include "Combat/BwayCombatFeedbackRouterComponent.h"
 #include "CommonSessionSubsystem.h"
+#include "GameFramework/GameModeBase.h"
 
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "Engine/NetDriver.h"
+#include "IPAddress.h"
 
 ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -386,6 +389,51 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 				*BwayPC->GetName(), Team1Score, Team2Score);
 		}
 	}
+}
+
+void ABwayGameState::RestartMatchFromResults()
+{
+	UWorld* World = GetWorld();
+	AGameModeBase* GameMode = World ? World->GetAuthGameMode() : nullptr;
+	if (!HasAuthority() || !GameMode || bResultsTravelPending ||
+		!RoundManagementComponent || RoundManagementComponent->GetCurrentMatchPhase() != EBwayMatchPhase::PostMatch)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayGameState: Ignoring rematch request outside idle PostMatch"));
+		return;
+	}
+
+	// Relative travel preserves session rules; remove one-match selection/transition flags.
+	FString TravelURL = UWorld::RemovePIEPrefix(World->URL.Map) +
+		TEXT("?-SeamlessTravel?-SkipHeroSelection?-Restart?NoSeamlessTravel");
+	if (World->GetNetMode() == NM_ListenServer)
+	{
+		TravelURL += TEXT("?listen");
+	}
+	// PIE's LastURL may hold 7777 while its socket actually uses 17777.
+	// ServerTravel forbids a port in its input, so normalize the relative-travel base.
+	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(World);
+	const int32 PreviousPort = WorldContext.LastURL.Port;
+	if (UNetDriver* NetDriver = World->GetNetDriver())
+	{
+		if (const TSharedPtr<const FInternetAddr> LocalAddress = NetDriver->GetLocalAddr())
+		{
+			WorldContext.LastURL.Port = LocalAddress->GetPort();
+		}
+	}
+
+	bResultsTravelPending = true;
+	if (!World->ServerTravel(TravelURL, false, false))
+	{
+		WorldContext.LastURL.Port = PreviousPort;
+		bResultsTravelPending = false;
+		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Rematch travel rejected"));
+		return;
+	}
+	if (UBwayBotCreationComponent* Bots = FindComponentByClass<UBwayBotCreationComponent>())
+	{
+		Bots->ShutdownAllBotsForTravel();
+	}
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Rematch ServerTravel to %s"), *TravelURL);
 }
 
 void ABwayGameState::ReturnToFrontEnd()

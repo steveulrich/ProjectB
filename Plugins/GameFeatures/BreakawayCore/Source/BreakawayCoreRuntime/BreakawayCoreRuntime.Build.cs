@@ -56,6 +56,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"NetCore",
 				"PhysicsCore",
 				"Slate",
+				"Sockets",
 				"SlateCore"
 			}
 		);

@@ -433,8 +433,22 @@ void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
 	{
 		if (ABwayGameState* GS = World->GetGameState<ABwayGameState>())
 		{
+			const UBwayRoundManagementComponent* RoundMgmt = GS->GetRoundManagement();
+			if (!RoundMgmt || RoundMgmt->GetCurrentMatchPhase() != EBwayMatchPhase::PostMatch)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring results return request outside PostMatch"));
+				return;
+			}
 			GS->ReturnToFrontEnd();
 		}
+	}
+}
+
+void ABwayPlayerController::Server_RequestPlayAgain_Implementation()
+{
+	if (ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+	{
+		GS->RestartMatchFromResults();
 	}
 }
 

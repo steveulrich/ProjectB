@@ -133,6 +133,20 @@ From the returned host, physical **Play Lyra → Start a game → Network: LAN �
 
 Evidence: `Saved/Logs/codex-results-return-second-session-verified.log`. This extends same-process PIE evidence only. Four separate processes, packaged travel, full second-match completion, and clean-machine LAN remain open. The results table visibly overlaps names and columns at the 859×520 client window size. Enter after Tab did not select a hero in fresh client selection; the CommonUI config change alone has not resolved verified keyboard acceptance. Play Again still uses local level reload/restart and needs a multiplayer implementation.
 
+## Rematch implementation in progress (September 6, 14:35–14:48 UTC)
+
+Play Again now submits intent through the owning PlayerController to a server PostMatch guard and non-seamless arena reload. Selection is rerun and PlayerStates/world actors are recreated. This replaces local `OpenLevel`/`restartlevel`. A server-side native probe rejected an early rematch. Reflective Python calls on client objects invoke implementations locally: they are **not RPC transport evidence**, including the attempted early-return probes in this run.
+
+Two physical client Play Again clicks after natural one-point test matches reached server travel. They exposed missing listen mode in PIE's world URL, then a port reset from 17777 to 7777 during absolute travel. Retaining `World->URL.Port` did not fix it because that stored value was also 7777. The latest source reads the net driver's actual bound socket port and retains listen mode. Runtime verification of that final correction is pending; rematch has **not passed**. Logs: `codex-rematch-missing-listen-reproduced.log`, `codex-rematch-port-reset-reproduced.log`, and `codex-rematch-world-url-port-reproduced.log` under `Saved/Logs`. The final reproduction used temporary selection/scoring fixtures and a physical client button click; it is not natural full-match evidence. Packaged verification remains open.
+
+## Rematch reconnection verified in PIE (September 6, 14:56–14:59 UTC)
+
+The final implementation uses relative, explicitly non-seamless server travel. It removes inherited selection-skip/transition flags, retains listen mode, and normalizes the travel context's port to the net driver's bound port. Unreal rejects a port embedded in the public ServerTravel URL; relative travel retains it through the context instead. Build `Saved/Logs/codex-rematch-relative-build.log` passed (exit 0).
+
+After a fresh editor restart, a natural goal ended a temporarily configured one-point match. A physical client **Play Again** click reached server travel at 14:58:34 UTC. The host reopened port 17777; all three clients reconnected. At 14:59:03, all four Dorado worlds had eight players and round number 0, with exactly one authority. All 32 PlayerState copies reported match gold earned 0. The client visibly displayed fresh hero selection with 4/8 ready. The host resolved the authored three-point rule again. PIE stopped afterward. Evidence: `Saved/Logs/codex-rematch-relative-verified.log`.
+
+This supersedes the pending reconnection result above. It verifies the physical button, network request, four-peer reconnection, fresh selection, and earned-gold reset in same-process PIE. Previously purchased upgrades, placed buildables, full rematch completion, simultaneous conflicting results requests, separate-process and packaged behavior remain unverified. BF-086 records the travel and test-method pitfalls.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.

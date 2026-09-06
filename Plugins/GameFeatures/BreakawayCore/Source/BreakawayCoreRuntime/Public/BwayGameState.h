@@ -176,6 +176,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Match Flow")
 	void ReturnToFrontEnd();
 
+	/** Start a fresh match in the current arena for every connected player. */
+	void RestartMatchFromResults();
+
 	/** Called when RoundManagement detects match end */
 	UFUNCTION()
 	void HandleMatchEnded(int32 WinningTeam, int32 TotalRounds);
@@ -247,6 +250,8 @@ protected:
 
 	/** Initialize teams on begin play */
 	void InitializeTeams();
+
+	bool bResultsTravelPending = false;
 
 	/** Helper to find team index for an actor */
 	int32 GetTeamIndexForActor(const AActor* Actor) const;

@@ -94,6 +94,10 @@ public:
 	UFUNCTION(Server, Reliable)
 	void Server_RequestReturnToFrontEnd();
 
+	/** Request a server-owned fresh match; accepted only during PostMatch. */
+	UFUNCTION(Server, Reliable)
+	void Server_RequestPlayAgain();
+
 	/** Remove the results widget and restore gameplay input before front-end travel. */
 	UFUNCTION(Client, Reliable)
 	void Client_DismissResultsScreen();
