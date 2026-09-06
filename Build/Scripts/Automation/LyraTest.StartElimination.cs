@@ -5,15 +5,15 @@ using Gauntlet;
 
 namespace LyraTest
 {
-	public sealed class StartElimination : EpicGameTestNode<LyraTestConfig>
+	public sealed class StartElimination : EpicGameTestNode<EpicGameTestConfig>
 	{
 		public StartElimination(UnrealTestContext InContext) : base (InContext)
 		{
 		}
 
-		public override LyraTestConfig GetConfiguration()
+		public override EpicGameTestConfig GetConfiguration()
 		{
-			LyraTestConfig Config = base.GetConfiguration();
+			EpicGameTestConfig Config = base.GetConfiguration();
 			Config.NoMCP = true;
 
 			UnrealTestRole Client = Config.RequireRole(UnrealTargetRole.Client);
