@@ -20,6 +20,8 @@ Decisions in this file are the slice bar. The September 5 direction below takes 
 
 ## Earlier implementation baseline (pending parity reconciliation)
 
+The [final-alpha evidence notes](./FINAL_ALPHA_PARITY.md) establish that September builds included match-gold purchases. The earn-only exclusion is superseded. One buildable per hero per round is supported by those sources. The full inventory and exact final build remain unresolved.
+
 Design-spec Capture-the-Relic: **4v4**, **four heroes**, **one persistable buildable per hero**, **match-only gold (earn, no spend)**.
 
 ## Earlier scope table (September 5 direction takes precedence)

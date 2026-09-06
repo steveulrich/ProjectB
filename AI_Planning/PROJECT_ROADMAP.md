@@ -13,7 +13,7 @@ This file is the status and priority list. The core loop plan is the implementat
 
 The owner requires original Breakaway system parity with fully integrated placeholder art, LAN sessions, and a complete front-end flow. See the updated slice definition for accepted direction and unresolved historical scope conflicts. Older “complete” labels below describe prior implementation milestones, not proof of the expanded completion bar.
 
-1. Reconcile the final public alpha system inventory against existing implementations, especially earlier earn-only gold/buildable exclusions. Record unknowns rather than inventing parity requirements or mixing alpha versions.
+1. Implement the missing match-upgrade economy after recovering its catalog and tuning. [Final-alpha evidence](./FINAL_ALPHA_PARITY.md) establishes purchasing in September builds; earn-only gold is insufficient. Continue the wider system inventory and keep unresolved rules explicit.
 2. Verify the compiled passive-gold and placement lifecycle fixes on the owner's four-player listen-server setup (one PIE player plus three separate clients).
 3. Verify real LAN host/find/join and selection → match → results → front-end flow. The current LyraMatchmakingSubsystem includes mock queue behavior; that is not evidence of real LAN discovery/join completion.
 4. Audit presentation integration: animation, hit/death feedback, effects, audio, HUD, buildable visibility, and documented asset replacement contracts. Placeholder art does not excuse unfinished integration.

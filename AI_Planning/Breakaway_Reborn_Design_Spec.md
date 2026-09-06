@@ -22,7 +22,7 @@ Breakaway: Reborn is a 4v4 team battle game that blends Action Brawler combat wi
 
 ### 2.2 The Buildable System
 - **Vertical slice:** each hero has **one** buildable (stats sheet). Placement is **once per round**, **free** (no gold). Structures **persist** between rounds until destroyed.
-- **Post-slice:** gold earned in-match may spend on **stat enhancers / items** — not buildable purchase. Multi-buildable heroes are deferred if design returns.
+- **Required for final-alpha parity:** spend match gold on stat upgrades, with purchasing available before rounds and while dead. The earlier post-slice deferral is superseded. Exact catalog, prices, and tuning remain open; see [Final-alpha evidence](./FINAL_ALPHA_PARITY.md). September evidence supports one buildable per hero per round.
 - **Authority:** [Breakaway_Hero_Stats_Sheet.md](./Breakaway_Hero_Stats_Sheet.md) · Core Loop Section 3.
 
 ### 2.3 Hero Roster
