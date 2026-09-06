@@ -3,6 +3,7 @@
 #include "Economy/BwayEconomyLibrary.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "BwayGameState.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameFramework/PlayerState.h"
@@ -51,10 +52,15 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 	if (!Rounds) return false;
 	const EBwayMatchPhase Phase = Rounds->GetCurrentMatchPhase();
 	if (Phase == EBwayMatchPhase::Prematch || Phase == EBwayMatchPhase::Warmup) return true;
+	if (Phase == EBwayMatchPhase::PostRound) return !Rounds->CheckMatchEnd();
 	if (Phase != EBwayMatchPhase::Playing) return false;
 	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner(), true);
+	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
 	// Base-healing access will be added with the authoritative base-zone system.
-	return ASC && ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death);
+	// Pawn teardown clears death tags, but the PlayerState ASC retains zero health
+	// until the replacement pawn initializes it. Keep the shop open in that gap.
+	return ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| (Health && FMath::IsFinite(Health->GetHealth()) && Health->GetHealth() <= 0.0f));
 }
 
 void UBwayUpgradeComponent::ServerPurchaseUpgrade_Implementation(FName Id, int32 ExpectedCurrentRank)

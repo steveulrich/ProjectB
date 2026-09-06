@@ -8,7 +8,10 @@
 #include "Attributes/BwayHeroAttributeSet.h"
 #include "BwayGameState.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameState/BwayScoringComponent.h"
 #include "UObject/UnrealType.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
+#include "LyraGameplayTags.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayGoldDebitTest,
@@ -127,12 +130,44 @@ bool FBwayUpgradePurchaseTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Rejected attempts preserve gold"), Gold->GetCurrentGold(), 100.0f);
 	TestEqual(TEXT("Rejected attempts preserve attributes"), Hero->GetAttackStrength(), 20.0f);
 	TestEqual(TEXT("Rejected attempts preserve ownership"), Shop->GetOwnedRank(TEXT("Attack")), 0);
+	// Block the debit after the infinite upgrade has already applied. The failed
+	// transaction must remove that effect without changing balance or ownership.
+	ASC->GameplayEffectApplicationQueries.Add(FGameplayEffectApplicationQuery::CreateLambda(
+		[](const FActiveGameplayEffectsContainer&, const FGameplayEffectSpec& Spec)
+		{ return !Spec.Def->IsA<UBwayGameplayEffect_SpendGold>(); }));
+	TestFalse(TEXT("Rejected debit fails purchase"), Shop->TryPurchaseUpgrade(TEXT("Attack"), 0));
+	TestEqual(TEXT("Rejected debit preserves gold"), Gold->GetCurrentGold(), 100.0f);
+	TestEqual(TEXT("Rejected debit rolls back bonus"), Hero->GetAttackStrength(), 20.0f);
+	TestEqual(TEXT("Rejected debit preserves ownership"), Shop->GetOwnedRank(TEXT("Attack")), 0);
+	ASC->GameplayEffectApplicationQueries.Reset();
+	bool bReentryAttempted = false;
+	bool bReentrySucceeded = false;
+	const FDelegateHandle ReentryHandle = ASC->GetGameplayAttributeValueChangeDelegate(
+		UBwayHeroAttributeSet::GetAttackStrengthAttribute()).AddLambda(
+		[&](const FOnAttributeChangeData&)
+		{
+			bReentryAttempted = true;
+			bReentrySucceeded |= Shop->TryPurchaseUpgrade(TEXT("Attack"), 0);
+			Shop->ResetUpgrades();
+		});
 	TestTrue(TEXT("First rank purchase succeeds"), Shop->TryPurchaseUpgrade(TEXT("Attack"), 0));
+	ASC->GetGameplayAttributeValueChangeDelegate(UBwayHeroAttributeSet::GetAttackStrengthAttribute()).Remove(ReentryHandle);
+	TestTrue(TEXT("Effect notification exercised reentry"), bReentryAttempted);
+	TestFalse(TEXT("Reentrant purchase rejected"), bReentrySucceeded);
+	TestEqual(TEXT("Reentrant reset cannot clear purchased rank"), Shop->GetOwnedRank(TEXT("Attack")), 1);
 	TestEqual(TEXT("First price paid"), Gold->GetCurrentGold(), 70.0f);
 	TestEqual(TEXT("First bonus applied"), Hero->GetAttackStrength(), 25.0f);
 	TestFalse(TEXT("Stale request cannot buy another rank"), Shop->TryPurchaseUpgrade(TEXT("Attack"), 0));
 	TestFalse(TEXT("Slot cap enforced"), Shop->TryPurchaseUpgrade(TEXT("Other"), 0));
 	TestFalse(TEXT("Catalog cannot change while owned"), Shop->ConfigureCatalog(Catalog));
+	ASC->GameplayEffectApplicationQueries.Add(FGameplayEffectApplicationQuery::CreateLambda(
+		[](const FActiveGameplayEffectsContainer&, const FGameplayEffectSpec& Spec)
+		{ return !Spec.Def->IsA<UBwayGameplayEffect_SpendGold>(); }));
+	TestFalse(TEXT("Failed rank increase rejects purchase"), Shop->TryPurchaseUpgrade(TEXT("Attack"), 1));
+	TestEqual(TEXT("Failed rank increase preserves old bonus"), Hero->GetAttackStrength(), 25.0f);
+	TestEqual(TEXT("Failed rank increase preserves old rank"), Shop->GetOwnedRank(TEXT("Attack")), 1);
+	TestEqual(TEXT("Failed rank increase preserves balance"), Gold->GetCurrentGold(), 70.0f);
+	ASC->GameplayEffectApplicationQueries.Reset();
 	TestTrue(TEXT("Second rank succeeds"), Shop->TryPurchaseUpgrade(TEXT("Attack"), 1));
 	TestEqual(TEXT("Second price paid"), Gold->GetCurrentGold(), 30.0f);
 	TestEqual(TEXT("Rank bonus replaces previous bonus"), Hero->GetAttackStrength(), 32.0f);
@@ -148,6 +183,35 @@ bool FBwayUpgradePurchaseTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Unaffordable attempt preserves gold"), Gold->GetCurrentGold(), 29.0f);
 	TestEqual(TEXT("Unaffordable attempt preserves bonus"), Hero->GetAttackStrength(), 40.0f);
 	TestEqual(TEXT("Unaffordable attempt preserves ownership"), Shop->GetOwnedRank(TEXT("Attack")), 0);
+	ULyraHealthSet* Health = NewObject<ULyraHealthSet>(Player);
+	ASC->AddSpawnedAttribute(Health);
+	SetPhase(EBwayMatchPhase::Playing);
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 100.0f);
+	TestFalse(TEXT("Living health closes combat purchase window"), Shop->IsPurchaseWindowOpen());
+	ASC->SetLooseGameplayTagCount(LyraGameplayTags::Status_Death_Dead, 1);
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 0.0f);
+	TestTrue(TEXT("Death opens purchase window"), Shop->IsPurchaseWindowOpen());
+	ASC->SetLooseGameplayTagCount(LyraGameplayTags::Status_Death_Dead, 0);
+	TestTrue(TEXT("Pawn tag cleanup preserves death purchase window"), Shop->IsPurchaseWindowOpen());
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 100.0f);
+	TestFalse(TEXT("Respawn health closes combat purchase window"), Shop->IsPurchaseWindowOpen());
+	SetPhase(EBwayMatchPhase::PostRound);
+	TestTrue(TEXT("Between-round planning opens purchase window"), Shop->IsPurchaseWindowOpen());
+	// This fixture does not BeginPlay, so initialize the score array normally
+	// established there before exercising the production AddScore method.
+	UBwayScoringComponent* Scoring = GS->FindComponentByClass<UBwayScoringComponent>();
+	FArrayProperty* ScoresProperty = FindFProperty<FArrayProperty>(UBwayScoringComponent::StaticClass(), TEXT("TeamScores"));
+	if (!TestNotNull(TEXT("Score fixture property"), ScoresProperty))
+	{
+		World->DestroyWorld(false);
+		return false;
+	}
+	ScoresProperty->ContainerPtrToValuePtr<TArray<int32>>(Scoring)->Init(0, 2);
+	Scoring->AddScore(0, GS->GetRoundManagement()->PointsToWin);
+	TestTrue(TEXT("Fixture reached winning score"), GS->GetRoundManagement()->CheckMatchEnd());
+	TestFalse(TEXT("Final-round summary closes purchase window"), Shop->IsPurchaseWindowOpen());
+	SetPhase(EBwayMatchPhase::PostMatch);
+	TestFalse(TEXT("Postmatch closes purchase window"), Shop->IsPurchaseWindowOpen());
 	World->DestroyWorld(false);
 	return true;
 }

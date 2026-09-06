@@ -24,7 +24,7 @@ Each rank uses an infinite, non-periodic, non-stacking Gameplay Effect. The comp
 
 `ResetUpgrades` removes owned effects and ranks without refunding gold. New PlayerStates start empty and ownership is not copied through seamless travel. An explicit same-world new-match reset hook, pawn-respawn verification, and separate-process replication tests remain required before claiming lifecycle coverage.
 
-Current purchase windows are prematch, warmup, and death during play. Base-healing access and between-round shop presentation remain unfinished. No UI is connected, no catalog is assigned, and no playable-shop gate is closed by this component.
+Current purchase windows are prematch, warmup, non-final post-round planning, and death during play. Death eligibility also reads the persistent health attribute because pawn teardown clears Lyra death tags before respawn. A restored positive health value closes that fallback window. Winning-score post-round summaries and postmatch reject purchases. Base-healing access and between-round shop presentation remain unfinished. No UI is connected, no catalog is assigned, and no playable-shop gate is closed by this component.
 
 ## Verification
 
@@ -37,6 +37,8 @@ Build: `Saved/Logs/codex-economy-debit-authority-build.log` passed. Runtime test
 `Breakaway.Economy.UpgradePurchase` passed alongside `GoldDebit` at 01:33:16 UTC on September 6, 2026 after an editor restart. It uses a controlled warmup/playing phase fixture and real GAS attributes/effects to verify unknown IDs, authority and combat-window rejection, duplicate requests, slot/rank caps, exact costs, effect replacement, base-value reinitialization, reset, and insufficient funds. Evidence: `Saved/Logs/codex-upgrade-purchase-verified.log`; build: `Saved/Logs/codex-upgrade-purchase-build.log`. This does not exercise network transport, a real pawn respawn, or a debit failure after effect application. Background throttling was restored afterward.
 
 Recover the catalog and rank values, including life leech and cooldown reduction; integrate base/pre-round/death access; verify transaction rollback and lifecycle behavior; build and verify the shop UI. Separate-process purchase and replication evidence is still required.
+
+The expanded economy suite passed at 01:39:29 UTC on September 6, 2026. `UpgradePurchase` now rejects the debit through GAS application queries after applying an upgrade and proves that both first-purchase and rank-increase failures preserve the prior balance, bonus, and rank. It also exercises reentrant purchase/reset attempts from an attribute delegate, death-tag cleanup with persistent zero health, restored respawn health, non-final planning access, and rejection at the winning score/postmatch. Evidence: `Saved/Logs/codex-upgrade-lifecycle-verified.log`; final build: `Saved/Logs/codex-upgrade-lifecycle-fixture-build.log`. These are controlled integration fixtures, not separate-process or full pawn lifecycle evidence. Background throttling was restored.
 
 
 The corrected fixture passed at 01:20:57 UTC on September 6, 2026. Evidence: `Saved/Logs/codex-economy-debit-verified.log`; final fixture build: `codex-economy-fixture-build.log`. The initial test fixture incorrectly initialized a world twice and crashed the editor before exercising the debit. That fixture defect was fixed, documented in BF-062, rebuilt, and rerun successfully. Background throttling was restored afterward.
