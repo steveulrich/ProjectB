@@ -12,6 +12,9 @@
 #include "UObject/UnrealType.h"
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "LyraGameplayTags.h"
+#include "Economy/BwayBaseZone.h"
+#include "GameFramework/Pawn.h"
+#include "Components/SceneComponent.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayGoldDebitTest,
@@ -195,6 +198,44 @@ bool FBwayUpgradePurchaseTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Pawn tag cleanup preserves death purchase window"), Shop->IsPurchaseWindowOpen());
 	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 100.0f);
 	TestFalse(TEXT("Respawn health closes combat purchase window"), Shop->IsPurchaseWindowOpen());
+	// A real pawn/ASC avatar with explicit team membership exercises spatial access.
+	APawn* Pawn = World->SpawnActor<APawn>();
+	USceneComponent* PawnRoot = NewObject<USceneComponent>(Pawn);
+	Pawn->AddInstanceComponent(PawnRoot);
+	Pawn->SetRootComponent(PawnRoot);
+	PawnRoot->RegisterComponent();
+	FObjectProperty* PawnStateProperty = FindFProperty<FObjectProperty>(APawn::StaticClass(), TEXT("PlayerState"));
+	FArrayProperty* TeamsProperty = FindFProperty<FArrayProperty>(ABwayGameState::StaticClass(), TEXT("Teams"));
+	if (!TestNotNull(TEXT("Pawn player-state fixture property"), PawnStateProperty)
+		|| !TestNotNull(TEXT("Team fixture property"), TeamsProperty))
+	{
+		World->DestroyWorld(false);
+		return false;
+	}
+	PawnStateProperty->SetObjectPropertyValue_InContainer(Pawn, Player);
+	TArray<FTeamInfo>* Teams = TeamsProperty->ContainerPtrToValuePtr<TArray<FTeamInfo>>(GS);
+	Teams->Add(FTeamInfo(0));
+	Teams->Add(FTeamInfo(1));
+	GS->AddPlayerToTeam(Player, 0);
+	ASC->InitAbilityActorInfo(Player, Pawn);
+	ABwayBaseZone* Base = World->SpawnActor<ABwayBaseZone>();
+	TestTrue(TEXT("Teammate inside base has access"), Base->CanUseBase(Player));
+	TestTrue(TEXT("Living player can shop in own base"), Shop->IsPurchaseWindowOpen());
+	Pawn->SetActorLocation(FVector(501.0f, 0.0f, 0.0f));
+	TestFalse(TEXT("Leaving base immediately removes access"), Base->CanUseBase(Player));
+	TestFalse(TEXT("Leaving base closes living-player shop"), Shop->IsPurchaseWindowOpen());
+	Pawn->SetActorLocation(FVector::ZeroVector);
+	GS->AddPlayerToTeam(Player, 1);
+	TestFalse(TEXT("Enemy cannot use base"), Base->CanUseBase(Player));
+	GS->AddPlayerToTeam(Player, 0);
+	Base->bEnabled = false;
+	TestFalse(TEXT("Disabled base denies access"), Base->CanUseBase(Player));
+	Base->bEnabled = true;
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 0.0f);
+	TestFalse(TEXT("Base cannot heal a dead pawn"), Base->CanUseBase(Player));
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 100.0f);
+	ASC->InitAbilityActorInfo(Player, Player);
+	TestFalse(TEXT("Missing pawn avatar denies base access"), Base->CanUseBase(Player));
 	SetPhase(EBwayMatchPhase::PostRound);
 	TestTrue(TEXT("Between-round planning opens purchase window"), Shop->IsPurchaseWindowOpen());
 	// This fixture does not BeginPlay, so initialize the score array normally

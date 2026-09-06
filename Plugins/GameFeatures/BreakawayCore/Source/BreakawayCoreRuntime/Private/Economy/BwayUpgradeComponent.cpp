@@ -2,6 +2,8 @@
 #include "Economy/BwayUpgradeCatalog.h"
 #include "Economy/BwayEconomyLibrary.h"
 #include "Economy/BwayGoldAttributeSet.h"
+#include "Economy/BwayBaseZone.h"
+#include "EngineUtils.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "BwayGameState.h"
@@ -56,7 +58,10 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 	if (Phase != EBwayMatchPhase::Playing) return false;
 	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner(), true);
 	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
-	// Base-healing access will be added with the authoritative base-zone system.
+	for (TActorIterator<ABwayBaseZone> Base(GetWorld()); Base; ++Base)
+	{
+		if (Base->CanUseBase(Cast<APlayerState>(GetOwner()))) return true;
+	}
 	// Pawn teardown clears death tags, but the PlayerState ASC retains zero health
 	// until the replacement pawn initializes it. Keep the shop open in that gap.
 	return ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
