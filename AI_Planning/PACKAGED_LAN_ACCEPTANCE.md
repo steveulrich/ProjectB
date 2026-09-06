@@ -8,6 +8,16 @@
 - Artifact: `Saved/StagedBuilds/LAN-20260906-06/Windows/LyraGame.exe`; the actual game executable is `Windows/ProjectB/Binaries/Win64/LyraGame.exe` beneath the candidate directory. The complete staged-file SHA-256 and size inventory is `Saved/Logs/codex-packaged-LAN-20260906-06-sha256.csv`. Symbols remain in this local Development stage; no release archive or clean-device deployment has been performed.
 - Acceptance: **build/cook/stage only**. This exact candidate has not yet been launched or accepted for packaged multiplayer. Earlier PIE results below do not establish packaged results, rematch, keyboard input, or second-PC LAN behavior. Next gate: cold frontend launch and physical host/find/join, complete match, results, return to frontend, and a second match with reset state.
 
+### Candidate -06 runtime failure and source repair
+
+Physical frontend testing on September 6 at 15:29–15:34 UTC passed cold startup, Play Lyra -> Start a Game -> LAN -> Local (listen server + bots), then a second packaged process's Browse discovery and join. The client joined Dorado during round one at 15:32:31; the server removed Bot 7 to retain eight players. This is two processes on one PC, not the four-human or second-PC gate. Host selection timed out normally before the client joined.
+
+Both visible gameplay HUDs showed empty ability slots and the waiting-for-players banner. The joining player's server log reports no selected hero, while the host received Korryn's six tagged abilities. These are distinct unresolved symptoms. Bots stayed near their spawns in the observed views, and round one expired without a score; packaged objective pursuit remains unverified.
+
+At 15:33:37 the host crashed during the round-two transition. The exact staged executable/PDB and minidump resolve the failure to `RemovePassiveGoldIncome -> GetAbilitySystemComponentFromActor -> GetInterfaceAddress`, reading reclaimed memory. `PassiveGoldEffectHandles` held unreflected `TObjectPtr` keys after the replaced bot's PlayerState was destroyed. Source now uses weak keys for this map and the neighboring non-owning respawn timer cache. `LyraEditor` compilation passed in 28.94 seconds (`Saved/Logs/codex-passive-gold-lifetime-build.log`). The fix is not in candidate -06 and needs the same packaged join/replacement/round-reset regression before runtime acceptance.
+
+Evidence: `Saved/Logs/codex-packaged06-frontend-host.log`, `codex-packaged06-frontend-client.log`, and `codex-packaged06-round-reset-crash-stack.log`. The dump and CrashContext remain beneath candidate -06's `Windows/ProjectB/Saved/Crashes/UECC-Windows-3EC825294629116E567561A51D27A7B0_0000`. The client timed out after 60 seconds and returned to the frontend; its process was then closed. No complete match or rematch pass is claimed.
+
 ## Previous candidate (-05)
 
 - Candidate: `LAN-20260906-05`, Win64 Development, `LyraGame`; built September 6, 2026 at approximately 06:13 UTC.

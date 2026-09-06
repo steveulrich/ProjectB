@@ -456,9 +456,10 @@ protected:
 	FTimerHandle PreRoundTimerHandle;
 
 	/** Per-player respawn timers */
-	TMap<TObjectPtr<AController>, FTimerHandle> RespawnTimers;
+	TMap<TWeakObjectPtr<AController>, FTimerHandle> RespawnTimers;
 
-	TMap<TObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;
+	/** Non-owning: disconnects and bot replacement can destroy players before round cleanup. */
+	TMap<TWeakObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;
 
 	bool bSuddenDeathWarningBroadcastThisRound = false;
 };

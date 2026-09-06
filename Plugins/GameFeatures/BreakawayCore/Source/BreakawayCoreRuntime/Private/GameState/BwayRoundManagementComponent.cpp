@@ -769,7 +769,7 @@ void UBwayRoundManagementComponent::StopRoundFSM()
 		World->GetTimerManager().ClearTimer(BetweenRoundTimerHandle);
 		World->GetTimerManager().ClearTimer(PreRoundTimerHandle);
 
-		for (TPair<TObjectPtr<AController>, FTimerHandle>& Pair : RespawnTimers)
+		for (TPair<TWeakObjectPtr<AController>, FTimerHandle>& Pair : RespawnTimers)
 		{
 			World->GetTimerManager().ClearTimer(Pair.Value);
 		}
@@ -1661,7 +1661,7 @@ FActiveGameplayEffectHandle UBwayRoundManagementComponent::ApplyPassiveGoldIncom
 
 void UBwayRoundManagementComponent::RemovePassiveGoldIncome()
 {
-	for (const TPair<TObjectPtr<APlayerState>, FActiveGameplayEffectHandle>& Pair : PassiveGoldEffectHandles)
+	for (const TPair<TWeakObjectPtr<APlayerState>, FActiveGameplayEffectHandle>& Pair : PassiveGoldEffectHandles)
 	{
 		if (APlayerState* PlayerState = Pair.Key.Get())
 		{
