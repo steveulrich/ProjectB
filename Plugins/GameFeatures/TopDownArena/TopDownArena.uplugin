@@ -26,6 +26,10 @@
 	],
 	"Plugins": [
 		{
+			"Name": "BreakawayCore",
+			"Enabled": true
+		},
+		{
 			"Name": "GameplayAbilities",
 			"Enabled": true
 		},

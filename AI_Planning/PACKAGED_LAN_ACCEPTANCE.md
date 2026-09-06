@@ -26,6 +26,14 @@ Command issued with the editor closed:
 
 ## Acceptance evidence required
 
+## Cook repair evidence (September 6)
+
+The first cook exited with code 25 after the standalone build passed. Its terminal errors were the stale Alona domain, incompatible TopDownArena movement override, and failed relic redirector import. The domain correction is committed separately. A full asset-registry referencer scan established that `B_Bway_Ball_Interactable` had no referencers and that `BP_Bway_Relic` was referenced only by that obsolete redirector; both packages contained only redirectors leading to a deleted asset. Those two dead packages were removed. The live relic remains `/BreakawayCore/GameModes/BallMode/Relic/BP_BW_RelicActor`, referenced by game state, spawn data, and the grant pad.
+
+The shared hero parent now requires BwayCharacterMovementComponent. TopDownArenaMovementComponent derives from that class and declares its BreakawayCore module/plugin dependency, preserving its existing speed override. The editor build passed (`Saved/Logs/codex-cook-asset-repair-build.log`). After restart, B_Hero_Arena compiled, its movement default object had the correct class, the live relic loaded, and the removed redirectors were absent from the registry (`Saved/Logs/codex-cook-assets-editor-verified.log`). BF-072 records prevention. A fresh cook is still required; these editor checks do not prove packaging success.
+
+## Remaining acceptance checks
+
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.
 2. Launch the staged executable with the editor closed. Confirm the frontend opens without loose project content or a cook server. A source-machine smoke test does not prove clean-machine compatibility.
 3. Host LAN through the frontend, discover it from three separate client processes, join, select heroes and teams, and enter Dorado. Verify four humans plus four bots, four players per team, and consistent selection on every peer. Direct-IP joining is supplementary evidence.

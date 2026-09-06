@@ -36,6 +36,7 @@ public class TopDownArenaRuntime : ModuleRules
 			new string[]
 			{
 				"CoreUObject",
+				"BreakawayCoreRuntime",
 				"Engine",
 				"Slate",
 				"SlateCore",
