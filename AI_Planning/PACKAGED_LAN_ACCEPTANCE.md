@@ -23,6 +23,12 @@ The hidden candidate `-05` listen-server process continued running after the att
 
 ## Previous candidate (-04)
 
+### Bot asset diagnosis (September 6, 12:24 UTC)
+
+The unattended read-only asset inspection exited with code 0. `BT_BW_RelicBot` uses `BB_BW_RelicBot`; its key names and types match the native service, and the root selector has the update service attached. However, the reachable root children are carrier, enemy-carrier chase, and a `RelicLocation Is Set` branch whose composite (`BTComposite_Selector_0`) has **no children**. The `Move To RelicLocation` tasks (`BTTask_MoveTo_2` and `_3`) are not reachable from the root. This is a concrete asset wiring defect that prevents the tree from pursuing an initially free relic; a successful `RunBehaviorTree` log does not validate it. All inspected Blackboard decorators also have observer aborts disabled.
+
+Repair the authored graph with a reachable free-relic sequence: availability condition, move to relic, then pickup. Configure possession-change aborts deliberately and verify the serialized tree after reopening, then prove server-side movement, pickup, scoring, and match completion. Do not patch only the runtime `Children` array while leaving the editor graph inconsistent. Dorado contains both a NavMeshBoundsVolume and RecastNavMesh, but actor presence does not prove usable cooked paths. Evidence: `Saved/Logs/codex-relic-bot-asset-inspection.log`; inspection script: `Saved/inspect_relic_bot_assets.py`. No asset mutation or runtime navigation pass was performed.
+
 - Project base: `e405d746` (September 6, 2026), plus the hero feature type registration in `DefaultGame.ini` and the uncommitted `Server_RequestReturnToFrontEnd` PostMatch guard. The exact source delta is saved in `Saved/Logs/codex-packaged-LAN-20260906-04-project.patch`; this candidate is not a clean-commit release.
 - Engine: local UE 5.8.1 source tree, `E:/Github/UnrealEngine`, HEAD `71fe36aac5a8df5ccd66c763ffc902b29b6a9c43`. Local engine modifications must also be captured before accepting the artifact; HEAD alone does not establish reproducibility.
 - Platform/configuration: Win64 Development, `LyraGame`, listen server and clients.
