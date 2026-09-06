@@ -293,8 +293,9 @@ protected:
 	/** Server-only baseline captured at round start. */
 	FBwayPlayerMatchStats RoundStartStatsBaseline;
 
-	/** Server-only gold at round start for GoldEarned delta. */
-	int32 GoldAtRoundStart = 0;
+	/** Cumulative credited income; spending never reduces match earnings. */
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	double MatchGoldEarned = 0.0;
 
 	/** Owner-only replicated: one free buildable placement per round (vertical slice). */
 	UPROPERTY(ReplicatedUsing=OnRep_HasPlacedBuildableThisRound)
@@ -310,5 +311,5 @@ protected:
 	void OnRep_LastRoundStats();
 
 	FBwayPlayerMatchStats BuildCurrentStatSnapshot() const;
-	int32 GetCurrentGoldTotal() const;
+	void HandleGoldChanged(const FOnAttributeChangeData& Change);
 };

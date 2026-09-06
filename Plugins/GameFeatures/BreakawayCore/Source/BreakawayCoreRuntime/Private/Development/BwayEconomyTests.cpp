@@ -15,8 +15,74 @@
 #include "Economy/BwayBaseZone.h"
 #include "GameFramework/Pawn.h"
 #include "Components/SceneComponent.h"
+#include "BwayPlayerState.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
 
 #if WITH_DEV_AUTOMATION_TESTS
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayGoldEarningsTest,
+	"Breakaway.Economy.GoldEarnings",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayGoldEarningsTest::RunTest(const FString& Parameters)
+{
+	const UWorld::InitializationValues Settings = UWorld::InitializationValues()
+		.AllowAudioPlayback(false).CreatePhysicsScene(false).CreateNavigation(false)
+		.CreateAISystem(false).ShouldSimulatePhysics(false).SetTransactional(false);
+	UWorld* World = UWorld::CreateWorld(EWorldType::Game, false, NAME_None, nullptr,
+		true, ERHIFeatureLevel::Num, &Settings);
+	if (!TestNotNull(TEXT("Fixture world"), World)) return false;
+	// LyraPlayerState requires the experience manager before it is spawned.
+	World->SetGameState(World->SpawnActor<ABwayGameState>());
+	ABwayPlayerState* Player = World->SpawnActor<ABwayPlayerState>();
+	if (!TestNotNull(TEXT("Fixture player"), Player))
+	{
+		World->DestroyWorld(false);
+		return false;
+	}
+	// This fixture does not begin play; initialize the persistent ASC and gold
+	// set through the production lifecycle hook before applying effects.
+	if (!Player->IsActorInitialized()) static_cast<AActor*>(Player)->PostInitializeComponents();
+	ULyraAbilitySystemComponent* ASC = Player->GetLyraAbilitySystemComponent();
+	UGameplayEffect* Award = NewObject<UGameplayEffect>();
+	Award->DurationPolicy = EGameplayEffectDurationType::Instant;
+	FGameplayModifierInfo& Modifier = Award->Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayGoldAttributeSet::GetCurrentGoldAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	auto Credit = [ASC, Award](float Amount)
+	{
+		Award->Modifiers[0].ModifierMagnitude = FScalableFloat(Amount);
+		ASC->ApplyGameplayEffectToSelf(Award, 1.0f, ASC->MakeEffectContext());
+	};
+	Player->BeginRoundStatTracking();
+	Credit(100.0f);
+	TestTrue(TEXT("Purchase debits wallet"), UBwayEconomyLibrary::TrySpendGold(Player, 75));
+	TestEqual(TEXT("Wallet reflects spending"), ASC->GetNumericAttribute(UBwayGoldAttributeSet::GetCurrentGoldAttribute()), 25.0f);
+	TestFalse(TEXT("Unaffordable purchase rejected"), UBwayEconomyLibrary::TrySpendGold(Player, 30));
+	TestEqual(TEXT("Spending preserves earnings"), Player->GetMatchStatsSnapshot().GoldEarned, 100);
+	Credit(1000.0f);
+	TestEqual(TEXT("Only credited gold below cap counts"), Player->GetMatchStatsSnapshot().GoldEarned, 575);
+	Credit(25.0f);
+	TestEqual(TEXT("Award at cap earns nothing"), Player->GetMatchStatsSnapshot().GoldEarned, 575);
+	Player->FinalizeRoundStats();
+	TestEqual(TEXT("Round earnings ignore spending"), Player->GetLastRoundStats().GoldEarned, 575);
+	Player->BeginRoundStatTracking();
+	TestTrue(TEXT("Next round purchase"), UBwayEconomyLibrary::TrySpendGold(Player, 100));
+	Credit(10.0f);
+	Player->FinalizeRoundStats();
+	TestEqual(TEXT("Next round uses earnings baseline"), Player->GetLastRoundStats().GoldEarned, 10);
+	TestEqual(TEXT("Match accumulates rounds"), Player->GetMatchStatsSnapshot().GoldEarned, 585);
+	Player->ResetMatchStats();
+	TestEqual(TEXT("New match clears earnings"), Player->GetMatchStatsSnapshot().GoldEarned, 0);
+	TestEqual(TEXT("Stat reset does not change wallet"), ASC->GetNumericAttribute(UBwayGoldAttributeSet::GetCurrentGoldAttribute()), 410.0f);
+	Credit(0.25f);
+	Credit(0.25f);
+	Credit(0.25f);
+	Credit(0.25f);
+	TestEqual(TEXT("Fractional credits accumulate before rounding"), Player->GetMatchStatsSnapshot().GoldEarned, 1);
+	World->DestroyWorld(false);
+	return true;
+}
+
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayGoldDebitTest,
 	"Breakaway.Economy.GoldDebit",
 	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
