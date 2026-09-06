@@ -8,12 +8,12 @@
 
 /**
  * GAS Attribute Set for the Breakaway economy system.
- * Tracks gold per-player, used to purchase buildables.
+ * Tracks match gold per player for the upgrade economy.
  * Lives on the PlayerState's AbilitySystemComponent.
  *
  * Gold values are modified exclusively via GameplayEffects:
  * - GE_AwardGold_Kill, GE_AwardGold_Assist, GE_AwardGold_Objective
- * - GE_SpendGold_Buildable (negative modifier, applied by GA_PlaceBuildable)
+ * - UBwayGameplayEffect_SpendGold (validated server-side debit)
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayGoldAttributeSet : public ULyraAttributeSet

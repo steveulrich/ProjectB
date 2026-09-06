@@ -22,7 +22,9 @@ Prefer dated first-hand gameplay observations and developer statements. The two 
 
 ## Current implementation evidence
 
-The native Breakaway economy folder contains gold attributes and passive income. A source search for purchase, shop, upgrade, and spend found comments, not a purchase implementation. No Breakaway content filenames matched shop, upgrade, or purchase. This is evidence of a missing feature path, not an exhaustive Blueprint graph audit.
+A further September 5 hands-on report describes shop access while healing at base and while dead, with life-leech and cooldown-reduction equipment. Include these in catalog and eligibility research; purchase access must not be limited to pre-round and death solely because the earlier source omitted base access. [Game Informer hands-on](https://gameinformer.com/games/breakaway/b/pc/archive/2017/09/05/landing-big-dunks-in-breakaway.aspx).
+
+The initial native economy audit found gold attributes and passive income, but no purchase path. A subsequent implementation adds `UBwayEconomyLibrary::TrySpendGold`, a server-only payment primitive. It does not implement catalog selection, item ranks, eligibility, upgrades, or shop UI. No Breakaway content filenames in the initial audit matched shop, upgrade, or purchase; this was not an exhaustive Blueprint graph audit.
 
 The supplied `Supplemental_Examples/basecharacter_statedeath.lua` enables equipment purchases on death at line 95. Its version is unknown; it corroborates the purchase-window direction but cannot fix final-alpha tuning.
 
