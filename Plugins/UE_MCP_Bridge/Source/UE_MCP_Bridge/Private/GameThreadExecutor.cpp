@@ -2,6 +2,19 @@
 #include "HAL/PlatformProcess.h"
 #include "Containers/Ticker.h"
 
+namespace
+{
+struct FMCPExecutionState
+{
+	FMCPExecutionState() : DoneEvent(FPlatformProcess::GetSynchEventFromPool()) {}
+	~FMCPExecutionState() { FPlatformProcess::ReturnSynchEventToPool(DoneEvent); }
+
+	TSharedPtr<FJsonValue> Result;
+	FEvent* DoneEvent;
+	FThreadSafeBool bTimedOut{false};
+};
+}
+
 FMCPGameThreadExecutor::FMCPGameThreadExecutor()
 {
 }
@@ -38,38 +51,43 @@ TSharedPtr<FJsonValue> FMCPGameThreadExecutor::ExecuteOnGameThread(FHandlerFunct
 	// Use FTSTicker to run on the game thread tick loop (NOT inside TaskGraph).
 	// This avoids the TaskGraph recursion assertion when handlers trigger
 	// subsystems like InterchangeEngine that schedule their own TaskGraph work.
-	TSharedPtr<FJsonValue> Result;
-	FEvent* DoneEvent = FPlatformProcess::GetSynchEventFromPool();
+	// The ticker can outlive this call after a timeout. It must own the inputs,
+	// result, and event rather than retaining references to the caller's stack.
+	const auto State = MakeShared<FMCPExecutionState, ESPMode::ThreadSafe>();
 
 	FTSTicker::GetCoreTicker().AddTicker(
-		FTickerDelegate::CreateLambda([&Result, &Handler, &Params, DoneEvent](float) -> bool
+		FTickerDelegate::CreateLambda([State, Handler = MoveTemp(Handler), Params](float) -> bool
 		{
+			if (State->bTimedOut)
+			{
+				return false;
+			}
 			// Safety: verify GEditor and world are available before running handlers
 			if (!GEditor || !GEditor->GetEditorWorldContext(false).World())
 			{
 				TSharedPtr<FJsonObject> ErrorObject = MakeShared<FJsonObject>();
 				ErrorObject->SetStringField(TEXT("error"), TEXT("Editor world not ready yet. Retry in a moment."));
-				Result = MakeShared<FJsonValueObject>(ErrorObject);
-				DoneEvent->Trigger();
+				State->Result = MakeShared<FJsonValueObject>(ErrorObject);
+				State->DoneEvent->Trigger();
 				return false;
 			}
-			Result = Handler(Params);
-			DoneEvent->Trigger();
+			State->Result = Handler(Params);
+			State->DoneEvent->Trigger();
 			return false; // one-shot — do not re-tick
 		})
 	);
 
 	// Block calling thread until the ticker fires or timeout
 	uint32 TimeoutMs = static_cast<uint32>(TimeoutSeconds * 1000.0f);
-	bool bCompleted = DoneEvent->Wait(TimeoutMs);
-	FPlatformProcess::ReturnSynchEventToPool(DoneEvent);
+	bool bCompleted = State->DoneEvent->Wait(TimeoutMs);
 
 	if (!bCompleted)
 	{
+		State->bTimedOut = true;
 		TSharedPtr<FJsonObject> ErrorObject = MakeShared<FJsonObject>();
 		ErrorObject->SetStringField(TEXT("error"), TEXT("Handler execution timed out"));
 		return MakeShared<FJsonValueObject>(ErrorObject);
 	}
 
-	return Result;
+	return State->Result;
 }

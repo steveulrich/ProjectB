@@ -1283,7 +1283,7 @@ TSharedPtr<FJsonValue> FLevelHandlers::SetVolumeProperties(const TSharedPtr<FJso
 
 			if (bApplied)
 			{
-				Changes.Add(MakeShared<FJsonValueString>(Pair.Key));
+				Changes.Add(MakeShared<FJsonValueString>(FString(*Pair.Key)));
 				PreviousValues->SetStringField(Pair.Key, PrevStr);
 			}
 		}
