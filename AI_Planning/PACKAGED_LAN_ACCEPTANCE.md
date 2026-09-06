@@ -23,6 +23,14 @@ The hidden candidate `-05` listen-server process continued running after the att
 
 ## Previous candidate (-04)
 
+### Goal ownership repair (September 6, 14:10–14:13 UTC)
+
+The suspected goal-class mismatch was disproved: B_Bway_Goal derives from BwayGoalVolume. Both Dorado goal spawn points instead had TeamIndex=-1, which the spawn data copied into OwningTeam. The map now sets SP_GoalTeam1 to 0 and SP_GoalTeam2 to 1, matching their existing labels and goal-spawn assets; the relic spawn remains neutral. The map was saved explicitly as a .umap.
+
+Fresh four-player PIE verified opposite goal locations in all four server bot Blackboards. At 14:11:36 a bot scored in the opposing goal, Team 1 received one point, and round two started. No scripted movement, pickup, or scoring calls were used. Round two ended through the territory timeout rule, awarding Team 2 a point; round three started. Full match completion and round-reset bot behavior remain unverified. Client goal ownership still uses the nonreplicated default and needs repair. Evidence: `Saved/Logs/codex-dorado-goal-team-scoring-verified.log`. PIE was stopped.
+
+Inspection hygiene: the earlier pursuit run's PIE teardown reported references retained by top-level Python inspection variables. Subsequent inspections use function-local runtime references and delete the helper after returning. Treat those earlier teardown diagnostics as inspection contamination, not unexplained gameplay crashes.
+
 ### Pursuit repair and runtime evidence (September 6, 14:05–14:07 UTC)
 
 After the stalled editor exited, an interactive editor launch with engine/cache access restored the bridge. The authored graph's existing Free Relic selector was reconnected to the root and saved, preserving its existing Move To RelicLocation task. In a fresh four-player Dorado PIE session, selection timed out normally, gameplay started, all four bots moved from spawn to midfield, and a bot acquired the relic through existing proximity/request behavior. This establishes movement and pickup after the reconnect; a new explicit pickup sequence was not necessary for this observed path.
