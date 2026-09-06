@@ -24,11 +24,14 @@ public:
 
 	//~AActor interface
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	//~End of AActor interface
 
 	/** Which team this goal belongs to (0 = Team 1, 1 = Team 2) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goal")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, ReplicatedUsing=OnRep_OwningTeam, Category = "Goal")
 	int32 OwningTeam = 0;
+
+	void SetOwningTeam(int32 NewTeam);
 
 	/** Visual feedback when goal is scored */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Goal|VFX")
@@ -54,6 +57,11 @@ protected:
 	virtual void PlayScoringEffects_Implementation();
 
 private:
+	UFUNCTION()
+	void OnRep_OwningTeam();
+
+	void RefreshTeamColor();
+
 	/** Track if a score is currently being processed to avoid double-scoring */
 	bool bIsProcessingScore = false;
 

@@ -136,7 +136,7 @@ void UBwayGoalSpawnData::InitializeSpawnedActor_Implementation(AActor* SpawnedAc
 	}
 
 	// Set goal properties from spawn data
-	GoalVolume->OwningTeam = SpawnPoint->TeamIndex;
+	GoalVolume->SetOwningTeam(SpawnPoint->TeamIndex);
 	GoalVolume->bShowDebugSphere = bShowDebugSphere;
 
 	// Set goal trigger extent if the goal has a box component

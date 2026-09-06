@@ -10,6 +10,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
+#include "Net/UnrealNetwork.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 namespace
 {
@@ -84,19 +86,49 @@ void ABwayGoalVolume::BeginPlay()
 		GoalTrigger->OnComponentBeginOverlap.AddDynamic(this, &ABwayGoalVolume::OnGoalOverlapBegin);
 	}
 
-	// Color the goal based on team for visual clarity in editor/debug
+	RefreshTeamColor();
+
+	UE_LOG(LogTemp, Log, TEXT("Goal Volume initialized for Team %d at location %s"),
+		OwningTeam + 1, *GetActorLocation().ToString());
+}
+
+void ABwayGoalVolume::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ABwayGoalVolume, OwningTeam);
+}
+
+void ABwayGoalVolume::SetOwningTeam(int32 NewTeam)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+	OwningTeam = NewTeam;
+	RefreshTeamColor();
+	ForceNetUpdate();
+}
+
+void ABwayGoalVolume::OnRep_OwningTeam()
+{
+	RefreshTeamColor();
+}
+
+void ABwayGoalVolume::RefreshTeamColor()
+{
 	if (GoalMesh && GoalMesh->GetMaterial(0))
 	{
-		UMaterialInstanceDynamic* DynMat = GoalMesh->CreateDynamicMaterialInstance(0);
+		UMaterialInstanceDynamic* DynMat = Cast<UMaterialInstanceDynamic>(GoalMesh->GetMaterial(0));
+		if (!DynMat)
+		{
+			DynMat = GoalMesh->CreateDynamicMaterialInstance(0);
+		}
 		if (DynMat)
 		{
 			FLinearColor TeamColor = (OwningTeam == 0) ? FLinearColor::Blue : FLinearColor::Red;
 			DynMat->SetVectorParameterValue(FName("TeamColor"), TeamColor);
 		}
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("Goal Volume initialized for Team %d at location %s"), 
-		OwningTeam + 1, *GetActorLocation().ToString());
 }
 
 void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 

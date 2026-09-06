@@ -117,6 +117,14 @@ Evidence: `Saved/Logs/codex-selection-four-player-verified.log`. Builds `codex-s
 
 Level-Blueprint editor-tool caveat: the generic Blueprint mutation tool saved a `.uasset` beside the `.umap`. The level was explicitly saved with `EditorLoadingAndSavingUtils.save_map`, the generated duplicate was removed, and a fresh editor reload confirmed the saved map no longer contains the old BeginPlay UI entry. Human disconnect/rejoin, deferred readiness after disconnect, keyboard/gamepad activation, and packaged regression remain open.
 
+## Goal ownership and complete PIE match (September 6, 14:18–14:22 UTC)
+
+Goal ownership now replicates through `OwningTeam`, with an OnRep color refresh. Spawn initialization uses an authority setter that also refreshes the server material after BeginPlay. Previously clients retained default team 0, and post-spawn ownership assignment left the server color stale. The editor build passed (`Saved/Logs/codex-goal-ownership-build.log`, exit 0).
+
+After a cold editor restart, four same-process PIE worlds on Dorado each reported goal ownership `(-4000, 1), (4000, 0)` by Y position. The server and all three clients matched. No synthetic scoring or bot movement requests were used. Bots scored five natural goals, with round winners 1, 1, 2, 2, 2; the match reached PostMatch at 14:21:54 UTC with Team 2 winning 3–2. All four peers logged the same five-round result. Bots therefore resumed successfully across four round resets in this run. PIE stopped afterward.
+
+Evidence: `Saved/Logs/codex-goal-ownership-full-match-verified.log`. This is replicated state and log evidence in same-process PIE, not packaged LAN, physical frontend navigation, visual goal-color acceptance, late joining, or second-match reset evidence. The previous idle-bot observation alone does not establish a round-reset defect; this completed run supersedes that suspicion. Packaged candidate `-05` predates these fixes.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.
