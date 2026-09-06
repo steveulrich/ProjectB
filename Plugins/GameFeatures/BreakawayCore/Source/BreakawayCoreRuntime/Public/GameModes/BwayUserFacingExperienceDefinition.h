@@ -18,6 +18,9 @@ class BREAKAWAYCORERUNTIME_API UBwayUserFacingExperienceDefinition : public ULyr
 	GENERATED_BODY()
 
 public:
+	// Keep the playlist family ID expected by Lyra's selection and session browser UI.
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
 	/** When false, this tile travels directly to MapID like stock Lyra (PIE/dev tiles only). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Hero Select")
 	bool bRouteThroughHeroSelectStaging = true;

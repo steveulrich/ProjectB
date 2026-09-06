@@ -4,6 +4,7 @@
 
 #include "CommonSessionSubsystem.h"
 #include "Engine/AssetManager.h"
+#include "Engine/World.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayUserFacingExperienceDefinition)
 
@@ -14,7 +15,7 @@ namespace BwayHeroSelectStagingDefaults
 
 	FPrimaryAssetId GetDefaultStagingMapId()
 	{
-		return FPrimaryAssetId(MapType, FName(TEXT("L_BW_HeroSelect_Staging")));
+		return FPrimaryAssetId(MapType, FName(TEXT("/BreakawayCore/Maps/L_BW_HeroSelect_Staging")));
 	}
 
 	FPrimaryAssetId GetDefaultStagingExperienceId()
@@ -38,8 +39,22 @@ namespace BwayHeroSelectStagingDefaults
 	}
 }
 
+FPrimaryAssetId UBwayUserFacingExperienceDefinition::GetPrimaryAssetId() const
+{
+	return HasAnyFlags(RF_ClassDefaultObject) ? FPrimaryAssetId()
+		: FPrimaryAssetId(FPrimaryAssetType(TEXT("LyraUserFacingExperienceDefinition")), GetFName());
+}
+
 UCommonSession_HostSessionRequest* UBwayUserFacingExperienceDefinition::CreateHostingRequest(const UObject* WorldContextObject) const
 {
+	// The feature's mount can become available after the initial game asset scan.
+	// Resolve its maps before CommonSession validates the hosting request in -game.
+	if (UAssetManager* AssetManager = UAssetManager::GetIfInitialized())
+	{
+		AssetManager->ScanPathsForPrimaryAssets(UAssetManager::MapType,
+			{TEXT("/BreakawayCore/Maps")}, UWorld::StaticClass(), false, false, true);
+	}
+
 	UCommonSession_HostSessionRequest* Result = ULyraUserFacingExperienceDefinition::CreateHostingRequest(WorldContextObject);
 	if (!Result || !bRouteThroughHeroSelectStaging)
 	{
