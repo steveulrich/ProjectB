@@ -25,6 +25,12 @@ Exit code **0** = pass. Non-zero = fail; read the log path printed by the script
 
 Agents may run the build, fix compiler errors, and restart the project editor. Preserve unsaved work and close the editor gracefully when a full rebuild is required. Wait for existing build processes; do not start duplicates. After success, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute `.uproject` path, verify bridge readiness, and run the relevant PIE checks. Follow sandbox permissions and report build results separately from gameplay results.
 
+## Editor Python and multiplayer evidence
+
+Unreal's `AActor::GetFunctionCallspace` returns local execution while `GAllowActorScriptExecutionInEditor` is true. Editor Python sets this guard; it affects RPCs called indirectly by native widget handlers as well as direct RPC calls. A client-side Python call returning a success/rejection is therefore not proof of network transport.
+
+For the upgrade shop, open the owning client's screen, then execute `bway.Test.ShopBuySelected` in that client's game world. The development-only command queues the normal widget purchase handler on a game timer and refuses execution if the guard remains active. Check its log for `authority=0 scriptguard=0`, then compare server and owning-client ranks, balances, effects, and response UI. Run fresh sessions after any direct authority test purchases. Same-process PIE still requires separate-process and packaged LAN follow-up.
+
 ## Engine resolution
 
 Set `UE_ENGINE_ROOT` if auto-detection fails:
