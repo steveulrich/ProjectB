@@ -2,6 +2,18 @@
 
 ## Current candidate
 
+- Candidate: `LAN-20260906-07`, Win64 Development, `LyraGame`, project base `3c6fd82b`; includes the weak-reference round-cleanup repair. Build/cook/stage passed with AutomationTool exit 0 in 145.98 seconds. Pipeline log and exit status: `Saved/Logs/codex-lan-package-20260906-07*`. Source/engine HEAD, status, binary patches, and complete staged-file SHA-256/size inventory: `Saved/Logs/codex-packaged-LAN-20260906-07-*` (untracked contents are not preserved by patches).
+- Stage: `Saved/StagedBuilds/LAN-20260906-07/Windows/LyraGame.exe`. Cold startup and the existing `bway.Test.HostLAN` fixture reached hero selection and Dorado. No client has joined this candidate yet: a Windows Security firewall prompt blocked UI work and was handed to the user. Host logs reached round two at 15:45:13 UTC, but without bot replacement this does **not** validate the crash repair. Runtime log: `Saved/Logs/codex-packaged07-lifetime-host.log`.
+- Acceptance remains open: repeat late join during an active round, verify bot removal and round cleanup after collection, then complete the multiplayer and frontend gates. This candidate predates the HUD reference repair described next.
+
+### Frontend experience HUD mismatch
+
+Read-only cold asset inspection found that `B_BW_Experience_CaptureTheRelic`, used by the frontend playlist, referenced `LAS_ShooterGame_StandardHUD`; the development experience referenced `LAS_BW_MatchHUD`. Shooter's action set installs `W_ShooterHUDLayout` and the three-slot `W_QuickBar`, explaining the packaged three EMPTY slots despite the host receiving six tagged hero abilities. The Breakaway action set installs `WBP_BW_MatchHUDLayout`, which provides the intended match HUD slots.
+
+Source now replaces only the CaptureTheRelic experience's Shooter HUD action-set reference with the existing Breakaway HUD action set. The asset compiled and saved in a commandlet; evidence: `Saved/Logs/codex-capture-relic-hud-repair.log`. A separate cold commandlet exited 0 and confirmed the replacement persisted (`codex-capture-relic-hud-cold-verify.log`, 15:45:49 UTC). Packaged visual verification remains open. The experience's Shooter standard components also differ from the development experience (quickbar, damage-number and character nameplate targets); those references have not been changed. The late joiner's missing selected hero remains a separate issue.
+
+## Previous candidate (-06)
+
 - Candidate: `LAN-20260906-06`, Win64 Development, `LyraGame`, built September 6, 2026. This supersedes `-05` as the packaged candidate.
 - Project base: `24e0cd63065ccf9107a35dc9abf816b9aaf871cd`, including bot pursuit, Dorado goal ownership and replication, server-owned rematch travel, results layout, and gameplay HUD suppression during results. Project and engine HEAD, status, and binary patches are retained under `Saved/Logs/codex-packaged-LAN-20260906-06-*`; the patches do not preserve untracked file contents.
 - Pipeline: the BuildCookRun command below with staging directory `LAN-20260906-06`. Build, cook, and stage passed; AutomationTool exited 0 after 140.06 seconds. The full log is `Saved/Logs/codex-lan-package-20260906-06.log`, with exit status in the corresponding `-exit.txt` file. Existing gameplay-tag and asset migration warnings remain.
