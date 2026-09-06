@@ -5,12 +5,14 @@
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Economy/BwayGoldAttributeSet.h"
+#include "Economy/BwayUpgradeComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Net/UnrealNetwork.h"
 
 ABwayPlayerState::ABwayPlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	UpgradeComponent = CreateDefaultSubobject<UBwayUpgradeComponent>(TEXT("UpgradeComponent"));
 	bHasRelic = false;
 	bHasCalledForRelic = false;
 	bHeroLocked = false;

@@ -45,6 +45,8 @@ private:
 
 public:
 	ABwayPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Economy")
+	TObjectPtr<class UBwayUpgradeComponent> UpgradeComponent;
 	
 	// ========== RELIC SYSTEM ==========
 	

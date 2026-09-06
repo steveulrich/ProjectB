@@ -8,7 +8,23 @@ The shop remains incomplete. This document records implemented foundations and t
 
 A fixed native instant Gameplay Effect performs the debit, retaining the existing gold attribute replication and change notifications. `WasSuccessfullyApplied()` distinguishes successful instant execution from a rejected application; `IsValid()` alone cannot do that for an instant effect.
 
-This function is not an RPC or a complete purchase transaction. Do not expose client-supplied prices through it. The future purchase service must resolve item identifiers against a server catalog, validate rank/slot/state, and commit the debit and upgrade together. Rank grants, repeated-request semantics, refunds, and rollback still need implementation. The current gold cap also needs reference tuning.
+This function is not an RPC. Do not expose client-supplied prices through it. The upgrade component resolves prices from its server catalog before invoking this helper. The current gold cap still needs reference tuning.
+
+## Catalog and ownership
+
+`UBwayUpgradeCatalog` contains stable upgrade IDs, presentation fields, effect classes, slot limits, and per-rank cost/total bonus. It validates duplicate IDs, missing definitions, invalid prices/magnitudes, and unsupported effects. No gameplay catalog or reference prices have been authored yet; automation values are fixture data only.
+
+`UBwayUpgradeComponent` is a replicated default subobject on `ABwayPlayerState`. The catalog and owned ID/rank array replicate to the owner. The ASC's existing attribute replication carries the resulting combat values. `OnUpgradesChanged` notifies authority and owning-client UI. The component retains effect handles on the server and survives pawn replacement with the PlayerState.
+
+## Purchase transaction
+
+The reliable server RPC accepts only an upgrade ID and the client's expected current rank. Authority validates the purchase window, catalog, rank, slot capacity, required attributes, and funds. Duplicate/stale requests cannot advance a second rank. A reentrancy guard covers application, debit, ownership mutation, and notifications.
+
+Each rank uses an infinite, non-periodic, non-stacking Gameplay Effect. The component creates a level-one self-targeted spec with the owner's ASC context and sets `UpgradeMagnitude` from the catalog. It applies the new effect, debits gold, then removes the previous rank's effect and records ownership. Failed payment removes the newly applied effect. Supported effects are deliberately restricted to additive attack-strength/armor modifiers using this named magnitude; executions, effect components, and health/gold modifications are rejected to keep removal reversible. Existing AttributeSet hooks retain their clamping behavior.
+
+`ResetUpgrades` removes owned effects and ranks without refunding gold. New PlayerStates start empty and ownership is not copied through seamless travel. An explicit same-world new-match reset hook, pawn-respawn verification, and separate-process replication tests remain required before claiming lifecycle coverage.
+
+Current purchase windows are prematch, warmup, and death during play. Base-healing access and between-round shop presentation remain unfinished. No UI is connected, no catalog is assigned, and no playable-shop gate is closed by this component.
 
 ## Verification
 
@@ -18,7 +34,9 @@ Build: `Saved/Logs/codex-economy-debit-authority-build.log` passed. Runtime test
 
 ## Next implementation work
 
-Recover the catalog and rank values, including life leech and cooldown reduction; model upgrade definitions and owned ranks; validate base/pre-round/death access; implement server purchase transactions; connect real Gameplay Effects and respawn persistence; build and verify the shop UI. No completion gate for the playable shop is closed by the payment helper alone.
+`Breakaway.Economy.UpgradePurchase` passed alongside `GoldDebit` at 01:33:16 UTC on September 6, 2026 after an editor restart. It uses a controlled warmup/playing phase fixture and real GAS attributes/effects to verify unknown IDs, authority and combat-window rejection, duplicate requests, slot/rank caps, exact costs, effect replacement, base-value reinitialization, reset, and insufficient funds. Evidence: `Saved/Logs/codex-upgrade-purchase-verified.log`; build: `Saved/Logs/codex-upgrade-purchase-build.log`. This does not exercise network transport, a real pawn respawn, or a debit failure after effect application. Background throttling was restored afterward.
+
+Recover the catalog and rank values, including life leech and cooldown reduction; integrate base/pre-round/death access; verify transaction rollback and lifecycle behavior; build and verify the shop UI. Separate-process purchase and replication evidence is still required.
 
 
 The corrected fixture passed at 01:20:57 UTC on September 6, 2026. Evidence: `Saved/Logs/codex-economy-debit-verified.log`; final fixture build: `codex-economy-fixture-build.log`. The initial test fixture incorrectly initialized a world twice and crashed the editor before exercising the debit. That fixture defect was fixed, documented in BF-062, rebuilt, and rerun successfully. Background throttling was restored afterward.
