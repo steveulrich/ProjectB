@@ -158,6 +158,10 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 
 void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
+	// Also runs for seamless arrivals, which do not receive PostLogin.
+	// Register the carried team before prematch can defer pawn spawning.
+	AssignPlayerToTeam(NewPlayer);
+
 	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
 	{
 		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: deferring spawn for %s until match flow leaves Prematch"), *GetNameSafe(NewPlayer));
@@ -432,7 +436,15 @@ void ABreakawayGameMode::AssignControllerToTeam(AController* Controller)
 		return;
 	}
 
-	const int32 TeamIndex = GetTeamWithFewerPlayers();
+	int32 TeamIndex = GetTeamWithFewerPlayers();
+	if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Controller->PlayerState))
+	{
+		const uint8 CarriedTeamId = BwayPS->GetGenericTeamId().GetId();
+		if (CarriedTeamId == 1 || CarriedTeamId == 2)
+		{
+			TeamIndex = CarriedTeamId - 1;
+		}
+	}
 	BwayGS->AddPlayerToTeam(Controller->PlayerState, TeamIndex);
 
 	UE_LOG(LogBreakawayGame, Log, TEXT("Assigned player %s to Team %d"),

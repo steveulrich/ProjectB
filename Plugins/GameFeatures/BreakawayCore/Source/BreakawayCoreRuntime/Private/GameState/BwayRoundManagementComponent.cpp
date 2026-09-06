@@ -1150,8 +1150,11 @@ int32 UBwayRoundManagementComponent::GetRoundTimeRemaining() const
 		return 0;
 	}
 
-	const float ElapsedTime = GetWorld()->GetTimeSeconds() - RoundStartTime;
-	const float RemainingTime = FMath::Max(0.0f, RoundDuration - ElapsedTime);
+	const AGameStateBase* GameState = GetOwner<AGameStateBase>();
+	const double CurrentServerTime = GameState
+		? GameState->GetServerWorldTimeSeconds() : GetWorld()->GetTimeSeconds();
+	const double ElapsedTime = CurrentServerTime - RoundStartTime;
+	const double RemainingTime = FMath::Max(0.0, RoundDuration - ElapsedTime);
 	return FMath::CeilToInt(RemainingTime);
 }
 

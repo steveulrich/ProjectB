@@ -44,6 +44,7 @@ void ABwayPlayerState::CopyProperties(APlayerState* PlayerState)
 		BwayPlayerState->SelectedHeroId = SelectedHeroId;
 		BwayPlayerState->bHeroLocked = bHeroLocked;
 		BwayPlayerState->PlayerNum = PlayerNum;
+		BwayPlayerState->SetGenericTeamId(GetGenericTeamId());
 	}
 }
 

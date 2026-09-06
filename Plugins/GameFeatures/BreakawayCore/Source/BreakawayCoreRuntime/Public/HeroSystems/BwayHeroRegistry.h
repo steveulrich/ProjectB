@@ -20,6 +20,8 @@ class BREAKAWAYCORERUNTIME_API UBwayHeroRegistry : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
 	/** Get the hero registry from any world context object */
 	static TObjectPtr<UBwayHeroRegistry> Get(const UObject* WorldContext);
 

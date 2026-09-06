@@ -3,6 +3,62 @@
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "Engine/AssetManager.h"
+#include "Engine/AssetManagerSettings.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Misc/PackageName.h"
+
+void UBwayHeroRegistry::Initialize(FSubsystemCollectionBase& Collection)
+{
+	Super::Initialize(Collection);
+
+	// Game-feature mounts may not exist during Asset Manager's initial scan.
+	// By game-instance startup their configured hero folders are available.
+	UAssetManager& AssetManager = UAssetManager::Get();
+	const FPrimaryAssetType HeroType(TEXT("HeroDataAsset"));
+	FPrimaryAssetTypeInfo TypeInfo;
+	if (AssetManager.GetPrimaryAssetTypeInfo(HeroType, TypeInfo) && TypeInfo.AssetBaseClassLoaded)
+	{
+		TArray<FString> ScanPaths;
+		// Runtime type info does not retain the configured directory list.
+		for (const FPrimaryAssetTypeInfo& ConfigType : GetDefault<UAssetManagerSettings>()->PrimaryAssetTypesToScan)
+		{
+			if (ConfigType.PrimaryAssetType == HeroType.GetName())
+			{
+				for (const FDirectoryPath& Directory : ConfigType.GetDirectories())
+				{
+					ScanPaths.AddUnique(Directory.Path);
+				}
+				for (const FSoftObjectPath& Asset : ConfigType.GetSpecificAssets())
+				{
+					ScanPaths.AddUnique(Asset.ToString());
+				}
+			}
+		}
+		// AssetManager caches even not-yet-mounted scan paths. Refresh registry
+		// metadata directly so that cache cannot hide newly mounted hero content.
+		TArray<FString> MountedDirectories;
+		for (const FString& Path : ScanPaths)
+		{
+			const FString Directory = Path.Contains(TEXT("."))
+				? FPackageName::GetLongPackagePath(FPackageName::ObjectPathToPackageName(Path)) : Path;
+			FString Filename;
+			if (FPackageName::TryConvertLongPackageNameToFilename(Directory / TEXT(""), Filename))
+			{
+				MountedDirectories.AddUnique(Directory);
+			}
+		}
+		FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry")).Get()
+			.ScanPathsSynchronous(MountedDirectories, true);
+		const int32 Count = AssetManager.ScanPathsForPrimaryAssets(HeroType,
+			ScanPaths, TypeInfo.AssetBaseClassLoaded,
+			TypeInfo.bHasBlueprintClasses, TypeInfo.bIsEditorOnly, true);
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroRegistry: Refreshed configured hero discovery (%d assets)"), Count);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroRegistry: HeroDataAsset scan configuration is unavailable"));
+	}
+}
 
 TObjectPtr<UBwayHeroRegistry> UBwayHeroRegistry::Get(const UObject* WorldContext)
 {

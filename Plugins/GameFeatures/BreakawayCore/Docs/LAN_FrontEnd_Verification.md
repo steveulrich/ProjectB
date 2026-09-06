@@ -72,3 +72,21 @@ The actual W_SessionBrowserScreen was pushed onto the local player's UI.Layer.Me
 After these changes, the browser again populated one real LAN host. Invoking the displayed entry's JoinSession event (the same event wired to its SessionButton) successfully connected the PIE client to the separate host and loaded hero staging. This verifies the browser's discovery, entry-data loading, and join code path, but not physical mouse/controller navigation or its visual polish. Evidence: Saved/Logs/codex-lan-browser-fixed-client.log and codex-lan-browser-fixed-host.log.
 
 The standalone host then reported zero heroes via Asset Manager and could not assign a fallback at selection timeout. Runtime hero discovery remains a blocker to this host's full match flow. Direct Python invocations of hero RPC methods did not establish server-side execution and are not replication evidence. All test processes were stopped, prior editor settings and DevMap restored, and no asset/map packages remained dirty.
+
+## Standalone hero discovery and team restoration
+
+The standalone hero scan is now refreshed at UBwayHeroRegistry initialization. Configured paths come from AssetManagerSettings, not the runtime type-info snapshot. Direct Asset Registry scanning of mounted directories bypasses AssetManager's cached pre-mount scan paths; the subsequent primary-asset scan registers all four heroes. Evidence: Saved/Logs/codex-lan-heroes-refresh-host.log reports four assets, successful hosting, selection timeout completion, travel to Dorado, and Round 1 startup. The browser-joined client received eight locked hero selections (codex-lan-heroes-refresh-client.log).
+
+That run exposed human team index -1 after travel. Team assignment existed in PostLogin, which seamless arrivals bypass. BwayPlayerState now copies its team ID, and HandleStartingNewPlayer registers carried membership before spawn deferrals. AssignControllerToTeam preserves valid carried team IDs. The rebuilt run verified two humans on opposing teams before and after travel, and a replicated roster of eight players with team counts [4,4]. Round 1 progressed naturally to Round 2. Evidence: Saved/Logs/codex-lan-team-travel-host.log and codex-lan-team-travel-client.log. Build: codex-seamless-team-build.log.
+
+The manager asset currently explicitly allows duplicate heroes, despite the earlier definition requiring uniqueness; this remains a parity/configuration reconciliation item. It was not changed in this pass.
+
+The same runtime also exposed a roughly 50-second difference between client local world time and synchronized server time. RoundStartTime is server-authored, but the countdown used local World time. GetRoundTimeRemaining now uses GameState.GetServerWorldTimeSeconds. Verification of the rebuilt timer follows. These runs do not yet establish complete match results/return or packaged four-human LAN acceptance.
+
+## Synchronized countdown verification
+
+Build Saved/Logs/codex-server-clock-build.log succeeded. A clean separate host progressed through three rounds; the actual LAN browser entry joined a PIE client directly into the ongoing Dorado match. At 00:45:21 UTC on September 6, the client reported Round 3 active with 77 seconds remaining, matching the host round start at 00:45:08. A second probe reported 47 seconds remaining about 30 seconds later. Client local time was approximately 258 seconds behind synchronized server time, so this run exercises the corrected clock basis rather than matching clocks by coincidence. Evidence: codex-lan-clock-host.log and codex-lan-clock-client.log.
+
+The first editor attempt crashed in Unreal Core InheritedContext/DevHttp/DDC worker code during PIE startup. Its log is preserved as codex-clock-editor-crash.log. Restarting the editor allowed this browser and countdown verification; the engine crash is not resolved by the gameplay changes.
+
+The unattended rounds repeatedly expired with the relic on midfield and no winner; this run does not validate scoring through match completion. PIE was stopped, the separate test host was stopped, and the editor was restored to DevMap, four-client listen PIE, and background throttling enabled. Dirty content and map package counts were both zero. Full scoring/results/return and four-human travel remain acceptance gates.
