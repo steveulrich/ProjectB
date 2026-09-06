@@ -23,6 +23,12 @@ The hidden candidate `-05` listen-server process continued running after the att
 
 ## Previous candidate (-04)
 
+### Pursuit repair and runtime evidence (September 6, 14:05–14:07 UTC)
+
+After the stalled editor exited, an interactive editor launch with engine/cache access restored the bridge. The authored graph's existing Free Relic selector was reconnected to the root and saved, preserving its existing Move To RelicLocation task. In a fresh four-player Dorado PIE session, selection timed out normally, gameplay started, all four bots moved from spawn to midfield, and a bot acquired the relic through existing proximity/request behavior. This establishes movement and pickup after the reconnect; a new explicit pickup sequence was not necessary for this observed path.
+
+Scoring remains blocked: all four bot Blackboards reported an unset EnemyGoalLocation (MAX_FLT vector), while the server contained two B_Bway_Goal actors at Y=-4000 and Y=4000. The bot helper currently searches for ABwayGoalVolume. Investigate the live goal class and its team contract before changing lookup. This run does not establish scoring, possession-change interruption, full-match completion, or packaged behavior. PIE was stopped. Evidence: `Saved/Logs/codex-bot-pursuit-reconnected-verified.log`.
+
 ### Bot asset diagnosis (September 6, 12:24 UTC)
 
 The unattended read-only asset inspection exited with code 0. `BT_BW_RelicBot` uses `BB_BW_RelicBot`; its key names and types match the native service, and the root selector has the update service attached. However, the reachable root children are carrier, enemy-carrier chase, and a `RelicLocation Is Set` branch whose composite (`BTComposite_Selector_0`) has **no children**. The `Move To RelicLocation` tasks (`BTTask_MoveTo_2` and `_3`) are not reachable from the root. This is a concrete asset wiring defect that prevents the tree from pursuing an initially free relic; a successful `RunBehaviorTree` log does not validate it. All inspected Blackboard decorators also have observer aborts disabled.
