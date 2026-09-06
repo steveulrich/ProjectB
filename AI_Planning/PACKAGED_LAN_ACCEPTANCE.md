@@ -125,6 +125,14 @@ After a cold editor restart, four same-process PIE worlds on Dorado each reporte
 
 Evidence: `Saved/Logs/codex-goal-ownership-full-match-verified.log`. This is replicated state and log evidence in same-process PIE, not packaged LAN, physical frontend navigation, visual goal-color acceptance, late joining, or second-match reset evidence. The previous idle-bot observation alone does not establish a round-reset defect; this completed run supersedes that suspicion. Packaged candidate `-05` predates these fixes.
 
+## Results return and second-session PIE smoke (September 6, 14:23–14:30 UTC)
+
+A fresh four-world PIE match completed naturally, 3–0 in three rounds. Physical input on client 1's **Return to Lobby** button returned all four worlds to `L_LyraFrontEnd`; all four had zero relic bot controllers. The former host and client visibly displayed usable frontend menus. The existing PostMatch return guard allowed this valid request; rejection outside PostMatch remains untested.
+
+From the returned host, physical **Play Lyra → Start a game → Network: LAN → Local / Listen server + bots** created a new session. The returned client used **Play Lyra → Browse**, discovered the new 1/8 session at 20 ms, and joined its row. Both travelled to Dorado after selection timeout. Authority had eight players and six bots; the client had the same eight-player count. The two unused peers remained in their independent frontends. The new match displayed 0–0 and started round 1. At 14:30:03 UTC, all sixteen server/client PlayerState copies reported objective score 0 and match gold earned 36, approximately 36 seconds after round start. This supports fresh scoring/economy state in this run; no purchased upgrades or placed buildables were carried through this test, so their reset is unproven.
+
+Evidence: `Saved/Logs/codex-results-return-second-session-verified.log`. This extends same-process PIE evidence only. Four separate processes, packaged travel, full second-match completion, and clean-machine LAN remain open. The results table visibly overlaps names and columns at the 859×520 client window size. Enter after Tab did not select a hero in fresh client selection; the CommonUI config change alone has not resolved verified keyboard acceptance. Play Again still uses local level reload/restart and needs a multiplayer implementation.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.
