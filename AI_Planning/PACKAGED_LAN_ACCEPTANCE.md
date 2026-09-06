@@ -9,7 +9,9 @@
 - Stage: `Saved/StagedBuilds/LAN-20260906`; no release archive or deployment yet.
 - Logs: `Saved/Logs/codex-lan-package-20260906-closed-editor.log` and the referenced UBT log.
 - Existing cook roots: frontend, DevMap, Dorado, and the configured BreakawayCore content directory. No new broad cook inclusion was added.
-- Status: build running; no package or runtime acceptance claimed.
+- Status: standalone build passed; cook running; no package or runtime acceptance claimed.
+
+The first cook reported a missing `Alona` asset domain. Engine `AssetReferencingDomains.cpp` derives plugin domains from `IPlugin::GetName`; the registered plugin is `Hero_Alona`. The project reference rule has been corrected to that identifier. The running cook loaded the old rule, so a fresh cook must verify this correction. BF-069 records prevention. Engine tracked changes and status were captured in `Saved/Logs/codex-package-engine-tracked.patch` and `codex-package-engine-status.txt`; untracked engine content is not included in that patch.
 
 Command issued with the editor closed:
 
