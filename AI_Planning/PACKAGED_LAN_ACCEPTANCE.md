@@ -2,6 +2,12 @@
 
 ## Current candidate
 
+- Candidate: `LAN-20260906-08`, Win64 Development, `LyraGame`, project base `fb76cbdf`; includes the frontend Breakaway HUD reference and `bway.Debug.RelicBots`. Build/cook/stage passed with AutomationTool exit 0 in 154.92 seconds. A transient Zen connection failure recovered during staging. Log/exit status: `Saved/Logs/codex-lan-package-20260906-08*`; source/engine identity, patches, status, and complete staged-file SHA-256/size inventory: `Saved/Logs/codex-packaged-LAN-20260906-08-*`.
+- Stage: `Saved/StagedBuilds/LAN-20260906-08/Windows/LyraGame.exe`; runtime log: `Saved/Logs/codex-packaged08-bot-host.log`. Launched through the existing LAN test fixture. Interactive diagnostics and HUD verification are pending. Windows Security displayed a firewall prompt; despite user authorization, the computer-use tool exposes PickerHost with an empty windows list and rejects game-targeted clicks over that separate dialog. User assistance was requested for this tool limitation, not for renewed permission.
+- Next: run `bway.Debug.RelicBots` on the active packaged host, inspect the six-slot HUD, and continue the complete multiplayer match/front-end acceptance sequence. No candidate -08 runtime acceptance is claimed yet.
+
+## Previous candidate (-07)
+
 - Candidate: `LAN-20260906-07`, Win64 Development, `LyraGame`, project base `3c6fd82b`; includes the weak-reference round-cleanup repair. Build/cook/stage passed with AutomationTool exit 0 in 145.98 seconds. Pipeline log and exit status: `Saved/Logs/codex-lan-package-20260906-07*`. Source/engine HEAD, status, binary patches, and complete staged-file SHA-256/size inventory: `Saved/Logs/codex-packaged-LAN-20260906-07-*` (untracked contents are not preserved by patches).
 - Stage: `Saved/StagedBuilds/LAN-20260906-07/Windows/LyraGame.exe`. Cold startup and the existing `bway.Test.HostLAN` fixture reached hero selection and Dorado. No client has joined this candidate yet: a Windows Security firewall prompt blocked UI work and was handed to the user. Host logs reached round two at 15:45:13 UTC, but without bot replacement this does **not** validate the crash repair. Runtime log: `Saved/Logs/codex-packaged07-lifetime-host.log`.
 - Acceptance remains open: repeat late join during an active round, verify bot removal and round cleanup after collection, then complete the multiplayer and frontend gates. This candidate predates the HUD reference repair described next.
