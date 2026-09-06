@@ -17,6 +17,7 @@ struct FBwayOwnedUpgrade
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBwayUpgradesChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBwayPurchaseResult, FName, Id, bool, bSuccess);
 
 /** Match ownership lives beside the persistent PlayerState ASC, independently of the pawn. */
 UCLASS(BlueprintType, meta=(BlueprintSpawnableComponent))
@@ -30,6 +31,7 @@ public:
 	UFUNCTION(BlueprintPure)
 	UBwayUpgradeCatalog* GetCatalog() const { return Catalog; }
 	/** Authority setup only; a catalog cannot change while ranks are owned. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	bool ConfigureCatalog(UBwayUpgradeCatalog* InCatalog);
 	UFUNCTION(BlueprintPure)
 	int32 GetOwnedRank(FName Id) const;
@@ -45,9 +47,14 @@ public:
 	void ResetUpgrades();
 	UPROPERTY(BlueprintAssignable)
 	FBwayUpgradesChanged OnUpgradesChanged;
+	UPROPERTY(BlueprintAssignable)
+	FBwayPurchaseResult OnPurchaseResult;
 
 private:
-	UPROPERTY(EditDefaultsOnly, Replicated)
+	virtual void BeginPlay() override;
+	UFUNCTION(Client, Reliable)
+	void ClientPurchaseResult(FName Id, bool bSuccess);
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_OwnedUpgrades)
 	TObjectPtr<UBwayUpgradeCatalog> Catalog;
 	UPROPERTY(ReplicatedUsing=OnRep_OwnedUpgrades)
 	TArray<FBwayOwnedUpgrade> OwnedUpgrades;

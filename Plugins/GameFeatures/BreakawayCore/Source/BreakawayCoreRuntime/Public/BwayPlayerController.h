@@ -36,6 +36,8 @@ class BREAKAWAYCORERUNTIME_API ABwayPlayerController : public ALyraPlayerControl
 
 public:
 	ABwayPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	UFUNCTION(Exec, BlueprintCallable, Category="Breakaway|Economy")
+	void ToggleUpgradeShop();
 
 	/**
 	 * Opens the hero selection UI for this player.
@@ -108,10 +110,13 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnPossess(APawn* InPawn) override;
 
 private:
+	UPROPERTY(Transient)
+	TObjectPtr<class UBwayUpgradeShopWidget> UpgradeShopWidget;
 	void BindPostRoundSummaryListeners();
 	void UnbindPostRoundSummaryListeners();
 
@@ -140,4 +145,3 @@ private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UBwayRoundManagementComponent> BoundRoundManagementComponent;
 };
-

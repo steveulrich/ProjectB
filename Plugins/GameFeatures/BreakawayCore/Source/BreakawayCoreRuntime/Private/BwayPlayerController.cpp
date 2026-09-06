@@ -1,6 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "BwayPlayerController.h"
+#include "UI/BwayUpgradeShopWidget.h"
+#include "Components/InputComponent.h"
+#include "InputCoreTypes.h"
 #include "UI/BwayResultsScreenWidget.h"
 #include "UI/BwayPostRoundSummaryWidget.h"
 #include "BreakawayGameMode.h"
@@ -42,6 +45,28 @@ void ABwayPlayerController::ShowHeroSelect()
 		BwayCheatMgr->ShowHeroSelect();
 	}
 #endif
+}
+
+void ABwayPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+	if (InputComponent) InputComponent->BindKey(EKeys::B, IE_Pressed, this, &ThisClass::ToggleUpgradeShop);
+}
+
+void ABwayPlayerController::ToggleUpgradeShop()
+{
+	if (!IsLocalController() || !GetLocalPlayer()) return;
+	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated())
+	{
+		UpgradeShopWidget->DeactivateWidget();
+		return;
+	}
+	const ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>();
+	if (!GS || !GS->GetRoundManagement() || (HeroSelectionWidget && HeroSelectionWidget->IsActivated()) || ResultsWidget) return;
+	const EBwayMatchPhase Phase = GS->GetRoundManagement()->GetCurrentMatchPhase();
+	if (Phase == EBwayMatchPhase::None || Phase == EBwayMatchPhase::Prematch || Phase == EBwayMatchPhase::PostMatch) return;
+	UpgradeShopWidget = Cast<UBwayUpgradeShopWidget>(UCommonUIExtensions::PushContentToLayer_ForPlayer(
+		GetLocalPlayer(), FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Menu")), UBwayUpgradeShopWidget::StaticClass()));
 }
 
 void ABwayPlayerController::HideHeroSelect()
@@ -253,6 +278,7 @@ void ABwayPlayerController::HandlePostRoundSummaryStarted(FBwayPostRoundSummaryD
 
 void ABwayPlayerController::HandleMatchPhaseChanged(EBwayMatchPhase NewPhase)
 {
+	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) UpgradeShopWidget->DeactivateWidget();
 	if (NewPhase != EBwayMatchPhase::PostRound)
 	{
 		DismissPostRoundSummary();

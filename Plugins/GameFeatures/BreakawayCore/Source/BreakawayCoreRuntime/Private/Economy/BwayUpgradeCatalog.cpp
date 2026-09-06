@@ -49,6 +49,16 @@ const FBwayUpgradeDefinition* UBwayUpgradeCatalog::FindUpgrade(FName Id) const
 	return Upgrades.FindByPredicate([Id](const FBwayUpgradeDefinition& Entry) { return Entry.Id == Id; });
 }
 
+UBwayUpgradeEffect_Armor::UBwayUpgradeEffect_Armor()
+{
+	FSetByCallerFloat Value;
+	Value.DataName = MagnitudeName;
+	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayHeroAttributeSet::GetArmorAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
+}
+
 bool UBwayUpgradeCatalog::ValidateCatalog(FString& Error) const
 {
 	Error.Reset();

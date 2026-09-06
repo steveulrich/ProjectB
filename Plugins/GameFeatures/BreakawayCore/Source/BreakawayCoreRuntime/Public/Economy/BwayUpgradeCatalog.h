@@ -24,6 +24,14 @@ public:
 	UBwayUpgradeEffect_AttackStrength();
 };
 
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayUpgradeEffect_Armor : public UBwayUpgradeEffect
+{
+	GENERATED_BODY()
+public:
+	UBwayUpgradeEffect_Armor();
+};
+
 USTRUCT(BlueprintType)
 struct FBwayUpgradeRank
 {

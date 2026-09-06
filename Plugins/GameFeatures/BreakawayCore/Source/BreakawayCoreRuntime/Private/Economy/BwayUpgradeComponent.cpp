@@ -27,6 +27,18 @@ void UBwayUpgradeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION(UBwayUpgradeComponent, OwnedUpgrades, COND_OwnerOnly);
 }
 
+void UBwayUpgradeComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	if (GetOwner()->HasAuthority() && !Catalog)
+	{
+		// BreakawayCore is always cooked by the project packaging settings. The
+		// selected asset remains a hard reference on this replicated component.
+		ConfigureCatalog(LoadObject<UBwayUpgradeCatalog>(nullptr,
+			TEXT("/BreakawayCore/Economy/DA_BW_MatchUpgrades.DA_BW_MatchUpgrades")));
+	}
+}
+
 bool UBwayUpgradeComponent::ConfigureCatalog(UBwayUpgradeCatalog* InCatalog)
 {
 	FString Error;
@@ -70,7 +82,12 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 
 void UBwayUpgradeComponent::ServerPurchaseUpgrade_Implementation(FName Id, int32 ExpectedCurrentRank)
 {
-	TryPurchaseUpgrade(Id, ExpectedCurrentRank);
+	ClientPurchaseResult(Id, TryPurchaseUpgrade(Id, ExpectedCurrentRank));
+}
+
+void UBwayUpgradeComponent::ClientPurchaseResult_Implementation(FName Id, bool bSuccess)
+{
+	OnPurchaseResult.Broadcast(Id, bSuccess);
 }
 
 bool UBwayUpgradeComponent::TryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRank)

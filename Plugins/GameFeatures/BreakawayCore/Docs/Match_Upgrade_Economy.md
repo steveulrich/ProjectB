@@ -12,7 +12,7 @@ This function is not an RPC. Do not expose client-supplied prices through it. Th
 
 ## Catalog and ownership
 
-`UBwayUpgradeCatalog` contains stable upgrade IDs, presentation fields, effect classes, slot limits, and per-rank cost/total bonus. It validates duplicate IDs, missing definitions, invalid prices/magnitudes, and unsupported effects. No gameplay catalog or reference prices have been authored yet; automation values are fixture data only.
+`UBwayUpgradeCatalog` contains stable upgrade IDs, presentation fields, effect classes, slot limits, and per-rank cost/total bonus. It validates duplicate IDs, missing definitions, invalid prices/magnitudes, and unsupported effects. `/BreakawayCore/Economy/DA_BW_MatchUpgrades` now contains attack strength and armor, each with four ranks. Costs are provisionally 75/125/175/225; attack bonuses are +5/+10/+15/+20 and armor bonuses +3/+6/+9/+12. These are implementation tuning, not recovered final-alpha values. The full reference equipment set remains incomplete.
 
 `UBwayUpgradeComponent` is a replicated default subobject on `ABwayPlayerState`. The catalog and owned ID/rank array replicate to the owner. The ASC's existing attribute replication carries the resulting combat values. `OnUpgradesChanged` notifies authority and owning-client UI. The component retains effect handles on the server and survives pawn replacement with the PlayerState.
 
@@ -24,7 +24,17 @@ Each rank uses an infinite, non-periodic, non-stacking Gameplay Effect. The comp
 
 `ResetUpgrades` removes owned effects and ranks without refunding gold. New PlayerStates start empty and ownership is not copied through seamless travel. An explicit same-world new-match reset hook, pawn-respawn verification, and separate-process replication tests remain required before claiming lifecycle coverage.
 
-Current purchase windows are prematch, warmup, non-final post-round planning, death during play, and a living teammate's base zone. Death eligibility also reads the persistent health attribute because pawn teardown clears Lyra death tags before respawn. A restored positive health value closes that fallback window. Winning-score post-round summaries and postmatch reject purchases. Map placement and between-round shop presentation remain unfinished. No UI is connected, no catalog is assigned, and no playable-shop gate is closed by this component.
+Current purchase windows are prematch, warmup, non-final post-round planning, death during play, and a living teammate's base zone. Death eligibility also reads the persistent health attribute because pawn teardown clears Lyra death tags before respawn. A restored positive health value closes that fallback window. Winning-score post-round summaries and postmatch reject purchases. The component loads the catalog on authority at BeginPlay; the existing `/BreakawayCore` always-cook directory covers its content. Cooked runtime loading has not yet been tested.
+
+## Shop screen
+
+Press B during play to open `UBwayUpgradeShopWidget`; B, Escape, or Close dismisses it. The controller also exposes `ToggleUpgradeShop` for Blueprint/console integration. The initial B binding is a fixed controller key binding; remapping, a discoverable HUD entry, and gamepad opening still need integration. Gamepad back closes the active screen.
+
+The local UMG/CommonUI screen lives in `UI.Layer.Menu` with menu input/no mouse capture and desired focus on its selector. It lists catalog choices, current gold/owned count, rank information, and the next price. A local intent invokes the owning component's server RPC; a reliable client result reports success/rejection. Buying is disabled while pending or when price, rank, slot, or access checks fail locally; authority repeats all validation. Gold/ownership updates use delegates; a 0.25-second active-screen timer checks spatial access. Deactivation removes subscriptions and the timer. Match-phase changes dismiss the shop to avoid covering summaries/results.
+
+The native layout is an initial usable screen, not final UI polish. Responsive/safe-zone coverage, gamepad navigation, remote purchase transport, rejection messaging under latency, and full equipment coverage remain open. Current-gold-based match statistics also need auditing now that purchases can spend gold.
+
+Shop verification (September 6, 2026): editor builds passed (`codex-upgrade-shop-catalog-build.log`, final `codex-upgrade-shop-layout-build.log`); both economy tests passed. In listen PIE the catalog loaded automatically, gold updated on screen, and calling the widget's purchase handler bought attack-strength rank 1, displayed success, and changed the next rank price to 125. Closing deactivated the screen. Evidence: `Saved/Logs/codex-upgrade-shop-purchase-verified.log`. After fixing the zero-size backdrop, a second run confirmed focus and automatic dismissal on round end (`codex-upgrade-shop-layout-verified.log`); visual evidence: `Saved/Screenshots/Shop_Final00000.png`. The screenshot also shows pre-existing navmesh and relic-widget material warnings that remain unresolved. These checks exercise the widget/native authority path, not physical key presses, remote transport, or all navigation paths. Four-player/throttle settings were restored.
 
 ## Team base zone
 
