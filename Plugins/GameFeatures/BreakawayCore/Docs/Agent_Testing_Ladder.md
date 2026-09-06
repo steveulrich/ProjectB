@@ -36,6 +36,8 @@ Before building, inspect running editor/build processes. Preserve unsaved work, 
 
 After a successful build, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute ProjectB.uproject path and verify editor/bridge readiness before testing. The MCP launcher may not discover a source-built engine; use the engine resolver and launch the verified executable directly when needed. Respect sandbox escalation requirements. Ask the user only for missing decisions, unsaved-work conflicts, or permissions the available tools cannot satisfy.
 
+**Unreal permission prompts (user authorization, September 6, 2026):** Agents may handle security permission requests directly related to this project's verified Unreal engine and build executables, including Windows Firewall prompts needed for LAN testing. Verify the requesting executable and use the normal permission dialog with the narrowest offered network scope sufficient for the test. This authorization persists across candidate builds. It does not authorize disabling security software, adding broad exclusions, changing unrelated permissions, or handling credentials. The installed computer-use guidance was updated with this exception; this project note preserves the user's authorization if a plugin update replaces its cached documentation.
+
 **Notes:**
 - Target is `LyraEditor`, not `ProjectBEditor` — Lyra keeps native target names.
 - Set `UE_ENGINE_ROOT` when registry lookup fails.
