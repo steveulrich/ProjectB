@@ -14,6 +14,14 @@ Source now replaces only the CaptureTheRelic experience's Shooter HUD action-set
 
 ## Previous candidate (-06)
 
+### Saved navigation investigation (September 6, 15:48–15:56 UTC)
+
+The original committed Dorado map passes all twelve spawn-to-midfield path queries after both endpoints are projected onto navigation: 12 valid, non-partial paths, 0 invalid. Midfield projects to Z=30; spawn points project to approximately Z=240–249. Evidence: `Saved/Logs/codex-dorado-nav-original-projected-paths.log`. This is cold source-asset navigation evidence, not cooked navigation or live bot movement evidence.
+
+The first diagnostic incorrectly targeted midfield at Z=350 and returned no paths. A Python rebuild attempt and a native `ResavePackages -BuildNavigationData` attempt also encountered `AsyncLoadLock` (0x20). The native command returned exit 0 despite reporting that navigation was not built. Engine source shows the lock waits for editor ticker callbacks. A command-only `-ini:Engine:[/Script/NavigationSystem.NavigationSystemV1]:bWaitForAsyncLoadingBeforeBuildingNavigationAutomatically=False` override allowed the dedicated commandlet to finish its mesh compilation, build static navigation, and save Dorado. Corrected projected queries passed in both rebuilt and original maps. The experimental map change was restored to HEAD; the rebuilt copy is retained under `Saved/L_BW_Dorado_nav_rebuild_verified.umap`. No navigation settings or source map changes are retained.
+
+Next bot diagnostic: inspect the actual packaged server's loaded NavData, projected endpoints, path-following result, and Blackboard/active branch. A running Behavior Tree log alone remains insufficient. The Windows Security dialog still covered candidate -07 during this investigation; no client-replacement crash regression or interactive bot check was performed.
+
 - Candidate: `LAN-20260906-06`, Win64 Development, `LyraGame`, built September 6, 2026. This supersedes `-05` as the packaged candidate.
 - Project base: `24e0cd63065ccf9107a35dc9abf816b9aaf871cd`, including bot pursuit, Dorado goal ownership and replication, server-owned rematch travel, results layout, and gameplay HUD suppression during results. Project and engine HEAD, status, and binary patches are retained under `Saved/Logs/codex-packaged-LAN-20260906-06-*`; the patches do not preserve untracked file contents.
 - Pipeline: the BuildCookRun command below with staging directory `LAN-20260906-06`. Build, cook, and stage passed; AutomationTool exited 0 after 140.06 seconds. The full log is `Saved/Logs/codex-lan-package-20260906-06.log`, with exit status in the corresponding `-exit.txt` file. Existing gameplay-tag and asset migration warnings remain.
