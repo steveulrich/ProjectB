@@ -37,6 +37,13 @@ protected:
 	//~End of AActor interface
 
 public:
+	/** True only when team identity was copied from an earlier player state. */
+	bool HasCarriedTeamAssignment() const { return bHasCarriedTeamAssignment; }
+
+private:
+	bool bHasCarriedTeamAssignment = false;
+
+public:
 	ABwayPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 	// ========== RELIC SYSTEM ==========

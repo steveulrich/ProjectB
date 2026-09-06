@@ -145,6 +145,19 @@ void UBwayBotCreationComponent::TrimExcessBots(int32 TargetBotCount)
 			continue;
 		}
 
+		if (ABwayRelicBotController* RelicBot = Cast<ABwayRelicBotController>(BotController))
+		{
+			RelicBot->StopRelicBotLogic();
+		}
+		else if (UBrainComponent* Brain = BotController->GetBrainComponent())
+		{
+			Brain->StopLogic(TEXT("HumanJoined"));
+		}
+		if (ABwayGameState* GameState = GetOwner<ABwayGameState>())
+		{
+			GameState->RemovePlayerFromTeam(BotController->PlayerState);
+		}
+
 		if (APawn* OldPawn = BotController->GetPawn())
 		{
 			BotController->UnPossess();
@@ -152,6 +165,15 @@ void UBwayBotCreationComponent::TrimExcessBots(int32 TargetBotCount)
 		}
 
 		BotController->Destroy();
+	}
+}
+
+void UBwayBotCreationComponent::MakeRoomForHumanPlayer()
+{
+	if (GetOwner()->HasAuthority() && !UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		// Only remove existing fillers here; experience load owns initial creation.
+		TrimExcessBots(FMath::Max(0, GetTargetBotCount()));
 	}
 }
 

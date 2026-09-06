@@ -14,6 +14,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	/** Release filled bot slots before assigning an arriving human to a team. */
+	void MakeRoomForHumanPlayer();
+
 	/** Runtime override from UBwayMatchFlowConfig / URL (-1 = use defaults / scaling). */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Bots")
 	void SetNumBotsOverride(int32 InNumBots);

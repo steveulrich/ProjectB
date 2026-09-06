@@ -10,6 +10,7 @@
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameState/BwayBotCreationComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayMidfieldDividerComponent.h"
@@ -420,6 +421,16 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 
 void ABreakawayGameMode::AssignPlayerToTeam(APlayerController* Player)
 {
+	if (Player)
+	{
+		if (ABwayGameState* GS = GetBreakawayGameState())
+		{
+			if (UBwayBotCreationComponent* Bots = GS->FindComponentByClass<UBwayBotCreationComponent>())
+			{
+				Bots->MakeRoomForHumanPlayer();
+			}
+		}
+	}
 	AssignControllerToTeam(Player);
 }
 
@@ -440,7 +451,7 @@ void ABreakawayGameMode::AssignControllerToTeam(AController* Controller)
 	if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Controller->PlayerState))
 	{
 		const uint8 CarriedTeamId = BwayPS->GetGenericTeamId().GetId();
-		if (CarriedTeamId == 1 || CarriedTeamId == 2)
+		if (BwayPS->HasCarriedTeamAssignment() && (CarriedTeamId == 1 || CarriedTeamId == 2))
 		{
 			TeamIndex = CarriedTeamId - 1;
 		}
