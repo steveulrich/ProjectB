@@ -162,6 +162,16 @@ void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerControlle
 	// Also runs for seamless arrivals, which do not receive PostLogin.
 	// Register the carried team before prematch can defer pawn spawning.
 	AssignPlayerToTeam(NewPlayer);
+	if (ABwayGameState* BwayGS = GetGameState<ABwayGameState>())
+	{
+		if (BwayGS->HeroSelectionManager && BwayGS->HeroSelectionManager->IsSelectionActive() && BwayGS->HeroSelectionPhaseComponent)
+		{
+			if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(NewPlayer))
+			{
+				BwayPC->Client_ShowHeroSelection(BwayGS->HeroSelectionPhaseComponent->HeroSelectionWidgetClass);
+			}
+		}
+	}
 
 	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
 	{

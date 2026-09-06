@@ -88,8 +88,6 @@ void UBwayHeroSelectionManager::RegisterPlayer(APlayerState* PlayerState)
 	{
 		if (Selection.PlayerState == PlayerState)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Player %s already registered"), 
-				*PlayerState->GetPlayerName());
 			return;
 		}
 	}
@@ -98,6 +96,11 @@ void UBwayHeroSelectionManager::RegisterPlayer(APlayerState* PlayerState)
 	FPlayerHeroSelectionState NewSelection;
 	NewSelection.PlayerState = PlayerState;
 	NewSelection.bIsLocked = false;
+	if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+	{
+		NewSelection.SelectedHeroId = BwayPS->GetSelectedHeroId();
+		NewSelection.bIsLocked = BwayPS->IsHeroLocked();
+	}
 
 	// Get team from game state
 	if (ABwayGameState* GameState = GetBwayGameState())
@@ -136,6 +139,14 @@ void UBwayHeroSelectionManager::UnregisterPlayer(APlayerState* PlayerState)
 			}
 
 			PlayerSelections.RemoveAt(i);
+			// Finish player/bot replacement before evaluating the remaining roster.
+			if (bSelectionActive && GetWorld() && !GetWorld()->bIsTearingDown)
+			{
+				GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+				{
+					if (bSelectionActive) CheckAllPlayersReady();
+				}));
+			}
 			
 			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Unregistered player %s"), 
 				*PlayerState->GetPlayerName());
@@ -491,12 +502,17 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 			// Update from player state
 			FPrimaryAssetId OldHeroId = Selection.SelectedHeroId;
 			bool bOldLocked = Selection.bIsLocked;
+			const int32 OldTeamIndex = Selection.TeamIndex;
+			if (const ABwayGameState* GameState = GetBwayGameState())
+			{
+				Selection.TeamIndex = GameState->GetPlayerTeam(PlayerState);
+			}
 			
 			Selection.SelectedHeroId = BwayPS->GetSelectedHeroId();
 			Selection.bIsLocked = BwayPS->IsHeroLocked();
 
 			// Broadcast change if hero changed
-			if (OldHeroId != Selection.SelectedHeroId)
+			if (OldHeroId != Selection.SelectedHeroId || OldTeamIndex != Selection.TeamIndex)
 			{
 				OnPlayerHeroSelectionChanged.Broadcast(PlayerState, Selection.SelectedHeroId, Selection.TeamIndex);
 				
@@ -522,7 +538,7 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 
 void UBwayHeroSelectionManager::CheckAllPlayersReady()
 {
-	if (AreAllPlayersReady())
+	if (bSelectionActive && AreAllPlayersReady())
 	{
 		OnAllPlayersReady.Broadcast();
 		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: All players ready!"));

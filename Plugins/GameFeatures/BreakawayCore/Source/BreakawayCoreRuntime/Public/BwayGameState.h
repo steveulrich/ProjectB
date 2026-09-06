@@ -60,6 +60,8 @@ public:
 	//~AGameState interface
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
+	virtual void AddPlayerState(APlayerState* PlayerState) override;
+	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	virtual void Tick(float DeltaSeconds) override;
 	//~End of AGameState interface
 

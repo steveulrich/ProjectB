@@ -11,11 +11,16 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "TimerManager.h"
 #include "CommonTextBlock.h"
+#include "CommonInputModeTypes.h"
 
 
 UBwayHeroSelectWidget::UBwayHeroSelectWidget(
     const FObjectInitializer &ObjectInitializer)
     : Super(ObjectInitializer) {}
+
+TOptional<FUIInputConfig> UBwayHeroSelectWidget::GetDesiredInputConfig() const {
+  return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+}
 
 void UBwayHeroSelectWidget::NativeConstruct() {
   Super::NativeConstruct();
@@ -74,6 +79,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
   Super::NativeOnActivated();
 
   // Bind to systems when widget is activated
+  RefreshSelectionManager();
   RefreshLocalPlayerState();
   BindToPlayerState();
   BindToSelectionManager();
@@ -103,6 +109,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
   RefreshHeroDetails();
 
   bIsInitialized = true;
+  RequestRefreshFocus();
 }
 
 void UBwayHeroSelectWidget::NativeOnDeactivated() {
@@ -218,8 +225,9 @@ bool UBwayHeroSelectWidget::IsSelectionLocked() const {
 }
 
 bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
+  RefreshSelectionManager();
   RefreshLocalPlayerState();
-  if (!LocalPlayerState && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
+  if ((!LocalPlayerState || !SelectionManager) && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
     return false;
   }
   if (!IsHeroAvailable(HeroId)) {
@@ -266,8 +274,9 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
 }
 
 bool UBwayHeroSelectWidget::LockSelection() {
+  RefreshSelectionManager();
   RefreshLocalPlayerState();
-  if (!LocalPlayerState && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
+  if ((!LocalPlayerState || !SelectionManager) && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
     return false;
   }
   if (!LocalPlayerState) {
@@ -304,6 +313,8 @@ bool UBwayHeroSelectWidget::LockSelection() {
 }
 
 void UBwayHeroSelectWidget::ConfirmSelection() {
+  RefreshSelectionManager();
+  RefreshLocalPlayerState();
   FPrimaryAssetId SelectedHero = GetSelectedHeroId();
   if (!SelectedHero.IsValid()) {
     UE_LOG(LogTemp, Warning,
@@ -443,6 +454,19 @@ bool UBwayHeroSelectWidget::GetSelectedHeroDisplayInfo(
 
 // ========== BINDING ==========
 
+void UBwayHeroSelectWidget::RefreshSelectionManager() {
+  AGameStateBase* GS = GetWorld() ? GetWorld()->GetGameState() : nullptr;
+  UBwayHeroSelectionManager* CurrentManager = GS ? GS->FindComponentByClass<UBwayHeroSelectionManager>() : nullptr;
+  if (SelectionManager == CurrentManager) {
+    return;
+  }
+  UnbindFromSelectionManager();
+  SelectionManager = CurrentManager;
+  BindToSelectionManager();
+  OnHeroListChanged();
+  RequestRefreshFocus();
+}
+
 void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
   APlayerController* PC = GetOwningPlayer();
   ABwayPlayerState* CurrentState = PC ? PC->GetPlayerState<ABwayPlayerState>() : nullptr;
@@ -461,6 +485,7 @@ void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
     }
     RefreshHeroDetails();
     OnHeroListChanged();
+    RequestRefreshFocus();
   }
 }
 
@@ -503,9 +528,9 @@ void UBwayHeroSelectWidget::BindToSelectionManager() {
   }
 
   // Bind to manager events
-  SelectionManager->OnPlayerHeroSelectionChanged.AddDynamic(
+  SelectionManager->OnPlayerHeroSelectionChanged.AddUniqueDynamic(
       this, &UBwayHeroSelectWidget::HandleOtherPlayerSelectionChanged);
-  SelectionManager->OnAllPlayersReady.AddDynamic(
+  SelectionManager->OnAllPlayersReady.AddUniqueDynamic(
       this, &UBwayHeroSelectWidget::HandleAllPlayersReady);
 
   UE_LOG(LogTemp, Verbose,
@@ -577,6 +602,7 @@ void UBwayHeroSelectWidget::HandleAllPlayersReady() {
 }
 
 void UBwayHeroSelectWidget::UpdateSelectionTimer() {
+  RefreshSelectionManager();
   RefreshLocalPlayerState();
   OnSelectionTimerUpdated(GetRemainingSelectionTime());
 }

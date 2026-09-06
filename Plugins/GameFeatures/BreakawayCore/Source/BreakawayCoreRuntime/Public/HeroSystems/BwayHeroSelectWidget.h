@@ -84,6 +84,7 @@ public:
 protected:
 	//~UUserWidget interface
 	virtual void NativeConstruct() override;
+	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 	virtual void NativeDestruct() override;
 	//~End of UUserWidget interface
 
@@ -257,6 +258,7 @@ private:
 	// Bind to player state and selection manager
 	void BindToPlayerState();
 	void RefreshLocalPlayerState();
+	void RefreshSelectionManager();
 	void UnbindFromPlayerState();
 	void BindToSelectionManager();
 	void UnbindFromSelectionManager();

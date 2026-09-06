@@ -40,6 +40,24 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 	CombatFeedbackRouterComponent = CreateDefaultSubobject<UBwayCombatFeedbackRouterComponent>(TEXT("CombatFeedbackRouterComponent"));
 }
 
+void ABwayGameState::AddPlayerState(APlayerState* PlayerState)
+{
+	Super::AddPlayerState(PlayerState);
+	if (HasAuthority() && HeroSelectionManager && HeroSelectionManager->IsSelectionActive())
+	{
+		HeroSelectionManager->RegisterPlayer(PlayerState);
+	}
+}
+
+void ABwayGameState::RemovePlayerState(APlayerState* PlayerState)
+{
+	Super::RemovePlayerState(PlayerState);
+	if (HasAuthority() && HeroSelectionManager)
+	{
+		HeroSelectionManager->UnregisterPlayer(PlayerState);
+	}
+}
+
 void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -137,6 +155,10 @@ void ABwayGameState::AddPlayerToTeam(APlayerState* PlayerState, int32 TeamIndex)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("Added player %s to Team %d"), *PlayerState->GetPlayerName(), TeamIndex + 1);
+	if (HeroSelectionManager)
+	{
+		HeroSelectionManager->SynchronizePlayerSelectionState(PlayerState);
+	}
 
 	OnTeamsUpdated.Broadcast();
 }
