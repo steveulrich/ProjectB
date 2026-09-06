@@ -232,6 +232,7 @@ private:
 	FTimerHandle SelectionTimerHandle;
 
 	// Internal flag for whether selection phase is active
+	UPROPERTY(Replicated)
 	bool bSelectionActive = false;
 
 	// Bind to player state delegates

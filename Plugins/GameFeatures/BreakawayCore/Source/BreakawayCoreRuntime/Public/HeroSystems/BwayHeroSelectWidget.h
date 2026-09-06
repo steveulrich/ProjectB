@@ -11,6 +11,7 @@ class UBwayHeroRegistry;
 class UBwayHeroSelectionManager;
 class ABwayPlayerState;
 class UBwayFrontendStateSubsystem;
+class UCommonTextBlock;
 
 // Delegate for when hero selection is confirmed (for dev tools)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroConfirmedDelegate);
@@ -233,6 +234,9 @@ public:
 
 protected:
 	// ========== INTERNAL STATE ==========
+	/** Data-driven description area; authored layout can replace art independently. */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Hero Selection")
+	TObjectPtr<UCommonTextBlock> Text_HeroDetails;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<ABwayPlayerState> LocalPlayerState;
@@ -252,6 +256,7 @@ private:
 
 	// Bind to player state and selection manager
 	void BindToPlayerState();
+	void RefreshLocalPlayerState();
 	void UnbindFromPlayerState();
 	void BindToSelectionManager();
 	void UnbindFromSelectionManager();
@@ -271,6 +276,7 @@ private:
 
 	// Update timer display
 	void UpdateSelectionTimer();
+	void RefreshHeroDetails();
 
 	// Cache of hero data for quick access
 	UPROPERTY()

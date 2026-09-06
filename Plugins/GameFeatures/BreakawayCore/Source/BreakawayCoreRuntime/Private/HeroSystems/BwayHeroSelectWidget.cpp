@@ -10,6 +10,7 @@
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "TimerManager.h"
+#include "CommonTextBlock.h"
 
 
 UBwayHeroSelectWidget::UBwayHeroSelectWidget(
@@ -73,11 +74,13 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
   Super::NativeOnActivated();
 
   // Bind to systems when widget is activated
+  RefreshLocalPlayerState();
   BindToPlayerState();
   BindToSelectionManager();
 
-  // Start selection timer if there's a time limit
-  if (SelectionManager && SelectionManager->SelectionTimeLimit > 0.0f) {
+  // Poll while active: the owning PlayerState can arrive after construction,
+  // including selection screens without a countdown.
+  {
     if (UWorld *World = GetWorld()) {
       World->GetTimerManager().SetTimer(
           SelectionTimerHandle, this,
@@ -89,6 +92,15 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
 
   // Trigger initial refresh
   OnHeroListChanged();
+
+  // Selection can replicate before this screen is activated.
+  if (GetSelectedHeroId().IsValid()) {
+    OnLocalSelectionChanged(GetSelectedHeroId());
+  }
+  if (IsSelectionLocked()) {
+    OnLocalSelectionLocked(GetSelectedHeroId());
+  }
+  RefreshHeroDetails();
 
   bIsInitialized = true;
 }
@@ -206,6 +218,10 @@ bool UBwayHeroSelectWidget::IsSelectionLocked() const {
 }
 
 bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
+  RefreshLocalPlayerState();
+  if (!LocalPlayerState && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
+    return false;
+  }
   if (!IsHeroAvailable(HeroId)) {
     UE_LOG(LogTemp, Warning,
            TEXT("BwayHeroSelectWidget: Hero %s is not available"),
@@ -234,6 +250,7 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
     // Offline Front-end route
     FrontendSubsystem->SetSelectedHeroId(HeroId);
     OnLocalSelectionChanged(HeroId);
+    RefreshHeroDetails();
     OnHeroListChanged(); // Force redraw the selection highlight locally
     UE_LOG(LogTemp, Log,
            TEXT("BwayHeroSelectWidget: Selected hero %s (Frontend Route)"),
@@ -249,6 +266,10 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
 }
 
 bool UBwayHeroSelectWidget::LockSelection() {
+  RefreshLocalPlayerState();
+  if (!LocalPlayerState && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
+    return false;
+  }
   if (!LocalPlayerState) {
     if (FrontendSubsystem) {
       // Offline frontend mode - no server lock needed
@@ -293,9 +314,19 @@ void UBwayHeroSelectWidget::ConfirmSelection() {
   UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Confirming selection of %s"),
          *SelectedHero.ToString());
 
+  const bool bAwaitPhaseAdvance = SelectionManager && SelectionManager->IsSelectionActive();
+
   // Lock the selection if not already locked
   if (!IsSelectionLocked()) {
-    LockSelection();
+    if (!LockSelection()) {
+      return;
+    }
+  }
+
+  // In a network selection phase, remain visible until the server advances it.
+  // Sending a lock RPC is intent, not confirmation that all players are ready.
+  if (bAwaitPhaseAdvance) {
+    return;
   }
 
   // Broadcast the confirmation event (dev tools listen for this)
@@ -412,17 +443,38 @@ bool UBwayHeroSelectWidget::GetSelectedHeroDisplayInfo(
 
 // ========== BINDING ==========
 
+void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
+  APlayerController* PC = GetOwningPlayer();
+  ABwayPlayerState* CurrentState = PC ? PC->GetPlayerState<ABwayPlayerState>() : nullptr;
+  if (CurrentState == LocalPlayerState) {
+    return;
+  }
+  UnbindFromPlayerState();
+  LocalPlayerState = CurrentState;
+  BindToPlayerState();
+  if (LocalPlayerState) {
+    if (GetSelectedHeroId().IsValid()) {
+      OnLocalSelectionChanged(GetSelectedHeroId());
+    }
+    if (IsSelectionLocked()) {
+      OnLocalSelectionLocked(GetSelectedHeroId());
+    }
+    RefreshHeroDetails();
+    OnHeroListChanged();
+  }
+}
+
 void UBwayHeroSelectWidget::BindToPlayerState() {
   if (!LocalPlayerState) {
     return;
   }
 
   // Bind to hero selection changed
-  LocalPlayerState->OnSelectedHeroChanged.AddDynamic(
+  LocalPlayerState->OnSelectedHeroChanged.AddUniqueDynamic(
       this, &UBwayHeroSelectWidget::HandlePlayerSelectionChanged);
 
   // Bind to hero locked (fires when bHeroLocked replicates true)
-  LocalPlayerState->OnHeroLocked.AddDynamic(
+  LocalPlayerState->OnHeroLocked.AddUniqueDynamic(
       this, &UBwayHeroSelectWidget::HandlePlayerHeroLocked);
 
   UE_LOG(LogTemp, Verbose, TEXT("BwayHeroSelectWidget: Bound to player state"));
@@ -485,6 +537,7 @@ void UBwayHeroSelectWidget::HandlePlayerSelectionChanged(
 
   // Notify blueprint
   OnLocalSelectionChanged(NewHeroId);
+  RefreshHeroDetails();
 
   // Refresh hero list (availability may have changed)
   OnHeroListChanged();
@@ -524,5 +577,28 @@ void UBwayHeroSelectWidget::HandleAllPlayersReady() {
 }
 
 void UBwayHeroSelectWidget::UpdateSelectionTimer() {
+  RefreshLocalPlayerState();
   OnSelectionTimerUpdated(GetRemainingSelectionTime());
+}
+
+void UBwayHeroSelectWidget::RefreshHeroDetails() {
+  if (!Text_HeroDetails) {
+    return;
+  }
+  FHeroDisplayInfo Hero;
+  if (!GetSelectedHeroDisplayInfo(Hero)) {
+    Text_HeroDetails->SetText(NSLOCTEXT("BwayHeroSelect", "ChooseHero", "Choose a hero to view their stats and abilities."));
+    return;
+  }
+  FText Details = FText::Format(
+      NSLOCTEXT("BwayHeroSelect", "Stats", "Health: {0}   Attack: {1}\nArmor: {2}   Speed: {3}"),
+      FText::AsNumber(Hero.Stats.MaxHealth), FText::AsNumber(Hero.Stats.BaseDamage),
+      FText::AsNumber(Hero.Stats.Armor), FText::AsNumber(Hero.Stats.MoveSpeed));
+  for (const FAbilityDisplayInfo& Ability : Hero.Abilities) {
+    if (!Ability.AbilityName.IsEmpty()) {
+      Details = FText::Format(NSLOCTEXT("BwayHeroSelect", "AbilityDetails", "{0}\n\n{1}\n{2}"),
+          Details, Ability.AbilityName, Ability.Description);
+    }
+  }
+  Text_HeroDetails->SetText(Details);
 }

@@ -28,6 +28,7 @@ void UBwayHeroSelectionManager::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 
 	DOREPLIFETIME(UBwayHeroSelectionManager, PlayerSelections);
 	DOREPLIFETIME(UBwayHeroSelectionManager, SelectionTimeRemaining);
+	DOREPLIFETIME(UBwayHeroSelectionManager, bSelectionActive);
 }
 
 void UBwayHeroSelectionManager::BeginPlay()

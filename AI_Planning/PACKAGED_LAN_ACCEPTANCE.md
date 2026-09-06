@@ -53,6 +53,16 @@ Candidate `-04` passed a fresh build/cook/stage. A cold packaged launch with `As
 
 The first scan attempt used broad hero roots and encountered ignored conflicts with unrelated primary data types; explicit paths removed those conflicts. Zen briefly disconnected during staging and the existing retry recovered; both staging attempts ultimately exited successfully.
 
+## Hero selection follow-up (source editor, 05:14–05:22 UTC)
+
+These changes are newer than packaged candidate `-04`. Two same-process listen-server PIE worlds reproduced two client faults: selection-active state was authority-only, and the screen cached a null PlayerState before replication arrived. A physical hero click consequently used the offline frontend route and never reached the server.
+
+The manager now replicates its active flag. The screen reacquires its owning PlayerState while active and before requests, binds delegates uniquely, and keeps a locked client visible until the server advances the phase. After rebuilding/restarting, physical Korryn selection and lock updated both the authoritative and client PlayerStates; the client screen remained active while the host was unready. Evidence: `Saved/Logs/codex-selection-client-lock-verified.log`. Auto-lock was disabled only on the transient server component to keep the inspection window open. This test does not prove timeout behavior, staging travel, or packaged acceptance.
+
+The selection layout now has separate hero and details columns, with obsolete level/TODO/empty panels removed and native data-driven stats text bound. UMG compiler GUID metadata was repaired, force-saved, reloaded, and verified across editor restarts. Portraits now fit a fixed-size container independently of source texture dimensions. Remaining presentation issues include sparse class-based card spacing, timer/readiness formatting, and duplicate host selection widgets.
+
+The ability slot configuration previously deserialized as one invalid entry. Correct array entries with `TagName` now resolve all six slots and six authored ability descriptions for each of the four heroes. Final PIE physical selection/lock again passed with the full Korryn portrait and scrollable stats/ability descriptions visible. Both server and client reported Korryn locked while the unready host kept the selection phase active. Evidence: `Saved/Logs/codex-selection-final-verified.log`; no Blueprint runtime errors, Accessed None, or ensure failures appear in that final log. Native build: `Saved/Logs/codex-selection-hydration-final-build.log`, exit 0. PIE stopped and temporary client window/background-throttle settings restored afterward. Packaged ability-bar regression testing remains open because the shared slot configuration also affects match UI.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.
