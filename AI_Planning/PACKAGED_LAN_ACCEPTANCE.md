@@ -13,6 +13,8 @@
 
 The hero card is a focusable CommonButtonBase with no triggering input action and no hold requirement. Engine `CommonButtonTypes.cpp` suppresses Slate Accept in `SCommonButton::OnKeyDown` and `OnKeyUp` when `CommonButtonAcceptKeyHandling` is `Ignore`. The engine constructor defaults to `Ignore`, and no project or engine config override was found. `TriggerClick` is the engine-supported alternative. A packaged comparison and frontend regression check remain required before accepting that configuration change; the candidate above has no such override.
 
+The source config now explicitly sets `CommonButtonAcceptKeyHandling=TriggerClick`. This is not included in candidate `-05`. Verify physical Enter and Space selection, navigation between cards, lock activation, and frontend navigation after cold startup. Also check that existing action-bound buttons do not activate twice and that gamepad acceptance still works. Source inspection alone does not establish those passes.
+
 ## Previous candidate (-04)
 
 - Project base: `e405d746` (September 6, 2026), plus the hero feature type registration in `DefaultGame.ini` and the uncommitted `Server_RequestReturnToFrontEnd` PostMatch guard. The exact source delta is saved in `Saved/Logs/codex-packaged-LAN-20260906-04-project.patch`; this candidate is not a clean-commit release.
