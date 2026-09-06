@@ -2,6 +2,19 @@
 
 ## Current candidate
 
+- Candidate: `LAN-20260906-05`, Win64 Development, `LyraGame`; built September 6, 2026 at approximately 06:13 UTC.
+- Project base: `6cfdbe75c303ab6df3046576d096eb864ff6a6da`, including the selection ownership, roster, and layout fixes. The uncommitted PostMatch return guard and other tracked differences are captured in `Saved/Logs/codex-packaged-LAN-20260906-05-project.patch`.
+- Engine baseline: the same source engine listed below, with tracked changes and status captured in `codex-packaged-LAN-20260906-05-engine.patch` and `codex-packaged-LAN-20260906-05-engine-status.txt` under `Saved/Logs`. Untracked engine file contents are not captured by the patch.
+- Pipeline: the BuildCookRun command below with staging directory changed to `LAN-20260906-05`. Build, cook, and stage passed; AutomationTool exited with code 0 after 145 seconds. A transient Zen connection failure recovered during staging.
+- Artifact: `Saved/StagedBuilds/LAN-20260906-05/Windows/LyraGame.exe`; SHA-256 inventory: `Saved/Logs/codex-packaged-LAN-20260906-05-sha256.csv`; pipeline log: `Saved/Logs/codex-lan-package-20260906-05.log`.
+- Acceptance: frontend launched. Interactive keyboard verification is pending because a Windows Security network permission dialog covers the game and cannot be targeted by the available UI automation. No four-player packaged or full-match pass is claimed.
+
+### Keyboard investigation
+
+The hero card is a focusable CommonButtonBase with no triggering input action and no hold requirement. Engine `CommonButtonTypes.cpp` suppresses Slate Accept in `SCommonButton::OnKeyDown` and `OnKeyUp` when `CommonButtonAcceptKeyHandling` is `Ignore`. The engine constructor defaults to `Ignore`, and no project or engine config override was found. `TriggerClick` is the engine-supported alternative. A packaged comparison and frontend regression check remain required before accepting that configuration change; the candidate above has no such override.
+
+## Previous candidate (-04)
+
 - Project base: `e405d746` (September 6, 2026), plus the hero feature type registration in `DefaultGame.ini` and the uncommitted `Server_RequestReturnToFrontEnd` PostMatch guard. The exact source delta is saved in `Saved/Logs/codex-packaged-LAN-20260906-04-project.patch`; this candidate is not a clean-commit release.
 - Engine: local UE 5.8.1 source tree, `E:/Github/UnrealEngine`, HEAD `71fe36aac5a8df5ccd66c763ffc902b29b6a9c43`. Local engine modifications must also be captured before accepting the artifact; HEAD alone does not establish reproducibility.
 - Platform/configuration: Win64 Development, `LyraGame`, listen server and clients.
