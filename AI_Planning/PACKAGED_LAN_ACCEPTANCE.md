@@ -8,6 +8,12 @@
 
 ## Previous candidate (-07)
 
+### Candidate -08 visible HUD and duplicate registrations
+
+At 16:11 UTC, a screenshot of the running -08 host showed the six-slot ability bar with icons and key labels beneath the still-open firewall dialog. This confirms the Breakaway HUD replacement is active in the packaged frontend match; it does not test ability activation, cooldowns, or client replication. The same view showed duplicate score/timer displays.
+
+Native cold property inspection found direct CaptureTheRelic experience entries for `W_BW_CaptureTheRelic_ScoreWidget` at `HUD.Slot.TeamScore` and `W_BW_RelicStatusWidget` at `HUD.Slot.ModeStatus`. `LAS_BW_MatchHUD` and `EAS_BW_CaptureTheRelic` already supply those same entries. The development experience's direct list was empty. Source now clears the two duplicate entries from `GameFeatureAction_AddWidgets_1`, preserving the shared action sets. The asset compiled/saved; a separate cold commandlet exited 0 and confirmed the direct list empty with one shared entry per widget. Evidence: `codex-duplicate-score-hud-roots.log`, `codex-duplicate-match-widgets-repair-v3.log`, and `codex-duplicate-match-widgets-cold-verify.log` under `Saved/Logs`. Earlier attempts stopped without edits because the widget-entry fields are not exposed to Python. The fix is not in -08; packaged visual verification remains open.
+
 - Candidate: `LAN-20260906-07`, Win64 Development, `LyraGame`, project base `3c6fd82b`; includes the weak-reference round-cleanup repair. Build/cook/stage passed with AutomationTool exit 0 in 145.98 seconds. Pipeline log and exit status: `Saved/Logs/codex-lan-package-20260906-07*`. Source/engine HEAD, status, binary patches, and complete staged-file SHA-256/size inventory: `Saved/Logs/codex-packaged-LAN-20260906-07-*` (untracked contents are not preserved by patches).
 - Stage: `Saved/StagedBuilds/LAN-20260906-07/Windows/LyraGame.exe`. Cold startup and the existing `bway.Test.HostLAN` fixture reached hero selection and Dorado. No client has joined this candidate yet: a Windows Security firewall prompt blocked UI work and was handed to the user. Host logs reached round two at 15:45:13 UTC, but without bot replacement this does **not** validate the crash repair. Runtime log: `Saved/Logs/codex-packaged07-lifetime-host.log`.
 - Acceptance remains open: repeat late join during an active round, verify bot removal and round cleanup after collection, then complete the multiplayer and frontend gates. This candidate predates the HUD reference repair described next.
