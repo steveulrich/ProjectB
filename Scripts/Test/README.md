@@ -33,6 +33,8 @@ For the upgrade shop, open the owning client's screen, then execute `bway.Test.S
 
 ## Engine resolution
 
+For death and respawn regression checks, execute `bway.Test.DamageRemotePlayer` in the listen server's game world while a remote human is alive. This development-only command queues lethal self-damage on a normal server tick and logs the script guard, granted abilities, health, and death state. Verify a replacement pawn, replicated death count, restored health, and enabled movement input on both server and owning client; repeat after respawn. Self-damage does not validate enemy kill credit. This command changes the running test match.
+
 Set `UE_ENGINE_ROOT` if auto-detection fails:
 
 ```powershell

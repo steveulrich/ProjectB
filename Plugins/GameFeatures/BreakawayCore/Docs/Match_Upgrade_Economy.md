@@ -58,6 +58,8 @@ Verification on September 6, 2026: `codex-base-zone-build.log` passed; both econ
 
 ## Verification
 
+Death lifecycle regression (September 6, 2026): native server-tick damage reproduced zero health with death state still NotDead. The common humanoid ability set was missing `GA_Hero_Death`, leaving `GameplayEvent.Death` without its handler. The shared asset now grants that existing ability, and the character death override calls its parent to disable movement and collision. After a successful compile and editor restart, two consecutive native lethal-damage probes started death and produced replacement pawns. Server and owning client agreed on death counts 1 then 2, restored 400 health, NotDead state, and movement input enabled. Evidence: `Saved/Logs/codex-death-lifecycle-verified.log`; build: `Saved/Logs/codex-death-lifecycle-fix-build.log`. This was two same-process PIE network worlds on DevMap. Enemy kill credit, physical movement input, death-shop purchases, and separate-process/packaged replication remain unverified. Root cause and prevention are recorded as BF-067.
+
 `Breakaway.Economy.GoldDebit` uses a temporary world, PlayerState, real GAS component, and gold AttributeSet. It checks non-authority rejection, missing economy, negative and oversized prices, insufficient funds, exact deductions, repeated unaffordable attempts, zero-cost behavior, and spending down to zero. The role-switch test exercises the authority guard; it is not separate-process replication evidence.
 
 Build: `Saved/Logs/codex-economy-debit-authority-build.log` passed. Runtime test result is recorded after execution.

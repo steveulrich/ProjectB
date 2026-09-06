@@ -80,6 +80,7 @@ void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimePro
 
 void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 {
+	Super::OnDeathStarted(OwningActor);
 	if (HasAuthority())
 	{
 		if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())

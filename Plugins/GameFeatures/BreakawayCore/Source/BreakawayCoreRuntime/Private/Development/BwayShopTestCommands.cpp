@@ -10,6 +10,11 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "UObject/UObjectIterator.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "Abilities/GameplayAbility.h"
+#include "Character/LyraHealthComponent.h"
+#include "Combat/BwayDamageLibrary.h"
+#include "GameFramework/Pawn.h"
 
 namespace BwayShopTest
 {
@@ -44,5 +49,37 @@ FAutoConsoleCommandWithWorld BuyCommand(
 	TEXT("bway.Test.ShopBuySelected"),
 	TEXT("Development test: queue the active local shop purchase on a normal game tick."),
 	FConsoleCommandWithWorldDelegate::CreateStatic(&BuySelected));
+
+void DamageRemotePlayer(UWorld* World)
+{
+	if (!World || !World->IsGameWorld() || World->GetNetMode() == NM_Client) return;
+	FTimerHandle Timer;
+	World->GetTimerManager().SetTimer(Timer, FTimerDelegate::CreateWeakLambda(World, [World]()
+	{
+		if (GAllowActorScriptExecutionInEditor) return;
+		for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+		{
+			APlayerController* PC = It->Get();
+			ABwayPlayerState* PS = PC ? PC->GetPlayerState<ABwayPlayerState>() : nullptr;
+			if (!PS || PC->IsLocalController() || !PC->GetPawn()) continue;
+			ULyraAbilitySystemComponent* ASC = PS->GetLyraAbilitySystemComponent();
+			for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+			{
+				UE_LOG(LogTemp, Display, TEXT("BwayDeathTest: Granted ability %s active=%d"), *GetNameSafe(Spec.Ability), Spec.IsActive());
+			}
+			APawn* Pawn = PC->GetPawn();
+			ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(Pawn);
+			UE_LOG(LogTemp, Display, TEXT("BwayDeathTest: Native damage pawn=%s guard=%d health=%.1f"), *Pawn->GetName(), GAllowActorScriptExecutionInEditor, Health ? Health->GetHealth() : -1.0f);
+			UBwayDamageLibrary::ApplyDamageFromSource(ASC, Pawn, 100000.0f, Pawn, Pawn);
+			UE_LOG(LogTemp, Display, TEXT("BwayDeathTest: After damage health=%.1f state=%d"), Health ? Health->GetHealth() : -1.0f, Health ? static_cast<int32>(Health->GetDeathState()) : -1);
+			return;
+		}
+	}), 0.2f, false);
+}
+
+FAutoConsoleCommandWithWorld DeathCommand(
+	TEXT("bway.Test.DamageRemotePlayer"),
+	TEXT("Development test: apply lethal damage to a remote human on a normal server tick."),
+	FConsoleCommandWithWorldDelegate::CreateStatic(&DamageRemotePlayer));
 }
 #endif
