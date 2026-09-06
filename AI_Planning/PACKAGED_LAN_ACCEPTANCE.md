@@ -147,6 +147,12 @@ After a fresh editor restart, a natural goal ended a temporarily configured one-
 
 This supersedes the pending reconnection result above. It verifies the physical button, network request, four-peer reconnection, fresh selection, and earned-gold reset in same-process PIE. Previously purchased upgrades, placed buildables, full rematch completion, simultaneous conflicting results requests, separate-process and packaged behavior remain unverified. BF-086 records the travel and test-method pitfalls.
 
+## Results-table layout verification (September 6)
+
+The breakdown panel now uses viewport-relative bounds instead of a fixed 1200×720 canvas slot. Player columns are 180 units wide, with horizontal overflow support. Names use smaller, non-scrolling text with ellipses. The label column reserves the same header height as player columns and uses matching font metrics; an extra 32-unit spacer was removed from player columns. Both widget Blueprints compiled and were saved.
+
+A fresh four-world PIE match, temporarily set to one point, reached results through a natural goal. Visual checks at client 859×520 and host 1286×760 confirmed all eight columns fit, names no longer overlap, stat values align with labels, and both footer controls remain visible. Evidence: tool screenshots in this task and `Saved/Logs/codex-results-layout-verified.log`. No native gameplay code changed. Packaged layout, full-name access for truncated labels, portrait data binding, and suppressing the underlying gameplay HUD remain open. BF-087 records the sizing, row-alignment, and CommonUI scrolling-style causes.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.
