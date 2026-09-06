@@ -2,6 +2,14 @@
 
 ## Current candidate
 
+- Candidate: `LAN-20260906-06`, Win64 Development, `LyraGame`, built September 6, 2026. This supersedes `-05` as the packaged candidate.
+- Project base: `24e0cd63065ccf9107a35dc9abf816b9aaf871cd`, including bot pursuit, Dorado goal ownership and replication, server-owned rematch travel, results layout, and gameplay HUD suppression during results. Project and engine HEAD, status, and binary patches are retained under `Saved/Logs/codex-packaged-LAN-20260906-06-*`; the patches do not preserve untracked file contents.
+- Pipeline: the BuildCookRun command below with staging directory `LAN-20260906-06`. Build, cook, and stage passed; AutomationTool exited 0 after 140.06 seconds. The full log is `Saved/Logs/codex-lan-package-20260906-06.log`, with exit status in the corresponding `-exit.txt` file. Existing gameplay-tag and asset migration warnings remain.
+- Artifact: `Saved/StagedBuilds/LAN-20260906-06/Windows/LyraGame.exe`; the actual game executable is `Windows/ProjectB/Binaries/Win64/LyraGame.exe` beneath the candidate directory. The complete staged-file SHA-256 and size inventory is `Saved/Logs/codex-packaged-LAN-20260906-06-sha256.csv`. Symbols remain in this local Development stage; no release archive or clean-device deployment has been performed.
+- Acceptance: **build/cook/stage only**. This exact candidate has not yet been launched or accepted for packaged multiplayer. Earlier PIE results below do not establish packaged results, rematch, keyboard input, or second-PC LAN behavior. Next gate: cold frontend launch and physical host/find/join, complete match, results, return to frontend, and a second match with reset state.
+
+## Previous candidate (-05)
+
 - Candidate: `LAN-20260906-05`, Win64 Development, `LyraGame`; built September 6, 2026 at approximately 06:13 UTC.
 - Project base: `6cfdbe75c303ab6df3046576d096eb864ff6a6da`, including the selection ownership, roster, and layout fixes. The uncommitted PostMatch return guard and other tracked differences are captured in `Saved/Logs/codex-packaged-LAN-20260906-05-project.patch`.
 - Engine baseline: the same source engine listed below, with tracked changes and status captured in `codex-packaged-LAN-20260906-05-engine.patch` and `codex-packaged-LAN-20260906-05-engine-status.txt` under `Saved/Logs`. Untracked engine file contents are not captured by the patch.
