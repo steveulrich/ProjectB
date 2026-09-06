@@ -15,6 +15,12 @@ The hero card is a focusable CommonButtonBase with no triggering input action an
 
 The source config now explicitly sets `CommonButtonAcceptKeyHandling=TriggerClick`. This is not included in candidate `-05`. Verify physical Enter and Space selection, navigation between cards, lock activation, and frontend navigation after cold startup. Also check that existing action-bound buttons do not activate twice and that gamepad acceptance still works. Source inspection alone does not establish those passes.
 
+Cold-load verification passed at 12:22 UTC on September 6. An unattended `UnrealEditor-Cmd -run=pythonscript -unattended -nullrhi` run exited with code 0; native `getall CommonUISettings CommonButtonAcceptKeyHandling SHOWDEFAULTS` reported `TriggerClick` on both the class default and transient settings objects. Evidence: `Saved/Logs/codex-commonui-cold-config-native.log`. The first inspection script failed because the property was not exposed through the Python property API; its failure is retained in `codex-commonui-cold-config.log`. This verifies config loading, not physical input. The commandlet required source-engine and user-cache access; the earlier sandboxed interactive editor remained stalled at Zen data-path validation.
+
+### Unattended match evidence
+
+The hidden candidate `-05` listen-server process continued running after the attempted window close. At 12:17 UTC it reached round 230; at 12:19 UTC that round again expired with the relic on midfield and no winner. Recent rounds repeat this pattern while the bot controller logs report a running behavior tree. This does not establish why bots fail to progress the objective, nor justify changing draw rules. Investigate navigation, blackboard state, and task execution before claiming a complete unattended match. Evidence excerpt: `Saved/Logs/codex-packaged05-unattended-round230-evidence.log`; original: `codex-packaged05-keyboard-baseline.log`. A successful CloseMainWindow return alone must not be treated as process termination.
+
 ## Previous candidate (-04)
 
 - Project base: `e405d746` (September 6, 2026), plus the hero feature type registration in `DefaultGame.ini` and the uncommitted `Server_RequestReturnToFrontEnd` PostMatch guard. The exact source delta is saved in `Saved/Logs/codex-packaged-LAN-20260906-04-project.patch`; this candidate is not a clean-commit release.
