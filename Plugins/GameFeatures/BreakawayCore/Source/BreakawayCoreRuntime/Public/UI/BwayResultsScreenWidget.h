@@ -136,6 +136,8 @@ private:
 	TObjectPtr<UBwayMatchBreakdownWidget> BreakdownWidget;
 
 	FTimerHandle InterstitialTimerHandle;
+	TWeakObjectPtr<UWidget> SuppressedGameplayLayer;
+	ESlateVisibility PreviousGameplayLayerVisibility = ESlateVisibility::SelfHitTestInvisible;
 
 	bool bResultsApplied = false;
 };

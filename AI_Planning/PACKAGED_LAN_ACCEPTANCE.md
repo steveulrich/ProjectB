@@ -153,6 +153,12 @@ The breakdown panel now uses viewport-relative bounds instead of a fixed 1200×7
 
 A fresh four-world PIE match, temporarily set to one point, reached results through a natural goal. Visual checks at client 859×520 and host 1286×760 confirmed all eight columns fit, names no longer overlap, stat values align with labels, and both footer controls remain visible. Evidence: tool screenshots in this task and `Saved/Logs/codex-results-layout-verified.log`. No native gameplay code changed. Packaged layout, full-name access for truncated labels, portrait data binding, and suppressing the underlying gameplay HUD remain open. BF-087 records the sizing, row-alignment, and CommonUI scrolling-style causes.
 
+## Post-match HUD suppression (September 6, 15:18–15:20 UTC)
+
+The local results orchestration widget now collapses `UI.Layer.Game` when results begin, remembers its prior visibility through a weak reference, and restores it on destruction. This suppresses gameplay presentation without changing replicated state or destroying HUD widgets. The editor build passed: `Saved/Logs/codex-results-hud-layer-build.log`, exit 0.
+
+After a fresh restart, a four-world PIE match temporarily set to one point ended through a natural goal. All four peers logged local gameplay-layer suppression. The client results screenshot confirmed score/timer, relic labels, health bar, and ability bar were absent behind the table. Physical client **Play Again** returned to selection, then resumed gameplay with the HUD visible again. PIE stopped afterward. Evidence: `Saved/Logs/codex-results-hud-layer-verified.log` and task screenshots. This verifies the observed rematch lifecycle in PIE; packaged behavior and same-world manual results dismissal remain unverified. Debug screen messages are separate from the HUD and remain visible in development.
+
 ## Remaining acceptance checks
 
 1. Record terminal build/cook/stage results and first causal errors. Preserve manifests, executable/Pak hashes, effective configuration, and matching symbols for the exact tested output.

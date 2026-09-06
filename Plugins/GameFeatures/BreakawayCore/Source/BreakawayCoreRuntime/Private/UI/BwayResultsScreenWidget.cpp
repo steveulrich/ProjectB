@@ -11,6 +11,9 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "PrimaryGameLayout.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
+#include "GameplayTagContainer.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayResultsScreenWidget)
 
@@ -32,6 +35,11 @@ void UBwayResultsScreenWidget::NativeConstruct()
 void UBwayResultsScreenWidget::NativeDestruct()
 {
 	CleanupChildWidgets();
+	if (UWidget* GameplayLayer = SuppressedGameplayLayer.Get())
+	{
+		GameplayLayer->SetVisibility(PreviousGameplayLayerVisibility);
+		SuppressedGameplayLayer.Reset();
+	}
 	Super::NativeDestruct();
 }
 
@@ -65,6 +73,16 @@ void UBwayResultsScreenWidget::ApplyAuthoritativeResults(
 
 void UBwayResultsScreenWidget::BeginPostMatchFlow()
 {
+	if (UPrimaryGameLayout* Layout = UPrimaryGameLayout::GetPrimaryGameLayout(GetOwningPlayer()))
+	{
+		if (UWidget* GameplayLayer = Layout->GetLayerWidget(FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game"))))
+		{
+			PreviousGameplayLayerVisibility = GameplayLayer->GetVisibility();
+			SuppressedGameplayLayer = GameplayLayer;
+			GameplayLayer->SetVisibility(ESlateVisibility::Collapsed);
+			UE_LOG(LogTemp, Log, TEXT("BwayResultsScreen: Suppressed local gameplay layer"));
+		}
+	}
 	OnPostMatchFlowStarted(CachedSummary);
 
 	FMatchResultsData LegacyResults;
