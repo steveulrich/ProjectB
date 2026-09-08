@@ -217,6 +217,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
 	TSoftObjectPtr<UWorld> FrontEndLevel;
 
+	/** Shared selection map used to start each fresh match, including packaged rematches. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow")
+	TSoftObjectPtr<UWorld> HeroSelectLevel;
+
 	// ========================================
 	// Events/Delegates
 	// ========================================

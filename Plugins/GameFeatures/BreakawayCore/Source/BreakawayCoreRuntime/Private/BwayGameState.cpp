@@ -22,6 +22,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameModes/BwayGameplayUrlLibrary.h"
+#include "GameModes/LyraExperienceManagerComponent.h"
+#include "GameModes/LyraExperienceDefinition.h"
 #include "Stats/BwayMatchStatsLibrary.h"
 
 #include "Engine/Engine.h"
@@ -34,6 +36,7 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+	HeroSelectLevel = TSoftObjectPtr<UWorld>(FSoftObjectPath(TEXT("/BreakawayCore/Maps/L_BW_HeroSelect_Staging.L_BW_HeroSelect_Staging")));
 
 	HeroSelectionManager = CreateDefaultSubobject<UBwayHeroSelectionManager>(TEXT("HeroSelectionManager"));
 	HeroSelectionPhaseComponent = CreateDefaultSubobject<UBwayHeroSelectionPhaseComponent>(TEXT("HeroSelectionPhaseComponent"));
@@ -435,12 +438,23 @@ void ABwayGameState::RestartMatchFromResults()
 		return;
 	}
 
+	const ULyraExperienceManagerComponent* ExperienceManager = FindComponentByClass<ULyraExperienceManagerComponent>();
+	if (HeroSelectLevel.IsNull() || !ExperienceManager || !ExperienceManager->IsExperienceLoaded())
+	{
+		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Rematch requires a selection map and loaded match experience"));
+		return;
+	}
+	const FString MatchExperience = ExperienceManager->GetCurrentExperienceChecked()->GetPrimaryAssetId().PrimaryAssetName.ToString();
+	// Packaged arenas are entered after selection. Direct-arena auto selection is
+	// an editor convenience, so fresh matches must use the normal staging route.
+	const FString MatchMap = UWorld::RemovePIEPrefix(World->URL.Map);
 	// ProcessServerTravel consumes removal tokens, then Browse reparses its result
 	// against LastURL. Clear that base so the second parse cannot restore old flags.
 	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(World);
 	const FURL PreviousBaseURL = WorldContext.LastURL;
 	UBwayGameplayUrlLibrary::ResetMatchTravelOptions(WorldContext.LastURL);
-	FString TravelURL = UWorld::RemovePIEPrefix(World->URL.Map) + TEXT("?NoSeamlessTravel");
+	FString TravelURL = FString::Printf(TEXT("%s?NoSeamlessTravel?HeroSelectStaging=1?HeroSelectTargetMap=%s?HeroSelectTargetExperience=%s?Experience=%s"),
+		*HeroSelectLevel.GetLongPackageName(), *MatchMap, *MatchExperience, *MatchExperience);
 	if (World->GetNetMode() == NM_ListenServer)
 	{
 		TravelURL += TEXT("?listen");

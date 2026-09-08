@@ -220,7 +220,7 @@ void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerControlle
 
 	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
 	{
-		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: deferring spawn for %s until match flow leaves Prematch"), *GetNameSafe(NewPlayer));
+		UE_LOG(LogBreakawayGame, Log, TEXT("HandleStartingNewPlayer: match phase blocks pawn spawning for %s"), *GetNameSafe(NewPlayer));
 		return;
 	}
 
@@ -306,7 +306,7 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 
 	if (ShouldDeferPlayerRestartForMatchFlow(NewPlayer))
 	{
-		UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: deferring spawn for %s until match flow leaves Prematch"), *GetNameSafe(NewPlayer));
+		UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: match phase blocks pawn spawning for %s"), *GetNameSafe(NewPlayer));
 		return;
 	}
 

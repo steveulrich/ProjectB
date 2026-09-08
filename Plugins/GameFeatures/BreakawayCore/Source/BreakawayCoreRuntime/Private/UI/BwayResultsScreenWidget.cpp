@@ -35,8 +35,9 @@ void UBwayResultsScreenWidget::NativeConstruct()
 void UBwayResultsScreenWidget::NativeDestruct()
 {
 	CleanupChildWidgets();
-	if (UWidget* GameplayLayer = SuppressedGameplayLayer.Get())
+	if (UCommonActivatableWidgetContainerBase* GameplayLayer = SuppressedGameplayLayer.Get())
 	{
+		GameplayLayer->OnDisplayedWidgetChanged().RemoveAll(this);
 		GameplayLayer->SetVisibility(PreviousGameplayLayerVisibility);
 		SuppressedGameplayLayer.Reset();
 	}
@@ -66,10 +67,13 @@ void UBwayResultsScreenWidget::BeginPostMatchFlow()
 {
 	if (UPrimaryGameLayout* Layout = UPrimaryGameLayout::GetPrimaryGameLayout(GetOwningPlayer()))
 	{
-		if (UWidget* GameplayLayer = Layout->GetLayerWidget(FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game"))))
+		if (UCommonActivatableWidgetContainerBase* GameplayLayer = Layout->GetLayerWidget(FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Game"))))
 		{
 			PreviousGameplayLayerVisibility = GameplayLayer->GetVisibility();
 			SuppressedGameplayLayer = GameplayLayer;
+			// A late arrival can receive results before its experience pushes the HUD.
+			// CommonUI restores container visibility when that displayed widget changes.
+			GameplayLayer->OnDisplayedWidgetChanged().AddUObject(this, &ThisClass::HandleGameplayLayerChanged);
 			GameplayLayer->SetVisibility(ESlateVisibility::Collapsed);
 			UE_LOG(LogTemp, Log, TEXT("BwayResultsScreen: Suppressed local gameplay layer"));
 		}
@@ -107,6 +111,15 @@ void UBwayResultsScreenWidget::BeginPostMatchFlow()
 	else
 	{
 		AdvanceToBreakdown();
+	}
+}
+
+void UBwayResultsScreenWidget::HandleGameplayLayerChanged(UCommonActivatableWidget* DisplayedWidget)
+{
+	if (UCommonActivatableWidgetContainerBase* GameplayLayer = SuppressedGameplayLayer.Get())
+	{
+		PreviousGameplayLayerVisibility = GameplayLayer->GetVisibility();
+		GameplayLayer->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

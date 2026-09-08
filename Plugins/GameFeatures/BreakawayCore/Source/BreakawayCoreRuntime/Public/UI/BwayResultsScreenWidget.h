@@ -10,6 +10,7 @@
 class ABwayGameState;
 class UBwayMatchBreakdownWidget;
 class UBwayPostMatchInterstitialWidget;
+class UCommonActivatableWidgetContainerBase;
 
 /**
  * @deprecated Legacy results payload — use FBwayPostMatchSummaryData (Step 16).
@@ -116,6 +117,7 @@ private:
 	void AdvanceToBreakdown();
 	void ShowBreakdown();
 	void CleanupChildWidgets();
+	void HandleGameplayLayerChanged(UCommonActivatableWidget* DisplayedWidget);
 
 	UFUNCTION()
 	void HandleBreakdownReturnToLobby();
@@ -135,7 +137,7 @@ private:
 	TObjectPtr<UBwayMatchBreakdownWidget> BreakdownWidget;
 
 	FTimerHandle InterstitialTimerHandle;
-	TWeakObjectPtr<UWidget> SuppressedGameplayLayer;
+	TWeakObjectPtr<UCommonActivatableWidgetContainerBase> SuppressedGameplayLayer;
 	ESlateVisibility PreviousGameplayLayerVisibility = ESlateVisibility::SelfHitTestInvisible;
 
 	bool bResultsApplied = false;

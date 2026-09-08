@@ -4,16 +4,16 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Latest verified gate:** candidate 04 passed two-process LAN discovery, valid late-join selection, natural completion, and connected Return to Lobby without a GameMode assertion. The same host process created a second session that a fresh client discovered and joined. PostMatch arrival and the subsequent packaged rematch exposed missing hero/results state; these are the next fixes.
 
-**Current candidate:** `LAN-20260907-04`
+**Current candidate:** `LAN-20260908-01`
 
-**Current work:** goal active. Rematch travel-base cleanup and retained PostMatch results are implemented and source-verified. Editor 46692 exited normally at 07:04 UTC; no dirty assets. Four-client PIE defaults and empty extra options restored on disk. Candidate `LAN-20260908-01` script is prepared for packaged acceptance. Recheck current processes before launch.
+**Current work:** goal active. Candidate 0801 passed actual PostMatch results delivery and login pawn gating, but exposed late-HUD visibility and editor-only rematch selection startup. Follow-up staging-route and container-lifecycle fixes compiled; two affected Blueprints validate cleanly. Test games exited normally; editor 56980 explicitly quit with no dirty assets. Candidate 0802 script is prepared. Recheck processes before launching.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
 | Hero selection and roster | Passed | PIE listen-server coverage |
 | Full PIE core loop | Natural match and full rematch passed | Four-peer direct-map PIE passed. Packaged staging-derived rematch fails: SkipHeroSelection survives travel while human hero state is lost. Purchased-upgrade reset remains open |
-| Packaged build/cook/stage | Passed | `LAN-20260907-04`; source base `a24c3ec5` plus recorded complete/staged project patches and engine patch; exit 0, 149.62 seconds |
-| Packaged late join + round reset | Valid-choice path passed; PostMatch arrival fails | Candidates 03/04: accepted lock spawns selected kit. Candidate 04 PostMatch arrival gets a default pawn, empty slots, no results screen. Invalid/repeated lock and pending-selection disconnect remain open |
+| Packaged build/cook/stage | Passed | `LAN-20260908-01`; source base `d1788afc` plus recorded project/engine patches and untracked input; exit 0, 192.94 seconds |
+| Packaged late join + round reset | Valid-choice path and PostMatch snapshot delivery passed | Candidate 0801 actual PostMatch arrival: pawn=None, retained eight-column breakdown, no visitor column. Gameplay HUD reappears behind results; source fix compiled. Invalid/repeated lock and pending-selection disconnect remain open |
 | Individual selection timer / round-summary overlap | Passed in PIE and candidate 04 | Timed countdown visible; inactive countdown absent; selection stays clear through PostRound. PIE also verifies restoration of a still-active summary when selection closes |
 | Six-slot gameplay HUD | Passed | Candidate `LAN-20260906-08` screenshot |
 | Duplicate frontend HUD entries | In new package | Interactive visual verification pending |
@@ -23,15 +23,15 @@ Compact restart point for the next active implementation turn. Detailed evidence
 | DevMap navigation | Rebuilt and saved; cold-load verified | Missing static path data prevented all bot paths. Saved map now supports natural scoring across round resets and rematch |
 | Personal relic goal credit | Fixed; natural and release probes passed | Goal overlap captures scorer before detachment; last possessor survives release and clears on reset. Both matches credited all three goals, including the winner |
 | Packaged bot pickup / scoring / match completion | Passed offline and interactive LAN | Candidate 04 first match finished naturally 3–0 with a connected client |
-| Packaged frontend return / second match | Clean connected return and fresh discovery/join passed; playable rematch failed | Candidate 04: no GameMode assertion; same host re-created session. Subsequent Play Again retained SkipHeroSelection=1 and both human pawns lacked hero data |
+| Packaged frontend return / second match | Connected return and discovery/join passed; playable rematch still open | Candidate 0801 fixed URL cleanup but direct arena load did not start packaged hero selection. Follow-up routes rematch through shared staging; compiled and awaiting candidate 0802 |
 | Keyboard + gamepad acceptance | Pending | Run once packaged loop is stable |
 | Second PC / clean-device LAN | Pending | Final network confidence pass |
 
-**Source identity:** candidate 04 built from `a24c3ec5` with the follow-up edits subsequently committed as `8816d0f6`. Prefix: `Saved/Logs/codex-packaged-LAN-20260907-04`. Initial diff omitted staged changes; use supplementary `-project-complete.patch`, `-project-staged.patch`, and `-staged-source-supplement.json` as well as original records. Executable SHA-256 matched manifest. HEAD alone does not identify the artifact.
+**Source identity:** candidate `LAN-20260908-01` built from `d1788afc`; prefix `Saved/Logs/codex-packaged-LAN-20260908-01`. Project and engine patches include staged and unstaged changes. Executable SHA-256 matched manifest: `FFE3F1F089E4D35150F57DA0182F7E08877196A6A2822A857AA78E94F363B99B`. Retain untracked-input records; HEAD alone does not identify the artifact.
 
 **Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
 
-**Next action:** build `LAN-20260908-01` once, then test actual PostMatch arrival and staging-derived rematch. Require a retained breakdown without a default pawn on arrival; Play Again must restore human selection and populated kits, followed by natural completion. Use approved interactive launches and separate logs. Four-human assembly, same-party rehost, second-PC LAN, and placeholder mesh/animation integration follow.
+**Next action:** build candidate 0802 and repeat PostMatch arrival, now requiring its gameplay HUD to remain hidden. Then request Play Again from the remote visitor, require both humans to select in staging, return to the same arena with populated kits, and finish naturally. Use approved interactive launches and separate logs. Four-human assembly, same-party rehost, second-PC LAN, and placeholder mesh/animation integration follow.
 
 **Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
 
