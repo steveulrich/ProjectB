@@ -2,7 +2,7 @@
 
 ## Resume the vertical slice efficiently
 
-- When working on the vertical-slice goal, start with `AI_Planning/SLICE_STATUS.md` and current Git HEAD/status. Follow the user's pause/resume state.
+- When working on the vertical-slice goal, read `AI_Planning/SLICE_STATUS.md`, then run `Scripts/Test/Get-ResumeBrief.ps1` once for current Git, candidate, and process facts. Follow the user's pause/resume state.
 - A report, planning request, or workflow edit while paused does not resume gameplay implementation. Complete that request, preserve the next action, and wait for the user to resume the goal.
 - Select one pending acceptance gate and define its expected observable result before editing. Read only the relevant evidence, source, and applicable skills.
 - Use `rg` to locate symbols and narrow file ranges. Keep historical reports, full logs, and large skill references out of context unless needed for the current decision.
@@ -15,6 +15,8 @@
 - Prefer structured bridge or CLI inspection where it answers the question. Use fresh UI observations for visual polish, physical input, frontend flow, and security dialogs.
 - Keep progress updates concise and report meaningful changes. After a verified result, update the ledger's gate, evidence, invalidation conditions, and next action; put detailed history in the linked acceptance document.
 - Keep the resume ledger under about 100 lines. Store commands and full reports by reference, and replace stale state instead of appending turn histories. Record build/package counts and retry reasons with each gate's evidence to assess workflow overhead.
+- Use the gate record in `Scripts/Test/README.md` to preserve the expected result, evidence, retry condition, and next action before a pause or context handoff. Recheck process IDs and artifacts on resume; historical state is not current state.
+- Save repeated diagnostic procedures as parameterized scripts after they prove useful. Do not build a new framework for a one-off check, reread an entire skill catalog, or repeat a passed check without a relevant invalidation reason.
 - Preserve unrelated work. Follow `Plugins/GameFeatures/BreakawayCore/Docs/Agent_Testing_Ladder.md` for build, editor restart, and multiplayer evidence requirements.
 
 Efficiency changes must preserve the target: final-public-alpha Breakaway gameplay parity, integrated placeholder art, and a working four-player listen-server LAN flow. Startup screening, headless runs, and same-process PIE each prove only their recorded scope.

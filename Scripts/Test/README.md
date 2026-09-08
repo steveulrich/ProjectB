@@ -56,6 +56,15 @@ Full tier design, CQTest mapping to Core Loop steps, and CI layout:
 The repository's `AGENTS.md` directs vertical-slice work to this workflow. Start with `AI_Planning/SLICE_STATUS.md`, then use the helpers to consume a compact ledger and JSON result. Keep full evidence on disk:
 
 ```powershell
+# From the project root. Inventory only: no build, editor launch, or playtest.
+.\Scripts\Test\Get-ResumeBrief.ps1
+```
+
+The resume helper reads the ledger's `Current candidate` field, or an explicit `-Candidate` argument. It prints current HEAD, change count, candidate record availability, and known Unreal processes. Full Git status remains in `Saved/Logs/codex-resume-brief.json`, replaced on each invocation. Process discovery includes possible `dotnet` build hosts and is not exhaustive. Missing evidence produces a warning, never a gameplay pass. Matching HEAD alone does not establish package freshness: review the recorded project and engine patches, assets, untracked inputs, and configuration for the selected gate.
+
+Run package-specific helpers from `Scripts/Test`:
+
+```powershell
 .\Package-Preflight.ps1 -Candidate LAN-20260907-01 -OutputJson ..\..\Saved\Logs\preflight.json
 # Build/cook/stage, then run TestProfiles.ShortMatch from BwayTestConfig.psd1.
 .\Package-Preflight.ps1 -Candidate LAN-20260907-01 -RequireCandidate
@@ -84,6 +93,24 @@ For future comparisons, note build/package counts and repeated test attempts in 
 Keep routine tool responses near 1,500 tokens: return the result, first causal error, and full evidence path. Expand a diagnostic excerpt when it cannot explain the failure. After two attempts with the same failure and no new evidence, record the retry condition and move to an independent gate while implementation is active. Preserve security approval boundaries.
 
 Keep `SLICE_STATUS.md` under about 100 lines by replacing stale state and linking detailed history. Workflow preparation during a user-requested pause does not authorize builds or playtests. These instructions guide future runs; they do not change account usage limits or establish a measured savings percentage.
+
+### Record a gate without repeating history
+
+Add this compact record to the relevant acceptance document after a meaningful result. Keep only its status, evidence link, and next action in the ledger. Use `unknown` for unavailable counts.
+
+```text
+Gate / expected observable result:
+Candidate / source revision / patch and configuration evidence:
+Result / scope actually verified / remaining gaps:
+Evidence paths:
+Builds / packages / test attempts / elapsed time:
+Failure signature / attempted remedies / condition for retry:
+Changes that invalidate this evidence:
+Current process and log handles, observed at:
+Next action after resume:
+```
+
+Count retries, including failed launches, and explain what changed. Compare overhead only across similar gates. Do not infer token savings from build counts or account-wide usage. Preserve the final four-player LAN and physical-input acceptance requirements.
 
 ## Results identity fixture
 

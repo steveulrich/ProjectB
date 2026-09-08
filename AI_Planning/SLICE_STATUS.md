@@ -2,13 +2,17 @@
 
 Compact restart point for the next active implementation turn. Detailed evidence remains in BreakawayCore docs and `Saved/Logs/`.
 
-**Latest verified gate:** natural match and a full rematch passed on four same-process PIE peers after DevMap navigation and personal goal-credit fixes. Editor PID 33040 remains open; PIE is stopped, client count restored to 1, and no dirty editor packages remain. Preparing candidate `LAN-20260907-02`.
+**Latest verified gate:** natural match and a full rematch passed on four same-process PIE peers after DevMap navigation and personal goal-credit fixes. Candidate `LAN-20260907-02` subsequently completed build/cook/stage, exit 0, in 170.26 seconds. Packaged frontend acceptance remains open.
+
+**Current candidate:** `LAN-20260907-02`
+
+**Pause handoff:** this update prepares the next resumed goal run; it does not resume implementation. At the workflow check, editor PID 33040 had exited and packaged game PID 69364 remained running from candidate 02. Recheck with the resume helper before using either observation.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
 | Hero selection and roster | Passed | PIE listen-server coverage |
 | Full PIE core loop | Natural match and full rematch passed | Remote physical Play Again reconnected all four peers with fresh stats; both matches finished 3–0. Purchased-upgrade reset and separate-process LAN remain open |
-| Packaged build/cook/stage | Passed | `LAN-20260907-01`; source base `332ff649` plus recorded patch |
+| Packaged build/cook/stage | Passed | `LAN-20260907-02`; source base `684f4adc` plus recorded project and engine patches |
 | Packaged late join + round reset | Passed | Candidate `LAN-20260906-07` |
 | Six-slot gameplay HUD | Passed | Candidate `LAN-20260906-08` screenshot |
 | Duplicate frontend HUD entries | In new package | Interactive visual verification pending |
@@ -22,11 +26,11 @@ Compact restart point for the next active implementation turn. Detailed evidence
 | Keyboard + gamepad acceptance | Pending | Run once packaged loop is stable |
 | Second PC / clean-device LAN | Pending | Final network confidence pass |
 
-**Source identity:** candidate `LAN-20260907-01` was built from `332ff649` plus the saved project patch; verify the current checkout independently.
+**Source identity:** candidate `LAN-20260907-02` was built from `684f4adc924b54778c5e0df160f83fe2a65cf71c` plus recorded worktree changes. Evidence prefix: `Saved/Logs/codex-packaged-LAN-20260907-02`. Compare relevant changes before reusing it; current HEAD alone does not identify its contents.
 
 **Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
 
-**Next action:** build and test `LAN-20260907-02`, then exercise packaged frontend host/discover/join and input. The prior packaged process has exited; Unreal windows were accessible for results inspection and a remote Play Again click. Recheck any new candidate permission prompt from fresh UI state. Candidate `LAN-20260907-01` predates the latest fixes.
+**Next action:** after the goal is resumed, run the resume helper and inspect candidate 02's existing evidence. Continue packaged frontend host/discover/join and input if its relevant inputs still match. Expected result: host creates a LAN session through the frontend, separate clients discover and join it, and the four-human roster reaches selection. Reobserve any existing game window or permission prompt before input; do not rebuild merely because the ledger previously said to prepare this candidate.
 
 **Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
 
@@ -34,4 +38,4 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Invalidate relevant results:** bot possession, behavior-tree, or round lifecycle changes require another bot-loop test. HUD registrations require visual checks. Session, input, or replication changes require affected multiplayer checks. Final end-to-end LAN acceptance remains required.
 
-**Resume efficiently:** ledger → current Git status/HEAD → relevant candidate summary → one pending gate. Read full logs only for causal errors; preserve them on disk. Update this ledger after verified outcomes. Startup-screening JSON does not close gameplay gates.
+**Resume efficiently:** ledger → `Scripts/Test/Get-ResumeBrief.ps1` → relevant candidate evidence → one pending gate. Use the gate record in `Scripts/Test/README.md` for counts, retry conditions, and invalidation reasons. Read full logs only for causal errors. Inventory and startup-screening JSON do not close gameplay gates.
