@@ -6,7 +6,7 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 
 **Current candidate:** `LAN-20260908-03`
 
-**Current work:** goal active. Candidate 0803 completed build/cook/stage, exit 0, in 170.43 seconds; executable hash matches its manifest. No editor, test game, or package is running. Editor 4964 exited normally at 13:57:21 UTC with no dirty assets. Source/Blueprint fix: `c5e11663`. Use the ready artifact for the next gate; no additional build is needed.
+**Current work:** goal active. Candidate 0803's hash was reverified and host PID 48272 launched at the frontend. Its new Windows Firewall prompt remains open; Computer Use exposes PickerHost with no targetable window. A user handoff is pending. Reuse this host after the prompt clears; no client, editor, or package was launched this turn. Source/Blueprint fix: `c5e11663`; build/cook/stage passed in 170.43 seconds. No additional build is needed.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -27,7 +27,7 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 | Four-human / second-PC LAN | Pending | Final target: one PIE host plus three separate instances; also clean-device LAN |
 | Placeholder asset integration / visual polish | Pending | Mesh/animation contract, sample menus/debug text, waiting banner behind results, performance budget remain |
 
-**Next action:** launch ready candidate 0803 as two visible processes through the LAN frontend, using fresh `codex-packaged0803-lan-{host,client1}-20260908.log` paths. Require both humans to choose and lock on rematch without timeout, one staging start and one arena travel, both selected kits, and natural completion. No source rebuild is needed unless this gate finds a new defect. Follow with four-human assembly, same-party rehost, second-PC LAN, and placeholder integration.
+**Next action:** reobserve candidate 0803 host PID 48272 after the user clears its verified firewall prompt; preserve `codex-packaged0803-lan-host-20260908.log` and do not launch another host. Then launch one client with the fresh `codex-packaged0803-lan-client1-20260908.log` path. Require both humans to choose and lock on rematch without timeout, one staging start and arena travel, both selected kits, and natural completion. Four-human assembly, same-party rehost, second-PC LAN, and placeholder integration follow.
 
 **Current source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 
@@ -40,3 +40,5 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 **Invalidate relevant results:** selection/ownership/session changes require affected multiplayer checks; HUD registration requires visual checks; bot/round changes require another natural loop. Final end-to-end LAN acceptance remains required.
 
 **Resume efficiently:** ledger → `Scripts/Test/Get-ResumeBrief.ps1` once → relevant evidence → one gate. Keep runtime Python wrappers function-local and return serialized values; release them on exceptions before travel. Follow existing process sessions; do not launch duplicate builds or rerun unchanged failed probes.
+
+**Compact flow helper:** `Scripts/Test/Get-PackagedFlowBrief.ps1` summarizes whole-file selection/travel/results events and runtime error lines. Known 0802 counts, prior crash detection, bounded output, and live-host reading passed. It is an inventory, not an acceptance verdict. Use it to avoid repeated broad log searches.

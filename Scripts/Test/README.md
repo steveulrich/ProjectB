@@ -144,3 +144,9 @@ Load `Scripts/Test/Verify-SelectionPresentation.py` in editor Python after start
 `probe = start_selection_overlap_probe()` waits for Warmup, opens local selection on the three existing remote peers, and lets gameplay score naturally. A passing probe requires a PostRound summary on the host, no overlapping summary and no countdown on the three selecting clients, then restoration of the still-active summary when one client closes selection. Inspect `probe["stage"] == "passed"` and the `postround-overlap` / `postround-restored` JSON files under `Saved/Logs`. It unregisters its callback on success or failure. If stopping PIE early, unregister `probe["handle"]` first; retain only scalar state, not world references.
 
 This is a presentation fixture, not a new network arrival. Keep packaged admission and frontend discovery/return evidence separately. The observer begins during Warmup because a fast goal can make Playing shorter than its 0.25-second sampling interval. Check Blueprint validator error/warning counts after native header changes; the compile action's success field alone can miss graph errors.
+
+## Compact packaged flow inventory
+
+Use `Get-PackagedFlowBrief.ps1 -LogFiles <host-log>,<client-log>` to summarize the repeated selection, travel, results, and runtime-error searches. `-LastEventCount 0` returns counts without the event tail. Redirect JSON to `Saved/Logs/` when preserving a checkpoint.
+
+Counts span each complete file and are not per-match assertions. Duplicate starts require inspecting the relevant sequence and expected worlds; zero critical lines does not prove gameplay acceptance. Keep physical-input and rendered-UI observations alongside these logs. This helper is read-only and can inspect a live log without launching or restarting anything.
