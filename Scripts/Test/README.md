@@ -83,6 +83,7 @@ On resumption: read the ledger, verify current HEAD/status, choose one pending g
 Use this order for each acceptance gate:
 
 1. Define the expected observable result and identify the last relevant evidence. Verify the candidate's source record before reusing it.
+   For tracked source snapshots, capture `git diff HEAD --binary` so both staged and unstaged edits are recorded. Plain `git diff` omits staged changes. Preserve untracked build inputs separately; neither command captures them.
 2. Run the cheapest applicable check. Group related fixes before compiling; package once those checks pass when the gate requires it.
 3. Record the process handle and log path. Wait for completion; inspect short log excerpts when new output or a failure changes the next action.
 4. Diagnose a failure before rerunning. Record the hypothesis and what changed, or identify the repeat as a reproducibility check.
@@ -91,6 +92,8 @@ Use this order for each acceptance gate:
 For future comparisons, note build/package counts and repeated test attempts in the gate's evidence record. These measure workflow overhead; token savings remain unmeasured until comparable usage data exists. Keep the final multiplayer and end-to-end acceptance requirements.
 
 Keep routine tool responses near 1,500 tokens: return the result, first causal error, and full evidence path. Expand a diagnostic excerpt when it cannot explain the failure. After two attempts with the same failure and no new evidence, record the retry condition and move to an independent gate while implementation is active. Preserve security approval boundaries.
+
+For physical separate-process tests, launch the verified candidate visibly and confirm its window in Computer Use before sending input. `-WindowStyle Normal` does not guarantee that a sandbox-launched process appears on the interactive desktop. If the process/log confirms startup but inventory exposes no client window, diagnose the execution context before another launch. Use an approved interactive launch when required, retain a distinct log for the retry, and record disposal of the unused test process. Do not count an untargetable frontend process as an input or LAN pass.
 
 Keep `SLICE_STATUS.md` under about 100 lines by replacing stale state and linking detailed history. Workflow preparation during a user-requested pause does not authorize builds or playtests. These instructions guide future runs; they do not change account usage limits or establish a measured savings percentage.
 
