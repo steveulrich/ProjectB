@@ -20,6 +20,8 @@
 #include "Combat/BwayCombatFeedbackRouterComponent.h"
 #include "CommonSessionSubsystem.h"
 #include "GameFramework/GameModeBase.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
+#include "Stats/BwayMatchStatsLibrary.h"
 
 #include "Engine/Engine.h"
 #include "Engine/World.h"
@@ -362,6 +364,11 @@ void ABwayGameState::TransitionToPostGame(int32 WinningTeam)
 
 void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 {
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayGameState: ShowResultsScreen base impl (override in Blueprint)"));
 
 	if (ResultsScreenWidgetClass.IsNull())
@@ -370,23 +377,27 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 		return;
 	}
 
-	int32 Team1Score = 0;
-	int32 Team2Score = 0;
-	if (UBwayScoringComponent* Scoring = FindComponentByClass<UBwayScoringComponent>())
-	{
-		Team1Score = Scoring->GetTeamScore(0);
-		Team2Score = Scoring->GetTeamScore(1);
-	}
-
-	const int32 TotalRounds = GetCurrentRoundNumber();
+	// Capture once on authority. PlayerState replication and controller RPCs can
+	// arrive independently, so clients must not rebuild final totals from live state.
+	const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
+	const FBwayPostMatchSummaryData FinalSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
+		this, WinningTeam, GetCurrentRoundNumber(), FMath::Max(0.0f, Settings.PostMatchSummaryDuration));
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
 		{
-			BwayPC->Client_ShowResults(WinningTeam, Team1Score, Team2Score, TotalRounds, ResultsScreenWidgetClass);
+			FBwayPostMatchSummaryData ViewerSummary = FinalSummary;
+			const APlayerState* Viewer = BwayPC->PlayerState;
+			ViewerSummary.LocalPlayerTeamIndex = Viewer ? GetPlayerTeam(Viewer) : INDEX_NONE;
+			ViewerSummary.bLocalPlayerWon = WinningTeam >= 0 && ViewerSummary.LocalPlayerTeamIndex == WinningTeam;
+			for (FBwayMatchBreakdownPlayerColumn& Column : ViewerSummary.PlayerColumns)
+			{
+				Column.bIsLocalPlayer = Viewer && Column.PlayerId == Viewer->GetPlayerId();
+			}
+			BwayPC->Client_ShowResults(ViewerSummary, ResultsScreenWidgetClass);
 			UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent results screen RPC to %s (%d-%d)"),
-				*BwayPC->GetName(), Team1Score, Team2Score);
+				*BwayPC->GetName(), ViewerSummary.Team0Score, ViewerSummary.Team1Score);
 		}
 	}
 }

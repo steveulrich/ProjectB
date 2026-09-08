@@ -208,6 +208,7 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 		Column.MVPScore = CalculateMVPScore(Column.Stats);
 
 		const FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
+		Column.HeroId = HeroId;
 		if (HeroId.IsValid())
 		{
 			if (const UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
@@ -298,6 +299,7 @@ FBwayPostMatchSummaryData UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
 		if (APlayerState* LocalPS = PC->PlayerState)
 		{
 			const int32 LocalTeam = GameState->GetPlayerTeam(LocalPS);
+			Summary.LocalPlayerTeamIndex = LocalTeam;
 			Summary.bLocalPlayerWon = (WinningTeam >= 0 && LocalTeam == WinningTeam);
 		}
 	}

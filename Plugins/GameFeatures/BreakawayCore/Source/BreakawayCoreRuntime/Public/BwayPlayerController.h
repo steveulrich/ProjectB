@@ -79,13 +79,13 @@ public:
 	// ========================================
 
 	/**
-	 * Replicates the post-match results widget to the owning client.
+	 * Sends a complete authoritative results snapshot to the owning client for local UI.
 	 * Called from ABwayGameState::ShowResultsScreen_Implementation on the server for each PC.
 	 * Runs on the owning client only (RPC), guaranteeing remote clients on a dedicated
 	 * server also see their results screen.
 	 */
 	UFUNCTION(Client, Reliable)
-	void Client_ShowResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds, const TSoftClassPtr<UUserWidget>& WidgetClass);
+	void Client_ShowResults(const FBwayPostMatchSummaryData& Summary, const TSoftClassPtr<UUserWidget>& WidgetClass);
 
 	/**
 	 * Requests the server to return all clients to the front-end map.

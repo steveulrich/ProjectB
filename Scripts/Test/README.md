@@ -90,3 +90,15 @@ Keep `SLICE_STATUS.md` under about 100 lines by replacing stale state and linkin
 In an isolated development listen-server session with eight players and active hero selection, `bway.Test.ResultsIdentity negative-tie` sets duplicate names and negative scores. `bway.Test.ResultsIdentity unique-winner` resets that fixture and gives the highest player ID ten kills. The command uses native setters, refuses client worlds, and holds selection open. Start a fresh session afterward: it changes names, hero selection, timing, and stats.
 
 Compare summaries on the authority and owning client after replication converges. Require eight unique IDs, one local-player column per peer, one matching MVP, preserved identity after team remapping, and portraits matching selected hero assets. Generic `set` console commands are rejected in editor PIE. These fixtures do not establish natural gameplay, final-stat arrival order, or physical input; see `AI_Planning/PACKAGED_LAN_ACCEPTANCE.md` for recorded evidence and outstanding checks.
+
+## Verify final results independently of live stats
+
+In a fresh development PIE listen-server session, configure four local peers with eight total players and remain in hero selection:
+
+1. Run `bway.Test.ResultsIdentity negative-tie` in the server world and allow its names, hero choices, and stats to replicate.
+2. Run `bway.Test.ResultsSnapshot` in the server world. It queues the production results RPC on a normal game tick, captures ten kills, and immediately resets that player's live stats.
+3. Require the log marker `BwayResultsSnapshotFixture: sent authority=1 scriptguard=0` with `capturedKills=10 liveKills=0`.
+4. In editor Python, execute `Scripts/Test/Verify-ResultsSnapshot.py`, then call `verify_results_snapshot(expected_peers=4)`. It checks the actual results widgets, every stat field, team aggregates, MVP, local identity, and portrait bindings across all peers.
+5. Keep the generated `Saved/Logs/codex-results-snapshot-4-peers.json` with the runtime log. Stop PIE and restore the original client count.
+
+The live player counter must be zero while the captured results retain ten. The fixture is excluded from Shipping, rejects client worlds, and requires the prepared eight-player selection state. Start a fresh session afterward. This verifies snapshot transport and widget data; natural match completion, separate processes, input, late arrival during PostMatch, and packaged LAN require their own checks.

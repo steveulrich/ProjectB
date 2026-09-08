@@ -4,8 +4,8 @@
 
 #include "BwayGameState.h"
 #include "BwayPlayerController.h"
-#include "GameModes/BwayMatchFlowLibrary.h"
-#include "Stats/BwayMatchStatsLibrary.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "UI/BwayMatchBreakdownWidget.h"
 #include "UI/BwayPostMatchInterstitialWidget.h"
 #include "GameFramework/PlayerController.h"
@@ -44,27 +44,18 @@ void UBwayResultsScreenWidget::NativeDestruct()
 }
 
 void UBwayResultsScreenWidget::ApplyAuthoritativeResults(
-	const int32 WinningTeam,
-	const int32 Team1Score,
-	const int32 Team2Score,
-	const int32 TotalRounds)
+	const FBwayPostMatchSummaryData& Summary)
 {
 	if (bResultsApplied)
 	{
 		return;
 	}
 
-	const float InterstitialDuration = ResolveInterstitialDuration();
-	CachedSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
-		this,
-		WinningTeam,
-		TotalRounds,
-		InterstitialDuration);
-
-	if (CachedSummary.Team0Score == 0 && CachedSummary.Team1Score == 0)
+	CachedSummary = Summary;
+	for (FBwayMatchBreakdownPlayerColumn& Column : CachedSummary.PlayerColumns)
 	{
-		CachedSummary.Team0Score = Team1Score;
-		CachedSummary.Team1Score = Team2Score;
+		const UBwayHeroDataAsset* Hero = UBwayHeroRegistry::GetHeroDataById(Column.HeroId);
+		Column.HeroPortrait = Hero ? Hero->Portrait : nullptr;
 	}
 
 	bResultsApplied = true;
@@ -210,12 +201,6 @@ void UBwayResultsScreenWidget::CleanupChildWidgets()
 		BreakdownWidget->RemoveFromParent();
 		BreakdownWidget = nullptr;
 	}
-}
-
-float UBwayResultsScreenWidget::ResolveInterstitialDuration() const
-{
-	const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
-	return FMath::Max(0.0f, Settings.PostMatchSummaryDuration);
 }
 
 FMatchResultsData UBwayResultsScreenWidget::GetMatchResults() const

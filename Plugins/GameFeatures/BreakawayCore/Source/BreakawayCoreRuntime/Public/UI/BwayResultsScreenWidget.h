@@ -57,7 +57,7 @@ class BREAKAWAYCORERUNTIME_API UBwayResultsScreenWidget : public UCommonActivata
 public:
 	UBwayResultsScreenWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	void ApplyAuthoritativeResults(int32 WinningTeam, int32 Team1Score, int32 Team2Score, int32 TotalRounds);
+	void ApplyAuthoritativeResults(const FBwayPostMatchSummaryData& Summary);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -116,7 +116,6 @@ private:
 	void AdvanceToBreakdown();
 	void ShowBreakdown();
 	void CleanupChildWidgets();
-	float ResolveInterstitialDuration() const;
 
 	UFUNCTION()
 	void HandleBreakdownReturnToLobby();

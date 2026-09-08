@@ -372,10 +372,7 @@ void ABwayPlayerController::OnPossess(APawn* InPawn)
 }
 
 void ABwayPlayerController::Client_ShowResults_Implementation(
-	int32 WinningTeam,
-	int32 Team1Score,
-	int32 Team2Score,
-	int32 TotalRounds,
+	const FBwayPostMatchSummaryData& Summary,
 	const TSoftClassPtr<UUserWidget>& WidgetClass)
 {
 	DismissPostRoundSummary();
@@ -416,7 +413,7 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 	// interstitial and breakdown take focus after their data and controls exist.
 	if (UBwayResultsScreenWidget* ResultsScreen = Cast<UBwayResultsScreenWidget>(ResultsWidget))
 	{
-		ResultsScreen->ApplyAuthoritativeResults(WinningTeam, Team1Score, Team2Score, TotalRounds);
+		ResultsScreen->ApplyAuthoritativeResults(Summary);
 	}
 	else if (ResultsWidget->IsFocusable())
 	{
@@ -424,7 +421,7 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: Results screen shown — Team %d wins (%d-%d, %d rounds)"),
-		WinningTeam + 1, Team1Score, Team2Score, TotalRounds);
+		Summary.WinningTeam + 1, Summary.Team0Score, Summary.Team1Score, Summary.TotalRounds);
 }
 
 void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()

@@ -141,8 +141,11 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchBreakdownPlayerColumn
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	FText HeroName;
 
-	/** Local presentation data resolved from the player's selected hero. */
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	FPrimaryAssetId HeroId;
+
+	/** Local presentation only; resolve from HeroId after receiving a snapshot. */
+	UPROPERTY(NotReplicated, BlueprintReadOnly, Category = "PostMatch")
 	TObjectPtr<UTexture2D> HeroPortrait = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
@@ -160,6 +163,10 @@ USTRUCT(BlueprintType)
 struct BREAKAWAYCORERUNTIME_API FBwayPostMatchSummaryData
 {
 	GENERATED_BODY()
+
+	/** Viewer team captured with the results, independent of later PlayerState updates. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	int32 LocalPlayerTeamIndex = INDEX_NONE;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	int32 WinningTeam = INDEX_NONE;

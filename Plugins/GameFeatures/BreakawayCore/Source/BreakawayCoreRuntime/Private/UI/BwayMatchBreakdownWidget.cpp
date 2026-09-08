@@ -25,7 +25,7 @@ UWidget* UBwayMatchBreakdownWidget::NativeGetDesiredFocusTarget() const
 
 void UBwayMatchBreakdownWidget::ApplyBreakdownData(FBwayPostMatchSummaryData SummaryData)
 {
-	const int32 LocalTeam = UBwayMatchHUDWidgetBase::GetLocalPlayerTeamForWidget(this);
+	const int32 LocalTeam = SummaryData.LocalPlayerTeamIndex;
 	CachedSummary = UBwayMatchStatsLibrary::RemapPostMatchSummaryForDisplay(SummaryData, LocalTeam);
 	OnBreakdownReady(CachedSummary);
 }

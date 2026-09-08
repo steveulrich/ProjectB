@@ -283,3 +283,28 @@ Evidence: `Saved/Logs/codex-results-identity-verified-20260907.log`, `codex-resu
 The earlier `codex-results-identity-runtime-20260907.log` is diagnostic evidence, not a passing run. Its bot-ID check failed and Unreal rejected its generic `set` commands in editor PIE. The replacement native fixture calls the real setters and verifies their results. Do not reuse the old setup commands.
 
 These are synthetic stats and local widget-state checks, not natural-match, physical-input, visual-layout, or packaged acceptance. Final-stat arrival order at the PostMatch transition, gamepad access to full names, bot identity across the full travel/rematch sequence, and clean-device LAN remain open. Candidate `LAN-20260907-01` predates these fixes.
+
+## Authoritative final-results snapshots (September 7, 2026)
+
+The results RPC previously carried only the winner, scores, and round count. Each client built a permanent results cache from its independently replicated PlayerStates. A receive-handler timing probe reproduced ten live kills with zero cached results kills, even after replication converged. That probe used local Python invocation and establishes the stale-cache defect, not RPC transport. Evidence: `Saved/Logs/codex-results-ordering-repro-20260907.json`.
+
+The server now captures the complete summary once and sends it through the existing reliable owning-controller RPC. Each recipient gets its authoritative player identity and team perspective. Widgets consume that snapshot, including scores, totals, MVP, names, and hero IDs. Portrait textures remain local presentation data: the struct excludes them from network serialization and the receiving widget resolves them from the captured hero ID. Both child views use the captured viewer team when arranging columns.
+
+| Object | Authority and delivery |
+|---|---|
+| PlayerState and scoring components | Server owns live stats and scores; existing gameplay replication continues. |
+| GameState | Captures the final summary before iterating recipients; base presentation entry rejects non-authority calls. |
+| PlayerController | Reliable Client RPC delivers the complete summary to its owning connection at the results transition. No client-submitted result data is trusted. |
+| Results widgets | Local snapshot consumers; no gameplay prediction or reconciliation is involved. |
+
+The change adds no per-tick RPC, relevancy policy, or dormancy tuning. Late arrivals during PostMatch still need separate acceptance; this turn does not establish a replay path for them. Bandwidth was not profiled and no performance savings are claimed.
+
+Validation used one editor build, which passed in 104.29 seconds (`Saved/Logs/codex-results-snapshot-build-20260907.log`). All four results Blueprints compiled after restart without content changes. The editor initially opened its default DevMap; that setup session was stopped and the fixture ran in `L_BW_HeroSelect_Staging`.
+
+The passing fixture had four human PIE peers and four bots, with eight unique IDs and duplicate display names. Every net driver accepted `PktLag=150` and `PktLoss=5`. After the negative-tie baseline converged, `bway.Test.ResultsSnapshot` executed the production results call on a normal server timer tick, outside the Python execution guard. It captured ten kills for ID 277, then reset that player's live stats before the tick ended. The log confirms `authority=1 scriptguard=0`, four sends, and four receiving results screens.
+
+`Scripts/Test/Verify-ResultsSnapshot.py` passed across all four peers. It checked ten captured kills versus zero live kills; every stat field and team aggregate; exactly one matching MVP; exactly one correct local-player column; all eight portrait bindings; and local-team-left mapping in the actual breakdown widgets. Host ID 267 and client ID 276 viewed team 0; clients 277 and 275 viewed team 1. All peers retained the same canonical results.
+
+Evidence: `Saved/Logs/codex-results-snapshot-runtime-20260907.log` and `Saved/Logs/codex-results-snapshot-4-peers.json`. The runtime log has no Blueprint runtime errors, Accessed None, ensure failures, fatal errors, or retained-world cleanup failures through teardown. It contains separate PixelStreaming2 startup messages about GEngine validity; these are outside the results test. PIE stopped, PlayNumberOfClients returned to 1, and dirty map/content checks were empty. Editor PID 56652 remains open.
+
+This verifies the snapshot transport and results data under forced divergence and configured network emulation. The fixture displays synthetic 0–0 results during selection; it does not end a natural match. Natural final-goal capture, separate processes, physical input, visible layout, PostMatch late arrival, rematch/travel, and packaged LAN remain required. Candidate `LAN-20260907-01` predates the fix.
