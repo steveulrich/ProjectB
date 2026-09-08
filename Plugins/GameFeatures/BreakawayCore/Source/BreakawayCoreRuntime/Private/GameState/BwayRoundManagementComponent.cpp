@@ -564,11 +564,10 @@ void UBwayRoundManagementComponent::EnterPlaying()
 	}
 
 	SetMatchPhase(EBwayMatchPhase::Playing);
+	StartPlayingPhaseAbility();
 
 	if (bFirstEntryFromWarmup)
 	{
-		StartPlayingPhaseAbility();
-
 		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterPlaying — round FSM active (PointsToWin=%d, RoundDuration=%.0fs); subsequent rounds use PostRound loop"),
 			PointsToWin, RoundDuration);
 
@@ -708,6 +707,12 @@ void UBwayRoundManagementComponent::StartPostRoundPhaseAbilityImpl()
 			false);
 
 		UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: PostRound config timer started (%.1fs, authoritative)"), PostRoundDuration);
+	}
+	else if (World)
+	{
+		// Zero skips the pause without depending on a Blueprint delay or reentering StartPhase.
+		World->GetTimerManager().SetTimerForNextTick(
+			FTimerDelegate::CreateUObject(this, &UBwayRoundManagementComponent::HandlePostRoundTimerExpired));
 	}
 }
 
