@@ -9,6 +9,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
+#include "Relic/BwayRelicRequestIndicatorComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "BwayGameState.h"
 #include "GameState/BwayRelicManagerComponent.h"
@@ -33,6 +34,7 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 {
 	BwayCharacterMovementComponent = Cast<UBwayCharacterMovementComponent>(GetCharacterMovement());
 	BwayCharacterMovementComponent->SetIsReplicated(true);
+	RelicRequestIndicatorComponent = CreateDefaultSubobject<UBwayRelicRequestIndicatorComponent>(TEXT("RelicRequestIndicatorComponent"));
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -52,6 +54,7 @@ void ABwayCharacterWithAbilities::OnAbilitySystemInitialized()
 
 void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 {
+	ClearRelicRequestForCurrentPawn();
 	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
 	{
 		MoveComp->UnbindAbilitySystem();
@@ -71,6 +74,20 @@ void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 	Super::OnAbilitySystemUninitialized();
 }
 
+void ABwayCharacterWithAbilities::ClearRelicRequestForCurrentPawn()
+{
+	if (HasAuthority())
+	{
+		ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
+		const FGameplayTag RequestTag = UBwayRelicRequestIndicatorComponent::ResolveRequestTag(this);
+		if (ASC && ASC->GetAvatarActor() == this && RequestTag.IsValid())
+		{
+			// The PlayerState ASC survives this pawn. A new avatar must make its own request.
+			ASC->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(RequestTag));
+		}
+	}
+}
+
 void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -81,6 +98,7 @@ void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimePro
 void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 {
 	Super::OnDeathStarted(OwningActor);
+	ClearRelicRequestForCurrentPawn();
 	if (HasAuthority())
 	{
 		if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())

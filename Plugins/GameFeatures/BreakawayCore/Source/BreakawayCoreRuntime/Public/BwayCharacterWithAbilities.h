@@ -9,6 +9,7 @@
 #include "BwayCharacterWithAbilities.generated.h"
 
 class UCameraShakeBase;
+class UBwayRelicRequestIndicatorComponent;
 
 UCLASS(config=Game)
 class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharacter
@@ -17,6 +18,9 @@ class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharact
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Relic")
+	TObjectPtr<UBwayRelicRequestIndicatorComponent> RelicRequestIndicatorComponent;
 public:
 	explicit ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer);
 	
@@ -75,6 +79,7 @@ protected:
 	void ApplyHeroVisuals(const UBwayHeroDataAsset* HeroData);
 
 	void BindTeamAppearanceListener();
+	void ClearRelicRequestForCurrentPawn();
 
 	UFUNCTION()
 	void HandleTeamAppearanceChanged(UObject* ObjectChangingTeam, int32 OldTeamID, int32 NewTeamID);
