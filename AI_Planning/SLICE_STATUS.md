@@ -2,11 +2,11 @@
 
 Compact restart point. Detailed evidence and failed attempts remain in [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md) and `Saved/Logs/`.
 
-**Latest verified gate:** footstep fix `bcec5a3e` passed four-peer NullRHI and rendered natural matches. NullRHI observed up to 21 footstep actors with no Niagara components or Blueprint errors. Rendering observed up to 24 active components, 338 trigger changes on reused components, and complete actor cleanup after results. Cold semantic graph verification and Blueprint validation passed. Earlier 0803 manual rematch/shared frontend-return acceptance remains valid for its recorded scope.
+**Latest verified gate:** candidate 0804 passed disconnected-client LAN discovery/join, a natural two-process 0–3 match, matching rendered results without the waiting banner, shared frontend return, and actual OS exit 0 on both instances. Earlier four-peer footstep lifecycle and 0803 manual-rematch evidence remain valid for their recorded scope.
 
 **Current candidate:** `LAN-20260908-04`
 
-**Current work:** goal active. Candidate 0804 completed one BuildCookRun in 179.04 seconds, exit 0; session 91103 is finished. Its packaged headless match reached natural 0–2 results at 16:15:22 UTC. The test-exit trigger requested status 0; OS exit capture is unavailable, and PID 66024 is absent. No editor/game/build remains from this work. Rendered LAN acceptance is next. On-disk settings: four clients, one process, listen server, empty extra options; DevMap restored.
+**Current work:** goal active. Candidate 0804 rendered LAN gate completed; host 44220 and client 47976 exited normally with retained-handle exit 0. Monitor sessions 61070/15154 are finished. No editor/game/build remains from this work. Next inspect and repair placeholder hero mesh/animation integration, then continue four-player acceptance. On-disk settings: four clients, one process, listen server, empty extra options; DevMap restored.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -21,16 +21,16 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 | Results identity and portrait data | Fixtures and packaged visual samples passed | 0802 first match/arrival and rematch had matching columns, totals, portraits, goal credits and one MVP; full packaged field comparison remains |
 | Final-results snapshot transport | Four-peer fixture/natural transitions plus actual packaged arrival passed | Earlier lag/loss with forced live-stat divergence passed; final LAN acceptance still required |
 | DevMap navigation / personal goal credit | Fixed and verified | Natural scoring, cold map load, round resets, goal ownership and release/reset probes passed |
-| Packaged match completion | Natural first match and manual rematch passed | 0803: 1–3 first match, 0–3 rematch; matching rendered results on both peers |
+| Packaged match completion | 0804 two-process natural match passed | 0–3, eight matching rendered columns, no waiting banner; earlier 0803 manual rematch passed |
 | Frontend return / second match | 0803 shared return, manual selection, natural completion passed | Client followed automatically; Argus500/Rawlins400, six slots, matching 0–3 results. Disconnected rediscovery remains open |
 | Keyboard + gamepad acceptance | Pending | Physical all-kit actions once packaged loop is stable |
 | Four-human / second-PC LAN | Pending | Final target: one PIE host plus three separate instances; also clean-device LAN |
-| Waiting banner / phase lifecycle | Fixed; state and rendered results checks passed | `f50104ec`; zero/nonzero PostRound and round-two input restored; rendered four-peer host/Client 1 results have no waiting banner. 0804 packaged verification remains |
+| Waiting banner / phase lifecycle | Fixed; state, PIE, and packaged results passed | `f50104ec`; zero/nonzero PostRound and round-two input restored; four-peer PIE and two-process 0804 results have no waiting banner |
 | Explicit bot-count override | Fixed in source; PIE and cold asset checks passed | `70bea97c`; one modern manager, no legacy manager, exact seven/zero counts. Four-player/four-bot client rosters agree after natural match |
-| Footstep effect lifecycle | Fixed; NullRHI/rendered/cold checks passed | `bcec5a3e`; optional spawn guarded, valid components reused, cleanup complete. Packaged and final VFX appearance remain |
+| Footstep effect lifecycle | Fixed; NullRHI/rendered/cold and packaged error checks passed | `bcec5a3e`; optional spawn guarded, components reused, cleanup complete; no 0804 packaged runtime errors. Final VFX appearance remains |
 | Placeholder asset integration / visual polish | Pending | Mesh/animation contract, sample menus/debug text, performance budget remain |
 
-**Next action:** launch 0804 through the LAN frontend, verify both peers' natural results without the waiting banner, and continue affected full-flow checks toward the required four-player topology. Retain GUI process handles at launch for exit-code capture. Preserve second-PC LAN, disconnected rediscovery, physical all-kit inputs, and placeholder integration gates. Do not repeat old 0803 checks without an invalidation reason.
+**Next action:** inspect authored hero mesh transforms, skeleton/animation assignments, and runtime attachment to fix floating/T-pose placeholders. `ApplyHeroVisuals` applies `HeroMeshRelativeTransform` directly and Rawlins has a null AnimationBP warning. Then continue the required one-PIE-plus-three-process topology, second-PC LAN, all-kit inputs, and other open gates. Do not repeat passed checks without a relevant invalidation reason.
 
 **Hero-reselection source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 
@@ -57,3 +57,5 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 **Footstep evidence / overhead:** `footstep-audit-20260908/` exports and semantic graph diff; `codex-footstep-{nullrhi-fixed,rendered-fixed,rendered-cleanup}-20260908.json`; runtime logs and log summary. Three editor launches (one failed for sandbox cache access), two four-peer PIE runs, no separate editor rebuild, one new package and one packaged headless run. Eight pre-test Python error lines record protected graph access; native bridge operations completed the fix. Both successful editors exited normally; callbacks and actors cleaned up. BF-113 updated. Full causes, scope, and attempt records are in packaged acceptance.
 
 **0804 headless scope:** `codex-packaged0804-headless-20260908.log` and compact flow JSON: zero runtime error/critical lines, two natural rounds, real PostMatch trigger. Direct map, NullRHI, no rendered/physical/network acceptance. The test-exit request is recorded; actual OS exit code was not captured. This does not pass graceful frontend return.
+
+**0804 rendered evidence / overhead:** `codex-packaged0804-lan-{host,client1}-20260908.log` and `codex-packaged0804-rendered-flow-20260908.json`. Two launches, two natural matches (first host-only), zero new builds/packages/editor launches. Remote Rawlins manually locked at 16:30:12.136; host timeout kept Rawlins; both 400 health/six slots. Shared results 16:31:51.731/.746, matching 78/378 gold and Alona MVP/goals; shared frontend travel 16:32:18.825. Both logs have zero error/critical lines and normal exits. Scope is two packaged processes on one PC. Retain slide-cue tag, invalid-handle unregister, material, VSM, mesh/animation, and debug/menu polish leads.
