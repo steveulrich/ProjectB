@@ -92,6 +92,14 @@ void ULyraTeamCreationComponent::ServerChooseTeamForPlayer(ALyraPlayerState* PS)
 	}
 	else
 	{
+		// Game modes can assign a team before player initialization, and seamless
+		// arrivals can carry one. Rebalancing an already assigned player here can
+		// disagree with the game mode's roster and change teams after pawn setup.
+		if (PS->GetTeamId() != INDEX_NONE && TeamsToCreate.Contains(PS->GetTeamId()))
+		{
+			return;
+		}
+
 		const FGenericTeamId TeamID = IntegerToGenericTeamId(GetLeastPopulatedTeamID()); // @TODO: TEAMS: Use a better algorithm to team up party members, etc
 		PS->SetGenericTeamId(TeamID);
 	}
@@ -152,8 +160,12 @@ int32 ULyraTeamCreationComponent::GetLeastPopulatedTeamID() const
 
 				if ((PlayerTeamID != INDEX_NONE) && !LyraPS->IsInactive())	// do not count unassigned or disconnected players
 				{
-					check(TeamMemberCounts.Contains(PlayerTeamID))
-					TeamMemberCounts[PlayerTeamID] += 1;
+					// A carried team may not exist in this experience. It will be
+					// reassigned above; only configured teams participate in balancing.
+					if (uint32* PlayerCount = TeamMemberCounts.Find(PlayerTeamID))
+					{
+						++(*PlayerCount);
+					}
 				}
 			}
 		}

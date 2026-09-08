@@ -1,6 +1,6 @@
 # Relic request indicator: lifecycle verification and team discrepancy
 
-September 8, 2026. Request activation, visibility under Lyra's team rules, expiry, death cleanup and a fresh request after automatic respawn now pass in three-peer PIE. **Complete team correctness remains unproven:** Lyra teams and the match roster disagree about membership. Candidate `LAN-20260908-05` predates the request changes and the connected-frontend host fix.
+September 8, 2026. Request activation, visibility under Lyra's team rules, expiry, death cleanup and a fresh request after automatic respawn pass in three-peer PIE. The subsequently discovered team-roster disagreement below is now fixed; see [team consistency verification](./TEAM_ASSIGNMENT_CONSISTENCY.md) for the scoped pass and remaining marker viewing-direction/death-material work. Candidate `LAN-20260908-05` predates these source changes and the connected-frontend host fix.
 
 ## Current lifecycle implementation
 
@@ -27,9 +27,9 @@ One editor build passed in **64.30 seconds**. Three same-process PIE peers used 
 
 The death fixture only teleported the authoritative pawn below KillZ. Its intended fallback RestartPlayer call never ran: normal gameplay replaced the pawn between observer ticks, without exposing the null-pawn interval that the fixture expected. The fixture's stale `awaiting_unpossess` result is retained. The runtime log and pawn-identity/tag transitions, rather than that fixture status, prove death and automatic replacement. A future fixture should also detect a changed pawn identity.
 
-Scope: three rendered peers in one editor process, physical mouse request, one automatic replacement. Packaged-host/four-player/second-PC, late-join-active-request, live team-change and gamepad acceptance remain open. Request policy currently follows Lyra's team subsystem; the contradictory match roster below prevents a full teammate-correctness pass.
+Scope: three rendered peers in one editor process, physical mouse request, one automatic replacement. Packaged-host/four-player/second-PC, late-join-active-request, live team-change and gamepad acceptance remain open. At that stage the contradictory match roster below prevented a teammate-correctness pass. The later team-consistency test resolves the identity disagreement and records the remaining rendered-marker limitation.
 
-## Priority follow-up: one source of team membership
+## Historical team disagreement, now corrected in source
 
 `team-membership-snapshot.json` records the same disagreement in all three worlds:
 
