@@ -10,10 +10,13 @@
 #include "EngineUtils.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameplayTasksComponent.h"
 #include "NavigationData.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "Relic/RelicActor.h"
+#include "Tasks/AITask_MoveTo.h"
+#include "UObject/UObjectIterator.h"
 
 namespace BwayBotDiagnostics
 {
@@ -39,6 +42,18 @@ void Dump(UWorld* World)
 		UBehaviorTreeComponent* BT = Cast<UBehaviorTreeComponent>(Bot->GetBrainComponent());
 		const ACharacter* Character = Cast<ACharacter>(Pawn);
 		const UCharacterMovementComponent* Movement = Character ? Character->GetCharacterMovement() : nullptr;
+		UE_LOG(LogTemp, Display, TEXT("BwayBotDiagnostic: taskComponent=%s postponePaths=%d brainRunning=%d brainPaused=%d"),
+			*GetPathNameSafe(Bot->GetGameplayTasksComponent()), Bot->ShouldPostponePathUpdates(),
+			BT && BT->IsRunning(), BT && BT->IsPaused());
+		for (TObjectIterator<UAITask_MoveTo> TaskIt; TaskIt; ++TaskIt)
+		{
+			if (TaskIt->GetAIController() == Bot)
+			{
+				UE_LOG(LogTemp, Display, TEXT("BwayBotDiagnostic: moveTask=%s state=%d component=%s"),
+					*TaskIt->GetName(), static_cast<int32>(TaskIt->GetState()),
+					*GetPathNameSafe(TaskIt->GetGameplayTasksComponent()));
+			}
+		}
 		UE_LOG(LogTemp, Display, TEXT("BwayBotDiagnostic: bot=%s authority=%d pawn=%s location=%s velocity=%s moveStatus=%d mode=%d maxSpeed=%.1f tasks=%s"),
 			*Bot->GetName(), Bot->HasAuthority(), *GetNameSafe(Pawn),
 			Pawn ? *Pawn->GetActorLocation().ToString() : TEXT("none"),

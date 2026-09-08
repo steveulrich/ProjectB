@@ -68,6 +68,16 @@ void ABwayRelicBotController::OnPossess(APawn* InPawn)
 	RunRelicBehaviorTreeIfReady();
 }
 
+void ABwayRelicBotController::OnUnPossess()
+{
+	// Move tasks belong to the outgoing pawn's GameplayTasksComponent. Keeping the
+	// tree running across replacement leaves it waiting for a task that was torn
+	// down with that pawn; RunBehaviorTree skips an already-started tree. Clean up
+	// before the pawn is detached so latent task cancellation still has its owner.
+	CleanupBrainComponent();
+	Super::OnUnPossess();
+}
+
 void ABwayRelicBotController::RunRelicBehaviorTreeIfReady()
 {
 	if (!HasAuthority() || !GetPawn())
