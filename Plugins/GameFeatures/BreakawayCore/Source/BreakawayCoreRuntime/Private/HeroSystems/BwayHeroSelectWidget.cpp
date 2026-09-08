@@ -24,6 +24,8 @@ TOptional<FUIInputConfig> UBwayHeroSelectWidget::GetDesiredInputConfig() const {
 
 void UBwayHeroSelectWidget::NativeConstruct() {
   Super::NativeConstruct();
+  // Preserve the Blueprint's concrete timer type used by its text-update graph.
+  SelectionTimerWidget = GetWidgetFromName(TEXT("Widget_Timer"));
 
   // Get references to required systems
   if (APlayerController *PC = GetOwningPlayer()) {
@@ -605,7 +607,12 @@ void UBwayHeroSelectWidget::HandleAllPlayersReady() {
 void UBwayHeroSelectWidget::UpdateSelectionTimer() {
   RefreshSelectionManager();
   RefreshLocalPlayerState();
-  OnSelectionTimerUpdated(GetRemainingSelectionTime());
+  const float RemainingTime = GetRemainingSelectionTime();
+  OnSelectionTimerUpdated(RemainingTime);
+  if (SelectionTimerWidget) {
+    SelectionTimerWidget->SetVisibility(RemainingTime >= 0.0f
+        ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+  }
 }
 
 void UBwayHeroSelectWidget::RefreshHeroDetails() {

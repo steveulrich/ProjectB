@@ -133,3 +133,11 @@ The live player counter must be zero while the captured results retain ten. The 
 For natural-match verification, start a fresh four-peer DevMap session and let the configured match finish without synthetic stats or forced goals. Execute the same Python verifier file, then call `verify_natural_results(expected_peers=4, run_name="natural-match-1")` after the breakdown appears. It compares every results column and aggregate to live authority, checks scores, rounds, portraits, and team display, and requires a credited relic goal. Keep the gameplay log to establish scoring provenance.
 
 After recording that result, `verify_relic_scorer_identity()` checks authority-side identity retention through drop/throw/pass, reset cleanup, and rejection of post-match personal credit. This probe mutates the finished session; stop PIE afterward. It does not verify client release input or projectile goal collision.
+
+## Selection presentation through round transitions
+
+Load `Scripts/Test/Verify-SelectionPresentation.py` in editor Python after starting a fresh four-peer listen-server PIE session. `selection_frontend_snapshot("timed")` records the actual widgets and checks countdown visibility against remaining time; require four active selection rows to establish timed-selection coverage.
+
+`probe = start_selection_overlap_probe()` waits for Warmup, opens local selection on the three existing remote peers, and lets gameplay score naturally. A passing probe requires a PostRound summary on the host, no overlapping summary and no countdown on the three selecting clients, then restoration of the still-active summary when one client closes selection. Inspect `probe["stage"] == "passed"` and the `postround-overlap` / `postround-restored` JSON files under `Saved/Logs`. It unregisters its callback on success or failure. If stopping PIE early, unregister `probe["handle"]` first; retain only scalar state, not world references.
+
+This is a presentation fixture, not a new network arrival. Keep packaged admission and frontend discovery/return evidence separately. The observer begins during Warmup because a fast goal can make Playing shorter than its 0.25-second sampling interval. Check Blueprint validator error/warning counts after native header changes; the compile action's success field alone can miss graph errors.

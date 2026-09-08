@@ -6,6 +6,7 @@
 #include "CommonSessionSubsystem.h"
 #include "CommonUserSubsystem.h"
 #include "ControlFlowManager.h"
+#include "Engine/World.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "NativeGameplayTags.h"
@@ -81,14 +82,14 @@ void ULyraFrontendStateComponent::FlowStep_WaitForUserInitialization(FControlFlo
 {
 	// If this was a hard disconnect, explicitly destroy all user and session state
 	// TODO: Refactor the engine disconnect flow so it is more explicit about why it happened
-	bool bWasHardDisconnect = false;
-	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode<AGameModeBase>();
+	const UWorld* World = GetWorld();
+	const AGameModeBase* GameMode = World->GetAuthGameMode<AGameModeBase>();
 	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(this);
 
-	if (ensure(GameMode) && UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("closed")))
-	{
-		bWasHardDisconnect = true;
-	}
+	// Remote players can return with the listen server and have no local GameMode.
+	const bool bWasHardDisconnect = GameMode
+		? UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("closed"))
+		: World->URL.HasOption(TEXT("closed"));
 
 	// Only reset users on hard disconnect
 	UCommonUserSubsystem* UserSubsystem = GameInstance->GetSubsystem<UCommonUserSubsystem>();
@@ -252,4 +253,3 @@ void ULyraFrontendStateComponent::FlowStep_TryShowMainScreen(FControlFlowNodeRef
 		);
 	}
 }
-

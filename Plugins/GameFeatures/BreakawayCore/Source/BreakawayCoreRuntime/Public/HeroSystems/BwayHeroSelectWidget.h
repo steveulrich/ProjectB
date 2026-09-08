@@ -239,6 +239,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Hero Selection")
 	TObjectPtr<UCommonTextBlock> Text_HeroDetails;
 
+	/** Shared countdown display; individual late-join selection has no time limit. */
+	UPROPERTY(Transient)
+	TObjectPtr<UWidget> SelectionTimerWidget;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<ABwayPlayerState> LocalPlayerState;
 

@@ -183,6 +183,8 @@ void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftC
 		UE_LOG(LogTemp, Error, TEXT("BwayPlayerController: Failed to push hero selection widget to the CommonUI layer"));
 		return;
 	}
+
+	DismissPostRoundSummary();
 }
 
 void ABwayPlayerController::Client_HideHeroSelection_Implementation()
@@ -194,6 +196,13 @@ void ABwayPlayerController::Client_HideHeroSelection_Implementation()
 	}
 
 	RestoreGameplayInputMode();
+	if (const UBwayRoundManagementComponent* RoundMgmt = BoundRoundManagementComponent.Get())
+	{
+		if (RoundMgmt->GetCurrentMatchPhase() == EBwayMatchPhase::PostRound && RoundMgmt->HasActivePostRoundSummary())
+		{
+			ShowPostRoundSummary(RoundMgmt->GetActivePostRoundSummary());
+		}
+	}
 }
 
 void ABwayPlayerController::RestoreGameplayInputMode()
@@ -306,6 +315,12 @@ TSubclassOf<UUserWidget> ABwayPlayerController::ResolvePostRoundSummaryWidgetCla
 
 void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData& SummaryData)
 {
+	// A late arrival must be able to finish choosing a hero while rounds continue.
+	if (HeroSelectionWidget && HeroSelectionWidget->IsActivated())
+	{
+		return;
+	}
+
 	const TSubclassOf<UUserWidget> WidgetClass = ResolvePostRoundSummaryWidgetClass();
 	if (!WidgetClass)
 	{
