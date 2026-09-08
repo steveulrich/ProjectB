@@ -6,7 +6,7 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Current candidate:** `LAN-20260907-04`
 
-**Current work:** goal active; next fixes are recorded below. Candidate 04 host and interactive clients exited normally; the discarded untargetable sandbox client required termination after its graceful-close request failed. All candidate-04 test processes were absent at 06:50 UTC. Editor closed normally, no dirty assets; four-client PIE defaults and empty extra options restored on disk. Recheck current process state on resume.
+**Current work:** goal active. Rematch travel-base cleanup and retained PostMatch results are implemented and source-verified. Editor 46692 exited normally at 07:04 UTC; no dirty assets. Four-client PIE defaults and empty extra options restored on disk. Candidate `LAN-20260908-01` script is prepared for packaged acceptance. Recheck current processes before launch.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -31,13 +31,15 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
 
-**Next action:** fix packaged rematch option cleanup and PostMatch arrival behavior. Expected result: staging-derived Play Again gives every human valid selection and a populated kit; a PostMatch arrival sees appropriate finished-match state without a default gameplay pawn. Inspect BwayGameState rematch URL construction, BwayGameplayUrl option augmentation, and GameMode login/results catch-up. Then verify source/PIE before one new package. Four-human assembly, same-party rehost, second-PC LAN, and placeholder mesh/animation integration follow.
+**Next action:** build `LAN-20260908-01` once, then test actual PostMatch arrival and staging-derived rematch. Require a retained breakdown without a default pawn on arrival; Play Again must restore human selection and populated kits, followed by natural completion. Use approved interactive launches and separate logs. Four-human assembly, same-party rehost, second-PC LAN, and placeholder mesh/animation integration follow.
 
 **Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
 
 **Latest evidence:** candidate-04 host log plus `codex-packaged04-lan-client1-20260907.log` (valid late join, connected return) and `codex-packaged04-lan-client3-20260907.log` (fresh discovery, PostMatch arrival, rematch failure). Re-create success 06:38:15 UTC; fresh client welcomed 06:45:59; rematch LoadMap retained SkipHeroSelection at 06:46:39; both humans logged no selected hero. Candidate 04 required one package, 149.62 seconds; runtime checks added no builds.
 
 **Follow-up evidence:** `codex-selection-frontend-verify2-20260907.log`, `codex-selection-frontend-{timed,untimed,return,postround-overlap,postround-restored}.json`. Two editor builds passed (49.21/33.25 seconds); first timer binding broke Blueprint pins, corrected without asset changes. A worktree regression in the bridge caused a modal-timeout crash; restored committed protection and existing `ProjectB.MCP.QueuedTimeoutLifetime` test passed. Full attempt scope is in packaged acceptance.
+
+**Current source verification:** `Breakaway.FrontEnd.RematchTravelBase` passed; `BP_BW_GameState` validates cleanly. `codex-results-rematch-arrival-source.json` verifies all four peers after a natural 1–0 match, and `codex-rematch-arrival-postmatch-source.json` verifies the authority spawn gate. Build attempts: one include error (52.23 seconds), one pass (5.88 seconds). One four-peer PIE run; packaged verification pending. See the final section of packaged acceptance for contracts, logs, and limitations.
 
 **Invalidate relevant results:** bot possession, behavior-tree, or round lifecycle changes require another bot-loop test. HUD registrations require visual checks. Session, input, or replication changes require affected multiplayer checks. Final end-to-end LAN acceptance remains required.
 

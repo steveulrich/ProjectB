@@ -8,6 +8,7 @@
 
 class AGameModeBase;
 class UWorld;
+struct FURL;
 
 /**
  * Resolves gameplay URL options across GameMode::OptionsString, World::URL, PIE LastURL, and command line.
@@ -30,6 +31,9 @@ public:
 
 	/** Merge known gameplay keys from UrlSource into OptionsString when absent. */
 	static void AppendMissingOptionsFromUrlSource(FString& OptionsString, const FString& UrlSource);
+
+	/** Clear one-match flags from the base used by both relative server-travel parses. */
+	static void ResetMatchTravelOptions(FURL& Url);
 
 	/** After InitGame, pull options from World URL / PIE context into GameMode::OptionsString. */
 	static void AugmentGameModeOptionsString(AGameModeBase* GameMode);

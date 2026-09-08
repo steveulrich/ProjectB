@@ -21,6 +21,7 @@
 #include "CommonSessionSubsystem.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
 #include "Stats/BwayMatchStatsLibrary.h"
 
 #include "Engine/Engine.h"
@@ -379,27 +380,48 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 
 	// Capture once on authority. PlayerState replication and controller RPCs can
 	// arrive independently, so clients must not rebuild final totals from live state.
-	const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
-	const FBwayPostMatchSummaryData FinalSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
-		this, WinningTeam, GetCurrentRoundNumber(), FMath::Max(0.0f, Settings.PostMatchSummaryDuration));
+	if (!bHasFinalResultsSummary)
+	{
+		const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
+		FinalResultsSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
+			this, WinningTeam, GetCurrentRoundNumber(), FMath::Max(0.0f, Settings.PostMatchSummaryDuration));
+		bHasFinalResultsSummary = true;
+	}
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
 		{
-			FBwayPostMatchSummaryData ViewerSummary = FinalSummary;
-			const APlayerState* Viewer = BwayPC->PlayerState;
-			ViewerSummary.LocalPlayerTeamIndex = Viewer ? GetPlayerTeam(Viewer) : INDEX_NONE;
-			ViewerSummary.bLocalPlayerWon = WinningTeam >= 0 && ViewerSummary.LocalPlayerTeamIndex == WinningTeam;
-			for (FBwayMatchBreakdownPlayerColumn& Column : ViewerSummary.PlayerColumns)
-			{
-				Column.bIsLocalPlayer = Viewer && Column.PlayerId == Viewer->GetPlayerId();
-			}
-			BwayPC->Client_ShowResults(ViewerSummary, ResultsScreenWidgetClass);
-			UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent results screen RPC to %s (%d-%d)"),
-				*BwayPC->GetName(), ViewerSummary.Team0Score, ViewerSummary.Team1Score);
+			SendResultsToPlayer(BwayPC);
 		}
 	}
+}
+
+bool ABwayGameState::SendResultsToPlayer(ABwayPlayerController* Player)
+{
+	if (!HasAuthority() || !Player || !bHasFinalResultsSummary || ResultsScreenWidgetClass.IsNull()) return false;
+
+	FBwayPostMatchSummaryData ViewerSummary = FinalResultsSummary;
+	const APlayerState* Viewer = Player->PlayerState;
+	ViewerSummary.LocalPlayerTeamIndex = INDEX_NONE;
+	bool bParticipated = false;
+	for (FBwayMatchBreakdownPlayerColumn& Column : ViewerSummary.PlayerColumns)
+	{
+		Column.bIsLocalPlayer = Viewer && Column.PlayerId == Viewer->GetPlayerId();
+		if (Column.bIsLocalPlayer)
+		{
+			bParticipated = true;
+			ViewerSummary.LocalPlayerTeamIndex = Column.GameTeamIndex;
+		}
+	}
+	ViewerSummary.bLocalPlayerWon = bParticipated && ViewerSummary.WinningTeam >= 0
+		&& ViewerSummary.LocalPlayerTeamIndex == ViewerSummary.WinningTeam;
+	// A visitor did not win or lose this match. Show its unchanged breakdown directly.
+	if (!bParticipated) ViewerSummary.InterstitialDurationSeconds = 0.0f;
+	Player->Client_ShowResults(ViewerSummary, ResultsScreenWidgetClass);
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Sent retained results to %s (%d-%d, participant=%d)"),
+		*Player->GetName(), ViewerSummary.Team0Score, ViewerSummary.Team1Score, bParticipated);
+	return true;
 }
 
 void ABwayGameState::RestartMatchFromResults()
@@ -413,17 +435,18 @@ void ABwayGameState::RestartMatchFromResults()
 		return;
 	}
 
-	// Relative travel preserves session rules; remove one-match selection/transition flags.
-	FString TravelURL = UWorld::RemovePIEPrefix(World->URL.Map) +
-		TEXT("?-SeamlessTravel?-SkipHeroSelection?-Restart?NoSeamlessTravel");
+	// ProcessServerTravel consumes removal tokens, then Browse reparses its result
+	// against LastURL. Clear that base so the second parse cannot restore old flags.
+	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(World);
+	const FURL PreviousBaseURL = WorldContext.LastURL;
+	UBwayGameplayUrlLibrary::ResetMatchTravelOptions(WorldContext.LastURL);
+	FString TravelURL = UWorld::RemovePIEPrefix(World->URL.Map) + TEXT("?NoSeamlessTravel");
 	if (World->GetNetMode() == NM_ListenServer)
 	{
 		TravelURL += TEXT("?listen");
 	}
 	// PIE's LastURL may hold 7777 while its socket actually uses 17777.
 	// ServerTravel forbids a port in its input, so normalize the relative-travel base.
-	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(World);
-	const int32 PreviousPort = WorldContext.LastURL.Port;
 	if (UNetDriver* NetDriver = World->GetNetDriver())
 	{
 		if (const TSharedPtr<const FInternetAddr> LocalAddress = NetDriver->GetLocalAddr())
@@ -435,7 +458,7 @@ void ABwayGameState::RestartMatchFromResults()
 	bResultsTravelPending = true;
 	if (!World->ServerTravel(TravelURL, false, false))
 	{
-		WorldContext.LastURL.Port = PreviousPort;
+		WorldContext.LastURL = PreviousBaseURL;
 		bResultsTravelPending = false;
 		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Rematch travel rejected"));
 		return;

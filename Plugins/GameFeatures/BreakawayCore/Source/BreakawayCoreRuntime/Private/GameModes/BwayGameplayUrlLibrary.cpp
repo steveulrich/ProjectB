@@ -19,6 +19,23 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogBwayGameplayUrl, Log, All);
 
+void UBwayGameplayUrlLibrary::ResetMatchTravelOptions(FURL& Url)
+{
+	Url.Op.RemoveAll([](const FString& Option)
+	{
+		FString Key;
+		FString Value;
+		if (!Option.Split(TEXT("="), &Key, &Value)) Key = Option;
+		return Key.Equals(TEXT("SeamlessTravel"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("NoSeamlessTravel"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("SkipHeroSelection"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("Restart"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("HeroSelectStaging"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("HeroSelectTargetMap"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("HeroSelectTargetExperience"), ESearchCase::IgnoreCase);
+	});
+}
+
 namespace BwayGameplayUrl
 {
 struct FNamedOptionSource

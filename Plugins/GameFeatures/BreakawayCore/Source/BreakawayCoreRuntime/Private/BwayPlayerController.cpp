@@ -390,6 +390,7 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 	const FBwayPostMatchSummaryData& Summary,
 	const TSoftClassPtr<UUserWidget>& WidgetClass)
 {
+	Client_HideHeroSelection_Implementation();
 	DismissPostRoundSummary();
 
 	if (WidgetClass.IsNull())

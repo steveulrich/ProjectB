@@ -135,6 +135,16 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
+	if (ABwayGameState* GS = GetBreakawayGameState(); GS && GS->GetRoundManagement()
+		&& GS->GetRoundManagement()->GetCurrentMatchPhase() == EBwayMatchPhase::PostMatch)
+	{
+		const bool bSentResults = GS->SendResultsToPlayer(Cast<ABwayPlayerController>(NewPlayer));
+		UE_LOG(LogBreakawayGame, Log, TEXT("PostMatchArrival: player=%d pawn=%s resultsSent=%d"),
+			NewPlayer->PlayerState ? NewPlayer->PlayerState->GetPlayerId() : INDEX_NONE,
+			*GetNameSafe(NewPlayer->GetPawn()), bSentResults);
+		return;
+	}
+
 	if (PlayersAwaitingLateJoinHeroSelection.Contains(NewPlayer))
 	{
 		ABwayGameState* GS = GetBreakawayGameState();

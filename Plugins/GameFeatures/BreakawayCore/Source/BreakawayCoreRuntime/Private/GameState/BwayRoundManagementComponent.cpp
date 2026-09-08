@@ -144,7 +144,8 @@ void UBwayRoundManagementComponent::RegisterPlayingPhaseListener()
 
 bool UBwayRoundManagementComponent::ShouldBlockPawnSpawning() const
 {
-	return bOrchestratorActive && CurrentMatchPhase == EBwayMatchPhase::Prematch;
+	return bOrchestratorActive && (CurrentMatchPhase == EBwayMatchPhase::Prematch
+		|| CurrentMatchPhase == EBwayMatchPhase::PostMatch);
 }
 
 void UBwayRoundManagementComponent::SetMatchPhase(EBwayMatchPhase NewPhase)

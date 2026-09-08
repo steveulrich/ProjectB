@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameModes/LyraGameState.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "Stats/BwayMatchStatsTypes.h"
 #include "BwayGameState.generated.h"
 
 class ARelicActor;
 class ABwayCharacterWithAbilities;
+class ABwayPlayerController;
 class UBwayHeroSelectionManager;
 class UBwayHeroSelectionPhaseComponent;
 class UBwayRoundManagementComponent;
@@ -170,6 +172,9 @@ public:
 	void ShowResultsScreen(int32 WinningTeam);
 	virtual void ShowResultsScreen_Implementation(int32 WinningTeam);
 
+	/** Send the retained final snapshot to one owning connection, including a PostMatch arrival. */
+	bool SendResultsToPlayer(ABwayPlayerController* Player);
+
 	/**
 	 * Return all players to the front-end / lobby map.
 	 */
@@ -252,6 +257,12 @@ protected:
 	void InitializeTeams();
 
 	bool bResultsTravelPending = false;
+
+	/** Authority retains completed results across roster changes until this world is replaced. */
+	UPROPERTY(Transient)
+	FBwayPostMatchSummaryData FinalResultsSummary;
+
+	bool bHasFinalResultsSummary = false;
 
 	/** Helper to find team index for an actor */
 	int32 GetTeamIndexForActor(const AActor* Actor) const;

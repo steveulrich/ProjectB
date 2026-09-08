@@ -84,15 +84,16 @@ void UBwayResultsScreenWidget::BeginPostMatchFlow()
 	LegacyResults.bLocalPlayerWon = CachedSummary.bLocalPlayerWon;
 	LegacyResults.MVPPlayerName = CachedSummary.MVPPlayerName;
 	LegacyResults.MVPHeroName = CachedSummary.MVPHeroName;
-	LegacyResults.WinnerText = CachedSummary.bLocalPlayerWon
-		? NSLOCTEXT("Results", "Victory", "VICTORY")
-		: NSLOCTEXT("Results", "Defeat", "DEFEAT");
+	LegacyResults.WinnerText = CachedSummary.LocalPlayerTeamIndex == INDEX_NONE
+		? NSLOCTEXT("Results", "MatchComplete", "MATCH COMPLETE")
+		: (CachedSummary.bLocalPlayerWon
+			? NSLOCTEXT("Results", "Victory", "VICTORY")
+			: NSLOCTEXT("Results", "Defeat", "DEFEAT"));
 	OnResultsReady(LegacyResults);
-
-	ShowInterstitial();
 
 	if (CachedSummary.InterstitialDurationSeconds > 0.0f)
 	{
+		ShowInterstitial();
 		if (UWorld* World = GetWorld())
 		{
 			World->GetTimerManager().SetTimer(
