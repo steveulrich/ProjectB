@@ -5,7 +5,7 @@ Fast, scriptable verification for Cursor agents and CI. Tiers are ordered by cos
 | Tier | Script | When | Needs |
 |------|--------|------|-------|
 | **1** | `Tier1-CompileGate.ps1` | After any C++ edit | Engine source or install |
-| **2** | `Tier2-StandaloneSmoke.ps1` *(planned)* | Match-flow / packaging regressions | Pre-built `ProjectB.exe` |
+| **2** | `Tier2-StandaloneSmoke.ps1` *(planned)* | Match-flow / packaging regressions | Packaged `LyraGame.exe` |
 | **3** | `Tier3-CQTest.ps1` *(planned)* | Core-loop step checklists (11-1, …) | Editor build + `BreakawayCoreTests` |
 | **4** | CI workflows *(planned)* | PR / nightly | Build agents |
 
@@ -46,7 +46,37 @@ Otherwise the script reads `EngineAssociation` from `ProjectB.uproject` via the 
 
 ## Target names
 
-This Lyra fork uses **`LyraEditor`** / **`LyraGame`** UBT targets. The packaged game binary is **`ProjectB.exe`** (from `ProjectB.uproject`).
+This Lyra fork uses **`LyraEditor`** / **`LyraGame`** UBT targets. The verified source-build package has a `Windows/LyraGame.exe` bootstrap and `Windows/ProjectB/Binaries/Win64/LyraGame.exe` executable.
 
 Full tier design, CQTest mapping to Core Loop steps, and CI layout:  
 `Plugins/GameFeatures/BreakawayCore/Docs/Agent_Testing_Ladder.md`
+
+## Low-token packaged workflow
+
+The repository's `AGENTS.md` directs vertical-slice work to this workflow. Start with `AI_Planning/SLICE_STATUS.md`, then use the helpers to consume a compact ledger and JSON result. Keep full evidence on disk:
+
+```powershell
+.\Package-Preflight.ps1 -Candidate LAN-20260907-01 -OutputJson ..\..\Saved\Logs\preflight.json
+# Build/cook/stage, then run TestProfiles.ShortMatch from BwayTestConfig.psd1.
+.\Package-Preflight.ps1 -Candidate LAN-20260907-01 -RequireCandidate
+$buildHead = (Get-Content '..\..\Saved\Logs\codex-packaged-LAN-20260907-01-project-head.txt').Trim()
+.\New-AcceptanceSummary.ps1 -Candidate LAN-20260907-01 -SourceHead $buildHead `
+  -Profile FrontendLAN -EvidenceLog 'E:\Unreal Projects\ProjectB\Saved\Logs\packaged-host.log' `
+  -OutputJson ..\..\Saved\Logs\acceptance.json
+```
+
+Preflight reports the current checkout; it does not establish which source produced an existing package. `-RequireCandidate` additionally requires its actual executable. Inspect active processes and unsaved editor assets before building. Resolve `SourceHead` from that candidate's build evidence, retaining its source patch and artifact hashes separately.
+
+The summary screens startup logs only. Every supplied log must exist, be nonempty, contain that profile's required patterns, and contain no forbidden patterns. Use `FrontendLAN` for a host that travels through the LAN playlist, or `ShortMatch` for direct DevMap startup. Client logs need their own relevant checks. A passing screen does not prove match completion, physical input, network transport, clean exit, or that a log belongs to the candidate.
+
+On resumption: read the ledger, verify current HEAD/status, choose one pending gate, then read only its code and evidence. Batch independent reads, keep full logs on disk, and print short results plus the first causal error. Retest passed gates when a relevant change invalidates their evidence. Update the ledger and candidate evidence after each verified result. A short match uses repeatable settings, but natural scoring and duration remain variable.
+
+Use this order for each acceptance gate:
+
+1. Define the expected observable result and identify the last relevant evidence. Verify the candidate's source record before reusing it.
+2. Run the cheapest applicable check. Group related fixes before compiling; package once those checks pass when the gate requires it.
+3. Record the process handle and log path. Wait for completion; inspect short log excerpts when new output or a failure changes the next action.
+4. Diagnose a failure before rerunning. Record the hypothesis and what changed, or identify the repeat as a reproducibility check.
+5. Update the compact ledger after verification. Keep detailed history in the acceptance document and retain full logs. Record test scope and remaining gaps.
+
+For future comparisons, note build/package counts and repeated test attempts in the gate's evidence record. These measure workflow overhead; token savings remain unmeasured until comparable usage data exists. Keep the final multiplayer and end-to-end acceptance requirements.

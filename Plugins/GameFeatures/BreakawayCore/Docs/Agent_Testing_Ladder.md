@@ -11,6 +11,8 @@ Tier 4  CI                     scheduled   PR compile + nightly smoke + step tes
 
 Scripts live in `Scripts/Test/`. Config: `Scripts/Test/BwayTestConfig.psd1`.
 
+**Resume workflow:** Read `AI_Planning/SLICE_STATUS.md`, verify current Git status/HEAD, then inspect evidence for one pending gate. `Package-Preflight.ps1` resolves paths and reports the worktree; `-RequireCandidate` additionally checks the staged executable. `New-AcceptanceSummary.ps1` screens each supplied startup log and requires an explicit candidate source revision. A passing summary is not multiplayer or match-completion evidence. See `Scripts/Test/README.md` for the command contract and output limits.
+
 ---
 
 ## Tier 1 — Compile gate ✅ (implemented)

@@ -73,6 +73,11 @@ DerivedDataCache/*
 
 # AI Scripts
 Scripts/*
+!Scripts/Test/
+Scripts/Test/*
+!Scripts/Test/*.ps1
+!Scripts/Test/*.psd1
+!Scripts/Test/*.md
 !Scripts/setup-step19-5-match-hud.mjs
 !Scripts/setup-korryn-20a-functional.mjs
 !Scripts/setup-korryn-20b-cursed-ward.mjs
