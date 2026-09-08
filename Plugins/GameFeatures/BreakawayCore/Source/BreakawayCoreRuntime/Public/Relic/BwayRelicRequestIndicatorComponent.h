@@ -27,7 +27,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** The existing world-space widget may be restyled without changing request gameplay. */
+	/** The screen-space widget is anchored to the pawn and may be restyled independently. */
 	UPROPERTY(EditDefaultsOnly, Category = "Relic|Presentation", meta = (UseComponentPicker, AllowedClasses = "/Script/UMG.WidgetComponent"))
 	FComponentReference RequestWidget;
 

@@ -1,6 +1,51 @@
-# Relic request indicator: lifecycle verification and team discrepancy
+# Relic request indicator: screen-space UI and lifecycle verification
 
-September 8, 2026. Request activation, visibility under Lyra's team rules, expiry, death cleanup and a fresh request after automatic respawn pass in three-peer PIE. The subsequently discovered team-roster disagreement below is now fixed; see [team consistency verification](./TEAM_ASSIGNMENT_CONSISTENCY.md) for the scoped pass and remaining marker viewing-direction/death-material work. Candidate `LAN-20260908-05` predates these source changes and the connected-frontend host fix.
+September 8, 2026. The hand is now a **2D screen-space UMG widget anchored above the pawn**, as requested. Four-player PIE verifies real requests, teammate-only visibility, expiry, death cleanup and a fresh visible request after automatic respawn. The death-material helper also preserves widget renderer ownership. [Team consistency](./TEAM_ASSIGNMENT_CONSISTENCY.md) records the preceding roster fix. Candidate `LAN-20260908-05` predates these changes and must not be used to claim their packaged acceptance.
+
+## Screen-space presentation
+
+`B_BW_Character_Base.RelicRequestWidgetComponent` now uses `Space=Screen` and `DrawSize=(72,72)`, matching the existing widget's 72-by-72 root SizeBox. Its relative anchor remains `(0,0,175)`. Unreal projects the anchor into each local player's screen layer; pawn rotation cannot turn the hand edge-on. The native request component still has no tick or added RPC. WidgetComponent and Slate handle projection through their existing update paths.
+
+The existing `W_BW_CaptureTheRelic_RelicRequestMarker` remains the art surface. Its placeholder icon/glow can be replaced there without changing request gameplay. No final art was added. Screen-space presentation has no world renderer MID or render target and is not occluded by world geometry. Off-screen anchors are not clamped into the viewport; edge indicators and close-camera/nameplate spacing remain separate polish work.
+
+Ownership stays: authoritative request effect and team state → replicated ASC/tag state → each pawn's local indicator component → that viewer's UMG screen layer. All 16 live widget instances had the correct local owning controller. They are nonfocusable and `SelfHitTestInvisible`; this passive indicator does not enter a CommonUI modal stack or change gameplay input mode. The component binds/unbinds through the existing pawn/ASC lifecycle described below.
+
+## Death-material correction
+
+`/ShooterCore/GameplayCues/GCNL_Death` calls the scalar and color mesh-parameter helpers in `ULyraSystemStatics`. Those helpers included `UWidgetComponent` in their mesh traversal. The generic mesh setter installed another MID in the widget's material slot, causing its renderer to create an invalid MID parent and lose its ownership contract. The earlier team-style fix covered a different caller.
+
+Both scalar and vector helpers now recognize widget components and update their existing renderer MID directly, when present. The color helper already delegates to the vector helper. Ordinary mesh behavior and the existing color-to-vector alpha behavior are unchanged. Screen-space widgets have no renderer MID and need no mesh-material update. A nearby scan confirmed the team-style path already has its own widget guard.
+
+## Four-player verification
+
+One `LyraEditor` build passed in **89.09 seconds**. A fresh editor ran four same-process listen-server peers, four humans, zero bots and Argus, with a long round only for testing. The base and humanoid Blueprints validated with zero errors and warnings.
+
+| Check | Result |
+|---|---|
+| Runtime presentation | All 16 widgets use Screen space and 72×72 draw size, before and after replacement; zero renderer MIDs/render targets |
+| Initial request/death observation | 3,883 samples, 76 active-request samples; zero observer errors, team disagreements or request-visibility flag mismatches |
+| Real rendered request | Client 3's hand appeared in the host view, facing the camera |
+| Active-request death | Physical Client 1 request at 20:32:49.564/.648 UTC; authority KillZ fixture at .669 with request count 1 |
+| Automatic replacement | Game code restarted the player at 20:32:53.147; a different pawn with request count 0 was observed at .171; no manual RestartPlayer call |
+| Fresh request after respawn | Physical RMB at 20:37:15.905/.981; hand visibly rendered in Client 2's foreground viewport and disappeared after expiry |
+| Post-respawn observation | 374 samples, 15 active; zero errors, team disagreements or visibility mismatches |
+| World-widget material regression fixture | Four transient world-space widgets, five scalar/vector/color cycles each: 60 helper calls preserved MID, parent, material slot and live SlateUI texture; expected parameter values reached all four |
+| Runtime log | Zero invalid MID-parent, fatal/assertion/ensure, Accessed None or Python errors; two known PixelStreaming2 startup errors |
+
+The remote draw fixture temporarily forced one widget visible and moved the respawned requester into the camera's view. It proved the screen layer independently of gameplay. Forced visibility was restored before a separate observer and the final physical request; that final visible hand was driven by the normal request. The four world-widget fixture actors were destroyed before the death test.
+
+Scope: rendered same-process PIE, mouse input, one active-request death and automatic respawn. This is not a packaged, second-PC, gamepad, late-join-active-request or live team-change pass. It also does not establish combat/pass/scoring eligibility, full match flow or a performance budget. Recheck affected evidence if request tags, viewer ownership, teams, the widget Blueprint or death helpers change.
+
+## Evidence and attempt accounting for the screen-space change
+
+- Main evidence: `Saved/Logs/marker-ui-20260908/`; `verification-brief.json`, `screen-widget-runtime.json`, `ui-ownership.json`, `active-request-death.json`, `material-fixture-results.json` and `post-respawn/`.
+- Build: `Saved/Logs/codex-marker-ui-build-20260908.log`, exit 0. Runtime: `codex-marker-ui-fixed-editor-20260908.log`.
+- Read-only geometry audit: `Saved/Logs/marker-facing-20260908/`; 1,835 samples, 60 active, zero team/visibility disagreements. Two-sided world geometry alone did not show the hand; an explicit face-camera fixture did. Both were transient. The user's subsequent 2D direction determined the final Screen setting; no billboard tick implementation was built or retained.
+- Diagnostic helper: `Saved/verify-marker-ui-20260908.py`, loaded after the existing scoped team/request observer. It retains serialized state only and detects replacement by pawn identity. Do not reload an observer while its callback is active or overwrite an existing settings baseline.
+
+Overhead: one build, two editor launches, one three-peer audit PIE and one four-peer fixed PIE, no separate game launch and no package. Audit editor 27904 exited normally with code 0. Fixed-run observers were stopped, fixtures cleaned up, preferences restored and no dirty content/maps remained before normal shutdown. The final editor exit and closed-editor settings are recorded in the status ledger. BF-119 records prevention in the local catalog.
+
+Retries were limited to changed hypotheses: initial bridge startup readiness, correcting a struct property argument from an object to Unreal's `(X=72,Y=72)` text format, and UI capture/focus recovery. Computer Use intermittently detected input or lost screenshot targets; the user authorized continued testing. Fresh window selection/state recovered capture. One JavaScript viewer-binding error occurred after its request input had already run; the observer preserved that request. The first remote screenshot was inconclusive; an in-view draw fixture followed by the fresh physical request established the result. A sandbox Git LFS diff could not create its signal pipe; targeted Git access requires the normal reviewed environment.
 
 ## Current lifecycle implementation
 
@@ -41,7 +86,7 @@ Scope: three rendered peers in one editor process, physical mouse request, one a
 
 This is not just zero-based versus one-based numbering. Host/Client 2 are together only in the match roster; Client 1/Client 2 are together only in Lyra. Each replica has two contradictory pairwise relationships. The visible Client 1 roster also showed one friendly and two enemies while Lyra reported two players on team 2. Inspect `ABwayGameState::AddPlayerToTeam`, assignment callers, and Lyra team creation; derive the match roster from the authoritative team system or synchronize through one owner. Recheck damage/passing eligibility, HUD, scoring/alive counts, respawn, and complete multiplayer flow after correcting it.
 
-Death also produced three invalid MID-parent warnings, one on each replica of the old pawn, at 19:15:32.936–19:15:33.060. The earlier team-style material fix remains verified for its own path; another death-time material owner needs tracing. No current pawn retained a request after respawn. Do not call all material warnings resolved.
+Death also produced three invalid MID-parent warnings, one on each replica of the old pawn, at 19:15:32.936–19:15:33.060. They were subsequently traced to the Lyra mesh helpers used by the death cue and fixed in the screen-space change above. The earlier team-style fix covers its own caller. These scoped checks do not establish that every material path is correct.
 
 Lifecycle evidence: `Saved/Logs/request-lifecycle-20260908/` contains effect/settings exports, graph before/after, two observation files, `requester-state-transitions.json`, `post-respawn-expired.json`, `team-membership-snapshot.json` and `verification-brief.json`. The compact `lifecycle-brief.json` contains the last, post-respawn observation only; use the combined verification brief for both phases. Helpers: `Saved/verify-request-lifecycle-20260908.py` and `Saved/request-lifecycle-death-fixture-20260908.py`, plus the earlier material reader they import.
 

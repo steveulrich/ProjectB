@@ -7,7 +7,9 @@
 #include "Engine/AssetManager.h"
 #include "LyraLogChannels.h"
 #include "Components/MeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "GameModes/LyraUserFacingExperienceDefinition.h"
+#include "Materials/MaterialInstanceDynamic.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraSystemStatics)
 
@@ -78,6 +80,16 @@ void ULyraSystemStatics::SetScalarParameterValueOnAllMeshComponents(AActor* Targ
 	{
 		TargetActor->ForEachComponent<UMeshComponent>(bIncludeChildActors, [=](UMeshComponent* InComponent)
 		{
+			// WidgetComponent owns its renderer MID and SlateUI texture. The mesh
+			// setter installs another MID in the slot, invalidating that ownership.
+			if (UWidgetComponent* Widget = Cast<UWidgetComponent>(InComponent))
+			{
+				if (UMaterialInstanceDynamic* Material = Widget->GetMaterialInstance())
+				{
+					Material->SetScalarParameterValue(ParameterName, ParameterValue);
+				}
+				return;
+			}
 			InComponent->SetScalarParameterValueOnMaterials(ParameterName, ParameterValue);
 		});
 	}
@@ -89,6 +101,14 @@ void ULyraSystemStatics::SetVectorParameterValueOnAllMeshComponents(AActor* Targ
 	{
 		TargetActor->ForEachComponent<UMeshComponent>(bIncludeChildActors, [=](UMeshComponent* InComponent)
 		{
+			if (UWidgetComponent* Widget = Cast<UWidgetComponent>(InComponent))
+			{
+				if (UMaterialInstanceDynamic* Material = Widget->GetMaterialInstance())
+				{
+					Material->SetVectorParameterValue(ParameterName, FLinearColor(ParameterValue));
+				}
+				return;
+			}
 			InComponent->SetVectorParameterValueOnMaterials(ParameterName, ParameterValue);
 		});
 	}
