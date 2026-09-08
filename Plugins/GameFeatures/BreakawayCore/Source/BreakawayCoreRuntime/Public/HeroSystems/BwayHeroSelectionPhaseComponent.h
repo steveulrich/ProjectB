@@ -168,6 +168,7 @@ protected:
 	bool TryTravelToPostHeroSelectionMap() const;
 
 private:
+	bool IsCanonicalInstance() const;
 
 	// Called when all players are ready
 	UFUNCTION()

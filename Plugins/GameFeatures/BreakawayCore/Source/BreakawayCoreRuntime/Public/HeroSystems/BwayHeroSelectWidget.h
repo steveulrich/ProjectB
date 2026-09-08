@@ -215,6 +215,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
 	void OnLocalSelectionLocked(FPrimaryAssetId LockedHeroId);
 
+	/** Restore editable controls when a pooled screen is activated for a new selection. */
+	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Selection Events")
+	void OnLocalSelectionUnlocked();
+
 	/**
 	 * Called when another player selects a hero
 	 */

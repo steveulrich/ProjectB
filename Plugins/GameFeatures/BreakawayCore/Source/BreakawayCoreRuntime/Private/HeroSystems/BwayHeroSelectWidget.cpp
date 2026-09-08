@@ -107,6 +107,8 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
   }
   if (IsSelectionLocked()) {
     OnLocalSelectionLocked(GetSelectedHeroId());
+  } else {
+    OnLocalSelectionUnlocked();
   }
   RefreshHeroDetails();
 
@@ -485,6 +487,8 @@ void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
     }
     if (IsSelectionLocked()) {
       OnLocalSelectionLocked(GetSelectedHeroId());
+    } else {
+      OnLocalSelectionUnlocked();
     }
     RefreshHeroDetails();
     OnHeroListChanged();

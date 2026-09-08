@@ -33,6 +33,12 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!IsCanonicalInstance())
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Ignoring duplicate %s; GameState owns the selection phase"), *GetName());
+		return;
+	}
+
 	// Only server manages the phase
 	if (!GetOwner()->HasAuthority())
 	{
@@ -127,6 +133,11 @@ void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPla
 
 void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 {
+	if (!IsCanonicalInstance())
+	{
+		return;
+	}
+
 	if (!GetOwner()->HasAuthority())
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: StartHeroSelectionPhase called on client"));
@@ -164,11 +175,8 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 	// This ensures we receive the broadcast even if all players are pre-selected from Frontend.
 	Manager->OnAllPlayersReady.AddDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
 
-	// Start selection phase FIRST — this resets all player selections and starts the timer.
-	// Must happen before registering players and applying pre-selections.
-	Manager->StartHeroSelection();
-
-	// Register all current players
+	// A fresh manager has no entries yet. Register returning PlayerStates before
+	// resetting their carried locks, so the UI never sees a previous match's lock.
 	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
 	{
 		for (APlayerState* PS : GameState->PlayerArray)
@@ -176,6 +184,8 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 			Manager->RegisterPlayer(PS);
 		}
 	}
+
+	Manager->StartHeroSelection();
 
 	// Now apply any pre-selections from the Frontend subsystem (after registration)
 	if (ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner()))
@@ -290,7 +300,7 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 
 void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 {
-	if (!GetOwner()->HasAuthority())
+	if (!IsCanonicalInstance() || !GetOwner()->HasAuthority())
 	{
 		return;
 	}
@@ -708,6 +718,12 @@ FPrimaryAssetId UBwayHeroSelectionPhaseComponent::ResolveFallbackHeroId() const
 bool UBwayHeroSelectionPhaseComponent::ShouldSuppressAutoHeroSelectUI() const
 {
 	return false;
+}
+
+bool UBwayHeroSelectionPhaseComponent::IsCanonicalInstance() const
+{
+	const ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner());
+	return !GameState || GameState->HeroSelectionPhaseComponent == this;
 }
 
 UBwayHeroSelectionManager* UBwayHeroSelectionPhaseComponent::GetSelectionManager() const
