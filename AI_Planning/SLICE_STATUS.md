@@ -1,46 +1,42 @@
 # Vertical Slice Status Ledger
 
-Compact restart point for the next active implementation turn. Detailed evidence remains in BreakawayCore docs and `Saved/Logs/`.
+Compact restart point. Detailed evidence and failed attempts remain in [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md) and `Saved/Logs/`.
 
-**Latest verified gate:** candidate 0801 passed actual separate-process PostMatch results delivery and login pawn gating, and proved rematch URL flags stay removed. It exposed editor-only direct-arena selection startup and late-HUD visibility. Follow-up fixes are compiled and packaged in candidate 0802; their live verification is next. Earlier candidate 04 passed connected frontend return and fresh discovery after rehosting.
+**Latest verified gate:** clean one-peer PIE physically changed the returning host from Argus to Korryn, locked before timeout, traveled once with the selected kit, and completed a natural rematch. Candidate 0802 separately passed actual PostMatch admission with retained results, no pawn at login, and the gameplay HUD kept hidden after loading.
 
-**Current candidate:** `LAN-20260908-02`
+**Current candidate:** `LAN-20260908-03`
 
-**Current work:** goal active. Candidate 0802 completed build/cook/stage, exit 0, and its executable hash matches the manifest. No editor, test game, or build is running. Follow-up fixes are committed as `fd99a9ce`; compile and two Blueprint validations passed. Editor 56980 exited normally at 07:30 UTC with no dirty assets. Use this candidate for the next check; no additional build is needed.
+**Current work:** goal active. Candidate 0803 completed build/cook/stage, exit 0, in 170.43 seconds; executable hash matches its manifest. No editor, test game, or package is running. Editor 4964 exited normally at 13:57:21 UTC with no dirty assets. Source/Blueprint fix: `c5e11663`. Use the ready artifact for the next gate; no additional build is needed.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
-| Hero selection and roster | Passed | PIE listen-server coverage |
-| Full PIE core loop | Natural match and full rematch passed | Four-peer direct-map PIE passed. Packaged staging-derived rematch fails: SkipHeroSelection survives travel while human hero state is lost. Purchased-upgrade reset remains open |
-| Packaged build/cook/stage | Passed | `LAN-20260908-02`; source base `fd99a9ce` plus recorded project/engine patches and untracked input; exit 0, 167.37 seconds |
-| Packaged late join + round reset | Valid-choice path and PostMatch snapshot delivery passed | Candidate 0801 actual PostMatch arrival: pawn=None, retained eight-column breakdown, no visitor column. Gameplay HUD reappears behind results; source fix compiled. Invalid/repeated lock and pending-selection disconnect remain open |
-| Individual selection timer / round-summary overlap | Passed in PIE and candidate 04 | Timed countdown visible; inactive countdown absent; selection stays clear through PostRound. PIE also verifies restoration of a still-active summary when selection closes |
-| Six-slot gameplay HUD | Passed | Candidate `LAN-20260906-08` screenshot |
-| Duplicate frontend HUD entries | In new package | Interactive visual verification pending |
-| Hero-card visual-state targets | Fixed in source; 16 synthetic checks passed after cold restart | Child highlight, lock, and unavailable indicators are independent; physical input and packaged verification remain open |
-| Results identity and portrait data | Fixtures passed; packaged visual sample passed | Candidate 04 natural results showed one MVP and three credited goals. Full packaged stat/portrait comparisons and late-result delivery remain open |
-| Final-results snapshot transport | Four-peer fixture and natural transitions passed | Forced live-stat divergence with lag/loss, then both natural 3–0 matches; all final stats matched authority. Packaged checks remain open |
-| DevMap navigation | Rebuilt and saved; cold-load verified | Missing static path data prevented all bot paths. Saved map now supports natural scoring across round resets and rematch |
-| Personal relic goal credit | Fixed; natural and release probes passed | Goal overlap captures scorer before detachment; last possessor survives release and clears on reset. Both matches credited all three goals, including the winner |
-| Packaged bot pickup / scoring / match completion | Passed offline and interactive LAN | Candidate 04 first match finished naturally 3–0 with a connected client |
-| Packaged frontend return / second match | Connected return and discovery/join passed; playable rematch still open | Candidate 0801 fixed URL cleanup but direct arena load did not start packaged hero selection. Follow-up routes rematch through shared staging; compiled and awaiting candidate 0802 |
-| Keyboard + gamepad acceptance | Pending | Run once packaged loop is stable |
-| Second PC / clean-device LAN | Pending | Final network confidence pass |
+| Hero selection and roster | Earlier PIE coverage passed; rematch fix verified in one-peer PIE | Returning host can change and lock; packaged two-human selection remains next |
+| Full PIE core loop | Natural matches and rematches passed | Final clean run: Argus initial 1–0, Korryn rematch 1–0. Purchased-upgrade reset remains open |
+| Packaged build/cook/stage | Candidate 0803 passed | Source `c5e11663`; prefix `Saved/Logs/codex-packaged-LAN-20260908-03`; one attempt, exit 0, 170.43 seconds |
+| Packaged late join + round reset | Valid choices and PostMatch snapshot delivery passed | 0802 PostMatch arrival at 07:47:27: pawn=None, resultsSent=1, unchanged eight-column breakdown; HUD stays hidden. Invalid/repeated locks and selection-time disconnect remain open |
+| Individual selection timer / round-summary overlap | Passed in PIE and candidate 04 | Active countdown shown; individual inactive countdown absent; PostRound overlap suppressed/restored |
+| Six-slot gameplay HUD | Passed | 0802 timeout-fallback rematch restored populated Argus and Rawlins kits |
+| Duplicate frontend HUD entries | Source fix packaged earlier | Interactive visual verification pending |
+| Hero-card presentation | Earlier 16 synthetic checks passed; reuse fix verified physically in PIE | Both lock/unlock refresh all controls from current PlayerState. Packaged and gamepad checks remain |
+| Results identity and portrait data | Fixtures and packaged visual samples passed | 0802 first match/arrival and rematch had matching columns, totals, portraits, goal credits and one MVP; full packaged field comparison remains |
+| Final-results snapshot transport | Four-peer fixture/natural transitions plus actual packaged arrival passed | Earlier lag/loss with forced live-stat divergence passed; final LAN acceptance still required |
+| DevMap navigation / personal goal credit | Fixed and verified | Natural scoring, cold map load, round resets, goal ownership and release/reset probes passed |
+| Packaged match completion | Natural first match and timeout-fallback rematch passed | 0802: 1–3 first match, 0–3 rematch. Both humans selecting manually was blocked by host UI; fixed in source |
+| Frontend return / second match | Connected return and fresh discovery passed earlier | 0803 must verify complete manual shared selection; same-party rehost still open |
+| Keyboard + gamepad acceptance | Pending | Physical all-kit actions once packaged loop is stable |
+| Four-human / second-PC LAN | Pending | Final target: one PIE host plus three separate instances; also clean-device LAN |
+| Placeholder asset integration / visual polish | Pending | Mesh/animation contract, sample menus/debug text, waiting banner behind results, performance budget remain |
 
-**Source identity:** candidate `LAN-20260908-02` built from `fd99a9ce`; prefix `Saved/Logs/codex-packaged-LAN-20260908-02`. Project and engine patches include staged and unstaged changes. Executable SHA-256 matched manifest: `AD521761655C1175ECEBE3F20D7C350AA9F8515162F0C420953FDBDE6F111672`. Retain untracked-input records; HEAD alone does not identify the artifact.
+**Next action:** launch ready candidate 0803 as two visible processes through the LAN frontend, using fresh `codex-packaged0803-lan-{host,client1}-20260908.log` paths. Require both humans to choose and lock on rematch without timeout, one staging start and one arena travel, both selected kits, and natural completion. No source rebuild is needed unless this gate finds a new defect. Follow with four-human assembly, same-party rehost, second-PC LAN, and placeholder integration.
 
-**Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
+**Current source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 
-**Next action:** launch ready candidate 0802 from the frontend and repeat PostMatch arrival, now requiring its gameplay HUD to remain hidden. Then request Play Again from the remote visitor, require both humans to select in staging, return to the same arena with populated kits, and finish naturally. Use approved interactive launches and fresh `codex-packaged0802-lan-{host,client1}-20260908.log` paths. Four-human assembly, same-party rehost, second-PC LAN, and placeholder mesh/animation integration follow.
+**Attempt accounting:** reused 0802 for one two-process test; then one source build, three editor launches, four one-peer PIE runs, one 0803 package attempt. Earlier incomplete unlock handling and a missing Blueprint override flag were corrected. A failed Python probe retained world wrappers and crashed editor 10892; no presentation-fixture pass is claimed. Full causes/retry changes are documented in packaged acceptance and BF-107–109.
 
-**Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
+**Artifact identity:** source/asset commit `c5e11663`; executable SHA-256 `8B4EBF8FB637A731A6D8A1D81F170DE293C930C29172A76EA374EBC051154BB0`, verified against the manifest. Packaging captures project/engine HEAD, complete `git diff HEAD --binary`, status, untracked chunk-layer input, exit code, and SHA-256 manifest. HEAD alone is not the artifact identity. Candidate 0802 remains a historical baseline; its behavior does not prove the new fix.
 
-**Latest evidence:** `codex-packaged0801-lan-host-20260908.log` and `codex-packaged0801-lan-client1-20260908.log`: natural 1–3 completion, actual PostMatch admission at 07:18:51 (pawn=None, resultsSent=1), then correct URL cleanup but missing packaged selection startup. Follow-up compile: 55.14 seconds; two Blueprint validations and staging default pass; no new PIE run. Candidate 0802 package: 167.37 seconds; automatic Zen retry recovered during staging. Full scope and earlier evidence are in packaged acceptance.
+**Settings / ownership:** four PIE clients and empty extra server options restored on disk; no dirty assets at editor exit. Preserve unrelated planning/docs/bridge/project changes. No subagents used.
 
-**Follow-up evidence:** `codex-selection-frontend-verify2-20260907.log`, `codex-selection-frontend-{timed,untimed,return,postround-overlap,postround-restored}.json`. Two editor builds passed (49.21/33.25 seconds); first timer binding broke Blueprint pins, corrected without asset changes. A worktree regression in the bridge caused a modal-timeout crash; restored committed protection and existing `ProjectB.MCP.QueuedTimeoutLifetime` test passed. Full attempt scope is in packaged acceptance.
+**Invalidate relevant results:** selection/ownership/session changes require affected multiplayer checks; HUD registration requires visual checks; bot/round changes require another natural loop. Final end-to-end LAN acceptance remains required.
 
-**Current source verification:** `Breakaway.FrontEnd.RematchTravelBase` passed; `BP_BW_GameState` validates cleanly. `codex-results-rematch-arrival-source.json` verifies all four peers after a natural 1–0 match, and `codex-rematch-arrival-postmatch-source.json` verifies the authority spawn gate. Build attempts: one include error (52.23 seconds), one pass (5.88 seconds). One four-peer PIE run; packaged verification pending. See the final section of packaged acceptance for contracts, logs, and limitations.
-
-**Invalidate relevant results:** bot possession, behavior-tree, or round lifecycle changes require another bot-loop test. HUD registrations require visual checks. Session, input, or replication changes require affected multiplayer checks. Final end-to-end LAN acceptance remains required.
-
-**Resume efficiently:** ledger → `Scripts/Test/Get-ResumeBrief.ps1` → relevant candidate evidence → one pending gate. Use the gate record in `Scripts/Test/README.md` for counts, retry conditions, and invalidation reasons. Read full logs only for causal errors. Inventory and startup-screening JSON do not close gameplay gates.
+**Resume efficiently:** ledger → `Scripts/Test/Get-ResumeBrief.ps1` once → relevant evidence → one gate. Keep runtime Python wrappers function-local and return serialized values; release them on exceptions before travel. Follow existing process sessions; do not launch duplicate builds or rerun unchanged failed probes.
