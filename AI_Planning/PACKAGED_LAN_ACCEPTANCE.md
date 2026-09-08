@@ -259,3 +259,27 @@ That initial diagnostic log also contains tooling errors and PIE cleanup ensures
 Cold verification passed all 16 cases again at September 8, 03:23:10 UTC (September 7 local time). `Saved/Logs/codex-hero-card-cold-20260907.log` records the saved asset being loaded in a new editor process and the fixture result. PIE stopped at 03:23:16 UTC. The cold run contains no Blueprint runtime errors, Accessed None, ensure failures, fatal errors, or retained-world cleanup messages through PIE teardown. The editor remains open with PIE stopped.
 
 This repair does not establish that physical keyboard acceptance is fixed. Gamepad input, visible styling, focus retention through live roster refreshes, and packaged behavior remain open. Candidate `LAN-20260907-01` predates this Blueprint change.
+
+## Results identity and portrait integration (September 7, 2026)
+
+Results columns previously marked every teammate as the local player and identified the MVP by display name. Duplicate names could highlight multiple players. An all-negative score set could produce no MVP. Inspection also found no portrait reference in the column data, no full-name tooltips, and no name-color reset when an MVP column was reused for another player.
+
+The first two-peer fixture exposed a further identity defect: all bots had engine player ID 0. Host and client selected different tied bots because their PlayerArray order differed. `UBwayBotCreationComponent` now allocates bot IDs through the authoritative GameSession allocator also used by human registration. Results identify the local player by PlayerState identity, mark exactly the chosen MVP entry, break equal scores by player ID, and use player ID to order duplicate names consistently.
+
+Columns now carry the selected hero asset's portrait. The existing column Blueprint binds it without changing image size, exposes full player/hero names through tooltips, and resets the name color for non-MVP data. Reconfiguration with empty data clears a previous portrait. No new replicated texture property or widget RPC was added; this presentation data is built locally from replicated PlayerStates and local hero assets.
+
+Both editor builds passed: `codex-results-identity-build-20260907.log` (63.52 seconds) and `codex-results-bot-identity-build-20260907.log` (37.28 seconds), under `Saved/Logs`. The column Blueprint and its parent compiled before the second editor restart; only the column asset required changes.
+
+The final same-process PIE fixture had two human peers and six bots. A guarded, development-only authority command supplied duplicate display names, four deaths per player, and selected heroes. After property replication converged:
+
+- All eight player IDs were unique on both peers. Host ID 256 and remote-client ID 264 each had exactly one local-player column.
+- With every MVP score at -2, both peers selected ID 256 as the sole MVP.
+- After the fixture gave ID 264 ten kills, both peers selected ID 264 alone at score 18. Team-side remapping preserved MVP and local-player identity.
+- Both peers had eight portraits. The distinct-winner check compared each portrait directly with that PlayerState's selected hero asset.
+- A synthetic column was configured as MVP, normal player with another portrait, empty data, and MVP again. Portrait replacement/clearing, full-name tooltips, and gold/white name-color transitions all passed.
+
+Evidence: `Saved/Logs/codex-results-identity-verified-20260907.log`, `codex-results-negative-tie-20260907.json`, `codex-results-unique-winner-20260907.json`, and `codex-results-column-20260907.json`. Local fixtures: `Saved/verify_results_identity.py` and `Saved/verify_results_column.py`. The final log contains no Blueprint runtime errors, Accessed None, ensure/fatal failures, or retained-world cleanup errors through PIE teardown. PIE stopped and PlayNumberOfClients was restored to its original value of 1.
+
+The earlier `codex-results-identity-runtime-20260907.log` is diagnostic evidence, not a passing run. Its bot-ID check failed and Unreal rejected its generic `set` commands in editor PIE. The replacement native fixture calls the real setters and verifies their results. Do not reuse the old setup commands.
+
+These are synthetic stats and local widget-state checks, not natural-match, physical-input, visual-layout, or packaged acceptance. Final-stat arrival order at the PostMatch transition, gamepad access to full names, bot identity across the full travel/rematch sequence, and clean-device LAN remain open. Candidate `LAN-20260907-01` predates these fixes.

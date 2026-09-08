@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "BwayMatchStatsTypes.generated.h"
 
+class UTexture2D;
+
 /**
  * Per-player combat/objective/economy stats for a single round or full match.
  */
@@ -117,6 +119,10 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchBreakdownPlayerColumn
 {
 	GENERATED_BODY()
 
+	/** Replicated player identity; display names are not unique. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	int32 PlayerId = INDEX_NONE;
+
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	int32 GameTeamIndex = INDEX_NONE;
 
@@ -134,6 +140,10 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchBreakdownPlayerColumn
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	FText HeroName;
+
+	/** Local presentation data resolved from the player's selected hero. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	TObjectPtr<UTexture2D> HeroPortrait = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	FBwayPlayerMatchStats Stats;

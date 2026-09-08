@@ -11,6 +11,7 @@
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/GameSession.h"
 #include "Character/LyraPawnExtensionComponent.h"
 #include "AI/BwayRelicBotController.h"
 #include "AIController.h"
@@ -235,12 +236,18 @@ void UBwayBotCreationComponent::SpawnOneBot()
 		return;
 	}
 
+	ALyraGameMode* GameMode = GetWorld()->GetAuthGameMode<ALyraGameMode>();
 	if (NewController->PlayerState)
 	{
+		if (GameMode && GameMode->GameSession)
+		{
+			// AI controllers do not go through GameSession::RegisterPlayer. Share
+			// its allocator so bots also have unique, replicated player identities.
+			NewController->PlayerState->SetPlayerId(GameMode->GameSession->GetNextPlayerID());
+		}
 		NewController->PlayerState->SetPlayerName(FString::Printf(TEXT("Breakaway Bot %d"), SpawnedBotList.Num() + 1));
 	}
 
-	ALyraGameMode* GameMode = GetWorld()->GetAuthGameMode<ALyraGameMode>();
 	if (GameMode)
 	{
 		GameMode->GenericPlayerInitialization(NewController);

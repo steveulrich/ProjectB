@@ -168,11 +168,13 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 	}
 
 	int32 LocalTeam = INDEX_NONE;
+	const APlayerState* LocalPlayerState = nullptr;
 	if (APlayerController* PC = ResolveLocalPlayerController(WorldContextObject))
 	{
 		if (APlayerState* LocalPS = PC->PlayerState)
 		{
 			LocalTeam = GameState->GetPlayerTeam(LocalPS);
+			LocalPlayerState = LocalPS;
 		}
 	}
 
@@ -180,6 +182,7 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 
 	const ABwayPlayerState* BestPlayer = nullptr;
 	float BestMVPScore = -1.0f;
+	int32 BestColumnIndex = INDEX_NONE;
 
 	for (APlayerState* PS : GameState->PlayerArray)
 	{
@@ -196,9 +199,10 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 		}
 
 		FBwayMatchBreakdownPlayerColumn Column;
+		Column.PlayerId = BwayPS->GetPlayerId();
 		Column.GameTeamIndex = GameTeamIndex;
 		Column.DisplayColumnIndex = UBwayMatchHUDWidgetBase::MapGameTeamToDisplaySlot(GameTeamIndex, LocalTeam);
-		Column.bIsLocalPlayer = (LocalTeam >= 0 && GameTeamIndex == LocalTeam);
+		Column.bIsLocalPlayer = (BwayPS == LocalPlayerState);
 		Column.PlayerName = FText::FromString(BwayPS->GetPlayerName());
 		Column.Stats = BwayPS->GetMatchStatsSnapshot();
 		Column.MVPScore = CalculateMVPScore(Column.Stats);
@@ -209,16 +213,27 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 			if (const UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
 			{
 				Column.HeroName = HeroData->DisplayName;
+				Column.HeroPortrait = HeroData->Portrait;
 			}
 		}
 
-		if (Column.MVPScore > BestMVPScore)
+		// Always choose a player, even when every score is negative. Break ties
+		// by replicated identity so PlayerArray ordering cannot change the MVP.
+		if (!BestPlayer || Column.MVPScore > BestMVPScore
+			|| (Column.MVPScore == BestMVPScore && Column.PlayerId < BestPlayer->GetPlayerId()))
 		{
 			BestMVPScore = Column.MVPScore;
 			BestPlayer = BwayPS;
+			BestColumnIndex = InOutSummary.PlayerColumns.Num();
 		}
 
 		InOutSummary.PlayerColumns.Add(Column);
+	}
+
+	// Mark the chosen entry before sorting; a display name can belong to several players.
+	if (InOutSummary.PlayerColumns.IsValidIndex(BestColumnIndex))
+	{
+		InOutSummary.PlayerColumns[BestColumnIndex].bIsMVP = true;
 	}
 
 	InOutSummary.PlayerColumns.Sort([](const FBwayMatchBreakdownPlayerColumn& A, const FBwayMatchBreakdownPlayerColumn& B)
@@ -228,7 +243,8 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 			return A.DisplayColumnIndex < B.DisplayColumnIndex;
 		}
 
-		return A.PlayerName.ToString() < B.PlayerName.ToString();
+		const int32 NameOrder = A.PlayerName.ToString().Compare(B.PlayerName.ToString());
+		return NameOrder != 0 ? NameOrder < 0 : A.PlayerId < B.PlayerId;
 	});
 
 	if (BestPlayer)
@@ -242,11 +258,6 @@ void UBwayMatchStatsLibrary::PopulateMVPAndColumns(
 			{
 				InOutSummary.MVPHeroName = HeroData->DisplayName;
 			}
-		}
-
-		for (FBwayMatchBreakdownPlayerColumn& Column : InOutSummary.PlayerColumns)
-		{
-			Column.bIsMVP = Column.PlayerName.EqualTo(InOutSummary.MVPPlayerName);
 		}
 	}
 }
@@ -321,7 +332,8 @@ FBwayPostMatchSummaryData UBwayMatchStatsLibrary::RemapPostMatchSummaryForDispla
 			return A.DisplayColumnIndex < B.DisplayColumnIndex;
 		}
 
-		return A.PlayerName.ToString() < B.PlayerName.ToString();
+		const int32 NameOrder = A.PlayerName.ToString().Compare(B.PlayerName.ToString());
+		return NameOrder != 0 ? NameOrder < 0 : A.PlayerId < B.PlayerId;
 	});
 
 	return DisplaySummary;

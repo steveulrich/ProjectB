@@ -11,6 +11,7 @@ Compact restart point for the next active implementation turn. Detailed evidence
 | Six-slot gameplay HUD | Passed | Candidate `LAN-20260906-08` screenshot |
 | Duplicate frontend HUD entries | In new package | Interactive visual verification pending |
 | Hero-card visual-state targets | Fixed in source; 16 synthetic checks passed after cold restart | Child highlight, lock, and unavailable indicators are independent; physical input and packaged verification remain open |
+| Results identity and portrait data | Fixed in source; two-peer fixture passed | Unique bot IDs, single MVP with duplicate names/negative ties, one local-player column; portraits match selected hero assets. Visible and packaged checks remain open |
 | Packaged bot pickup / scoring / match completion | Passed offline headless | New package scored 3 natural goals across round resets; interactive LAN still pending |
 | Packaged frontend return / second match | Pending | Validate remote input and rehosting |
 | Keyboard + gamepad acceptance | Pending | Run once packaged loop is stable |
@@ -20,7 +21,7 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
 
-**Next action when resumed:** recheck the reported new-package firewall prompt and running processes; the last observation still required user handling after tool auto-review rejected inspection. Then verify keyboard selection in the source editor and the bot fix through the packaged LAN playlist. The editor was restarted for hero-card verification; candidate `LAN-20260907-01` predates that asset fix.
+**Next action when resumed:** recheck the reported new-package firewall prompt and running processes; the last observation still required user handling after tool auto-review rejected inspection. Verify keyboard selection and the results presentation in the source editor, then build a new LAN candidate. The editor is open with PIE stopped and the client-count setting restored to 1. Candidate `LAN-20260907-01` predates the hero-card, bot-ID, and results fixes.
 
 **Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
 

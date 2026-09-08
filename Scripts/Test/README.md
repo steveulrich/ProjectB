@@ -80,3 +80,9 @@ Use this order for each acceptance gate:
 5. Update the compact ledger after verification. Keep detailed history in the acceptance document and retain full logs. Record test scope and remaining gaps.
 
 For future comparisons, note build/package counts and repeated test attempts in the gate's evidence record. These measure workflow overhead; token savings remain unmeasured until comparable usage data exists. Keep the final multiplayer and end-to-end acceptance requirements.
+
+## Results identity fixture
+
+In an isolated development listen-server session with eight players and active hero selection, `bway.Test.ResultsIdentity negative-tie` sets duplicate names and negative scores. `bway.Test.ResultsIdentity unique-winner` resets that fixture and gives the highest player ID ten kills. The command uses native setters, refuses client worlds, and holds selection open. Start a fresh session afterward: it changes names, hero selection, timing, and stats.
+
+Compare summaries on the authority and owning client after replication converges. Require eight unique IDs, one local-player column per peer, one matching MVP, preserved identity after team remapping, and portraits matching selected hero assets. Generic `set` console commands are rejected in editor PIE. These fixtures do not establish natural gameplay, final-stat arrival order, or physical input; see `AI_Planning/PACKAGED_LAN_ACCEPTANCE.md` for recorded evidence and outstanding checks.
