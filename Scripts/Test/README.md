@@ -81,6 +81,10 @@ Use this order for each acceptance gate:
 
 For future comparisons, note build/package counts and repeated test attempts in the gate's evidence record. These measure workflow overhead; token savings remain unmeasured until comparable usage data exists. Keep the final multiplayer and end-to-end acceptance requirements.
 
+Keep routine tool responses near 1,500 tokens: return the result, first causal error, and full evidence path. Expand a diagnostic excerpt when it cannot explain the failure. After two attempts with the same failure and no new evidence, record the retry condition and move to an independent gate while implementation is active. Preserve security approval boundaries.
+
+Keep `SLICE_STATUS.md` under about 100 lines by replacing stale state and linking detailed history. Workflow preparation during a user-requested pause does not authorize builds or playtests. These instructions guide future runs; they do not change account usage limits or establish a measured savings percentage.
+
 ## Results identity fixture
 
 In an isolated development listen-server session with eight players and active hero selection, `bway.Test.ResultsIdentity negative-tie` sets duplicate names and negative scores. `bway.Test.ResultsIdentity unique-winner` resets that fixture and gives the highest player ID ten kills. The command uses native setters, refuses client worlds, and holds selection open. Start a fresh session afterward: it changes names, hero selection, timing, and stats.

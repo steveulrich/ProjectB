@@ -2,6 +2,8 @@
 
 Compact restart point for the next active implementation turn. Detailed evidence remains in BreakawayCore docs and `Saved/Logs/`.
 
+**Pause boundary:** the current request is workflow preparation for the next unpause. Do not start gameplay changes, builds, editor restarts, or playtests until the user resumes implementation. On resume, replace this note and verify the recorded runtime state before acting.
+
 | Gate | Status | Evidence / next action |
 |---|---|---|
 | Hero selection and roster | Passed | PIE listen-server coverage |
