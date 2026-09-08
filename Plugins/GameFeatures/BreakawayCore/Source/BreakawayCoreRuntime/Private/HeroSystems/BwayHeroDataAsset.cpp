@@ -1,7 +1,8 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 
 #include "AbilitySystem/Abilities/LyraGameplayAbility.h"
-#include "Animation/AnimBlueprint.h"
+#include "Animation/AnimClassInterface.h"
+#include "Animation/AnimInstance.h"
 #include "Animation/Skeleton.h"
 #include "Engine/SkeletalMesh.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
@@ -25,6 +26,11 @@ EDataValidationResult UBwayHeroDataAsset::IsDataValid(FDataValidationContext& Co
 	}
 	else
 	{
+		if (!HeroMesh->GetSkeleton())
+		{
+			Context.AddError(FText::FromString(TEXT("HeroMesh has no skeleton; assign a compatible rigged mesh.")));
+			Result = EDataValidationResult::Invalid;
+		}
 		if (ExpectedSkeleton && HeroMesh->GetSkeleton() != ExpectedSkeleton)
 		{
 			Context.AddError(FText::Format(
@@ -61,9 +67,29 @@ EDataValidationResult UBwayHeroDataAsset::IsDataValid(FDataValidationContext& Co
 		}
 	}
 
-	if (!AnimationBP)
+	if (HeroMesh && !AnimationClass)
 	{
-		Context.AddWarning(FText::FromString(TEXT("AnimationBP is null — mesh may T-pose after hero swap.")));
+		Context.AddError(FText::FromString(TEXT("AnimationClass is null. Assign an animation generated class; Blueprint asset references are stripped from cooked builds.")));
+		Result = EDataValidationResult::Invalid;
+	}
+	else if (HeroMesh && AnimationClass)
+	{
+		for (UClass* AnimClass : { AnimationClass.Get(), AnimationLayerClass.Get() })
+		{
+			if (!AnimClass)
+			{
+				continue;
+			}
+			if (const IAnimClassInterface* AnimInterface = IAnimClassInterface::GetFromClass(AnimClass))
+			{
+				const USkeleton* AnimSkeleton = AnimInterface->GetTargetSkeleton();
+				if (!AnimSkeleton || !AnimSkeleton->IsCompatibleMesh(HeroMesh))
+				{
+					Context.AddError(FText::FromString(FString::Printf(TEXT("Animation class '%s' has an incompatible skeleton for HeroMesh; retarget or assign a compatible pair."), *GetNameSafe(AnimClass))));
+					Result = EDataValidationResult::Invalid;
+				}
+			}
+		}
 	}
 
 	if (AbilitySets.IsEmpty())

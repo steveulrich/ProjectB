@@ -411,17 +411,11 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 		return;
 	}
 
-	APlayerController* PC = Cast<APlayerController>(Controller);
-	if (!PC)
-	{
-		return;
-	}
-
 	// Get the player state to check for selected hero
-	ABwayPlayerState* BwayPS = PC->GetPlayerState<ABwayPlayerState>();
+	ABwayPlayerState* BwayPS = Controller->GetPlayerState<ABwayPlayerState>();
 	if (!BwayPS)
 	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No BwayPlayerState for %s"), *PC->GetName());
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No BwayPlayerState for %s"), *Controller->GetName());
 		return;
 	}
 
@@ -429,13 +423,13 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 	FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();
 	if (!HeroId.IsValid())
 	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Player %s has no hero selected"), *PC->GetName());
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: Player %s has no hero selected"), *Controller->GetName());
 		return;
 	}
 
 	if (!BwayPS->IsHeroLocked())
 	{
-		UE_LOG(LogBreakawayGame, Verbose, TEXT("ApplyHeroDataToNewPawn: Player %s hero not locked yet — deferring apply"), *PC->GetName());
+		UE_LOG(LogBreakawayGame, Verbose, TEXT("ApplyHeroDataToNewPawn: Player %s hero not locked yet — deferring apply"), *Controller->GetName());
 		return;
 	}
 
@@ -448,10 +442,10 @@ void ABreakawayGameMode::ApplyHeroDataToNewPawn(AController* Controller)
 	}
 
 	// Get the spawned pawn
-	APawn* Pawn = PC->GetPawn();
+	APawn* Pawn = Controller->GetPawn();
 	if (!Pawn)
 	{
-		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No pawn for player %s after RestartPlayer"), *PC->GetName());
+		UE_LOG(LogBreakawayGame, Warning, TEXT("ApplyHeroDataToNewPawn: No pawn for player %s after RestartPlayer"), *Controller->GetName());
 		return;
 	}
 

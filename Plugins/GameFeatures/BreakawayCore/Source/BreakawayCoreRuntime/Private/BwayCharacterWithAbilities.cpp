@@ -21,7 +21,7 @@
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroStatsLibrary.h"
 #include "Movement/BwayMovementFeelConfig.h"
-#include "Animation/AnimBlueprint.h"
+#include "Animation/AnimInstance.h"
 #include "Player/LyraPlayerState.h"
 #include "Teams/LyraTeamDisplayAsset.h"
 #include "Teams/LyraTeamSubsystem.h"
@@ -434,18 +434,19 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: HeroMesh is null for %s — keeping experience pawn mesh"), *GetNameSafe(HeroData));
 		}
 
-		if (HeroData->AnimationBP)
+		if (HeroData->AnimationClass)
 		{
-			if (UClass* AnimClass = HeroData->AnimationBP->GeneratedClass)
+			UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting AnimInstanceClass = %s"), *GetNameSafe(HeroData->AnimationClass.Get()));
+			MainMesh->SetAnimInstanceClass(HeroData->AnimationClass);
+			MainMesh->InitAnim(true);
+			if (HeroData->AnimationLayerClass)
 			{
-				UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting AnimInstanceClass = %s"), *GetNameSafe(AnimClass));
-				MainMesh->SetAnimInstanceClass(AnimClass);
-				MainMesh->InitAnim(true);
+				MainMesh->LinkAnimClassLayers(HeroData->AnimationLayerClass);
 			}
 		}
 		else if (HeroData->HeroMesh)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationBP is null for %s — mesh may T-pose"), *GetNameSafe(HeroData));
+			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationClass is null for %s — mesh may T-pose"), *GetNameSafe(HeroData));
 		}
 	}
 	else

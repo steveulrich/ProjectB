@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "Development/BwayCheatManager.h"
+#include "Animation/AnimInstance.h"
 #include "Development/BwayHeroDebugComponent.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
@@ -407,7 +408,7 @@ void UBwayCheatManager::DebugHero()
 			CheatOutputText(FString::Printf(TEXT("Hero Display Name: %s"), *HeroData->DisplayName.ToString()));
 			CheatOutputText(FString::Printf(TEXT("AbilitySets configured: %d"), HeroData->AbilitySets.Num()));
 			CheatOutputText(FString::Printf(TEXT("HeroMesh: %s"), *GetNameSafe(HeroData->HeroMesh)));
-			CheatOutputText(FString::Printf(TEXT("AnimationBP: %s"), *GetNameSafe(HeroData->AnimationBP)));
+			CheatOutputText(FString::Printf(TEXT("AnimationClass: %s"), *GetNameSafe(HeroData->AnimationClass.Get())));
 		}
 		else
 		{
@@ -653,4 +654,3 @@ void UBwayCheatManager::ForceFumbleRelic()
 	CheatOutputText(TEXT("ForceFumbleRelic: dropped relic and incremented ForcedFumbles"));
 #endif
 }
-

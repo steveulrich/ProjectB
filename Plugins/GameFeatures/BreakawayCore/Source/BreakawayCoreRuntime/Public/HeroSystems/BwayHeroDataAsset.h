@@ -8,6 +8,8 @@
 class ULyraAbilitySet;
 class UAttributeSet;
 class UMediaSource;
+class UAnimBlueprint;
+class UAnimInstance;
 
 /**
  * Resolved display information for a single ability in UI widgets.
@@ -134,15 +136,27 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     TObjectPtr<USkeletalMesh> HeroMesh;
 
+    /** Generated animation class retained by cooking and used on every network role. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
+    TSubclassOf<UAnimInstance> AnimationClass;
+
+    /** Optional linked layer supplying locomotion/action poses to AnimationClass. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
+    TSubclassOf<UAnimInstance> AnimationLayerClass;
+
+#if WITH_EDITORONLY_DATA
+    /** Legacy authoring reference, retained only to migrate existing hero definitions. */
+    UPROPERTY(meta=(DeprecatedProperty, DeprecationMessage="Assign the generated class to AnimationClass; Blueprint assets are editor-only."))
     TObjectPtr<UAnimBlueprint> AnimationBP;
+#endif
 
     /**
      * Relative transform applied to the character mesh when this hero is equipped.
-     * Use for per-hero scale / offset without forking the pawn BP.
+     * Absolute transform relative to the capsule, including the mesh's ground offset and forward axis.
+     * Defaults match the humanoid pawn; author a different transform for a different mesh convention.
      */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
-    FTransform HeroMeshRelativeTransform = FTransform::Identity;
+    FTransform HeroMeshRelativeTransform = FTransform(FRotator(0.0, -90.0, 0.0), FVector(0.0, 0.0, -88.0));
 
     /**
      * Optional expected skeleton. When set, IsDataValid fails if HeroMesh uses a different skeleton

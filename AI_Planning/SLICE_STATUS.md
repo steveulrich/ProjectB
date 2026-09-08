@@ -6,7 +6,7 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 
 **Current candidate:** `LAN-20260908-04`
 
-**Current work:** goal active. Candidate 0804 rendered LAN gate completed; host 44220 and client 47976 exited normally with retained-handle exit 0. Monitor sessions 61070/15154 are finished. No editor/game/build remains from this work. Next inspect and repair placeholder hero mesh/animation integration, then continue four-player acceptance. On-disk settings: four clients, one process, listen server, empty extra options; DevMap restored.
+**Current work:** goal active. Hero visual integration passed three builds (55.40/45.96/26.06 seconds), six cold asset validations, four-peer natural rounds/respawns, and the four-hero visual fixture. Editor 25828 exited normally; session 30874 finished. Four editor launches and four PIE runs for this change. On-disk settings restored: four clients, one process, empty extra options; DevMap. Package 0805 next; 0804 does not cover these changes.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -30,7 +30,7 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 | Footstep effect lifecycle | Fixed; NullRHI/rendered/cold and packaged error checks passed | `bcec5a3e`; optional spawn guarded, components reused, cleanup complete; no 0804 packaged runtime errors. Final VFX appearance remains |
 | Placeholder asset integration / visual polish | Pending | Mesh/animation contract, sample menus/debug text, performance budget remain |
 
-**Next action:** inspect authored hero mesh transforms, skeleton/animation assignments, and runtime attachment to fix floating/T-pose placeholders. `ApplyHeroVisuals` applies `HeroMeshRelativeTransform` directly and Rawlins has a null AnimationBP warning. Then continue the required one-PIE-plus-three-process topology, second-PC LAN, all-kit inputs, and other open gates. Do not repeat passed checks without a relevant invalidation reason.
+**Next action:** run `Saved/package-LAN-20260908-05.ps1` once, then verify the new cooked animation classes/layers with rendered gameplay. Preserve mixed four-player/second-PC and full gameplay gates. Hero body integration is documented in `AI_Planning/HERO_VISUAL_INTEGRATION.md`; it does not complete montage, effects, input, or final polish acceptance.
 
 **Hero-reselection source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 
@@ -59,3 +59,5 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 **0804 headless scope:** `codex-packaged0804-headless-20260908.log` and compact flow JSON: zero runtime error/critical lines, two natural rounds, real PostMatch trigger. Direct map, NullRHI, no rendered/physical/network acceptance. The test-exit request is recorded; actual OS exit code was not captured. This does not pass graceful frontend return.
 
 **0804 rendered evidence / overhead:** `codex-packaged0804-lan-{host,client1}-20260908.log` and `codex-packaged0804-rendered-flow-20260908.json`. Two launches, two natural matches (first host-only), zero new builds/packages/editor launches. Remote Rawlins manually locked at 16:30:12.136; host timeout kept Rawlins; both 400 health/six slots. Shared results 16:31:51.731/.746, matching 78/378 gold and Alona MVP/goals; shared frontend travel 16:32:18.825. Both logs have zero error/critical lines and normal exits. Scope is two packaged processes on one PC. Retain slide-cue tag, invalid-handle unregister, material, VSM, mesh/animation, and debug/menu polish leads.
+
+**Visual evidence / overhead:** `Saved/Logs/hero-visuals-20260908/` and `cosmetic-ownership-20260908/`; full causes/contract in `HERO_VISUAL_INTEGRATION.md`. Final natural match 2–0 at 17:07:07 UTC; 182 samples/96 pawn lifetimes, no invisible meshes or missing layers. Final four-hero fixture: 193 samples/32 instances, all changing poses, six Manny/two Quinn per peer. Both current-state assertions passed. Aggregate seven world paths include three temporary startup maps, not seven peers. Three builds/four editors/four PIE runs followed distinct findings. Final editor exited 0 with no dirty assets; BF-114 updated. Packaged proof pending.
