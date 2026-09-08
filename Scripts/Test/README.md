@@ -102,3 +102,7 @@ In a fresh development PIE listen-server session, configure four local peers wit
 5. Keep the generated `Saved/Logs/codex-results-snapshot-4-peers.json` with the runtime log. Stop PIE and restore the original client count.
 
 The live player counter must be zero while the captured results retain ten. The fixture is excluded from Shipping, rejects client worlds, and requires the prepared eight-player selection state. Start a fresh session afterward. This verifies snapshot transport and widget data; natural match completion, separate processes, input, late arrival during PostMatch, and packaged LAN require their own checks.
+
+For natural-match verification, start a fresh four-peer DevMap session and let the configured match finish without synthetic stats or forced goals. Execute the same Python verifier file, then call `verify_natural_results(expected_peers=4, run_name="natural-match-1")` after the breakdown appears. It compares every results column and aggregate to live authority, checks scores, rounds, portraits, and team display, and requires a credited relic goal. Keep the gameplay log to establish scoring provenance.
+
+After recording that result, `verify_relic_scorer_identity()` checks authority-side identity retention through drop/throw/pass, reset cleanup, and rejection of post-match personal credit. This probe mutates the finished session; stop PIE afterward. It does not verify client release input or projectile goal collision.

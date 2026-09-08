@@ -452,6 +452,11 @@ void ARelicActor::SetRelicState(ERelicState NewState)
 
 // --- Interaction Logic ---
 
+ABwayPlayerState* ARelicActor::GetLastPossessingPlayerState() const
+{
+    return LastPossessingPlayerState.Get();
+}
+
 void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 {
     if (!HasAuthority() || !NewCarrier)
@@ -459,6 +464,9 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
         return;
     }
 
+    // Keep player identity after CurrentCarrier is cleared by release or scoring.
+    LastPossessingPlayerState = Cast<ABwayPlayerState>(NewCarrier->GetPlayerState());
+    LastPossessingTeam = INDEX_NONE;
     // Track which team picked up the relic (using GameState for consistency)
     if (NewCarrier->GetPlayerState())
     {
@@ -539,7 +547,7 @@ void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool b
         }
     }
 
-    if (CurrentCarrier && CurrentCarrier->GetPlayerState())
+    if (CurrentState != ERelicState::Resetting && CurrentCarrier && CurrentCarrier->GetPlayerState())
     {
         if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
         {
@@ -629,6 +637,8 @@ void ARelicActor::BeginResettingState()
         return;
     }
 
+    LastPossessingPlayerState.Reset();
+    LastPossessingTeam = INDEX_NONE;
     SetRelicState(ERelicState::Resetting);
     PlayStateAudio(ERelicState::Resetting);
 }

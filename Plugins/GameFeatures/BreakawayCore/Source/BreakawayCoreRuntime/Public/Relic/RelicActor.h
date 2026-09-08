@@ -14,6 +14,7 @@ class USphereComponent;
 class URelicSettings;
 class URelicMovementReplicationComponent;
 class ABwayCharacterWithAbilities; // Forward declaration
+class ABwayPlayerState;
 class UNiagaraComponent;
 class UMaterialInstanceDynamic;
 
@@ -80,6 +81,10 @@ public:
     UPROPERTY(BlueprintReadOnly, Replicated)
     bool bHasScoredThisRound = false;
 
+    /** Authority-only scorer identity retained after throws, passes, and drops. */
+    UFUNCTION(BlueprintPure, Category = "Relic|State")
+    ABwayPlayerState* GetLastPossessingPlayerState() const;
+
     // --- Core Logic ---
 
     // Called by GA_PickupRelic on the server to attach the relic
@@ -142,6 +147,10 @@ public:
     }
     
 protected:
+    /** Non-owning identity; reset at the round boundary and never sent to clients. */
+    UPROPERTY(Transient)
+    TWeakObjectPtr<ABwayPlayerState> LastPossessingPlayerState;
+
     // --- Components ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<USphereComponent> InteractionSphere;

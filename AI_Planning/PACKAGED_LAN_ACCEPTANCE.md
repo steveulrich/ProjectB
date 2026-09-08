@@ -308,3 +308,29 @@ The passing fixture had four human PIE peers and four bots, with eight unique ID
 Evidence: `Saved/Logs/codex-results-snapshot-runtime-20260907.log` and `Saved/Logs/codex-results-snapshot-4-peers.json`. The runtime log has no Blueprint runtime errors, Accessed None, ensure failures, fatal errors, or retained-world cleanup failures through teardown. It contains separate PixelStreaming2 startup messages about GEngine validity; these are outside the results test. PIE stopped, PlayNumberOfClients returned to 1, and dirty map/content checks were empty. Editor PID 56652 remains open.
 
 This verifies the snapshot transport and results data under forced divergence and configured network emulation. The fixture displays synthetic 0–0 results during selection; it does not end a natural match. Natural final-goal capture, separate processes, physical input, visible layout, PostMatch late arrival, rematch/travel, and packaged LAN remain required. Candidate `LAN-20260907-01` predates the fix.
+
+## Natural match, navigation, and scorer credit (September 7, 2026)
+
+A four-peer DevMap run exposed missing static navigation data. All four authoritative bots had running brains and valid target locations, but every spawn and goal projection failed. The client displayed the navigation-rebuild warning. `RecastNavMesh_1` was Static with radius 35 and height 144; one bounds volume existed. Rebuilding navigation took 0.02 seconds. Projection then passed at both spawn sides, midfield, and both goals. The map was saved, unloaded, reloaded, and later loaded by a new editor process; projection still passed. Only `L_BW_DevMap.umap` changed.
+
+The next match completed three natural goals, but all personal Relic Scores remained zero. The results verifier rejected that run, and the visible breakdown confirmed the missing credit. `ARelicActor::OnEnteredGoal` clears CurrentCarrier before `UBwayRoundManagementComponent::OnRelicScored` previously tried to read it. Thrown and passed relics had already lost that reference before entering a goal. The earlier runtime log, `Saved/Logs/codex-results-snapshot-runtime-20260907.log`, preserves both failures and the navigation rebuild; its natural-match sections are diagnostic evidence.
+
+Goal overlap now captures a weak scorer PlayerState together with the scoring team before the delay and carrier detachment. The relic tracks its last possessor on authority through throw, pass, and drop. Round management requires authority, an active round, current roster membership, and matching team before awarding personal credit. It credits that player before EndRound can capture results. Reset clears player and team attribution, and the reset drop cannot restore the old team.
+
+One editor build passed in 106.09 seconds: `Saved/Logs/codex-relic-scorer-build-20260907.log`. A fresh editor then loaded the saved navigation and ran four human PIE peers plus four bots without forced scoring or synthetic stats. Team 0 won 3–0 in three rounds. ID 258 earned two goals and ID 260 earned the winning goal. The server log recorded each personal award before the team score advanced. All four results orchestrators and breakdowns matched every authoritative stat field, scores, round count, team aggregate, MVP, local identity, and hero portrait. The visible remote breakdown displayed the two/one goal split and one highlighted MVP.
+
+A physical click on Client 1's Play Again button initiated server-owned travel. All four peers reconnected with eight unique IDs, round zero, and every match-stat field reset to zero. That full rematch also completed naturally, 3–0 over three rounds. IDs 269 and 271 received the two/one goal split. The four-peer verifier passed again, explicitly requiring all three relic credits. No upgrades were purchased in these runs, so purchased-upgrade reset remains unverified.
+
+After the rematch results were recorded, a separate authority probe exercised pickup followed by drop, throw, and pass. Each release cleared CurrentCarrier while preserving the scorer; resetting cleared player and team attribution. Calling the scoring entry during PostMatch awarded no personal credit. This used local server-side calls and does not establish client release transport or projectile collision scoring. Its first attempt used an unavailable Python `get_pawn` alias; the corrected helper uses GameplayStatics and passed.
+
+Evidence under `Saved/Logs`:
+
+- `codex-relic-scorer-runtime-20260907.log`: natural goals, personal credit, results delivery, physical rematch travel, and teardown.
+- `codex-results-natural-scorer-fixed-20260907.json`: first completed match, all four peers.
+- `codex-natural-rematch-start-20260907.json`: eight unique IDs and clean stats after reconnection.
+- `codex-results-natural-rematch-complete-20260907.json`: completed full rematch, all four peers and three required goal credits.
+- `codex-relic-scorer-identity.json`: release/reset identity and PostMatch rejection probe.
+
+PIE stopped and the original client count of 1 was restored. Dirty map/content checks were empty. The new runtime log has no Blueprint runtime errors, Accessed None, ensure/fatal failures, or retained-world cleanup failures through teardown. Existing PixelStreaming2 startup errors are separate from these tests. Current editor PID: 33040.
+
+This closes the recorded same-process natural-results and full-rematch gaps. Separate-process and packaged LAN, purchased upgrades, projectile goal collision, disconnect timing, physical keyboard/gamepad coverage, and clean-device testing remain open. Visible character mesh/animation integration and debug text still need polish; four local render views also showed GPU-memory pressure during the earlier run. Candidate `LAN-20260907-02` is being prepared to carry these fixes into packaged verification.

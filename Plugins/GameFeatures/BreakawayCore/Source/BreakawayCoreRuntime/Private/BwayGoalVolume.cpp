@@ -3,6 +3,7 @@
 #include "BwayGoalVolume.h"
 #include "Relic/RelicActor.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "BwayCharacterWithAbilities.h"
@@ -212,8 +213,11 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 	// Add small delay to allow state to settle (handles edge case of simultaneous pickup)
 	constexpr float ScoreDelayDuration = 0.1f;
 	const int32 CapturedScoringTeam = ScoringTeam;
+	const TWeakObjectPtr<ABwayPlayerState> Scorer = Relic->CurrentCarrier
+		? Cast<ABwayPlayerState>(Relic->CurrentCarrier->GetPlayerState())
+		: Relic->GetLastPossessingPlayerState();
 	const TWeakObjectPtr<ARelicActor> WeakRelic = Relic;
-	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, WeakRelic, CapturedScoringTeam]()
+	GetWorldTimerManager().SetTimer(ScoreDelayTimerHandle, [this, WeakRelic, CapturedScoringTeam, Scorer]()
 	{
 		ARelicActor* Relic = WeakRelic.Get();
 
@@ -231,7 +235,7 @@ void ABwayGoalVolume::OnGoalOverlapBegin(UPrimitiveComponent* OverlappedComponen
 			{
 				if (UBwayRoundManagementComponent* RoundMgmt = GS->FindComponentByClass<UBwayRoundManagementComponent>())
 				{
-					RoundMgmt->OnRelicScored(CapturedScoringTeam);
+					RoundMgmt->OnRelicScored(CapturedScoringTeam, Scorer.Get());
 				}
 			}
 		}

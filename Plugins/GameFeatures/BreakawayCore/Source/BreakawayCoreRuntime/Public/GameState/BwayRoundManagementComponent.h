@@ -13,6 +13,7 @@
 #include "BwayRoundManagementComponent.generated.h"
 
 class ABwayGameState;
+class ABwayPlayerState;
 class UBwaySpawnPointManagerComponent;
 class AController;
 class APlayerState;
@@ -97,7 +98,7 @@ public:
 
 	/** Called when the relic enters a goal trigger. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Scoring")
-	void OnRelicScored(int32 ScoringTeam);
+	void OnRelicScored(int32 ScoringTeam, ABwayPlayerState* Scorer = nullptr);
 
 	/** Check if a team has been eliminated (all players dead). */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Scoring")

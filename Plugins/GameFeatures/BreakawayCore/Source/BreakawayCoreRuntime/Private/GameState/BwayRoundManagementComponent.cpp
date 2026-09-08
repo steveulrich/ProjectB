@@ -1417,9 +1417,9 @@ void UBwayRoundManagementComponent::ResetRoundState()
 // Win Condition Checks
 // ========================================
 
-void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
+void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam, ABwayPlayerState* Scorer)
 {
-	if (!IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
+	if (GetOwnerRole() != ROLE_Authority || !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
@@ -1428,18 +1428,13 @@ void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam)
 
 	if (ABwayGameState* BwayGS = GetBwayGameState())
 	{
-		if (UBwayRelicManagerComponent* RelicMgr = BwayGS->RelicManagerComponent)
+		// The goal captured identity before OnEnteredGoal detached the carrier.
+		// Validate membership/team before crediting a still-live PlayerState.
+		if (IsValid(Scorer) && BwayGS->PlayerArray.Contains(Scorer) && BwayGS->GetPlayerTeam(Scorer) == ScoringTeam)
 		{
-			if (ARelicActor* Relic = RelicMgr->GetRelicActor())
-			{
-				if (ABwayCharacterWithAbilities* Carrier = Relic->CurrentCarrier)
-				{
-					if (ABwayPlayerState* ScorerPS = Cast<ABwayPlayerState>(Carrier->GetPlayerState()))
-					{
-						ScorerPS->AddObjectiveScore(1);
-					}
-				}
-			}
+			Scorer->AddObjectiveScore(1);
+			UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Goal credited player=%d team=%d total=%d"),
+				Scorer->GetPlayerId(), ScoringTeam, Scorer->GetObjectiveScore());
 		}
 
 		for (APlayerState* PlayerState : BwayGS->PlayerArray)
