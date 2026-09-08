@@ -2,11 +2,11 @@
 
 Compact restart point. Detailed evidence and failed attempts remain in [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md) and `Saved/Logs/`.
 
-**Latest verified gate:** candidate 0805 mixed LAN frontend flow: one PIE host plus three packaged clients discovered/joined, formed four humans/four bots, completed a natural 1–3 match, showed matching results, and returned to the frontend. Intentional host return logged connection-loss errors on every client; graceful disconnect handling remains open. Earlier hero/0804/0803 evidence retains its recorded scope.
+**Latest verified gate:** connected frontend return fixed in source. Two-peer PIE on 17777 and rebuilt PIE host + packaged 0805 client on 7777 returned without network failures; connected rehost/manual Argus-Korryn kits passed. Deliberate host stop still produced genuine failure recovery. Earlier 0805 four-player 1–3 evidence retains its scope; a newly packaged host is pending.
 
 **Current candidate:** `LAN-20260908-05`
 
-**Current work:** goal active. Mixed 0805 run finished; editor 56736 and clients 26540/48144/51080 all exited OS code 0, retained monitors finished, PIDs verified absent. No new build/package. Settings and DevMap restored; closed-editor INI verified four clients, one process, listen server, empty options, full-flow false. Evidence: `Saved/Logs/mixed0805-20260908/`. Next inspect intentional host return's connection-loss path; keep UI/GPU performance issues open.
+**Current work:** goal active. Frontend travel fix passed one build (67.11 s), two PIE runs, one packaged-client run; no new package. Editor 77764/client 78524 exited OS code 0; monitors 35782/63939 finished, PIDs absent. Settings/DevMap restored and closed-editor INI verified. Details: `CONNECTED_FRONTEND_TRAVEL.md`; next address material/debug/frontend polish before packaging a coherent candidate with the new host code.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -25,12 +25,13 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 | Frontend return / second match | 0803 shared return, manual selection, natural completion passed | Client followed automatically; Argus500/Rawlins400, six slots, matching 0–3 results. Disconnected rediscovery remains open |
 | Keyboard + gamepad acceptance | Pending | Physical all-kit actions once packaged loop is stable |
 | Four-human / second-PC LAN | Mixed topology functional flow passed; second-PC pending | 0805: one PIE + three packaged clients, four humans/four bots, natural 1–3, matching results/frontend return. Two late joins; initial four-person selection and graceful disconnect remain open |
+| Connected lobby return | Source fix verified in PIE and across processes | Native server travel preserves live port; frontend client remains connected, rehost works, genuine host loss still recovers. Updated packaged host/final topology pending |
 | Waiting banner / phase lifecycle | Fixed; state, PIE, and packaged results passed | `f50104ec`; zero/nonzero PostRound and round-two input restored; four-peer PIE and two-process 0804 results have no waiting banner |
 | Explicit bot-count override | Fixed in source; PIE and cold asset checks passed | `70bea97c`; one modern manager, no legacy manager, exact seven/zero counts. Four-player/four-bot client rosters agree after natural match |
 | Footstep effect lifecycle | Fixed; NullRHI/rendered/cold and packaged error checks passed | `bcec5a3e`; optional spawn guarded, components reused, cleanup complete; no 0804 packaged runtime errors. Final VFX appearance remains |
 | Placeholder asset integration / visual polish | Body/locomotion fixed; broader polish pending | `f90b3091`, four-peer and cooked 0805 evidence; all-kit actions/montages, effects, menus/debug text, performance remain |
 
-**Next action:** inspect `ABwayGameState::ReturnToFrontEnd` and client session cleanup: mixed 0805 return reached every frontend but emitted FailureReceived + ConnectionLost on each client. Establish intentional departure behavior before changing it; preserve real connection-failure reporting. Then address four-instance GPU memory pressure and exposed menu/material/debug polish. Keep second-PC, initial four-person manual selection, all-kit inputs, upgrades/buildables and full gameplay gates. Reuse 0805 until relevant code/assets/config invalidate it.
+**Next action:** inspect relic-request dynamic-material parent warnings and exposed frontend/developer presentation, then profile four-instance GPU memory pressure. Batch coherent verified fixes into the next candidate. Candidate 0805 does not contain the new host travel fix; its client was reusable for this host-only/no-protocol-change check. Keep newly packaged host, second-PC, initial four-person manual selection, all-kit inputs, upgrades/buildables and full gameplay gates open.
 
 **Hero-reselection source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 

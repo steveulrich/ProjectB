@@ -10,7 +10,6 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "GameState/BwayBotCreationComponent.h"
 #include "Blueprint/UserWidget.h"
-#include "Kismet/GameplayStatics.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameState/BwayScoringComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
@@ -495,22 +494,9 @@ void ABwayGameState::ReturnToFrontEnd()
 	}
 
 	UWorld* World = GetWorld();
-	if (!World)
+	if (!World || !World->GetAuthGameMode() || bResultsTravelPending || !World->NextURL.IsEmpty())
 	{
 		return;
-	}
-
-	if (UBwayBotCreationComponent* BotCreation = FindComponentByClass<UBwayBotCreationComponent>())
-	{
-		BotCreation->ShutdownAllBotsForTravel();
-	}
-
-	if (UGameInstance* GameInstance = World->GetGameInstance())
-	{
-		if (UCommonSessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<UCommonSessionSubsystem>())
-		{
-			SessionSubsystem->CleanUpSessions();
-		}
 	}
 
 	// 11-7 canonical target is Lyra front-end with its menu experience.
@@ -533,8 +519,46 @@ void ABwayGameState::ReturnToFrontEnd()
 		}
 	}
 
-	const FString PieTravelOptions = FString::Printf(TEXT("Experience=%s"), LyraFrontEndExperience);
-	const FString ServerTravelOptions = FString::Printf(TEXT("listen?Experience=%s"), LyraFrontEndExperience);
+	// A relative travel preserves the listening endpoint, including PIE's actual
+	// socket port. Start with clean options so selection/match flags cannot leak
+	// into the frontend when ProcessServerTravel and Browse each parse the URL.
+	FWorldContext& WorldContext = GEngine->GetWorldContextFromWorldChecked(World);
+	const FURL PreviousBaseURL = WorldContext.LastURL;
+	WorldContext.LastURL.Op.Reset();
+	if (UNetDriver* NetDriver = World->GetNetDriver())
+	{
+		if (const TSharedPtr<const FInternetAddr> LocalAddress = NetDriver->GetLocalAddr())
+		{
+			WorldContext.LastURL.Port = LocalAddress->GetPort();
+		}
+	}
+	FString TravelURL = FString::Printf(TEXT("%s?NoSeamlessTravel?Experience=%s"), *MapPath, LyraFrontEndExperience);
+	if (World->GetNetMode() == NM_ListenServer)
+	{
+		TravelURL += TEXT("?listen");
+	}
+
+	// Notify remote controllers through normal server travel in PIE as well as
+	// packaged games. OpenLevel would drop them into network-failure recovery.
+	bResultsTravelPending = true;
+	if (!World->ServerTravel(TravelURL, /*bAbsolute=*/false, /*bShouldSkipGameNotify=*/false))
+	{
+		WorldContext.LastURL = PreviousBaseURL;
+		bResultsTravelPending = false;
+		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Frontend travel rejected"));
+		return;
+	}
+	if (UBwayBotCreationComponent* BotCreation = FindComponentByClass<UBwayBotCreationComponent>())
+	{
+		BotCreation->ShutdownAllBotsForTravel();
+	}
+	if (UGameInstance* GameInstance = World->GetGameInstance())
+	{
+		if (UCommonSessionSubsystem* SessionSubsystem = GameInstance->GetSubsystem<UCommonSessionSubsystem>())
+		{
+			SessionSubsystem->CleanUpSessions();
+		}
+	}
 
 	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
 	{
@@ -544,19 +568,5 @@ void ABwayGameState::ReturnToFrontEnd()
 		}
 	}
 
-#if WITH_EDITOR
-	// PIE: OpenLevel reloads the session in-process — avoids PendingNetGame reconnect to the old listen port.
-	if (World->WorldType == EWorldType::PIE)
-	{
-		UGameplayStatics::OpenLevel(World, FName(*MapPath), /*bAbsolute=*/true, PieTravelOptions);
-		UE_LOG(LogTemp, Log, TEXT("BwayGameState: OpenLevel (PIE WorldType, NetMode=%d) to %s?%s"),
-			static_cast<int32>(World->GetNetMode()), *MapPath, *PieTravelOptions);
-		return;
-	}
-#endif
-
-	// Packaged / dedicated server: hard ServerTravel with listen (full context switch back to menu).
-	const FString TravelURL = FString::Printf(TEXT("%s?%s"), *MapPath, *ServerTravelOptions);
-	World->ServerTravel(TravelURL, /*bAbsolute=*/true, /*bShouldSkipGameNotify=*/false);
 	UE_LOG(LogTemp, Log, TEXT("BwayGameState: ServerTravel to %s"), *TravelURL);
 }
