@@ -2,11 +2,11 @@
 
 Compact restart point. Detailed evidence and failed attempts remain in [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md) and `Saved/Logs/`.
 
-**Latest verified gate:** connected frontend return fixed in source. Two-peer PIE on 17777 and rebuilt PIE host + packaged 0805 client on 7777 returned without network failures; connected rehost/manual Argus-Korryn kits passed. Deliberate host stop still produced genuine failure recovery. Earlier 0805 four-player 1–3 evidence retains its scope; a newly packaged host is pending.
+**Latest verified gate:** world-space widget team materials fixed in source. Nine widgets across three PIE peers kept valid base materials, stable renderer MIDs and matching render textures through repeated parameter/team updates. The physical relic request still produces no visible marker; that gameplay gate remains open. Earlier connected-frontend and 0805 four-player evidence retains its scope; a newly packaged host is pending.
 
 **Current candidate:** `LAN-20260908-05`
 
-**Current work:** goal active. Frontend travel fix passed one build (67.11 s), two PIE runs, one packaged-client run; no new package. Editor 77764/client 78524 exited OS code 0; monitors 35782/63939 finished, PIDs absent. Settings/DevMap restored and closed-editor INI verified. Details: `CONNECTED_FRONTEND_TRAVEL.md`; next address material/debug/frontend polish before packaging a coherent candidate with the new host code.
+**Current work:** goal active. Widget material fix passed one build (50.08 s), one three-peer PIE run and a rendered fixture; no new package. Audit editor 51292/fixed editor 38208 exited OS code 0; monitor 83264 finished, PIDs absent. Settings/DevMap restored, closed-editor INI verified, no dirty content assets. Details and next visibility failure: `RELIC_REQUEST_INDICATOR.md`. The previous connected-return fix is documented in `CONNECTED_FRONTEND_TRAVEL.md`.
 
 | Gate | Status | Evidence / next action |
 |---|---|---|
@@ -30,8 +30,9 @@ Compact restart point. Detailed evidence and failed attempts remain in [packaged
 | Explicit bot-count override | Fixed in source; PIE and cold asset checks passed | `70bea97c`; one modern manager, no legacy manager, exact seven/zero counts. Four-player/four-bot client rosters agree after natural match |
 | Footstep effect lifecycle | Fixed; NullRHI/rendered/cold and packaged error checks passed | `bcec5a3e`; optional spawn guarded, components reused, cleanup complete; no 0804 packaged runtime errors. Final VFX appearance remains |
 | Placeholder asset integration / visual polish | Body/locomotion fixed; broader polish pending | `f90b3091`, four-peer and cooked 0805 evidence; all-kit actions/montages, effects, menus/debug text, performance remain |
+| Relic request widget | Renderer fixed; gameplay visibility failed | Nine valid renderer MIDs/textures, repeated styling passed. Physical request: 1,770 samples, no visible marker. Inspect effect CDO/ASC readiness, bind on relevant peers, handle removal and viewer-team rules |
 
-**Next action:** inspect relic-request dynamic-material parent warnings and exposed frontend/developer presentation, then profile four-instance GPU memory pressure. Batch coherent verified fixes into the next candidate. Candidate 0805 does not contain the new host travel fix; its client was reusable for this host-only/no-protocol-change check. Keep newly packaged host, second-PC, initial four-person manual selection, all-kit inputs, upgrades/buildables and full gameplay gates open.
+**Next action:** fix relic-request visibility lifecycle. Existing Blueprint starts its tag-added listener only on server possession, lacks a removal listener, and has a disconnected visibility event comparing the pawn's team to itself. Inspect effect CDO/granted tags and ASC readiness first; do not assume these findings fully explain the authority-side failure. Require physical request, eligible/ineligible viewer behavior, expiry and pawn-replacement cleanup. Then address frontend/debug presentation and profile four-instance GPU memory. Candidate 0805 contains neither the widget material fix nor new host travel fix. Keep newly packaged host, second-PC, initial four-person manual selection, all-kit inputs, upgrades/buildables and full gameplay gates open.
 
 **Hero-reselection source verification:** one C++ build passed in 39.98 seconds; `BP_BW_GameState` and final `WBP_BW_HeroSelect` validate with zero errors/warnings. `codex-rematch-selection-clean-20260908.log`: initial match 13:54:26, staging 13:54:55, physical Korryn lock/travel 13:55:20, 335 health/six slots, natural rematch 13:55:42. One-peer PIE scope only. No ensure/assertion/fatal/Accessed None in the clean log; known PixelStreaming2 startup error is separate.
 

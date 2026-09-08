@@ -3,6 +3,7 @@
 #include "LyraTeamDisplayAsset.h"
 
 #include "Components/MeshComponent.h"
+#include "Components/WidgetComponent.h"
 #include "NiagaraComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/Texture.h"
@@ -36,6 +37,15 @@ void ULyraTeamDisplayAsset::ApplyToMeshComponent(UMeshComponent* MeshComponent)
 {
 	if (MeshComponent)
 	{
+		if (UWidgetComponent* WidgetComponent = Cast<UWidgetComponent>(MeshComponent))
+		{
+			// WidgetComponent owns the renderer MID and its SlateUI texture. Mesh
+			// material setters would install an MID as the parent of a second MID.
+			WidgetComponent->UpdateWidget();
+			ApplyToMaterial(WidgetComponent->GetMaterialInstance());
+			return;
+		}
+
 		for (const auto& KVP : ScalarParameters)
 		{
 			MeshComponent->SetScalarParameterValueOnMaterials(KVP.Key, KVP.Value);
