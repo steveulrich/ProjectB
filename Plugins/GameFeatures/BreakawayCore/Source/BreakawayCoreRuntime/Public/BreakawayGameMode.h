@@ -121,6 +121,12 @@ protected:
 	/** True while the Hero Selection phase owns the initial spawn gate. */
 	bool ShouldDeferPlayerRestartForHeroSelection(const AController* Controller) const;
 
+	/** New arrivals select independently after the shared staging phase has ended. */
+	TSet<TWeakObjectPtr<const AController>> PlayersAwaitingLateJoinHeroSelection;
+
+	UFUNCTION()
+	void HandleLateJoinHeroLocked(APlayerState* PlayerState, FPrimaryAssetId HeroId);
+
 	/** True while RM orchestrator holds the match at Prematch (11-3+). */
 	bool ShouldDeferPlayerRestartForMatchFlow(const AController* Controller) const;
 

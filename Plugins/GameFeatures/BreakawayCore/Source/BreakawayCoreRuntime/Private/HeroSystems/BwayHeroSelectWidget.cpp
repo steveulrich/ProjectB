@@ -325,7 +325,8 @@ void UBwayHeroSelectWidget::ConfirmSelection() {
   UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Confirming selection of %s"),
          *SelectedHero.ToString());
 
-  const bool bAwaitPhaseAdvance = SelectionManager && SelectionManager->IsSelectionActive();
+  const bool bAwaitPhaseAdvance = SelectionManager && (SelectionManager->IsSelectionActive()
+      || (LocalPlayerState && GetOwningPlayer() && !GetOwningPlayer()->GetPawn()));
 
   // Lock the selection if not already locked
   if (!IsSelectionLocked()) {
@@ -334,8 +335,8 @@ void UBwayHeroSelectWidget::ConfirmSelection() {
     }
   }
 
-  // In a network selection phase, remain visible until the server advances it.
-  // Sending a lock RPC is intent, not confirmation that all players are ready.
+  // Wait for either the shared phase or the late joiner's server spawn gate.
+  // Sending a lock RPC is intent, not confirmation that it was accepted.
   if (bAwaitPhaseAdvance) {
     return;
   }
@@ -366,7 +367,7 @@ bool UBwayHeroSelectWidget::IsHeroAvailable(FPrimaryAssetId HeroId) const {
 }
 
 float UBwayHeroSelectWidget::GetRemainingSelectionTime() const {
-  if (!SelectionManager || SelectionManager->SelectionTimeLimit <= 0.0f) {
+  if (!SelectionManager || !SelectionManager->IsSelectionActive() || SelectionManager->SelectionTimeLimit <= 0.0f) {
     return -1.0f; // No time limit
   }
 

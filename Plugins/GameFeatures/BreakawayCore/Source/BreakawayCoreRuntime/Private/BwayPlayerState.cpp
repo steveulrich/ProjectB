@@ -7,6 +7,7 @@
 #include "Economy/BwayGoldAttributeSet.h"
 #include "Economy/BwayUpgradeComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "Net/UnrealNetwork.h"
 
 ABwayPlayerState::ABwayPlayerState(const FObjectInitializer& ObjectInitializer)
@@ -115,6 +116,7 @@ void ABwayPlayerState::OnRep_HasCalledForRelic()
 
 void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId NewHeroId)
 {
+	if (!HasAuthority()) return;
 	// Don't allow changes if hero is already locked
 	if (bHeroLocked)
 	{
@@ -123,7 +125,7 @@ void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId Ne
 	}
 
 	// Validate the hero ID is not null
-	if (!NewHeroId.IsValid())
+	if (!NewHeroId.IsValid() || !UBwayHeroRegistry::GetHeroDataById(NewHeroId))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Attempted to set invalid hero ID for %s"), *GetName());
 		return;
@@ -161,6 +163,7 @@ void ABwayPlayerState::OnRep_SelectedHeroId()
 
 void ABwayPlayerState::ServerLockHeroSelection_Implementation()
 {
+	if (!HasAuthority() || bHeroLocked) return;
 	// Validate we have a hero selected
 	if (!SelectedHeroId.IsValid())
 	{

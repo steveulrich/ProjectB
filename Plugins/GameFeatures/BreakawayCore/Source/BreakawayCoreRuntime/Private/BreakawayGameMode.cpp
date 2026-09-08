@@ -109,6 +109,25 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	RefreshGameplayUrlOptions();
 
+	// Super::PostLogin can immediately call HandleStartingNewPlayer. Establish
+	// identity and any individual spawn gate before that first restart attempt.
+	if (NewPlayer)
+	{
+		AssignPlayerToTeam(NewPlayer);
+		TryApplyHeroUrlOptionAtLogin(NewPlayer);
+		ABwayGameState* GS = GetBreakawayGameState();
+		const UBwayRoundManagementComponent* Rounds = GS ? GS->GetRoundManagement() : nullptr;
+		const EBwayMatchPhase Phase = Rounds ? Rounds->GetCurrentMatchPhase() : EBwayMatchPhase::None;
+		ABwayPlayerState* PS = NewPlayer->GetPlayerState<ABwayPlayerState>();
+		const bool bMatchStarted = Phase == EBwayMatchPhase::Warmup || Phase == EBwayMatchPhase::Playing || Phase == EBwayMatchPhase::PostRound;
+		if (bMatchStarted && PS && (!PS->GetSelectedHeroId().IsValid() || !PS->IsHeroLocked())
+			&& !UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this)
+			&& !UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingGameMode(this))
+		{
+			PlayersAwaitingLateJoinHeroSelection.Add(NewPlayer);
+		}
+	}
+
 	Super::PostLogin(NewPlayer);
 
 	if (!NewPlayer)
@@ -116,10 +135,26 @@ void ABreakawayGameMode::PostLogin(APlayerController* NewPlayer)
 		return;
 	}
 
-	// Assign player to a team
-	AssignPlayerToTeam(NewPlayer);
-
-	TryApplyHeroUrlOptionAtLogin(NewPlayer);
+	if (PlayersAwaitingLateJoinHeroSelection.Contains(NewPlayer))
+	{
+		ABwayGameState* GS = GetBreakawayGameState();
+		ABwayPlayerController* PC = Cast<ABwayPlayerController>(NewPlayer);
+		if (GS && GS->HeroSelectionManager && GS->HeroSelectionPhaseComponent && PC
+			&& !GS->HeroSelectionPhaseComponent->HeroSelectionWidgetClass.IsNull())
+		{
+			GS->HeroSelectionManager->RegisterPlayer(NewPlayer->PlayerState);
+			GS->HeroSelectionManager->OnPlayerHeroLocked.AddUniqueDynamic(this, &ThisClass::HandleLateJoinHeroLocked);
+			PC->Client_ShowHeroSelection(GS->HeroSelectionPhaseComponent->HeroSelectionWidgetClass);
+			UE_LOG(LogBreakawayGame, Log, TEXT("LateJoinHeroSelection: awaiting choice for player=%d pawn=%s phase=%s"),
+				NewPlayer->PlayerState->GetPlayerId(), *GetNameSafe(NewPlayer->GetPawn()),
+				*UEnum::GetValueAsString(GS->GetRoundManagement()->GetCurrentMatchPhase()));
+		}
+		else
+		{
+			UE_LOG(LogBreakawayGame, Error, TEXT("LateJoinHeroSelection: missing selection dependencies for %s; pawn remains gated"), *GetNameSafe(NewPlayer));
+		}
+		return;
+	}
 
 	if (UBwayHeroSelectionFlowLibrary::ShouldForceHumanoidGameMode(this))
 	{
@@ -190,6 +225,7 @@ void ABreakawayGameMode::HandleStartingNewPlayer_Implementation(APlayerControlle
 
 void ABreakawayGameMode::Logout(AController* Exiting)
 {
+	PlayersAwaitingLateJoinHeroSelection.Remove(Exiting);
 	if (APlayerController* PC = Cast<APlayerController>(Exiting))
 	{
 		ABwayGameState* BwayGS = GetBreakawayGameState();
@@ -582,6 +618,11 @@ bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AControl
 		return false;
 	}
 
+	if (PlayersAwaitingLateJoinHeroSelection.Contains(Controller))
+	{
+		return true;
+	}
+
 	if (UBwayHeroSelectionFlowLibrary::ShouldSkipHeroSelectionGameMode(this))
 	{
 		return false;
@@ -595,6 +636,37 @@ bool ABreakawayGameMode::ShouldDeferPlayerRestartForHeroSelection(const AControl
 	const ABwayGameState* BwayGS = GetBreakawayGameState();
 	const UBwayHeroSelectionPhaseComponent* HeroSelectionPhase = BwayGS ? BwayGS->HeroSelectionPhaseComponent : nullptr;
 	return HeroSelectionPhase && HeroSelectionPhase->ShouldBlockPlayerSpawning();
+}
+
+void ABreakawayGameMode::HandleLateJoinHeroLocked(APlayerState* PlayerState, FPrimaryAssetId HeroId)
+{
+	ABwayPlayerState* PS = Cast<ABwayPlayerState>(PlayerState);
+	ABwayPlayerController* PC = PS ? Cast<ABwayPlayerController>(PS->GetOwner()) : nullptr;
+	if (!HasAuthority() || !PC || !PlayersAwaitingLateJoinHeroSelection.Contains(PC)
+		|| !PS->IsHeroLocked() || PS->GetSelectedHeroId() != HeroId || !UBwayHeroRegistry::GetHeroDataById(HeroId))
+	{
+		return;
+	}
+
+	// The manager is iterating its selection array during this delegate. Defer
+	// spawning until that update finishes, and do not retain a disconnected player.
+	const TWeakObjectPtr<ABwayPlayerController> WeakPC(PC);
+	GetWorldTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this, WeakPC]()
+	{
+		ABwayPlayerController* Player = WeakPC.Get();
+		if (!Player || !PlayersAwaitingLateJoinHeroSelection.Contains(Player)) return;
+		PlayersAwaitingLateJoinHeroSelection.Remove(Player);
+		const ABwayGameState* GS = GetBreakawayGameState();
+		const UBwayRoundManagementComponent* Rounds = GS ? GS->GetRoundManagement() : nullptr;
+		if (Rounds && Rounds->GetCurrentMatchPhase() != EBwayMatchPhase::PostMatch)
+		{
+			RestartPlayer(Player);
+		}
+		Player->Client_HideHeroSelection();
+		UE_LOG(LogBreakawayGame, Log, TEXT("LateJoinHeroSelection: completed player=%d hero=%s pawn=%s"),
+			Player->PlayerState->GetPlayerId(),
+			*Player->GetPlayerState<ABwayPlayerState>()->GetSelectedHeroId().ToString(), *GetNameSafe(Player->GetPawn()));
+	}));
 }
 
 bool ABreakawayGameMode::ShouldDeferPlayerRestartForMatchFlow(const AController* Controller) const
