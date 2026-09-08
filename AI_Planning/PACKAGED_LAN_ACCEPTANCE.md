@@ -243,3 +243,19 @@ After a fresh restart, a four-world PIE match temporarily set to one point ended
 8. Repeat the gameplay and transition checks on DevMap. Run a clean second-PC LAN test with required runtimes and firewall configuration, and record startup/dependency failures separately from gameplay failures.
 
 All items remain open until backed by logs and visible behavior from the packaged candidate. Native probes may supplement gameplay but do not prove physical input or complete frontend navigation. Two same-process PIE worlds do not satisfy these gates.
+
+## Hero-card visual-state repair (September 7, 2026)
+
+The current source editor confirms `CommonButtonAcceptKeyHandling=TriggerClick` and focusable hero cards. The keyboard failure therefore remains unresolved by the earlier settings change alone. The Windows Security prompt still blocks physical UI verification, including screenshots of the PIE window.
+
+Inspection found a separate, concrete defect in `WBP_BW_HeroSelect_Button.UpdateVisualState`: all three `SetVisibility` calls had unconnected targets. They changed the entire card instead of its highlight, lock icon, and unavailable overlay. A runtime fixture reproduced an unavailable card becoming hidden. The unavailable indicator also used the availability condition in the wrong direction.
+
+The graph now targets `Border_Highlight`, `LockedIcon`, and `Overlay_Unavailable` explicitly. Decorative indicators use `HitTestInvisible` when shown. An unavailable card stays present but disabled, and its overlay becomes visible. State updates preserve the parent card's visibility.
+
+The Blueprint compiled. A synthetic local-widget check passed all eight combinations of selected, locked, and available, with both visible and collapsed parents (16 cases). It checks each child's visibility, interaction availability, and unchanged parent visibility. Evidence: `Saved/verify_hero_card_visual_state.py`, `Saved/Logs/codex-hero-card-state-20260907.json`, and the `CARD_BEFORE` / `CARD_VERIFIED` records in `Saved/Logs/codex-selection-focus-20260907.log`.
+
+That initial diagnostic log also contains tooling errors and PIE cleanup ensures caused by retained Python references. The reference chains identify `FPyReferenceCollector` retaining the diagnostic world, manager, and widgets. Those references were cleared, unsaved-package checks were empty, and the editor exited normally before a cold verification run. The fixture uses function-local references to prevent recurrence (BF-050).
+
+Cold verification passed all 16 cases again at September 8, 03:23:10 UTC (September 7 local time). `Saved/Logs/codex-hero-card-cold-20260907.log` records the saved asset being loaded in a new editor process and the fixture result. PIE stopped at 03:23:16 UTC. The cold run contains no Blueprint runtime errors, Accessed None, ensure failures, fatal errors, or retained-world cleanup messages through PIE teardown. The editor remains open with PIE stopped.
+
+This repair does not establish that physical keyboard acceptance is fixed. Gamepad input, visible styling, focus retention through live roster refreshes, and packaged behavior remain open. Candidate `LAN-20260907-01` predates this Blueprint change.

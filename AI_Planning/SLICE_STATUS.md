@@ -10,6 +10,7 @@ Compact restart point for the next active implementation turn. Detailed evidence
 | Packaged late join + round reset | Passed | Candidate `LAN-20260906-07` |
 | Six-slot gameplay HUD | Passed | Candidate `LAN-20260906-08` screenshot |
 | Duplicate frontend HUD entries | In new package | Interactive visual verification pending |
+| Hero-card visual-state targets | Fixed in source; 16 synthetic checks passed after cold restart | Child highlight, lock, and unavailable indicators are independent; physical input and packaged verification remain open |
 | Packaged bot pickup / scoring / match completion | Passed offline headless | New package scored 3 natural goals across round resets; interactive LAN still pending |
 | Packaged frontend return / second match | Pending | Validate remote input and rehosting |
 | Keyboard + gamepad acceptance | Pending | Run once packaged loop is stable |
@@ -19,7 +20,7 @@ Compact restart point for the next active implementation turn. Detailed evidence
 
 **Profiles:** `ShortMatch` for direct DevMap, `FrontendLAN` for host startup screening. Repeatable settings do not guarantee a fixed match duration.
 
-**Next action when resumed:** recheck the reported new-package firewall prompt and running processes; the last run required user handling after tool auto-review rejected inspection. Then verify the bot fix through the interactive LAN playlist and continue multiplayer acceptance. The editor was closed at that checkpoint.
+**Next action when resumed:** recheck the reported new-package firewall prompt and running processes; the last observation still required user handling after tool auto-review rejected inspection. Then verify keyboard selection in the source editor and the bot fix through the packaged LAN playlist. The editor was restarted for hero-card verification; candidate `LAN-20260907-01` predates that asset fix.
 
 **Evidence:** `Saved/Logs/codex-packaged01-bots-headless-20260907.log` proves 3–0 PostMatch offline; `Saved/Logs/codex-packaged-LAN-20260907-01-*` identifies the artifact. Full gate scope: [packaged acceptance](./PACKAGED_LAN_ACCEPTANCE.md).
 
