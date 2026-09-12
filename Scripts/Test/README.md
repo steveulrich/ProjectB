@@ -4,7 +4,7 @@ Fast, scriptable verification for Cursor agents and CI. Tiers are ordered by cos
 
 | Tier | Script | When | Needs |
 |------|--------|------|-------|
-| **1** | `Tier1-CompileGate.ps1` | After any C++ edit | Engine source or install |
+| **1** | `Tier1-CompileGate.ps1` | After a coherent set of C++ changes | Engine source or install |
 | **2** | `Tier2-StandaloneSmoke.ps1` *(planned)* | Match-flow / packaging regressions | Packaged `LyraGame.exe` |
 | **3** | `Tier3-CQTest.ps1` *(planned)* | Core-loop step checklists (11-1, …) | Editor build + `BreakawayCoreTests` |
 | **4** | CI workflows *(planned)* | PR / nightly | Build agents |
@@ -23,7 +23,7 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 
 Exit code **0** = pass. Non-zero = fail; read the log path printed by the script.
 
-Agents may run the build, fix compiler errors, and restart the project editor. Preserve unsaved work and close the editor gracefully when a full rebuild is required. Wait for existing build processes; do not start duplicates. After success, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute `.uproject` path, verify bridge readiness, and run the relevant PIE checks. Follow sandbox permissions and report build results separately from gameplay results.
+Agents may run the build, fix compiler errors, and restart the project editor. Preserve unsaved work and close the editor gracefully when a full rebuild is required. Wait for existing build processes; do not start duplicates. When affected behavior or the selected gate requires editor/PIE checks after success, reuse a ready editor with the current binaries or launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute `.uproject` path, verify bridge readiness, and run the relevant PIE checks. Follow sandbox permissions and report build results separately from gameplay results.
 
 ## Editor Python and multiplayer evidence
 
@@ -78,7 +78,22 @@ Preflight reports the current checkout; it does not establish which source produ
 
 The summary screens startup logs only. Every supplied log must exist, be nonempty, contain that profile's required patterns, and contain no forbidden patterns. Use `FrontendLAN` for a host that travels through the LAN playlist, or `ShortMatch` for direct DevMap startup. Client logs need their own relevant checks. A passing screen does not prove match completion, physical input, network transport, clean exit, or that a log belongs to the candidate.
 
-On resumption: read the ledger, verify current HEAD/status, choose one pending gate, then read only its code and evidence. Batch independent reads, keep full logs on disk, and print short results plus the first causal error. Retest passed gates when a relevant change invalidates their evidence. Update the ledger and candidate evidence after each verified result. A short match uses repeatable settings, but natural scoring and duration remain variable.
+On resuming active vertical-slice implementation: read the ledger, verify current HEAD/status, choose one pending gate at a time, then read only its code and evidence. Continue to the next authorized gate after a pass or recorded blocker while the goal remains active. Batch independent reads, keep full logs on disk, and print short results plus the first causal error. Retest passed gates when a relevant change invalidates their evidence. Update the ledger and candidate evidence after each verified result. A short match uses repeatable settings, but natural scoring and duration remain variable.
+
+### Compact gate briefs
+
+Use one selected evidence inventory after a gate starts. It records the current revision, dirty-file count, selected JSON summaries, whole-file log error counts, and project Unreal processes while keeping full evidence on disk:
+
+```powershell
+.\Get-GateBrief.ps1 -Gate marker-ui `
+  -EvidenceDirectory ..\..\Saved\Logs\marker-ui-20260908 `
+  -EvidenceFile verification-brief.json,screen-widget-runtime.json,ui-ownership.json `
+  -LogFile Saved/Logs/codex-marker-ui-fixed-editor-20260908.log
+```
+
+The console result is intentionally compact and the same record is written to `gate-brief.json`. It is an inventory, not a pass. Do not include large JSON samples, screenshots, or full logs in the conversation unless the compact result identifies a failure that needs them. Use a new gate directory or a changed hypothesis before rerunning; do not overwrite a baseline or repeat an unchanged failed probe.
+
+If `hiddenEditorCount` is greater than zero, stop the gate preflight. Resolve and close the exact hidden editor normally before launching another instance; an untargetable process cannot prove UI or physical-input behavior.
 
 Use this order for each acceptance gate:
 

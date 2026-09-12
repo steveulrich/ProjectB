@@ -11,7 +11,7 @@ Tier 4  CI                     scheduled   PR compile + nightly smoke + step tes
 
 Scripts live in `Scripts/Test/`. Config: `Scripts/Test/BwayTestConfig.psd1`.
 
-**Resume workflow:** Read `AI_Planning/SLICE_STATUS.md`, verify current Git status/HEAD, then inspect evidence for one pending gate. `Package-Preflight.ps1` resolves paths and reports the worktree; `-RequireCandidate` additionally checks the staged executable. `New-AcceptanceSummary.ps1` screens each supplied startup log and requires an explicit candidate source revision. A passing summary is not multiplayer or match-completion evidence. See `Scripts/Test/README.md` for the command contract and output limits.
+**Resume workflow (active vertical-slice implementation):** Read `AI_Planning/SLICE_STATUS.md`, verify current Git status/HEAD, then inspect evidence for one pending gate. `Package-Preflight.ps1` resolves paths and reports the worktree; `-RequireCandidate` additionally checks the staged executable. `New-AcceptanceSummary.ps1` screens each supplied startup log and requires an explicit candidate source revision. A passing summary is not multiplayer or match-completion evidence. See `Scripts/Test/README.md` for the command contract and output limits.
 
 ---
 
@@ -36,7 +36,7 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 
 Before building, inspect running editor/build processes. Preserve unsaved work, stop PIE, and close this project's editor gracefully when a full rebuild/restart is needed, especially for reflected header/class changes. Do not force-kill editors or discard unsaved changes. Wait for an existing build instead of starting duplicates. Use asynchronous process handles and report meaningful progress during long builds.
 
-After a successful build, launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute ProjectB.uproject path and verify editor/bridge readiness before testing. The MCP launcher may not discover a source-built engine; use the engine resolver and launch the verified executable directly when needed. Respect sandbox escalation requirements. Ask the user only for missing decisions, unsaved-work conflicts, or permissions the available tools cannot satisfy.
+When the changed behavior or selected gate requires editor/PIE checks after a successful build, reuse a ready editor with the current binaries or launch the resolved engine's `Engine/Binaries/Win64/UnrealEditor.exe` with the absolute ProjectB.uproject path and verify editor/bridge readiness before testing. The MCP launcher may not discover a source-built engine; use the engine resolver and launch the verified executable directly when needed. Respect sandbox escalation requirements. Ask the user only for missing decisions, unsaved-work conflicts, or permissions the available tools cannot satisfy.
 
 **Unreal permission prompts (user authorization, September 6, 2026):** Agents may handle security permission requests directly related to this project's verified Unreal engine and build executables, including Windows Firewall prompts needed for LAN testing. Verify the requesting executable and use the normal permission dialog with the narrowest offered network scope sufficient for the test. This authorization persists across candidate builds. It does not authorize disabling security software, adding broad exclusions, changing unrelated permissions, or handling credentials. The installed computer-use guidance was updated with this exception; this project note preserves the user's authorization if a plugin update replaces its cached documentation.
 
@@ -173,8 +173,8 @@ Self-hosted Windows runners are typical for UE CI (long compile, large disk).
 
 | Change type | Suggested verification |
 |-------------|----------------------|
-| C++ only (BreakawayCoreRuntime, LyraGame) | Agent compile gate + editor/PIE smoke |
-| `.ini` asset manager / cook paths | Recompile + **2** when package exists |
+| C++ only (BreakawayCoreRuntime, LyraGame) | Compile the coherent change set + relevant editor/PIE or multiplayer checks for affected behavior |
+| `.ini` asset manager / cook paths | Recook/package and run **2** for affected cook behavior; recompile only if C++ or build inputs also changed |
 | Experience / match-flow assets | PIE + optional **3** (`11-1` filter) |
 | Core-loop sub-step claim (“11-2 passes”) | PIE checklist + optional **3** (that step’s filter) |
 | Pre-release / standalone validation | **2** + relevant **3** |

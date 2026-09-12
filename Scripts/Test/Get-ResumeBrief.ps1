@@ -46,7 +46,9 @@ if ($Candidate) {
 $processes = @(Get-Process | Where-Object { $_.ProcessName -in @('UnrealEditor', 'UnrealEditor-Cmd', 'LyraGame', 'UnrealBuildTool', 'AutomationTool', 'dotnet') } | ForEach-Object {
     $executablePath = $null
     try { $executablePath = $_.Path } catch { }
-    [ordered]@{ id = $_.Id; name = $_.ProcessName; executable = $executablePath }
+    $mainWindowHandle = 0L
+    try { $mainWindowHandle = $_.MainWindowHandle.ToInt64() } catch { }
+    [ordered]@{ id = $_.Id; name = $_.ProcessName; executable = $executablePath; mainWindowHandle = $mainWindowHandle; mainWindowTitle = $_.MainWindowTitle }
 })
 $ledgerLines = @($ledger -split '\r?\n').Count
 if ($ledgerLines -gt 100) { $warnings += 'Condense the ledger below about 100 lines; link detailed history.' }
@@ -63,6 +65,7 @@ $result = [ordered]@{
     dirtyFileCount = $dirty.Count
     candidate = $candidateInfo
     processCount = $processes.Count
+    hiddenEditorCount = @($processes | Where-Object { $_.name -eq 'UnrealEditor' -and $_.mainWindowHandle -eq 0 }).Count
     processes = $processes
     processScope = 'Known Unreal process names and possible dotnet build hosts; verify ownership and unsaved assets before acting.'
     nextActionFromLedger = $nextAction -join ''

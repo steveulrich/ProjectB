@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google Dev Docs Style"
+  short_description: "Write clear technical docs per Google style"
+  default_prompt: "Use $projectb-google-dev-docs-style to draft or revise this developer documentation."
