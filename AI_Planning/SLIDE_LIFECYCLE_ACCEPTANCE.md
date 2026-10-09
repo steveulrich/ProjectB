@@ -589,3 +589,31 @@ physical feel, or final-public-alpha parity. Keep the 15 cm support criterion an
 barrier unchanged until the case2 ramp transition is reviewed against the ground-versus-air policy.
 The editor exited normally, the closed-editor PIE settings were restored, and the generated
 ShooterCTF module metadata was returned to its tracked BuildId (`editor16-cleanup.json`).
+
+### Diagnostic-only slide-jump airborne classification and route-clearance retry
+
+Compile18 rebuilt the current source with empty UBT `failureSignals`, and `automation13-slide.json`
+passed all 20 focused Slide tests with zero test errors or warnings. The source change remains
+development-only: it adds a separate `slideJumpAirborne` classification for the production
+slide-jump interval (`IsSlideJumping`, `MOVE_Falling`, no active slide ability/tag, no penetration,
+and inside the authored route). Held-slide bounded-air validation remains strict and unchanged;
+normal trajectory acceptance and the 15 cm support criterion still cannot consume diagnostic rows.
+
+The four-peer retry used
+`bway.Test.SlideGroundAirDiagnosticPIE ground-air-diag-20261009-16` at measured 30 Hz with 100 ms
+packet lag. Before dispatch, the nonparticipant that blocked the authored ramp route was moved to
+an isolated location in all four PIE worlds and restored from
+`route-clearance-backup15.json`; the restore record reports exact position, rotation, velocity,
+and controller-state matches. The retry completed all four cases and all four peers, including
+proxy terminal lifecycle records, cleanup, restoration, and the explicit `passed=0` diagnostic
+barrier. `ground-air-diagnostic16-analysis-retry2.json` extracts 4,968 events: 728
+contact-near-ground samples, 219 `slideJumpAirborne` samples (all counted as air), zero held-slide
+bounded-air samples, and 887 invalid-state samples. The helper controls pass 11/11 in
+`ground-air-diagnostic-controls18.json`.
+
+This retry repairs the observer's false classification of legitimate slide-jump flight; it does
+not approve the ramp transition for production movement. The diagnostic remains nonaccepting, and
+the remaining proof gaps are physical input/feel, independent packaged transport, second-PC LAN,
+and final-public-alpha parity. The editor closed normally, PIE settings were restored, no content
+or maps were dirty, and the temporary ShooterCTF generated-module BuildId alignment used to load
+the editor was restored exactly to the tracked manifest.

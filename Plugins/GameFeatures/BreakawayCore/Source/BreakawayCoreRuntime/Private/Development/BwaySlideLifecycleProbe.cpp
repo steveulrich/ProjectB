@@ -233,7 +233,7 @@ struct FBwaySlideLifecycleProbeState
 	double GroundAirStartedAt = 0, GroundAirLastGroundTimestamp = -1, GroundAirReturnAt = 0;
 	FVector GroundAirLastGroundPosition = FVector::ZeroVector;
 	double GroundAirGroundTravel = 0;
-	int32 GroundAirCoverageMask = 0, GroundAirGroundSamples = 0, GroundAirAirSamples = 0, GroundAirInvalidSamples = 0;
+	int32 GroundAirCoverageMask = 0, GroundAirGroundSamples = 0, GroundAirAirSamples = 0, GroundAirSlideJumpAirSamples = 0, GroundAirInvalidSamples = 0;
 	bool bGroundAirSawAir = false, bGroundAirSawReturn = false, bGroundAirGroundContiguous = false, bGroundAirObservationEnded = false;
 };
 #else
@@ -553,7 +553,7 @@ void ABwaySlideLifecycleProbe::Observe()
 				State->bTerminalIssued = false; State->bAirborne = false; State->bLanded = false;
 				State->GroundAirExpectedComponent.Reset(); State->GroundAirStartedAt = 0; State->GroundAirLastGroundTimestamp = -1;
 				State->GroundAirReturnAt = 0; State->GroundAirLastGroundPosition = FVector::ZeroVector; State->GroundAirGroundTravel = 0;
-				State->GroundAirCoverageMask = 0; State->GroundAirGroundSamples = 0; State->GroundAirAirSamples = 0; State->GroundAirInvalidSamples = 0;
+				State->GroundAirCoverageMask = 0; State->GroundAirGroundSamples = 0; State->GroundAirAirSamples = 0; State->GroundAirSlideJumpAirSamples = 0; State->GroundAirInvalidSamples = 0;
 				State->bGroundAirSawAir = false; State->bGroundAirSawReturn = false; State->bGroundAirGroundContiguous = false; State->bGroundAirObservationEnded = false;
 				TrajectoryRecord(TEXT("Tuning"), FString::Printf(TEXT("\"phase\":\"before\",\"tuning\":\"%s\",\"unchanged\":%d"), *SlideTuning(State->Pawn->GetBwayCharacterMovement()), State->AuthoredTuning == SlideTuning(State->Pawn->GetBwayCharacterMovement())));
 			}
@@ -811,18 +811,32 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 		State->GroundAirExpectedComponent = FloorComponent;
 	const bool bGroundAirFloorValid = Floor.bBlockingHit && Floor.HitResult.IsValidBlockingHit() && Floor.HitResult.GetComponent()
 		&& FMath::IsFinite(Floor.GetDistanceToFloor());
-	const bool bGroundAirStateActive = Move->IsSliding() && Active(State->ASC.Get(), State->Slide)
+	// A slide jump intentionally ends the GAS slide state and enters MOVE_Falling,
+	// but the production movement component preserves IsSlideJumping until landing.
+	// Keep that valid airborne interval separate from held-slide support so the
+	// diagnostic does not misclassify a legitimate jump as invalid state. This is
+	// observer classification only; it does not alter movement or acceptance.
+	const bool bGroundAirHeldSlide = Move->IsSliding() && Active(State->ASC.Get(), State->Slide)
 		&& State->ASC->GetTagCount(State->SlidingTag) > 0;
+	const bool bGroundAirSlideJump = Move->IsSlideJumping() && Move->MovementMode == MOVE_Falling;
+	const bool bGroundAirStateActive = bGroundAirHeldSlide || bGroundAirSlideJump;
 	const bool bGroundAirComponentMatches = bGroundAirFloorValid && !State->GroundAirExpectedComponent.IsEmpty()
 		&& FloorComponent == State->GroundAirExpectedComponent;
 	const bool bGroundAirContactNearGround = bGroundAirFloorValid && !bPenetrating
 		&& Floor.GetDistanceToFloor() <= UCharacterMovementComponent::MAX_FLOOR_DIST;
 	const bool bGroundAirGroundCoverage = Frame.GroundAirDiagnostic && bGroundAirContactNearGround && bCustomSupport
-		&& bGroundAirComponentMatches && bWithinRoute && bGroundAirStateActive;
+		&& bGroundAirComponentMatches && bWithinRoute && bGroundAirHeldSlide;
+	// Preserve the original bounded-separated classification for a held slide
+	// whose floor is still valid but outside the walkable support distance. A
+	// held slide that loses real support remains invalid. Slide-jump flight has a
+	// separate diagnostic class below because it intentionally has no active GAS
+	// slide state or floor hit while the production movement component is falling.
 	const bool bGroundAirBoundedAir = Frame.GroundAirDiagnostic && bGroundAirFloorValid && !bGroundAirContactNearGround
-		&& bGroundAirComponentMatches && !bPenetrating && bWithinRoute && bGroundAirStateActive;
-	const bool bGroundAirInvalid = Frame.GroundAirDiagnostic && (!bGroundAirFloorValid || !bGroundAirComponentMatches
-		|| bPenetrating || !bWithinRoute || !bGroundAirStateActive);
+		&& bGroundAirComponentMatches && !bPenetrating && bWithinRoute && bGroundAirHeldSlide;
+	const bool bGroundAirSlideJumpAirborne = Frame.GroundAirDiagnostic && ((Frame.Case % 2) == 1)
+		&& bGroundAirSlideJump && !bPenetrating && bWithinRoute;
+	const bool bGroundAirInvalid = Frame.GroundAirDiagnostic && !bGroundAirGroundCoverage && !bGroundAirBoundedAir
+		&& !bGroundAirSlideJumpAirborne;
 	if (bAdvanced)
 	{
 		State->LastMoveTimestamp = Timestamp;
@@ -892,7 +906,12 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 				State->bGroundAirGroundContiguous = false;
 				State->GroundAirLastGroundTimestamp = -1;
 			}
-			if (bGroundAirBoundedAir) { State->bGroundAirSawAir = true; ++State->GroundAirAirSamples; }
+			if (bGroundAirBoundedAir || bGroundAirSlideJumpAirborne)
+			{
+				State->bGroundAirSawAir = true;
+				++State->GroundAirAirSamples;
+				if (bGroundAirSlideJumpAirborne) ++State->GroundAirSlideJumpAirSamples;
+			}
 			if (bGroundAirGroundCoverage && State->bGroundAirSawAir && !State->bGroundAirSawReturn)
 			{
 				State->bGroundAirSawReturn = true; State->GroundAirReturnAt = Now;
@@ -928,12 +947,12 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 	FString GroundAirFields;
 	if (Frame.GroundAirDiagnostic)
 	{
-		const TCHAR* Classification = bGroundAirInvalid ? TEXT("invalidState") : bGroundAirContactNearGround ? TEXT("contactNearGround") : TEXT("boundedSeparatedTraversal");
-		GroundAirFields = FString::Printf(TEXT(",\"groundAirClass\":\"%s\",\"contactNearGround\":%d,\"boundedSeparatedTraversal\":%d,\"invalidState\":%d,\"expectedComponent\":\"%s\",\"componentMatches\":%d,\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d"),
-			Classification, bGroundAirGroundCoverage, bGroundAirBoundedAir, bGroundAirInvalid,
-			*State->GroundAirExpectedComponent.ReplaceCharWithEscapedChar(), bGroundAirComponentMatches,
+		const TCHAR* Classification = bGroundAirSlideJumpAirborne ? TEXT("slideJumpAirborne") : bGroundAirInvalid ? TEXT("invalidState") : bGroundAirContactNearGround ? TEXT("contactNearGround") : TEXT("boundedSeparatedTraversal");
+		GroundAirFields = FString::Printf(TEXT(",\"groundAirClass\":\"%s\",\"contactNearGround\":%d,\"boundedSeparatedTraversal\":%d,\"slideJumpAirborne\":%d,\"invalidState\":%d,\"expectedComponent\":\"%s\",\"componentMatches\":%d,\"heldSlideState\":%d,\"airborneSlideJump\":%d,\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"slideJumpAirSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d"),
+			Classification, bGroundAirGroundCoverage, bGroundAirBoundedAir, bGroundAirSlideJumpAirborne, bGroundAirInvalid,
+			*State->GroundAirExpectedComponent.ReplaceCharWithEscapedChar(), bGroundAirComponentMatches, bGroundAirHeldSlide, bGroundAirSlideJump,
 			State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel,
-			State->GroundAirAirSamples, State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn);
+			State->GroundAirAirSamples, State->GroundAirSlideJumpAirSamples, State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn);
 	}
 	TrajectoryRecord(TEXT("Sample"), FString::Printf(TEXT("\"ts\":%.6f,\"dt\":%.7f,\"replay\":%d,\"timestampValid\":%d,\"sampleIndex\":%d,\"moveTimestampAdvanced\":%d,\"slideSeconds\":%.6f,\"position\":%s,\"velocity\":%s,\"floorNormal\":%s,\"floorComponent\":\"%s\",\"geometryPhase\":\"%s\",\"mode\":%d,\"custom\":%d,\"sliding\":%d,\"active\":%d,\"tagCount\":%d,\"slideJump\":%d,\"supported\":%d,\"walkable\":%d,\"floorBlocking\":%d,\"floorDistance\":%.6f,\"customSupport\":%d,\"penetrating\":%d,\"capsuleOverlap\":%d,\"frameId\":%llu,\"frameDt\":%.7f%s%s"),
 		Timestamp, DeltaSeconds, bReplay, Timestamp > 0.f && !bReplay, State->TrajectorySamples, bAdvanced, State->SlideSeconds,
@@ -1143,8 +1162,8 @@ void ABwaySlideLifecycleProbe::ObserveTrajectory()
 		if (Frame.GroundAirDiagnostic && !State->bGroundAirObservationEnded)
 		{
 			State->bGroundAirObservationEnded = true;
-			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d,\"terminalBoundary\":1"),
-				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples,
+			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"slideJumpAirSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d,\"terminalBoundary\":1"),
+				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples, State->GroundAirSlideJumpAirSamples,
 				State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn,
 				Frame.Case >= 2 && State->GroundAirCoverageMask != 7));
 			if (bExecutor && State->Entries > 0) Report(true, TEXT("ground-air-observation-terminal-boundary"));
@@ -1274,8 +1293,8 @@ void ABwaySlideLifecycleProbe::ObserveGroundAirDiagnostic()
 		if (!State->bGroundAirObservationEnded && (bExecutorObservationComplete || bProxyObservationComplete || bRampObservationComplete))
 		{
 			State->bGroundAirObservationEnded = true;
-			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d"),
-				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples,
+			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"slideJumpAirSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d"),
+				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples, State->GroundAirSlideJumpAirSamples,
 				State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn,
 				Frame.Case >= 2 && State->GroundAirCoverageMask != 7));
 			if (bExecutor && State->Entries > 0) Report(true, TEXT("ground-air-observation-complete"));

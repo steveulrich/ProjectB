@@ -69,6 +69,24 @@ is `travel-brief.json`. This expands timing coverage and leaves the original edi
 unreproduced; it does not prove that the original failure is fixed. Do not repeat the 15 FPS
 condition unchanged.
 
+## Current source/contract audit (October 9, 2026)
+
+The current source audit found no project-side travel or NetGUID override that could safely be
+changed in response to the historical error. `ABwayPlayerState` only extends initialization and
+property copying; `BwayPlayerController`, `ABreakawayGameMode`, and `ABwayGameState` do not replace
+the engine's seamless-travel actor-list or package-map lifecycle. The original lines therefore
+remain consistent with an engine package-map/object-lifetime race during client-finished travel,
+not a proven `CopyProperties`, ASC, or gameplay-state defect. The current source keeps the
+production `?SeamlessTravel` selection transition unchanged.
+
+The narrowest new runtime hypothesis, if another check becomes necessary, is to seed replicated
+PlayerState state (preferably `UBwayUpgradeComponent` and ASC state) before staging travel and run
+one staging-to-Dorado transition with the corrected `bway.Test.TravelGuidWatch` observer on every
+peer. That changes object lifetime/state pressure and is distinct from the already-covered
+default, 200 ms, 1 FPS, and packaged conditions. Until that condition is authorized by a new
+recurrence or evidence, retain the historical error as an unresolved proof gap and do not repeat
+an unchanged travel lifecycle.
+
 ## Retry condition and independent work
 
 Do not repeat these three conditions unchanged or enable broad GUID-remapping settings to silence the error. Use the corrected observer if a recurrence or new timing/object-lifetime evidence supplies a distinct hypothesis. The original error remains a completion gap.

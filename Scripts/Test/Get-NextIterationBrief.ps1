@@ -188,7 +188,12 @@ function Invoke-JsonScript {
         $previousErrorAction = $ErrorActionPreference
         $ErrorActionPreference = 'Continue'
         try {
-            & powershell.exe -NoProfile -File $ScriptPath @Arguments 1> $stdoutPath 2> $stderrPath
+            # The resume helper is a project-owned unsigned script.  A nested
+            # Windows PowerShell process can apply RemoteSigned to the project
+            # drive even when the outer process is already executing it, so
+            # invoke this known local helper with the same explicit policy
+            # used by the gate's direct fallback.
+            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ScriptPath @Arguments 1> $stdoutPath 2> $stderrPath
         } finally {
             $ErrorActionPreference = $previousErrorAction
         }
