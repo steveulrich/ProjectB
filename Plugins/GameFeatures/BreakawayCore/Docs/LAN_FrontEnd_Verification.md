@@ -1,6 +1,142 @@
 # LAN front-end verification
 
-September 5, 2026. Configuration checks passed; separate-process discovery and full front-end flow remain pending.
+Updated September 23, 2026. Candidate `LAN-20260923-05` passes the packaged four-player
+browser, connected return, and rehost gate. Candidate `LAN-20260923-06` also passes full
+client disconnect and fresh browser rediscovery/rejoin. Both use confirmed 200 ms packet
+lag. Physical navigation, visual polish, and second-PC LAN remain separate gaps.
+
+## Disconnected rediscovery
+
+Candidate23-06 extends the development fixture through each client's production
+`ReturnToMainMenu` path. All three clients recover an active standalone frontend,
+open new browser searches, and join through displayed entries. Their initial advertised
+session is `7F609A824BD467A2C76B039ED7E5C9F9`; after rehosting, every client discovers
+`B115206F41CA7035DF508FBD5DAB7063`. Weak search references and distinct session IDs
+prevent a cached first-session result from passing the rediscovery assertion.
+
+The run passes six browser discoveries/entry joins, three standalone recoveries,
+11 restored missing-PlayerState layout checks, and 80 roster rows across both matches
+and the connected frontend. All three clients exit 0 after the second eight-player
+match; owned host teardown is separate. The first match uses the fixture's production
+`EndRound` call, so this proves match/session flow rather than natural human combat.
+There are no runtime errors. Warnings remain: 359 host and 41 per client.
+
+All 29 copied-evidence controls are rejected, including missing standalone recovery,
+stale searches, reused session identity, missing second joins, incorrect teams, lost host
+rules, missing latency, and bad artifact identity. Evidence is under
+`Saved/Logs/lan-reconnect-20260923/`: `runtime06-lag-brief.json`,
+`packaged-LAN-20260923-06-browser-lag-result.json`,
+`verifier-controls-LAN-20260923-06-lag.json`, and the frozen candidate06 contract.
+All 131 staged hashes match; the executable SHA-256 is
+`26708A002FA5AF701558F629FE25A58B2E8B25A00F2188BBF0DC4C6D1E7433DD`.
+This gate required one build, one package, and one runtime attempt, with no editor launch.
+
+`Scripts/Test/Run-PackagedLANBrowserProbe.ps1` now parameterizes the existing launcher
+for future connected or rediscovery gates. Its command/path routing, script syntax, and
+existing-result refusal are validated; the accepted run above used the preserved
+candidate-specific runner. Do not treat the shared script's validation-only output as
+new gameplay evidence.
+
+## Current packaged browser gate
+
+The accepted `browser-lag` run starts all four rendered processes on the frontend.
+Three clients use actual advertised playlist entries to join. Both matches have matching
+eight-player rosters: four humans, four bots, two balanced teams, and valid locked heroes.
+All four show eight-column results and return to active menus while retaining the four
+human connections. Rehosting reaches a second playable match. All three clients exit 0;
+the runner separately closes its owned host. The first match reaches results without
+the fixture's optional `EndRound` call; this is not evidence of human combat input.
+
+Eight synchronous missing-PlayerState checks pass at startup and connected return.
+The checker validates each match's carried host rules separately and rejects all 23
+copied-evidence controls. It records 80 roster rows, three discoveries, four final passes,
+and zero errors in all four logs. Warnings remain: 354 host and 41 per client, including
+initialization diagnostics and invalid-listener cleanup warnings that need separate work.
+All 131 staged hashes match the compiled artifact, SHA-256
+`46D0F6E9B3DA4133945EC5D6CEB8461579814FDF0027DD7517D28BE6533DA5F2`.
+
+Evidence is under `Saved/Logs/lan-frontend-20260923/`: `runtime05-lag-brief.json`,
+`packaged-LAN-20260923-05-browser-lag-result.json`,
+`verifier-controls-LAN-20260923-05-lag.json`, and the frozen candidate05 contract.
+The gate used eight builds, five packages, five runtime attempts, one inspection editor,
+and two automation attempts. The latency retry reused the package. Failed attempts and
+the unused candidate04 package are retained with their distinct retry reasons below.
+
+### Attempt history
+
+Candidate `LAN-20260923-01` starts one host and three clients on the actual front-end map.
+Each client pushes `W_SessionBrowserScreen` onto the local menu layer and invokes the
+displayed entry's `JoinSession` event. The inspected widget graphs are preserved in
+`Saved/Logs/lan-frontend-20260923/{browser,entry}-graph.json`.
+
+All three rendered clients discovered the real LAN advertisement, loaded the playlist
+entry, and joined staging. The listings reported capacity eight and decreasing open
+connections. No client used a direct-IP launch. The gate then timed out on its gameplay
+roster predicate; its initial diagnostics did not identify the rejecting field. No full
+roster/return/rehost pass is claimed. The unattended match reached natural 0–3 results
+before the timeout. All owned processes were cleaned up.
+
+The same run exposed lost host settings. The staging URL contained `PointsToWin=1`,
+`RoundDuration=180`, and other requested rules. The absolute destination URL omitted
+them, and gameplay used the defaults: three wins and 90-second rounds.
+`TryTravelToPostHeroSelectionMap` rebuilt only the map, experience, listen, and selection
+flags. The source fix copies an explicit list of host-authored match-rule keys while
+preserving destination overrides and excluding staging, hero-input, and identity options.
+The frontend suite now passes all four tests, including
+`Breakaway.FrontEnd.StagingMatchRules`. Its first run caught full-URL versus option-fragment
+parsing in the new helper; the corrected helper preserves explicit destination rules and
+does not append duplicates. Candidate23-02 confirms gameplay receives one win, 180-second
+rounds, four bots, and the requested phase timing.
+
+Candidate23-02 also identifies the roster timeout: the fixture used Lyra team IDs as if they
+were canonical Breakaway indices. Diagnostics show eight valid, locked heroes with pawns,
+four humans, and four bots. `BwayTeamBridge` intentionally maps indices 0/1 to IDs 1/2.
+The candidate23-03 fixture checks canonical membership, balance, and that mapping on every
+peer. This changes the test, not gameplay team assignment. Complete return/rehost is still
+pending; preserve both failed attempts and their diagnostics.
+
+Candidate23-03 passes the first match's roster and eight-column results on all four
+processes. On connected return, clients 1 and 2 remain on `Try Show Main Screen`;
+only the host and client 3 display the menu and verify the second match. The runner
+fails and cleans up its remaining processes. Keep this failed result in
+`Saved/Logs/lan-frontend-20260923/runtime03-brief.json`.
+
+The primary layout helper used `GetPrimaryPlayerController(false)`, which requires
+the controller's replicated PlayerState even when the local player's root layout
+already exists. The one-shot frontend flow cannot recover from that null lookup.
+The repair resolves the primary local player's layout directly. Candidate23-05
+will test the full flow and explicitly check layout resolution without PlayerState
+at startup and return on each process. That development-only check restores the
+reference synchronously before returning; it does not tick or replicate the change.
+
+Candidate23-04 compiled and packaged successfully but was not launched. Source review
+caught an overly strict regression precondition: the old primary-controller lookup can
+return a remote controller on the listen host. Candidate23-05 checks that the old lookup
+cannot resolve a local layout, whether it returns null or a remote controller. The
+production repair is unchanged. This correction required one additional build and package.
+
+The first candidate23-05 run completed browser joins, both eight-player gameplay
+rosters, eight-column results, all four connected frontend menus, and three normal
+client exits. Its eight missing-PlayerState layout checks passed. The checker correctly
+withheld acceptance because the requested 200 ms latency was not observed. Startup
+`ExecCmds` ran before a network driver existed. The retry uses `-PktLag=200`, which
+`UNetDriver::InitPacketSimulationSettings` reads when each driver initializes; require
+the emitted `LogNet: PktLag set to 200` marker. The same frozen package is reused with
+separate `browser-lag` logs and a result record; no rebuild or recook is needed.
+
+The first editor build for the regression was blocked by the known BF-046 bridge JSON-key
+conversion regression at two FoliageHandlers sites and one LevelHandlers site. Restoring
+explicit string construction made the next build pass. The runtime DLL had already relinked
+during the first build; its freshness record preserves that sequence. No unrelated bridge
+behavior was changed.
+
+Candidate23-01 evidence: `Saved/Logs/lan-frontend-20260923/runtime01-brief.json`,
+`packaged-LAN-20260923-01-browser-result.json`, and the frozen candidate contract.
+Its 131 artifact hashes passed. Cost: one LyraGame build, one package, one read-only
+editor inspection, and one four-process attempt. Candidate23-02 adds roster diagnostics
+and rule preservation; do not repeat the unchanged failed fixture. Physical navigation,
+visual quality, disconnected rediscovery, second-PC LAN, and final end-to-end acceptance
+remain separate requirements.
 
 ## Observed gap and change
 
@@ -79,7 +215,11 @@ The standalone hero scan is now refreshed at UBwayHeroRegistry initialization. C
 
 That run exposed human team index -1 after travel. Team assignment existed in PostLogin, which seamless arrivals bypass. BwayPlayerState now copies its team ID, and HandleStartingNewPlayer registers carried membership before spawn deferrals. AssignControllerToTeam preserves valid carried team IDs. The rebuilt run verified two humans on opposing teams before and after travel, and a replicated roster of eight players with team counts [4,4]. Round 1 progressed naturally to Round 2. Evidence: Saved/Logs/codex-lan-team-travel-host.log and codex-lan-team-travel-client.log. Build: codex-seamless-team-build.log.
 
-The manager asset currently explicitly allows duplicate heroes, despite the earlier definition requiring uniqueness; this remains a parity/configuration reconciliation item. It was not changed in this pass.
+At this historical checkpoint, the manager asset explicitly allowed duplicate heroes. This was
+resolved on September 23: the saved override is false, gameplay availability reads the live
+roster, and bot assignment waits for travelling human teams/heroes. Candidate `LAN-20260923-09`
+passes remote rejection/disconnect checks and two normal-flow gameplay rosters with unique
+heroes per team. See [hero selection acceptance](../../../../AI_Planning/HERO_SELECTION_ACCEPTANCE.md).
 
 The same runtime also exposed a roughly 50-second difference between client local world time and synchronized server time. RoundStartTime is server-authored, but the countdown used local World time. GetRoundTimeRemaining now uses GameState.GetServerWorldTimeSeconds. Verification of the rebuilt timer follows. These runs do not yet establish complete match results/return or packaged four-human LAN acceptance.
 

@@ -1,0 +1,9 @@
+[mcp_servers.ue-mcp]
+command = "npx"
+args = [
+    "ue-mcp",
+    "E:/Unreal Projects/ProjectB/ProjectB.uproject",
+]
+
+[mcp_servers.ue-mcp.tools.project]
+approval_mode = "approve"

@@ -4,7 +4,7 @@
 #include "AbilitySystemGlobals.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
-#include "Buildable/BwayRawlinsJailCage.h"
+
 #include "Combat/BwayDamageLibrary.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -68,29 +68,10 @@ bool ABwayRawlinsBulletProjectile::HandleDamageHit(const FHitResult& Hit)
 
 	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
 
-	// Enemy Jail cages are damageable from inside or outside (retains team filtering).
-	// Note: ABwayGameState::AreOnSameTeam does not resolve buildable TeamId — compare Lyra team IDs.
-	if (ABwayRawlinsJailCage* HitCage = Cast<ABwayRawlinsJailCage>(HitActor))
+	if (UBwayDamageLibrary::ApplyDamageToEnemyBuildable(InstigatorCharacter, HitActor, DamageAmount, this))
 	{
-		bool bIsEnemyCage = false;
-		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			const int32 CageTeam = static_cast<int32>(HitCage->GetTeamId().GetId());
-			const int32 ShooterTeam = TeamSubsystem->FindTeamFromObject(InstigatorCharacter);
-			bIsEnemyCage = ShooterTeam != INDEX_NONE && CageTeam != 0 && ShooterTeam != CageTeam;
-		}
-
-		if (!bIsEnemyCage)
-		{
-			return false;
-		}
-
-		if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCage, DamageAmount, this, InstigatorCharacter))
-		{
-			bHasAppliedHit = true;
-			return true;
-		}
-		return false;
+		bHasAppliedHit = true;
+		return true;
 	}
 
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);

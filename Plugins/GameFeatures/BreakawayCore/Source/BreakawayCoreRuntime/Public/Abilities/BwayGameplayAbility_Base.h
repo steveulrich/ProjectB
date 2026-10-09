@@ -26,6 +26,8 @@ public:
 	// Debug logging overrides
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo) const override;
 
 	/** Enable/disable debug logging for this ability class */
 	static bool bEnableAbilityDebugLogging;
@@ -70,7 +72,8 @@ protected:
 
 	/**
 	 * Apply CooldownGameplayEffectClass with an optional duration override via FGameplayEffectSpec::SetDuration.
-	 * Falls back to UGameplayAbility::ApplyCooldown when DurationSeconds <= 0 or no cooldown GE is set.
+	 * Uses the effect-defined duration when DurationSeconds <= 0. Applies the owner's
+	 * cooldown reduction once to finite durations; existing active cooldowns are unchanged.
 	 */
 	void ApplyCooldownWithOptionalDuration(
 		const FGameplayAbilitySpecHandle Handle,
@@ -110,4 +113,3 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
 	FGameplayTag Cue_End;
 };
-

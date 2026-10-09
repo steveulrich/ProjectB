@@ -5,6 +5,7 @@
 #include "BwaySiegeEngineBuildable.generated.h"
 
 class USphereComponent;
+struct FGameplayEffectSpec;
 
 /**
  * Argus Siege Engine — one-use rolling barrel that damages enemy buildables.
@@ -18,8 +19,17 @@ class BREAKAWAYCORERUNTIME_API ABwaySiegeEngineBuildable : public ABuildableActo
 public:
 	ABwaySiegeEngineBuildable();
 
+#if !UE_BUILD_SHIPPING
+	// Read-only observations for the development lifetime/replication fixture.
+	bool IsRollingForDevelopment() const { return bIsRolling; }
+	float GetRollElapsedForDevelopment() const { return RollElapsed; }
+	float GetMaxRollDurationForDevelopment() const { return MaxRollDuration; }
+	float GetRollSpeedForDevelopment() const { return RollSpeed; }
+#endif
+
 protected:
 	virtual void InitializeAbilitySystem() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void FinishBuilding() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -29,6 +39,8 @@ protected:
 	void ApplyDamageToOverlappingEnemyBuildables(float DeltaTime);
 	bool IsEnemyBuildable(const ABuildableActor* OtherBuildable) const;
 	void ApplyDamageToBuildable(ABuildableActor* TargetBuildable, float DamageAmount);
+	void HandleOutOfHealth(AActor* InstigatorActor, AActor* Causer, const FGameplayEffectSpec* Spec,
+		float Magnitude, float OldValue, float NewValue);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SiegeEngine")
 	TObjectPtr<USphereComponent> DamageSphere;

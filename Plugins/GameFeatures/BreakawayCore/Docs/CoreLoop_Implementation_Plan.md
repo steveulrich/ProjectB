@@ -22,7 +22,7 @@ Decisions captured from design review (May 2026). Section 3 roster and one-build
 | **6** | **Done** | Walk-in score + scoring component |
 | **7** | **Done** | Throw / pass score |
 | **8** | **Done** | Rounds, reset, `EnsureBotsForRound`, listen-server respawn fix |
-| **9** | **Done** | Sudden death at 0:00 (X-axis half), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider` |
+| **9** | **Done; scoped packaged proof** | Sudden death at 0:00 (half derived from the opposing team goals), `OnSuddenDeathWarning`, auto-spawn `B_BW_MidfieldDivider`; candidate26-05 passed the real timer and four-peer stripe alignment. See `AI_Planning/DEMO_MATCH_RULES.md`; physical/visual acceptance remains open |
 | **10** | **Complete** | Relic bot AI + `GE_BW_Relic_Request` pickup + carrier walk-in goal; see [RelicBot_AI_Setup.md](./RelicBot_AI_Setup.md) |
 | **11** | **Complete** | Match-flow config + RM phase FSM (11-1–11-7), URL duration overrides (11b); front-end E2E (11-8) deferred |
 
@@ -299,7 +299,7 @@ Sudden death is **not** a mode change — goal and elimination work normally all
 ### C++ work (real feature, not gating)
 
 1. **`EBwayWinCondition::SuddenDeath`** (+ gameplay tag)
-2. **Midfield rule (X-axis)** — `UBwayMidfieldRulesLibrary`; relic spawn at origin; Team 1 = −X, Team 2 = +X (no gameplay volume required)
+2. **Midfield rule (goal-derived axis)** — `UBwayMidfieldRulesLibrary` derives the midpoint and horizontal direction from the unique goals owned by teams 0 and 1. The negative half belongs to team 0 and the positive half to team 1. This works for rotated and translated arenas; no separate midfield volume is required. Invalid goal layouts return undecided. The divider uses the same frame.
 3. **`OnRoundTimerExpired`** — uses `GetLosingTeamAtMidfieldFromRelic`, win condition `SuddenDeath`
 4. **`OnSuddenDeathWarning`** + auto-spawned **`B_BW_MidfieldDivider`** at `(0,0,0)` (visible only during warning window)
 

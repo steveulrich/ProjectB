@@ -7,12 +7,21 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "Movement/BwayMovementFeelConfig.h"
+#include "HeroSystems/BwayHeroStatsLibrary.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBreakawayMovement, Log, All);
+
+struct FBwaySlideContactContext
+{
+	float StepSeconds = 0.f;
+	float RemainingFraction = 1.f;
+	float FrontalWallSeconds = 0.f;
+};
 
 namespace BwayMovementCVars
 {
@@ -259,36 +268,60 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	UE_LOG(LogBreakawayMovement, VeryVerbose, TEXT("PhysSlide - Hit Z: %f"), CurrentFloor.HitResult.ImpactNormal.Z);
 
 	const float SlopeAngleDegrees = FMath::RadiansToDegrees(FMath::Acos(CurrentFloor.HitResult.ImpactNormal.Z));
+	// FindFloor also finds nearby geometry while the capsule is airborne. Use
+	// the engine's contact distance, without rejecting authored slide ramps
+	// through the stricter walking-angle test, before applying ground forces.
+	const float FloorDistance = CurrentFloor.GetDistanceToFloor();
+	const bool bHasSlideGroundContact = CurrentFloor.HitResult.IsValidBlockingHit()
+		&& FMath::IsFinite(FloorDistance) && FloorDistance <= MAX_FLOOR_DIST;
 	const FVector InputAccelDir = Acceleration.GetSafeNormal();
 
 	Acceleration = FVector::ZeroVector;
 
-	ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees);
-	Acceleration.Z += GetGravityZ() * deltaTime;
+	if (bHasSlideGroundContact)
+	{
+		ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees);
+	}
+	// Gravity is acceleration; the velocity integration below applies the timestep.
+	Acceleration.Z += GetGravityZ();
 
 	Velocity += Acceleration * deltaTime;
 
-	ApplySlideFriction(deltaTime, SlopeAngleDegrees);
+	if (bHasSlideGroundContact)
+	{
+		ApplySlideFriction(deltaTime, SlopeAngleDegrees);
+	}
 	ApplySlideSteering(deltaTime, InputAccelDir);
 
 	Velocity = Velocity.GetClampedToMaxSize(GetMaxSpeed());
 
 	bJustTeleported = false;
+	const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
 
 	if (Hit.Time < 1.f)
 	{
-		float CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier;
-		GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
-		if (FVector::DotProduct(Velocity.GetSafeNormal(), Hit.Normal) < -0.5f)
-		{
-			Velocity = FMath::VInterpTo(Velocity, FVector::ZeroVector, deltaTime * (1.f - Hit.Time), SlideWallHitFriction * CurrentFrictionMultiplier);
-		}
-
+		FBwaySlideContactContext Contacts;
+		Contacts.StepSeconds = deltaTime;
+		TGuardValue<FBwaySlideContactContext*> ContactScope(SlideContactContext, &Contacts);
 		HandleImpact(Hit, deltaTime, Adjusted);
 		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
+		if (!HasValidData()) return;
+		if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
+		{
+			// SlideAlongSurface resolves displacement through every contact, but does
+			// not update Velocity. Retaining inward gravity makes a later floor hit
+			// look like a frontal wall and repeatedly brakes horizontal motion.
+			Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / deltaTime;
+		}
+		if (Contacts.FrontalWallSeconds > 0.f)
+		{
+			float CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier;
+			GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
+			Velocity = FMath::VInterpTo(Velocity, FVector::ZeroVector, Contacts.FrontalWallSeconds, SlideWallHitFriction * CurrentFrictionMultiplier);
+		}
 	}
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
 	if (!CurrentFloor.bBlockingHit)
@@ -305,6 +338,28 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	{
 		//PreAdditiveRootMotionVelocity = Velocity;
 	}
+}
+
+void UBwayCharacterMovementComponent::HandleImpact(const FHitResult& Hit, float TimeSlice, const FVector& MoveDelta)
+{
+	if (SlideContactContext && Hit.IsValidBlockingHit() && CharacterOwner && UpdatedComponent)
+	{
+		// Each subsequent sweep consumes a fraction of the previously remaining
+		// move. Capture intermediate walls here: the final Hit may be overwritten
+		// by a free tangent move inside SlideAlongSurface/TwoWallAdjust.
+		SlideContactContext->RemainingFraction *= 1.f - FMath::Clamp(Hit.Time, 0.f, 1.f);
+		const auto* Capsule = CharacterOwner->GetCapsuleComponent();
+		const float LowerHemisphereTop = UpdatedComponent->GetComponentLocation().Z
+			- (Capsule->GetScaledCapsuleHalfHeight() - Capsule->GetScaledCapsuleRadius());
+		const bool bSupportingContact = Hit.ImpactNormal.Z > KINDA_SMALL_NUMBER
+			&& Hit.ImpactPoint.Z <= LowerHemisphereTop + KINDA_SMALL_NUMBER;
+		if (!bSupportingContact && FVector::DotProduct(MoveDelta.GetSafeNormal(), Hit.Normal) < -0.5f)
+		{
+			SlideContactContext->FrontalWallSeconds = FMath::Max(SlideContactContext->FrontalWallSeconds,
+				SlideContactContext->StepSeconds * SlideContactContext->RemainingFraction);
+		}
+	}
+	Super::HandleImpact(Hit, TimeSlice, MoveDelta);
 }
 
 // --- Slope Acceleration Logic ---
@@ -528,21 +583,48 @@ void UBwayCharacterMovementComponent::BindAbilitySystem(UAbilitySystemComponent*
 	MoveSpeedMultiplierChangedHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute()).AddUObject(
 			this, &UBwayCharacterMovementComponent::HandleMoveSpeedMultiplierChanged);
+	MoveSpeedRatingChangedHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+		UBwayHeroAttributeSet::GetMoveSpeedRatingAttribute()).AddUObject(
+			this, &UBwayCharacterMovementComponent::HandleMoveSpeedRatingChanged);
+	if (const UBwayHeroAttributeSet* HeroSet = AbilitySystemComponent->GetSet<UBwayHeroAttributeSet>())
+	{
+		ApplyMoveSpeedRating(HeroSet->GetMoveSpeedRating());
+	}
 }
 
 void UBwayCharacterMovementComponent::UnbindAbilitySystem()
 {
-	if (AbilitySystemComponent && MoveSpeedMultiplierChangedHandle.IsValid())
+	if (AbilitySystemComponent)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 			UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute()).Remove(MoveSpeedMultiplierChangedHandle);
-		MoveSpeedMultiplierChangedHandle.Reset();
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			UBwayHeroAttributeSet::GetMoveSpeedRatingAttribute()).Remove(MoveSpeedRatingChangedHandle);
 	}
+	MoveSpeedMultiplierChangedHandle.Reset();
+	MoveSpeedRatingChangedHandle.Reset();
+	AbilitySystemComponent = nullptr;
 }
 
 void UBwayCharacterMovementComponent::HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData)
 {
 	(void)ChangeData;
+}
+
+void UBwayCharacterMovementComponent::HandleMoveSpeedRatingChanged(const FOnAttributeChangeData& ChangeData)
+{
+	ApplyMoveSpeedRating(ChangeData.NewValue);
+}
+
+void UBwayCharacterMovementComponent::ApplyMoveSpeedRating(float SpeedRating)
+{
+	// A new attribute set starts at zero until the authority initializes the hero.
+	// Preserve the pawn's authored fallback until a usable replicated rating arrives.
+	if (FMath::IsFinite(SpeedRating) && SpeedRating > 0.f)
+	{
+		MaxWalkSpeed = UBwayHeroStatsLibrary::ConvertSpeedRatingToMaxWalkSpeed(SpeedRating);
+	}
+	// GetMaxSpeed applies MoveSpeedMultiplier once, separately from this base value.
 }
 
 // ---------------------------------------------------------------------------

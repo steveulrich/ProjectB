@@ -12,6 +12,7 @@
 
 class UAbilitySystemComponent;
 class UBwayMovementFeelConfig;
+struct FBwaySlideContactContext;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDashStartDelegate);
 
@@ -198,6 +199,7 @@ protected:
 	//~ Begin UCharacterMovementComponent Interface
 	virtual void PhysSliding(float deltaTime, int32 Iterations);
 	virtual bool DoJump(bool bReplayingMoves, float DeltaTime) override;
+	virtual void HandleImpact(const FHitResult& Hit, float TimeSlice, const FVector& MoveDelta) override;
 
 	/** Applies friction based on the Lua-derived model (slope power curve, wall hits). */
 	virtual void ApplySlideFriction(float DeltaTime, float SlopeAngleDegrees);
@@ -218,6 +220,8 @@ protected:
 	virtual void EndSlide();
 
 	void ClearSlideJumpState();
+	// Borrowed only while one PhysSliding collision response is on the stack.
+	FBwaySlideContactContext* SlideContactContext = nullptr;
 
 	// Cached default values restored when exiting slide
 	float DefaultWalkableFloorAngle;
@@ -232,15 +236,18 @@ protected:
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
 	FDelegateHandle MoveSpeedMultiplierChangedHandle;
+	FDelegateHandle MoveSpeedRatingChangedHandle;
 
 	void HandleMoveSpeedMultiplierChanged(const FOnAttributeChangeData& ChangeData);
+	void HandleMoveSpeedRatingChanged(const FOnAttributeChangeData& ChangeData);
+	void ApplyMoveSpeedRating(float SpeedRating);
 
 	friend class FSavedMove_BwayCharacter;
 
 	// -- END NEW SLIDE -- //
 
 public:
-	/** Bind ASC attribute change callbacks for MoveSpeedMultiplier (called from character ASC init). */
+	/** Observe replicated hero speed and seed values received before character ASC initialization. */
 	void BindAbilitySystem(UAbilitySystemComponent* InASC);
 	void UnbindAbilitySystem();
 

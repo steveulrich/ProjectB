@@ -4,20 +4,16 @@
 #include "ActorPlacementTargeting/BwayTargetActor_ActorPlacementFace.h"
 #include "ActorPlacementTargeting/BwayWorldReticle_ActorVisualization.h"
 #include "Buildable/BwayBuildablePlacementLibrary.h"
+#include "Buildable/BwayPlacementValidation.h"
 #include "Buildable/BuildableBase.h"
 #include "Engine/World.h"
 #include "Abilities/GameplayAbilityTargetActor.h"
 #include "Engine/EngineTypes.h"
-#include "Engine/OverlapResult.h"
 #include "Abilities/GameplayAbilityWorldReticle_ActorVisualization.h"
 #include "Abilities/GameplayAbility.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
-#include "CollisionQueryParams.h"
-#include "WorldCollision.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Components/PrimitiveComponent.h"
-#include "Components/BoxComponent.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayTargetActor_ActorPlacementFace)
 
@@ -258,7 +254,8 @@ void ABwayTargetActor_ActorPlacementFace::ConfirmTargetingAndContinue()
 	if (SourceActor)
 	{
 		bDebug = false;
-		const FHitResult TraceHit = PerformTrace(SourceActor);
+		// Confirm from fresh ground, not the already pivot-lifted visual location.
+		const FHitResult TraceHit = Super::PerformTrace(SourceActor);
 		const FGameplayAbilityTargetDataHandle Handle = CreateTargetData(TraceHit);
 		if (Handle.IsValid(0))
 		{
@@ -303,8 +300,9 @@ FGameplayAbilityTargetDataHandle ABwayTargetActor_ActorPlacementFace::CreateTarg
 		FGameplayAbilityTargetData_SingleTargetHit* ReturnData = new FGameplayAbilityTargetData_SingleTargetHit();
 
 		FHitResult FinalHit = Validation.OriginalGroundHit;
-		FinalHit.Location = Validation.AdjustedLocation;
-		FinalHit.ImpactPoint = Validation.AdjustedLocation;
+		// Submit the ground intent. Authority computes its own geometry and pivot lift.
+		FinalHit.Location = Validation.OriginalGroundHit.ImpactPoint;
+		FinalHit.ImpactPoint = Validation.OriginalGroundHit.ImpactPoint;
 		ReturnData->HitResult = FinalHit;
 
 		return FGameplayAbilityTargetDataHandle(ReturnData);
@@ -314,292 +312,30 @@ FGameplayAbilityTargetDataHandle ABwayTargetActor_ActorPlacementFace::CreateTarg
 	return FGameplayAbilityTargetDataHandle();
 }
 
-FPlacementValidationResult ABwayTargetActor_ActorPlacementFace::PerformPlacementValidation(
-	const FHitResult& GroundHit) const
+FBwayPlacementQuery ABwayTargetActor_ActorPlacementFace::MakePlacementQuery(AActor* InSourceActor, const APlayerController* PC) const
 {
-	FPlacementValidationResult Result;
-	Result.OriginalGroundHit = GroundHit;
-	Result.AdjustedLocation = GroundHit.Location; // Start with the trace hit
-	Result.bIsValid = false; // Default to invalid
-	
-	if (!PlacedActorClass || !SourceActor.Get() || !GroundHit.bBlockingHit)
-	{
-		return Result;
-	}
-	
-	// 1. Surface Angle Check
-	if (!CheckSurfaceAngle(GroundHit.ImpactNormal))
-	{
-		return Result;
-	}
-
-	// Determine initial placement rotation for overhang and obstruction checks
-	FVector AimDirection = SourceActor->GetActorForwardVector();
-	APlayerController* PC = OwningAbility ? OwningAbility->GetCurrentActorInfo()->PlayerController.Get() : nullptr;
-	if (PC)
-	{
-		AimDirection = PC->GetControlRotation().Vector();
-	}
-	// Project aim direction onto the plane defined by the ground normal
-	FVector ForwardOnPlane = FVector::CrossProduct(GroundHit.ImpactNormal, FVector::CrossProduct(AimDirection, GroundHit.ImpactNormal).GetSafeNormal());
-    if (ForwardOnPlane.IsNearlyZero()) // If AimDirection is (anti-)parallel to ImpactNormal
-    {
-        // Use actor's right vector to find a perpendicular forward vector on the plane
-        FVector ActorRight = SourceActor->GetActorRightVector();
-        ForwardOnPlane = FVector::CrossProduct(GroundHit.ImpactNormal, FVector::CrossProduct(ActorRight, GroundHit.ImpactNormal).GetSafeNormal());
-        if (ForwardOnPlane.IsNearlyZero()) // Still an issue, use a default
-        {
-            ForwardOnPlane = FVector::CrossProduct(GroundHit.ImpactNormal, FVector::UpVector); // Or any non-parallel vector
-             if (ForwardOnPlane.IsNearlyZero()) ForwardOnPlane = FVector::ForwardVector; // Absolute fallback
-        }
-    }
-	Result.PlacementRotation = UKismetMathLibrary::MakeRotFromZX(GroundHit.ImpactNormal, ForwardOnPlane.GetSafeNormal());
-	Result.AdjustedLocation = GroundHit.Location; // Start with the trace hit
-
-	// 2. Overhang Check (can adjust Result.AdjustedLocation.Z)
-	FVector FootprintAdjustedLocation = Result.AdjustedLocation; // Pass current best location
-	if (!CheckOverhangs(GroundHit.Location, Result.PlacementRotation, FootprintAdjustedLocation, GroundHit.ImpactNormal))
-	{
-		return Result;
-	}
-	Result.AdjustedLocation = FootprintAdjustedLocation; // Update location based on overhang (snapping)
-
-	// Lift pivot so collision bottoms rest on the ground instead of intersecting it.
-	const float PivotLift = ComputePivotLiftAlongLocalUp();
-	if (PivotLift > 0.f)
-	{
-		Result.AdjustedLocation += Result.PlacementRotation.Quaternion().GetUpVector() * PivotLift;
-	}
-
-	// 3. Obstruction Check (uses final AdjustedLocation and PlacementRotation).
-	// Ignore the traced ground actor — pivot-centered collision always overlaps the floor otherwise.
-	if (!CheckObstructions(Result.AdjustedLocation, Result.PlacementRotation, GroundHit.GetActor()))
-	{
-		UE_LOG(LogTemp, Verbose, TEXT("BwayPlacementTarget validation FAIL: obstruction at %s"), *Result.AdjustedLocation.ToCompactString());
-		Result.bIsValid = false;
-		return Result;
-	}
-
-	Result.bIsValid = true;
-	return Result;
+    FBwayPlacementQuery Query;
+    Query.World = InSourceActor ? InSourceActor->GetWorld() : nullptr;
+    Query.Source = InSourceActor;
+    Query.PlacedClass = PlacedActorClass;
+    Query.AuthoredBounds = BuildableDataAsset ? BuildableDataAsset->GetPlacementLocalBounds() : FBox(ForceInit);
+    Query.AimDirection = PC ? PC->GetControlRotation().Vector() : (InSourceActor ? InSourceActor->GetActorForwardVector() : FVector::ForwardVector);
+    Query.CollisionChannel = CollisionChannel;
+    Query.MaxRange = MaxRange;
+    Query.MaxSlopeDegrees = MaxPlacementAngleDegrees;
+    Query.MaxFootprintZDifference = MaxFootprintZDifference;
+    Query.TraceUp = FootprintTraceUpOffset;
+    Query.TraceDown = FootprintTraceDownLength;
+    Query.GroundClearance = ObstructionGroundClearance;
+    if (!HasAnyFlags(RF_ClassDefaultObject)) Query.IgnoredActors.Add(this);
+    if (ActorVisualizationReticle.IsValid()) Query.IgnoredActors.Add(ActorVisualizationReticle.Get());
+    if (ReticleActor.IsValid()) Query.IgnoredActors.Add(ReticleActor.Get());
+    return Query;
 }
 
-float ABwayTargetActor_ActorPlacementFace::ComputePivotLiftAlongLocalUp() const
+FPlacementValidationResult ABwayTargetActor_ActorPlacementFace::PerformPlacementValidation(const FHitResult& GroundHit) const
 {
-	if (!PlacedActorClass)
-	{
-		return ObstructionGroundClearance;
-	}
-
-	const AActor* CDO = PlacedActorClass->GetDefaultObject<AActor>();
-	if (!CDO)
-	{
-		return ObstructionGroundClearance;
-	}
-
-	float MaxLift = 0.f;
-
-	TArray<UPrimitiveComponent*> CDOPrimitives;
-	CDO->GetComponents<UPrimitiveComponent>(CDOPrimitives);
-
-	for (const UPrimitiveComponent* PrimitiveCDO : CDOPrimitives)
-	{
-		if (!PrimitiveCDO)
-		{
-			continue;
-		}
-
-		const ECollisionEnabled::Type CollisionEnabled = PrimitiveCDO->GetCollisionEnabled();
-		if (CollisionEnabled == ECollisionEnabled::NoCollision || CollisionEnabled == ECollisionEnabled::QueryOnly)
-		{
-			continue;
-		}
-
-		const FBoxSphereBounds ActorLocalBounds = PrimitiveCDO->CalcBounds(PrimitiveCDO->GetRelativeTransform());
-		const float BottomZ = ActorLocalBounds.Origin.Z - ActorLocalBounds.BoxExtent.Z;
-		MaxLift = FMath::Max(MaxLift, -BottomZ);
-	}
-
-	return MaxLift + ObstructionGroundClearance;
+    const APlayerController* PC = OwningAbility && OwningAbility->GetCurrentActorInfo()
+        ? OwningAbility->GetCurrentActorInfo()->PlayerController.Get() : nullptr;
+    return MakePlacementQuery(SourceActor.Get(), PC).ValidateGroundHit(GroundHit);
 }
-
-bool ABwayTargetActor_ActorPlacementFace::CheckSurfaceAngle(const FVector& SurfaceNormal) const
-{
-	if (SurfaceNormal.IsNearlyZero()) return false; // Invalid normal
-	const float AngleRadians = FMath::Acos(FVector::DotProduct(SurfaceNormal.GetSafeNormal(), FVector::UpVector));
-	const float AngleDegrees = FMath::RadiansToDegrees(AngleRadians);
-	return AngleDegrees <= MaxPlacementAngleDegrees;
-}
-
-bool ABwayTargetActor_ActorPlacementFace::CheckOverhangs(const FVector& CenterLocationOnGround,
-	const FRotator& InitialPlacementRotation,
-	FVector& OutAdjustedFootprintCenter,
-	const FVector& SurfaceNormalForTrace) const
-{
-	OutAdjustedFootprintCenter = CenterLocationOnGround; // Default to original
-	if (!PlacedActorClass) return false;
-
-	AActor* CDO = PlacedActorClass->GetDefaultObject<AActor>();
-	if (!CDO) return false;
-
-	UBoxComponent* FootprintBox = CDO->FindComponentByClass<UBoxComponent>(); // Or a specifically tagged component
-    if (!FootprintBox) {
-        // Fallback: Try to get any primitive component's bounds. This is less accurate.
-        UPrimitiveComponent* PrimCDO = CDO->FindComponentByClass<UPrimitiveComponent>();
-        if(PrimCDO)
-        {
-            // This is a rough approximation using the entire component bounds.
-            // A dedicated, smaller "footprint" box component on the buildable is better.
-            FVector BoxExtent = PrimCDO->CalcBounds(FTransform::Identity).BoxExtent;
-             FootprintBox = NewObject<UBoxComponent>(); // Temporary for extents calculation
-             FootprintBox->SetBoxExtent(FVector(BoxExtent.X, BoxExtent.Y, 1.0f)); // Flatten Z for footprint
-        } else {
-		    UE_LOG(LogTemp, Warning, TEXT("CheckOverhangs: No UBoxComponent for footprint found on CDO of %s. Skipping check."), *PlacedActorClass->GetName());
-		    return true; // Or false if strict
-        }
-	}
-
-	FVector HalfExtents = FootprintBox->GetUnscaledBoxExtent(); // Use unscaled, as transform will scale
-	HalfExtents.Z = 0; // We only care about XY footprint for ground check points
-
-	TArray<FVector> LocalSamplePoints;
-	LocalSamplePoints.Add(FVector( HalfExtents.X,  HalfExtents.Y, 0));
-	LocalSamplePoints.Add(FVector( HalfExtents.X, -HalfExtents.Y, 0));
-	LocalSamplePoints.Add(FVector(-HalfExtents.X,  HalfExtents.Y, 0));
-	LocalSamplePoints.Add(FVector(-HalfExtents.X, -HalfExtents.Y, 0));
-	if (LocalSamplePoints.Num() == 0) return true; // No points to check if extents are zero
-
-	const FTransform PlacementTransform(InitialPlacementRotation, CenterLocationOnGround);
-	float MinZ = BIG_NUMBER, MaxZ = -BIG_NUMBER;
-	int32 ValidHits = 0;
-	float AccumulatedZ = 0.f;
-
-	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(BwayTargetActor_ActorPlacementFace_OverhangCheck), true, this);
-	QueryParams.bReturnPhysicalMaterial = false;
-	
-	for (const FVector& LocalPoint : LocalSamplePoints)
-	{
-		FVector WorldPoint = PlacementTransform.TransformPosition(LocalPoint);
-		FHitResult Hit;
-		// Trace relative to the surface normal
-		FVector TraceStart = WorldPoint + SurfaceNormalForTrace * FootprintTraceUpOffset; 
-		FVector TraceEnd = WorldPoint - SurfaceNormalForTrace * FootprintTraceDownLength;   
-
-		if (GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, this->CollisionChannel, QueryParams))
-		{
-			if (Hit.bBlockingHit)
-			{
-				MinZ = FMath::Min(MinZ, Hit.ImpactPoint.Z);
-				MaxZ = FMath::Max(MaxZ, Hit.ImpactPoint.Z);
-				AccumulatedZ += Hit.ImpactPoint.Z;
-				ValidHits++;
-			} else { return false; }
-		} else { return false; }
-	}
-
-	if (ValidHits < LocalSamplePoints.Num()) return false;
-	if ((MaxZ - MinZ) > MaxFootprintZDifference) return false;
-
-	// Adjust the center Z to the average height of the sampled ground points if desired
-	OutAdjustedFootprintCenter.Z = (MinZ + MaxZ) / 2.0f; 
-	// Alternatively, to ensure bottom touches: OutAdjustedFootprintCenter.Z = MaxZ (if buildable pivot is at its base & MaxZ is highest ground point)
-	// Or, if buildable pivot is center, and you want its base at MaxZ, OutAdjustedFootprintCenter.Z = MaxZ + BuildPivotToBottomOffsetZ;
-	// The current (MinZ+MaxZ)/2 approach averages it out.
-
-	return true;
-}
-
-bool ABwayTargetActor_ActorPlacementFace::CheckObstructions(const FVector& CenterLocation,
-	const FRotator& PlacementRotation,
-	AActor* GroundHitActor) const
-{
-	if (!PlacedActorClass) return false;
-	AActor* CDO = PlacedActorClass->GetDefaultObject<AActor>();
-	if (!CDO) return false;
-
-	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(BwayTargetActor_ActorPlacementFace_ObstructionCheck), false);
-	QueryParams.AddIgnoredActor(this);
-	if (ActorVisualizationReticle.IsValid()) QueryParams.AddIgnoredActor(ActorVisualizationReticle.Get());
-	if (SourceActor.Get()) QueryParams.AddIgnoredActor(SourceActor.Get());
-	if (ReticleActor.IsValid()) QueryParams.AddIgnoredActor(ReticleActor.Get());
-	if (GroundHitActor)
-	{
-		QueryParams.AddIgnoredActor(GroundHitActor);
-	}
-	QueryParams.bReturnPhysicalMaterial = false;
-
-	TArray<UPrimitiveComponent*> CDOPrimitives;
-	CDO->GetComponents<UPrimitiveComponent>(CDOPrimitives);
-
-	if (CDOPrimitives.IsEmpty())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("CheckObstructions: No primitive components on CDO of %s. Skipping."), *PlacedActorClass->GetName());
-		return true;
-	}
-
-	const FTransform PlacementTM(PlacementRotation, CenterLocation);
-
-	for (UPrimitiveComponent* PrimitiveCDO : CDOPrimitives)
-	{
-		if (!PrimitiveCDO)
-		{
-			continue;
-		}
-
-		const ECollisionEnabled::Type CollisionEnabled = PrimitiveCDO->GetCollisionEnabled();
-		if (CollisionEnabled == ECollisionEnabled::NoCollision || CollisionEnabled == ECollisionEnabled::QueryOnly)
-		{
-			continue;
-		}
-
-		const FCollisionShape Shape = PrimitiveCDO->GetCollisionShape();
-		const FTransform WorldCheckTransform = PrimitiveCDO->GetRelativeTransform() * PlacementTM;
-
-		TArray<FOverlapResult> Overlaps;
-		const bool bHasOverlaps = GetWorld()->OverlapMultiByChannel(
-			Overlaps,
-			WorldCheckTransform.GetLocation(),
-			WorldCheckTransform.GetRotation(),
-			CollisionChannel,
-			Shape,
-			QueryParams);
-
-		if (!bHasOverlaps)
-		{
-			continue;
-		}
-
-		for (const FOverlapResult& Overlap : Overlaps)
-		{
-			AActor* OverlapActor = Overlap.GetActor();
-			if (OverlapActor && (OverlapActor == GroundHitActor || OverlapActor == this || OverlapActor == SourceActor.Get()))
-			{
-				continue;
-			}
-
-			// Floor / terrain pieces often aren't the exact ground-hit actor (multi-mesh floors).
-			// Skip blockers whose bounds sit at or below the placement plane.
-			if (Overlap.Component.IsValid())
-			{
-				const FBox SphereBounds = Overlap.Component->Bounds.GetBox();
-				const float ComponentTopZ = SphereBounds.Max.Z;
-				if (ComponentTopZ <= CenterLocation.Z + 2.0f)
-				{
-					continue;
-				}
-			}
-
-			if (Overlap.bBlockingHit || (Overlap.Component.IsValid() && Overlap.Component->GetCollisionResponseToChannel(CollisionChannel) == ECR_Block))
-			{
-				UE_LOG(LogTemp, Log, TEXT("BwayPlacementTarget obstruction with %s.%s"),
-					OverlapActor ? *OverlapActor->GetName() : TEXT("(null)"),
-					Overlap.Component.IsValid() ? *Overlap.Component->GetName() : TEXT("(null)"));
-				return false;
-			}
-		}
-	}
-	return true;
-}
-
-//Might want to override this function to allow for a radius check against the ground, possibly including a height check. Or might want to do it in ground trace.
-//FHitResult AGameplayAbilityTargetActor_ActorPlacement::PerformTrace(AActor* InSourceActor) const

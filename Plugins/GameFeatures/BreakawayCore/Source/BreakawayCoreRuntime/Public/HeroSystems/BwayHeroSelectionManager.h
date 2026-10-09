@@ -139,6 +139,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	void StartHeroSelection();
 
+	/** Give a newly admitted player the configured window without changing existing selections. */
+	void RefreshSelectionDeadline();
+
 	/**
 	 * End the hero selection phase and validate all selections
 	 * Returns true if all selections are valid

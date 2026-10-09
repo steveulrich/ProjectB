@@ -5,7 +5,8 @@ param(
     [string]$StagePath,
     [string[]]$EvidenceLog = @(),
     [string]$OutputJson,
-    [string]$Profile = 'ShortMatch'
+    [string]$Profile = 'ShortMatch',
+    [switch]$SummaryOnly
 )
 $ErrorActionPreference = 'Stop'
 $config = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'BwayTestConfig.psd1')
@@ -47,7 +48,31 @@ $result = [ordered]@{
     nextAction = if ($failedGates.Count) { 'Inspect: ' + ($failedGates -join ', ') } else { 'Continue pending gameplay gates in AI_Planning/SLICE_STATUS.md.' }
 }
 $json = $result | ConvertTo-Json -Depth 8
-if ($OutputJson) { $json | Set-Content -LiteralPath $OutputJson -Encoding UTF8 }
-$json
+if ($OutputJson) {
+    $outputPath = if ([System.IO.Path]::IsPathRooted($OutputJson)) { $OutputJson } else { Join-Path $root $OutputJson }
+    $outputDirectory = Split-Path -Parent $outputPath
+    if ($outputDirectory -and -not (Test-Path -LiteralPath $outputDirectory)) {
+        New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+    }
+    $result.outputJson = [System.IO.Path]::GetFullPath($outputPath)
+    $json = $result | ConvertTo-Json -Depth 8
+    $json | Set-Content -LiteralPath $outputPath -Encoding UTF8
+}
+if ($SummaryOnly) {
+    [ordered]@{
+        scope = 'Compact startup-screen projection; the complete per-log report remains in outputJson.'
+        candidate = $result.candidate
+        profile = $result.profile
+        sourceBaseRevision = $result.sourceBaseRevision
+        passed = $result.passed
+        gates = $result.gates
+        evidenceCount = @($result.evidence).Count
+        failedGates = @($failedGates)
+        outputJson = $result.outputJson
+        nextAction = $result.nextAction
+    } | ConvertTo-Json -Depth 8 -Compress
+} else {
+    $json
+}
 if (!$result.passed) { exit 1 }
 exit 0

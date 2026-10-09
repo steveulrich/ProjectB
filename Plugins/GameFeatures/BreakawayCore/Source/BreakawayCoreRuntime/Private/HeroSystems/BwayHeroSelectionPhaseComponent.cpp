@@ -12,12 +12,14 @@
 #include "AbilitySystem/Phases/LyraGamePhaseSubsystem.h"
 #include "AbilitySystem/Phases/LyraGamePhaseAbility.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "Player/LyraPlayerBotController.h"
 #include "AIController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
 #include "TimerManager.h"
+#include "Net/UnrealNetwork.h"
 
 UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -27,6 +29,46 @@ UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObject
 
 	// BreakawayCore tags may not be registered while the CDO is constructed.
 	PhaseTag = FGameplayTag::RequestGameplayTag(FName("Breakaway.GamePhase.HeroSelection"), false);
+}
+
+void UBwayHeroSelectionPhaseComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UBwayHeroSelectionPhaseComponent, bPostSelectionTravelFailed);
+}
+
+void UBwayHeroSelectionPhaseComponent::OnRep_PostSelectionTravelFailed()
+{
+	OnTravelFailureChanged.Broadcast();
+}
+
+void UBwayHeroSelectionPhaseComponent::SetPostSelectionTravelFailed(bool bFailed)
+{
+	if (bPostSelectionTravelFailed == bFailed) return;
+	bPostSelectionTravelFailed = bFailed;
+	GetOwner()->ForceNetUpdate();
+	OnRep_PostSelectionTravelFailed();
+}
+
+bool UBwayHeroSelectionPhaseComponent::CanRetryPostSelectionTravel(const APlayerController* RequestingPlayer) const
+{
+	const UWorld* World = GetWorld();
+	const auto* GS = Cast<ABwayGameState>(GetOwner());
+	const auto* PS = IsValid(RequestingPlayer) ? RequestingPlayer->GetPlayerState<ABwayPlayerState>() : nullptr;
+	return IsCanonicalInstance() && GetOwner()->HasAuthority() && bPhaseActive && bPostSelectionTravelFailed && !bTravelCommitted
+		&& World && !World->bIsTearingDown && IsValid(RequestingPlayer) && RequestingPlayer->HasAuthority()
+		&& RequestingPlayer->GetWorld() == World && RequestingPlayer->IsLocalController() && RequestingPlayer->GetLocalPlayer()
+		&& GS && IsValid(PS) && GS->PlayerArray.Contains(PS) && !PS->IsInactive() && !PS->IsOnlyASpectator()
+		&& ShouldTravelToPostHeroSelectionMap() && IsCurrentRosterReadyForTravel();
+}
+
+bool UBwayHeroSelectionPhaseComponent::RetryPostSelectionTravel(APlayerController* RequestingPlayer)
+{
+	if (!CanRetryPostSelectionTravel(RequestingPlayer) || LastExplicitRetryFrame == GFrameCounter) return false;
+	// One click can reach both authored Lock and Confirm handlers. A failed
+	// request must not turn those handlers into two travel attempts in one frame.
+	LastExplicitRetryFrame = GFrameCounter;
+	return TryTravelToPostHeroSelectionMap(/*bExplicitRetry=*/true);
 }
 
 void UBwayHeroSelectionPhaseComponent::BeginPlay()
@@ -120,6 +162,8 @@ void UBwayHeroSelectionPhaseComponent::EndPlay(const EEndPlayReason::Type EndPla
 	// World teardown is not successful selection completion. Completing here can
 	// spawn pawns or initiate ServerTravel while PIE/shutdown destroys the world.
 	bPhaseActive = false;
+	CancelPendingTravel();
+	if (GetWorld()) GetWorld()->GetTimerManager().ClearTimer(RosterRecheckTimerHandle);
 	if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
 	{
 		Manager->OnAllPlayersReady.RemoveDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
@@ -151,7 +195,7 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		return;
 	}
 
-	if (bPhaseActive)
+	if (bPhaseActive || bTravelCommitted)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: Phase already active"));
 		return;
@@ -159,6 +203,10 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 
 	bPhaseActive = true;
 	bHeroSelectionCompleted = false;
+	bTravelCommitted = false;
+	LastExplicitRetryFrame = MAX_uint64;
+	SetPostSelectionTravelFailed(false);
+	CancelPendingTravel();
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Starting hero selection phase"));
 
@@ -173,7 +221,7 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 
 	// IMPORTANT: Bind to the all-ready delegate FIRST, before any locking calls.
 	// This ensures we receive the broadcast even if all players are pre-selected from Frontend.
-	Manager->OnAllPlayersReady.AddDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
+	Manager->OnAllPlayersReady.AddUniqueDynamic(this, &UBwayHeroSelectionPhaseComponent::HandleAllPlayersReady);
 
 	// A fresh manager has no entries yet. Register returning PlayerStates before
 	// resetting their carried locks, so the UI never sees a previous match's lock.
@@ -242,6 +290,13 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 	{
 		return;
 	}
+	if (ShouldTravelToPostHeroSelectionMap())
+	{
+		// Keep admission, the UI model, and the spawn gate alive throughout the
+		// replication settle window. Only an accepted travel completes this phase.
+		SchedulePostHeroSelectionTravel();
+		return;
+	}
 
 	bPhaseActive = false;
 	bHeroSelectionCompleted = true;
@@ -287,10 +342,6 @@ void UBwayHeroSelectionPhaseComponent::EndHeroSelectionPhase()
 			}
 		}
 	}
-	else
-	{
-		TryTravelToPostHeroSelectionMap();
-	}
 
 	// Broadcast event
 	OnHeroSelectionPhaseEnded.Broadcast();
@@ -306,6 +357,15 @@ void UBwayHeroSelectionPhaseComponent::SkipHeroSelection()
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Skipping hero selection"));
+	if (ShouldTravelToPostHeroSelectionMap())
+	{
+		// Explicit skip still resolves this roster, but it cannot bypass travel's
+		// final admission check or leave a second pending timer behind.
+		AssignRandomHeroes(/*bOnlyBots=*/false, /*bLockImmediately=*/true);
+		CancelPendingTravel();
+		TryTravelToPostHeroSelectionMap();
+		return;
+	}
 
 	bPhaseActive = false;
 	bHeroSelectionCompleted = true;
@@ -486,16 +546,73 @@ bool UBwayHeroSelectionPhaseComponent::ShouldTravelToPostHeroSelectionMap() cons
 	return UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this);
 }
 
-bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
+bool UBwayHeroSelectionPhaseComponent::IsCurrentRosterReadyForTravel() const
 {
-	if (!GetOwner()->HasAuthority())
+	const ABwayGameState* GameState = Cast<ABwayGameState>(GetOwner());
+	if (!GameState) return false;
+	int32 CurrentPlayers = 0;
+	for (const APlayerState* Player : GameState->PlayerArray)
+	{
+		if (!IsValid(Player) || Player->IsInactive() || Player->IsOnlyASpectator()) continue;
+		const auto* PS = Cast<ABwayPlayerState>(Player);
+		if (!PS || !PS->IsHeroLocked() || !UBwayHeroRegistry::GetHeroDataById(PS->GetSelectedHeroId())) return false;
+		++CurrentPlayers;
+	}
+	return CurrentPlayers > 0;
+}
+
+void UBwayHeroSelectionPhaseComponent::CancelPendingTravel()
+{
+	if (GetWorld()) GetWorld()->GetTimerManager().ClearTimer(PendingTravelTimerHandle);
+}
+
+void UBwayHeroSelectionPhaseComponent::HandleSelectionRosterChanged(APlayerState* AddedPlayer)
+{
+	UWorld* World = GetWorld();
+	if (!IsCanonicalInstance() || !GetOwner()->HasAuthority() || !bPhaseActive || bTravelCommitted
+		|| !World || World->bIsTearingDown || !ShouldTravelToPostHeroSelectionMap()) return;
+	CancelPendingTravel();
+	if (const auto* PS = Cast<ABwayPlayerState>(AddedPlayer); PS && !PS->IsInactive() && !PS->IsOnlyASpectator()
+		&& (!PS->IsHeroLocked() || !UBwayHeroRegistry::GetHeroDataById(PS->GetSelectedHeroId())))
+	{
+		if (auto* Manager = GetSelectionManager()) Manager->RefreshSelectionDeadline();
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: late staging arrival keeps existing locks; selection window refreshed player=%d"), PS->GetPlayerId());
+	}
+	// Finish logout and replacement before evaluating the live roster. Multiple
+	// notifications in the same frame share one owned callback.
+	World->GetTimerManager().ClearTimer(RosterRecheckTimerHandle);
+	RosterRecheckTimerHandle = World->GetTimerManager().SetTimerForNextTick(this, &ThisClass::SchedulePostHeroSelectionTravel);
+	if (bPostSelectionTravelFailed) OnTravelFailureChanged.Broadcast();
+}
+
+void UBwayHeroSelectionPhaseComponent::SchedulePostHeroSelectionTravel()
+{
+	UWorld* World = GetWorld();
+	if (!GetOwner()->HasAuthority() || !bPhaseActive || bTravelCommitted || bPostSelectionTravelFailed || !World || World->bIsTearingDown
+		|| !ShouldTravelToPostHeroSelectionMap()) return;
+	if (!IsCurrentRosterReadyForTravel()) { CancelPendingTravel(); return; }
+	if (World->GetTimerManager().TimerExists(PendingTravelTimerHandle)) return;
+	World->GetTimerManager().SetTimer(PendingTravelTimerHandle, this, &ThisClass::CommitPendingTravel, 5.f, false);
+	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: delaying staging travel 5.0 seconds for remote selection replication"));
+}
+
+void UBwayHeroSelectionPhaseComponent::CommitPendingTravel()
+{
+	CancelPendingTravel();
+	if (!bPhaseActive || bTravelCommitted) return;
+	TryTravelToPostHeroSelectionMap();
+}
+
+bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap(bool bExplicitRetry)
+{
+	if (!GetOwner()->HasAuthority() || bTravelCommitted || (bPostSelectionTravelFailed && !bExplicitRetry))
 	{
 		return false;
 	}
 
 	UWorld* World = GetWorld();
 	AGameModeBase* GameMode = World ? World->GetAuthGameMode() : nullptr;
-	if (!World || !GameMode)
+	if (!World || World->bIsTearingDown || !GameMode)
 	{
 		return false;
 	}
@@ -503,6 +620,12 @@ bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
 	const FString& OptionsString = GameMode->OptionsString;
 	if (!UGameplayStatics::HasOption(OptionsString, TEXT("HeroSelectStaging")))
 	{
+		return false;
+	}
+	if (!IsCurrentRosterReadyForTravel())
+	{
+		CancelPendingTravel();
+		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: staging travel deferred; current roster has unlocked or invalid heroes"));
 		return false;
 	}
 
@@ -517,6 +640,7 @@ bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
 
 	if (TargetMap.IsEmpty())
 	{
+		SetPostSelectionTravelFailed(true);
 		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: HeroSelectStaging is set but no HeroSelectTargetMap or PostHeroSelectionMapID was provided"));
 		return false;
 	}
@@ -535,14 +659,41 @@ bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap() const
 
 	if (UGameplayStatics::HasOption(OptionsString, TEXT("listen")))
 	{
+		// Keep the bare listen marker. ProcessClientTravel strips '?listen' before
+		// sending the URL to remote clients; '?listen=1' is not stripped and makes
+		// a client derive listen-server mode during the destination travel.
 		TravelURL += TEXT("?listen");
 	}
 
 	TravelURL += TEXT("?SkipHeroSelection=1");
 	TravelURL += TEXT("?SeamlessTravel");
+	UBwayGameplayUrlLibrary::AppendMatchRulesToTravelUrl(TravelURL, OptionsString);
 
+	// Mark the commit before crossing into engine travel callbacks. A failed
+	// request leaves selection open, with no unchanged automatic travel retry.
+	bTravelCommitted = true;
+	CancelPendingTravel();
+	if (!World->ServerTravel(TravelURL, /*bAbsolute=*/true, /*bShouldSkipGameNotify=*/false))
+	{
+		bTravelCommitted = false;
+		SetPostSelectionTravelFailed(true);
+		UE_LOG(LogTemp, Error, TEXT("BwayHeroSelectionPhaseComponent: staging travel request failed; selection remains open URL=%s"), *TravelURL);
+		return false;
+	}
+	bPhaseActive = false;
+	bHeroSelectionCompleted = true;
+	SetPostSelectionTravelFailed(false);
+	World->GetTimerManager().ClearTimer(RosterRecheckTimerHandle);
+	if (auto* Manager = GetSelectionManager())
+	{
+		Manager->OnAllPlayersReady.RemoveDynamic(this, &ThisClass::HandleAllPlayersReady);
+		Manager->EndHeroSelection();
+	}
+	HideHeroSelectionUI();
+	PopHeroSelectionUIFromPlayers();
+	OnHeroSelectionPhaseEnded.Broadcast();
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Hero selection complete; travelling to match URL %s"), *TravelURL);
-	return World->ServerTravel(TravelURL, /*bAbsolute=*/true, /*bShouldSkipGameNotify=*/false);
+	return true;
 }
 
 bool UBwayHeroSelectionPhaseComponent::ShouldSkipHeroSelectionPhase() const
@@ -676,7 +827,10 @@ void UBwayHeroSelectionPhaseComponent::AssignRandomHeroes(bool bOnlyBots, bool b
 
 					if (!BwayPS->GetSelectedHeroId().IsValid() || !BwayPS->IsHeroLocked())
 					{
-						Manager->AssignHeroToPlayer(BwayPS, DirectPieBotHero, bLockImmediately);
+						if (!Manager->AssignHeroToPlayer(BwayPS, DirectPieBotHero, bLockImmediately))
+						{
+							Manager->AssignRandomHeroToPlayer(BwayPS, FPrimaryAssetId(), bLockImmediately);
+						}
 					}
 				}
 			}

@@ -15,13 +15,14 @@ class BREAKAWAYCORERUNTIME_API UBwayUpgradeShopWidget : public UCommonActivatabl
 {
 	GENERATED_BODY()
 public:
+	UBwayUpgradeShopWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-	virtual FReply NativeOnKeyDown(const FGeometry& Geometry, const FKeyEvent& Event) override;
+	virtual FReply NativeOnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event) override;
 private:
 	UFUNCTION() void Refresh();
 	UFUNCTION() void BuySelected();

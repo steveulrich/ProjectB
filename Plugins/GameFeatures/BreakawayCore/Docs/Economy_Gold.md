@@ -22,11 +22,15 @@ Modified via **instant GameplayEffects** (created at runtime in RoundManagement)
 | Kill | `NotifyPlayerKilled` → `GoldAwardForKill` |
 | Goal scored | Team-wide award on `OnRelicScored` |
 
-## Spending (vertical slice)
+## Spending (final-alpha parity)
 
 **Buildables do not spend gold.** Placement is once-per-round and free (`UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable` — no gold check). `UBwayBuildableDataAsset::Cost` may remain `0` for slice content.
 
-**Deferred (post–vertical slice):** gold spend on **stat enhancers / items**, not buildable purchase. See Core Loop Section 3 principles.
+**Match upgrades are required for the final-public-alpha parity bar.** The current provisional catalog
+contains attack-strength and armor traits with four ranks each. Purchases are server-authoritative and
+available during round preparation, while dead, and inside an eligible teammate base. The catalog,
+prices, and effect tuning remain replaceable until the reference inventory is recovered; the shop UI
+and multiplayer lifecycle still require packaged verification. See `Match_Upgrade_Economy.md`.
 
 ## Boundaries
 
@@ -53,8 +57,8 @@ Create/wire the compact match widget with `Scripts/setup-step19-5-match-hud.mjs`
 
 Display-only; no direct gold mutation from BP without server authority GE.
 
-## Future (Deferred)
+## Out of the current slice
 
-- Stat enhancer / item shop spend
 - `UBwaySaveGame` for campaign/meta
-- Structured GE assets (`GE_AwardGold_Kill`) instead of transient effects
+- Additional reference equipment effects beyond the current attack/armor catalog
+- Structured GE assets (`GE_AwardGold_Kill`) instead of the current server-side award path

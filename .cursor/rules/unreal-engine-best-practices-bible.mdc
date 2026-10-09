@@ -1,0 +1,20 @@
+---
+description: Research-backed Unreal architecture, GAS, replication, data, and diagnostics guardrails
+alwaysApply: true
+---
+
+# Unreal Engine best-practice guardrails
+
+Use `AI_Planning/UNREAL_ENGINE_BEST_PRACTICES_BIBLE.md` as the detailed project reference. Verify version-sensitive APIs against the project’s actual engine checkout.
+
+- Prefer Lyra extension, Game Feature Plugins, modular injection, focused components, and data-driven configuration over parallel architectures.
+- Decide ownership, lifetime, authority, replication, and failure cleanup before choosing a class or subsystem.
+- Treat Gameplay Tags as reviewed hierarchical contracts across GAS, animation, input, UI, and feature activation.
+- Change attributes through Gameplay Effects; use the appropriate ScalableFloat, attribute-based modifier, MMC, or Execution for the output shape.
+- End every ability and clean up tasks, delegates, timers, temporary tags, effects, and spawned objects on every terminal path.
+- Play ability montages through the ASC and define animation-timed windows with notify states and explicit server validation.
+- Validate collision query families, profiles, owner ignores, sweeps, and actor deduplication before tuning combat.
+- Keep server outcomes authoritative while using prediction and cues for responsive local feedback.
+- Keep runtime/editor module dependencies directional and use soft references only when the load lifetime requires them.
+- Profile before optimizing; capture stats, logs, Visual Logger or Gameplay Debugger evidence, and reproducible test conditions.
+- Treat external guidance as reference material, not as authority over project code, engine version, or existing project rules.

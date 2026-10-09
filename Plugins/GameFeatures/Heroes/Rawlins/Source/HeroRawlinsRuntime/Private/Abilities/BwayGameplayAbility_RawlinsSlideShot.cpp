@@ -1,8 +1,11 @@
 #include "Abilities/BwayGameplayAbility_RawlinsSlideShot.h"
 
 #include "Abilities/BwayGameplayEffect_RawlinsCooldowns.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
+#include "AbilitySystemComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
+#include "GameplayEffectTypes.h"
 #include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayAbility_RawlinsSlideShot)
@@ -86,6 +89,15 @@ void UBwayGameplayAbility_RawlinsSlideShot::ActivateAbility(
 
 	const FVector SlideVelocity = SlideDirection * (ActiveSlideDistance / FMath::Max(ActiveSlideDuration, 0.05f));
 	CachedCharacter->LaunchCharacter(SlideVelocity, true, true);
+
+	if (UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get())
+	{
+		FGameplayCueParameters CueParams;
+		CueParams.Location = FVector_NetQuantize10(CachedCharacter->GetActorLocation());
+		CueParams.Instigator = CachedCharacter;
+		CueParams.EffectCauser = CachedCharacter;
+		ASC->ExecuteGameplayCue(BwayGameplayCueTags::MovementSlide, CueParams);
+	}
 
 	if (UWorld* World = GetWorld())
 	{

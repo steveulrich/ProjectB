@@ -2,13 +2,20 @@
 
 #include "Abilities/Tasks/AbilityTask_WaitTargetData.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemGlobals.h"
 #include "ActorPlacementTargeting/BwayTargetActor_ActorPlacementFace.h"
 #include "ActorPlacementTargeting/BwayWorldReticle_ActorVisualization.h"
 #include "Buildable/BwayBuildablePlacementLibrary.h"
+#include "Buildable/BwaySiegeEngineBuildable.h"
+#include "Buildable/BwayPlacementValidation.h"
 #include "Buildable/BuildableBase.h"
 #include "BwayGameplayTags.h"
 #include "Abilities/GameplayAbilityTargetTypes.h"
 #include "Engine/CollisionProfile.h"
+#include "Engine/World.h"
+#include "EngineUtils.h"
+#include "GameFramework/Pawn.h"
+#include "GameFramework/PlayerStart.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInterface.h"
 
@@ -223,12 +230,35 @@ void UBwayGameplayAbility_PlaceBuildable::ConfigurePlacementTargetActor(ABwayTar
 	TargetActor->bDebug = bDebugTargeting;
 }
 
+FBwayPlacementQuery UBwayGameplayAbility_PlaceBuildable::MakePlacementQuery(const UBwayBuildableDataAsset* BuildableData, bool bAuthorityTolerance) const
+{
+    APlayerController* PC = GetCurrentActorInfo() ? GetCurrentActorInfo()->PlayerController.Get() : nullptr;
+    if (!BuildableData || !TargetActorClass || !PC) return FBwayPlacementQuery();
+    FBwayPlacementQuery Query = TargetActorClass->GetDefaultObject<ABwayTargetActor_ActorPlacementFace>()
+        ->MakePlacementQuery(GetAvatarActorFromActorInfo(), PC);
+    Query.PlacedClass = BuildableData->BuildableActorClass;
+    Query.AuthoredBounds = BuildableData->GetPlacementLocalBounds();
+    Query.MaxRange = MaxPlacementDistance;
+    Query.RangeTolerance = bAuthorityTolerance ? 100.f : 0.f;
+    Query.MaxSlopeDegrees = MaxPlacementAngleDegrees;
+    Query.MaxFootprintZDifference = MaxFootprintZDifference;
+    Query.TraceUp = FootprintTraceUpOffset;
+    Query.TraceDown = FootprintTraceDownLength;
+    return Query;
+}
+
 void UBwayGameplayAbility_PlaceBuildable::OnTargetDataValid(const FGameplayAbilityTargetDataHandle& Data)
 {
-	UE_LOG(LogBwayPlaceBuildable, Log, TEXT("PlaceBuildable OnTargetDataValid Valid=%d"), Data.IsValid(0) ? 1 : 0);
-
 	const FGameplayAbilityActivationInfo ActivationInfo = GetCurrentActivationInfo();
+	const bool bAuthority = HasAuthority(&ActivationInfo);
+	UE_LOG(LogBwayPlaceBuildable, Log,
+		TEXT("PlaceBuildable OnTargetDataValid Valid=%d authority=%d entries=%d"),
+		Data.IsValid(0) ? 1 : 0,
+		bAuthority ? 1 : 0,
+		Data.Num());
+
 	bool bShouldEndAbility = false;
+	bool bAccepted = false;
 
 	if (Data.Num() == 1 && Data.IsValid(0)
 		&& Data.Get(0)->GetScriptStruct() == FGameplayAbilityTargetData_SingleTargetHit::StaticStruct())
@@ -244,14 +274,20 @@ void UBwayGameplayAbility_PlaceBuildable::OnTargetDataValid(const FGameplayAbili
 						? UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(GetAvatarActorFromActorInfo(), PC)
 						: nullptr;
 
-					if (BuildableData && CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+					if (BuildableData && TargetActorClass)
 					{
-						FTransform SpawnTransform;
-						if (UBwayBuildablePlacementLibrary::MakePlacementTransformFromHit(HitData->HitResult, PC, SpawnTransform))
+						const FBwayPlacementQuery Query = MakePlacementQuery(BuildableData, true);
+						const FPlacementValidationResult Placement = Query.ValidateSubmittedHit(HitData->HitResult);
+						FText FailureReason;
+						if (Placement.bIsValid
+							&& UBwayBuildablePlacementLibrary::CanPlayerPlaceBuildable(GetAvatarActorFromActorInfo(), PC, BuildableData, FailureReason)
+							&& CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
 						{
+							const FTransform SpawnTransform(Placement.PlacementRotation, Placement.AdjustedLocation);
 							if (UBwayBuildablePlacementLibrary::SpawnBuildableForPlayer(GetAvatarActorFromActorInfo(), PC, BuildableData, SpawnTransform))
 							{
 								bShouldEndAbility = true;
+								bAccepted = true;
 							}
 						}
 					}
@@ -267,6 +303,10 @@ void UBwayGameplayAbility_PlaceBuildable::OnTargetDataValid(const FGameplayAbili
 	// UserConfirmed targeting ends its task after this callback, including on rejection.
 	// End the ability as well so a failed commit/spawn cannot retain placement tags or input bindings.
 	ActiveWaitTargetDataTask = nullptr;
+	UE_LOG(LogBwayPlaceBuildable, Log,
+		TEXT("PlaceBuildable TargetDataResult authority=%d accepted=%d"),
+		bAuthority ? 1 : 0,
+		bAccepted ? 1 : 0);
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, !bShouldEndAbility);
 }
 
@@ -276,3 +316,74 @@ void UBwayGameplayAbility_PlaceBuildable::OnTargetDataCancelled(const FGameplayA
 	ActiveWaitTargetDataTask = nullptr;
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
+
+#if !UE_BUILD_SHIPPING
+bool UBwayGameplayAbility_PlaceBuildable::FindDevelopmentGroundTarget(FHitResult& OutHit) const
+{
+    APlayerController* PC = GetCurrentActorInfo() ? GetCurrentActorInfo()->PlayerController.Get() : nullptr;
+    const auto* Data = PC ? UBwayBuildablePlacementLibrary::ResolveBuildableDataForPlayer(GetAvatarActorFromActorInfo(), PC) : nullptr;
+    const FBwayPlacementQuery Query = MakePlacementQuery(Data, false);
+    if (!Query.World || !Query.Source) return false;
+    FCollisionQueryParams Params(SCENE_QUERY_STAT(BwayBuildableFixtureGround), true);
+    Params.AddIgnoredActor(Query.Source);
+    const FVector Origin = Query.Source->GetActorLocation();
+    // Rolling barrels do not consume themselves on pawn proximity. The spawn exclusion
+    // isolates stationary persistence probes (particularly Jail), not legal placement.
+    const bool bRollingFixture = Data && Data->BuildableActorClass && Data->BuildableActorClass->IsChildOf<ABwaySiegeEngineBuildable>();
+    const double FixtureClearanceSquared = bRollingFixture ? 0.0 : 1000.0 * 1000.0;
+    // A held captive now occupies the former trap's test area. Use the live
+    // trap trigger envelope around that pawn instead of the broad spawn margin;
+    // the replacement must still stay outside actual overlap and placement bounds.
+    float LiveTriggerRadius = 0.f;
+    for (TActorIterator<ABuildableActor> It(Query.World); It; ++It)
+        if (Data && It->GetClass() == Data->BuildableActorClass)
+            if (const auto* Sphere = It->FindComponentByClass<USphereComponent>())
+                LiveTriggerRadius = FMath::Max(LiveTriggerRadius, Sphere->GetScaledSphereRadius());
+    int32 Hits = 0, ClearanceRejected = 0, GeometryRejected = 0;
+    auto TryGround = [&](float Distance, float Yaw, bool bFallback)
+    {
+        const FVector Point = Origin + FRotator(0, Yaw + Query.Source->GetActorRotation().Yaw, 0).Vector() * Distance;
+        FHitResult Hit;
+        if (!Query.World->LineTraceSingleByChannel(Hit, Point + FVector(0,0,200), Point - FVector(0,0,3000), Query.CollisionChannel, Params)) return false;
+        ++Hits;
+        // A persistence probe must not accidentally consume a Jail trap when round-reset
+        // pawns appear. This is fixture isolation, not a production placement exclusion.
+        bool bNearPawnOrSpawn = false;
+        for (TActorIterator<APawn> It(Query.World); It; ++It)
+        {
+            double PawnClearanceSquared = FixtureClearanceSquared;
+            const auto* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(*It);
+            if (LiveTriggerRadius > 0.f && ASC && ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Jailed))
+                PawnClearanceSquared = FMath::Square(double(LiveTriggerRadius + It->GetSimpleCollisionRadius() + 50.f));
+            if (FVector::DistSquared2D(It->GetActorLocation(), Hit.ImpactPoint) < PawnClearanceSquared) { bNearPawnOrSpawn = true; break; }
+        }
+        if (!bNearPawnOrSpawn) for (TActorIterator<APlayerStart> It(Query.World); It; ++It)
+            if (FVector::DistSquared2D(It->GetActorLocation(), Hit.ImpactPoint) < FixtureClearanceSquared) { bNearPawnOrSpawn = true; break; }
+        if (bNearPawnOrSpawn) { ++ClearanceRejected; return false; }
+        if (Query.ValidateSubmittedHit(Hit).bIsValid)
+        {
+            OutHit = Hit;
+            UE_LOG(LogTemp, Display, TEXT("BwayBuildableAudit: GroundSearch valid=1 rolling=%d maxRange=%.1f hits=%d clearanceRejected=%d geometryRejected=%d distance=%.1f fallback=%d"), bRollingFixture, Query.MaxRange, Hits, ClearanceRejected, GeometryRejected, Distance, bFallback);
+            return true;
+        }
+        ++GeometryRejected;
+        return false;
+    };
+    // Keep previously valid fixture routes unchanged. If a new round's spawn
+    // has no legal point on the sparse grid, search a bounded denser grid using
+    // the exact same production geometry checks and fixture spawn clearance.
+    for (float Distance : {1600.f, 1200.f, 900.f, 600.f, 350.f})
+    for (float Yaw : {0.f, 45.f, -45.f, 90.f, -90.f, 135.f, -135.f, 180.f})
+        if (TryGround(Distance, Yaw, false)) return true;
+    for (float Distance : {1950.f, 1800.f, 1650.f, 1500.f, 1350.f, 1200.f, 1050.f, 900.f, 750.f, 600.f, 450.f, 300.f})
+    for (int32 Direction = 0; Direction < 16; ++Direction)
+        if (TryGround(Distance, Direction * 22.5f, true)) return true;
+    UE_LOG(LogTemp, Display, TEXT("BwayBuildableAudit: GroundSearch valid=0 rolling=%d maxRange=%.1f hits=%d clearanceRejected=%d geometryRejected=%d x=%.1f y=%.1f z=%.1f"), bRollingFixture, Query.MaxRange, Hits, ClearanceRejected, GeometryRejected, Origin.X, Origin.Y, Origin.Z);
+    return false;
+}
+
+void UBwayGameplayAbility_PlaceBuildable::RunDevelopmentTargetDataProbe(const FGameplayAbilityTargetDataHandle& Data)
+{
+	OnTargetDataValid(Data);
+}
+#endif

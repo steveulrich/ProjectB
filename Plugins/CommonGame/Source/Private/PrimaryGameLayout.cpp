@@ -17,8 +17,10 @@ class UObject;
 /*static*/ UPrimaryGameLayout* UPrimaryGameLayout::GetPrimaryGameLayoutForPrimaryPlayer(const UObject* WorldContextObject)
 {
 	UGameInstance* GameInstance = UGameplayStatics::GetGameInstance(WorldContextObject);
-	APlayerController* PlayerController = GameInstance->GetPrimaryPlayerController(false);
-	return GetPrimaryGameLayout(PlayerController);
+	// The layout belongs to the local player and survives travel. Looking up the
+	// primary controller also requires its replicated PlayerState, which may not
+	// have arrived when the frontend experience requests its main screen.
+	return GameInstance ? GetPrimaryGameLayout(GameInstance->GetFirstGamePlayer()) : nullptr;
 }
 
 /*static*/ UPrimaryGameLayout* UPrimaryGameLayout::GetPrimaryGameLayout(APlayerController* PlayerController)

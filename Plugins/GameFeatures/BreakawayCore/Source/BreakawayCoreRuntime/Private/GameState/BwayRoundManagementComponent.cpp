@@ -12,9 +12,12 @@
 #include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "BwayGameState.h"
+#include "BreakawayGameMode.h"
 #include "BwayPlayerState.h"
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
+#include "Character/LyraHealthComponent.h"
+#include "GameModes/LyraGameMode.h"
 #include "Buildable/BuildableBase.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "Economy/BwayGameplayEffect_PassiveGold.h"
@@ -26,18 +29,38 @@
 #include "GameModes/LyraGameState.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "Attributes/BwayHeroAttributeSet.h"
 #include "GameplayEffect.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/GameModeBase.h"
 #include "AIController.h"
 #include "TimerManager.h"
+#include "HAL/IConsoleManager.h"
 #include "Net/UnrealNetwork.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayRoundManagementComponent)
 
 namespace BwayRoundManagement
 {
+#if !UE_BUILD_SHIPPING
+TAutoConsoleVariable<int32> RespawnTimerTrace(TEXT("bway.Test.RespawnTimerTrace"), 0,
+	TEXT("Development-only native respawn timer observations for an owned audit."));
+
+void TraceRespawnTimer(UWorld* World, AController* Controller, const FTimerHandle& Timer, const TCHAR* Event)
+{
+	if (!RespawnTimerTrace.GetValueOnGameThread() || !World || !Controller) return;
+	const auto* State = World->GetGameState<ABwayGameState>();
+	const auto* Player = Cast<ABwayPlayerState>(Controller->PlayerState);
+	if (!State || !Player) return;
+	const auto& Manager = World->GetTimerManager();
+	UE_LOG(LogTemp, Display, TEXT("BwayRespawnTimer: event=%s id=%d world=%s serverTime=%.6f wall=%.6f remaining=%.6f elapsed=%.6f rate=%.6f deadline=%.6f round=%d"),
+		Event, Player->GetPlayerId(), *World->GetPathName(), State->GetServerWorldTimeSeconds(), FPlatformTime::Seconds(),
+		Manager.GetTimerRemaining(Timer), Manager.GetTimerElapsed(Timer), Manager.GetTimerRate(Timer),
+		Player->GetRespawnSchedule().ServerEndTime, Player->GetRespawnSchedule().RoundNumber);
+}
+#endif
+
 bool IsHumanPlayerController(const AController* Controller)
 {
 	return Controller && Controller->IsA<APlayerController>() && !Controller->IsA<AAIController>();
@@ -61,6 +84,7 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundState);
+	DOREPLIFETIME(UBwayRoundManagementComponent, PointsToWin);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundDuration);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
@@ -148,6 +172,12 @@ bool UBwayRoundManagementComponent::ShouldBlockPawnSpawning() const
 		|| CurrentMatchPhase == EBwayMatchPhase::PostMatch);
 }
 
+void UBwayRoundManagementComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	ClearRespawnTimers();
+	Super::EndPlay(EndPlayReason);
+}
+
 void UBwayRoundManagementComponent::SetMatchPhase(EBwayMatchPhase NewPhase)
 {
 	if (GetOwnerRole() != ROLE_Authority || CurrentMatchPhase == NewPhase)
@@ -160,6 +190,7 @@ void UBwayRoundManagementComponent::SetMatchPhase(EBwayMatchPhase NewPhase)
 	if (PreviousPhase == EBwayMatchPhase::Playing && NewPhase != EBwayMatchPhase::Playing)
 	{
 		ClearBetweenRoundTimer();
+		ClearRespawnTimers();
 	}
 
 	CurrentMatchPhase = NewPhase;
@@ -768,18 +799,13 @@ void UBwayRoundManagementComponent::CompletePostRoundPhase()
 void UBwayRoundManagementComponent::StopRoundFSM()
 {
 	RemovePassiveGoldIncome();
+	ClearRespawnTimers();
 
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
 		World->GetTimerManager().ClearTimer(BetweenRoundTimerHandle);
 		World->GetTimerManager().ClearTimer(PreRoundTimerHandle);
-
-		for (TPair<TWeakObjectPtr<AController>, FTimerHandle>& Pair : RespawnTimers)
-		{
-			World->GetTimerManager().ClearTimer(Pair.Value);
-		}
-		RespawnTimers.Empty();
 	}
 
 	if (ABwayGameState* BwayGS = GetBwayGameState())
@@ -1106,6 +1132,10 @@ void UBwayRoundManagementComponent::SetRoundState(ERoundState NewState)
 	if (CurrentRoundState != NewState)
 	{
 		CurrentRoundState = NewState;
+		if (NewState != ERoundState::RoundActive)
+		{
+			ClearRespawnTimers();
+		}
 
 		// Handle state transitions
 		switch (NewState)
@@ -1329,7 +1359,8 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: No ScoringComponent found! Cannot award score."));
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Round ended! Team %d wins"), WinningTeam + 1);
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Round ended! Team %d wins (round=%d condition=%d)"),
+		WinningTeam + 1, CurrentRoundNumber, int32(WinCondition));
 
 	OnRoundEnded.Broadcast(WinningTeam, WinCondition, CurrentRoundNumber);
 
@@ -1373,6 +1404,11 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 
 void UBwayRoundManagementComponent::ResetRoundState()
 {
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+	ClearRespawnTimers();
 	// Remove buildables that should not persist between rounds before respawning players.
 	for (TActorIterator<ABuildableActor> It(GetWorld()); It; ++It)
 	{
@@ -1415,6 +1451,23 @@ void UBwayRoundManagementComponent::ResetRoundState()
 			{
 				BotCreation->EnsureBotsForRound();
 			}
+
+			// Round reset replaces every pawn outside the individual death timers.
+			// Recount actual successful spawns so the prior elimination's zero cannot
+			// persist into the next round (or credit a failed spawn as living).
+			for (int32 TeamIndex = 0; TeamIndex < 2; ++TeamIndex)
+			{
+				const FTeamInfo& Team = BwayGS->GetTeamInfo(TeamIndex);
+				int32 Alive = 0;
+				for (APlayerState* PS : Team.TeamMembers)
+				{
+					const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(IsValid(PS) ? PS->GetPawn() : nullptr);
+					Alive += Health && !Health->IsDeadOrDying() && Health->GetHealth() > 0.0f ? 1 : 0;
+				}
+				BwayGS->UpdateTeamAliveCount(TeamIndex, Alive);
+				UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Round reset team=%d alive=%d members=%d"), TeamIndex, Alive, Team.TeamMembers.Num());
+			}
+			BwayGS->ForceNetUpdate();
 		}
 	}
 }
@@ -1546,70 +1599,183 @@ int32 UBwayRoundManagementComponent::DetermineRelicPossessionTeam() const
 void UBwayRoundManagementComponent::OnPlayerDied(AController* VictimController, AController* KillerController)
 {
 	ABwayGameState* BwayGS = GetBwayGameState();
-	if (!BwayGS || !VictimController || !VictimController->PlayerState)
+	if (GetOwnerRole() != ROLE_Authority || !BwayGS || !IsValid(VictimController)
+		|| !VictimController->PlayerState || !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
 	{
 		return;
 	}
 
 	// Update alive count via GameState's team tracking
+	// Keep the Blueprint signature, but derive awards from server-observed health loss,
+	// not a caller-supplied killer controller or the lifetime of the attacker's pawn.
+	auto* Victim = Cast<ABwayPlayerState>(VictimController->PlayerState);
+	auto* Pawn = Cast<ABwayCharacterWithAbilities>(VictimController->GetPawn());
+	ABwayPlayerState* Killer = nullptr;
+	TArray<ABwayPlayerState*> Assisters;
+	if (!Victim || !BwayGS->PlayerArray.Contains(Victim) || !Pawn || !Pawn->ConsumeCombatCredit(Killer, Assisters))
+	{
+		return;
+	}
+	Victim->AddDeath();
+	if (Killer)
+	{
+		Killer->AddKill();
+		ApplyGoldDeltaToPlayerState(Killer, GoldAwardForKill);
+	}
+	for (auto* Assister : Assisters)
+	{
+		Assister->AddAssist();
+		ApplyGoldDeltaToPlayerState(Assister, GoldAwardForAssist);
+	}
+
 	BwayGS->OnPlayerDied(VictimController->PlayerState);
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Player %s died"),
 		*VictimController->PlayerState->GetPlayerName());
 
-	if (KillerController && KillerController != VictimController && KillerController->PlayerState)
-	{
-		ApplyGoldDeltaToPlayerState(KillerController->PlayerState, GoldAwardForKill);
-	}
-
 	// Check for team elimination
 	CheckTeamElimination();
 
-	// Schedule respawn
-	FTimerHandle& RespawnTimer = RespawnTimers.FindOrAdd(VictimController);
+	// Elimination can end the round synchronously. Never add a timer after its cleanup.
+	if (!IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive)
+	{
+		return;
+	}
+
+	FPendingRespawn& Pending = RespawnTimers.FindOrAdd(VictimController);
+	Pending.StartTime = BwayGS->GetServerWorldTimeSeconds();
+	Pending.BaseDelay = RespawnDelay;
+	Pending.Round = CurrentRoundNumber;
+	Pending.AppliedReduction = -1.0f;
+	RefreshRespawnSchedule(Victim);
+}
+
+void UBwayRoundManagementComponent::RefreshRespawnSchedule(APlayerState* PlayerState)
+{
+	ABwayGameState* BwayGS = GetBwayGameState();
+	ABwayPlayerState* Player = Cast<ABwayPlayerState>(PlayerState);
+	AController* Controller = Player ? Cast<AController>(Player->GetOwner()) : nullptr;
+	if (GetOwnerRole() != ROLE_Authority || !BwayGS || !IsValid(Controller)
+		|| Controller->PlayerState != Player || Controller->GetWorld() != GetWorld()
+		|| !BwayGS->PlayerArray.Contains(Player) || !IsRoundLifecycleActive()
+		|| CurrentRoundState != ERoundState::RoundActive) return;
+	FPendingRespawn* Pending = RespawnTimers.Find(Controller);
+	if (!Pending || Pending->Round != CurrentRoundNumber) return;
+	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	const UBwayHeroAttributeSet* Hero = ASC ? ASC->GetSet<UBwayHeroAttributeSet>() : nullptr;
+	const float RawReduction = Hero ? Hero->GetRespawnTimeReduction() : 0.0f;
+	const float Reduction = FMath::IsFinite(RawReduction) ? FMath::Clamp(RawReduction, 0.0f, 1.0f) : 0.0f;
+	if (Pending->AppliedReduction == Reduction) return;
+	Pending->AppliedReduction = Reduction;
+	// A zero timer rate cancels a timer in Unreal. Keep even a fully reduced or
+	// already elapsed deadline asynchronous and positive, outside the shop transaction.
+	constexpr float MinimumDelay = 0.05f;
+	const float BaseDelay = FMath::IsFinite(Pending->BaseDelay) ? FMath::Max(MinimumDelay, Pending->BaseDelay) : MinimumDelay;
+	const double Now = BwayGS->GetServerWorldTimeSeconds();
+	const double Elapsed = FMath::Max(0.0, Now - Pending->StartTime);
+	const float RemainingDelay = static_cast<float>(FMath::Max(static_cast<double>(MinimumDelay), BaseDelay * (1.0f - Reduction) - Elapsed));
+	const TWeakObjectPtr<AController> WeakVictim(Controller);
+	const int32 DeathRound = Pending->Round;
+	FTimerHandle& RespawnTimer = Pending->Timer;
 	GetWorld()->GetTimerManager().SetTimer(RespawnTimer,
-		[this, VictimController]() { RespawnPlayer(VictimController); },
-		RespawnDelay, false);
+		FTimerDelegate::CreateWeakLambda(this, [this, WeakVictim, DeathRound]()
+		{
+			if (WeakVictim.IsValid() && CurrentRoundNumber == DeathRound)
+			{
+#if !UE_BUILD_SHIPPING
+				if (const FPendingRespawn* Scheduled = RespawnTimers.Find(WeakVictim.Get()))
+					BwayRoundManagement::TraceRespawnTimer(GetWorld(), WeakVictim.Get(), Scheduled->Timer, TEXT("fire"));
+#endif
+				RespawnPlayer(WeakVictim.Get());
+			}
+		}),
+		RemainingDelay, false);
+	const float Remaining = GetWorld()->GetTimerManager().GetTimerRemaining(RespawnTimer);
+	Player->SetRespawnSchedule(Remaining > 0.0f ? Now + Remaining : 0.0, DeathRound);
+#if !UE_BUILD_SHIPPING
+	BwayRoundManagement::TraceRespawnTimer(GetWorld(), Controller, RespawnTimer, TEXT("schedule"));
+#endif
+}
+
+void UBwayRoundManagementComponent::ClearRespawnTimers()
+{
+	if (UWorld* World = GetWorld())
+	{
+		if (ABreakawayGameMode* Mode = World->GetAuthGameMode<ABreakawayGameMode>())
+		{
+			Mode->ClearPendingPlayerRestarts();
+		}
+		for (auto& Pair : RespawnTimers)
+		{
+			World->GetTimerManager().ClearTimer(Pair.Value.Timer);
+			if (AController* Controller = Pair.Key.Get())
+			{
+				if (ABwayPlayerState* Player = Cast<ABwayPlayerState>(Controller->PlayerState))
+				{
+					Player->SetRespawnSchedule(0.0, 0);
+				}
+			}
+		}
+	}
+	RespawnTimers.Empty();
 }
 
 void UBwayRoundManagementComponent::RespawnPlayer(AController* Controller)
 {
-	if (!Controller)
+	if (GetOwnerRole() != ROLE_Authority || !IsValid(Controller))
 	{
 		return;
+	}
+
+	FPendingRespawn PendingTimer;
+	if (!RespawnTimers.RemoveAndCopyValue(Controller, PendingTimer))
+	{
+		return;
+	}
+	GetWorld()->GetTimerManager().ClearTimer(PendingTimer.Timer);
+	// Consume the presentation schedule with its timer, including rejected restarts.
+	if (ABwayPlayerState* Player = Cast<ABwayPlayerState>(Controller->PlayerState))
+	{
+		Player->SetRespawnSchedule(0.0, 0);
 	}
 
 	ABwayGameState* BwayGS = GetBwayGameState();
-	APlayerController* PC = Cast<APlayerController>(Controller);
-
-	if (!PC || !PC->PlayerState)
+	ALyraGameMode* GM = GetWorld()->GetAuthGameMode<ALyraGameMode>();
+	if (!BwayGS || !GM || !Controller->PlayerState || Controller->GetWorld() != GetWorld()
+		|| !BwayGS->PlayerArray.Contains(Controller->PlayerState)
+		|| !IsRoundLifecycleActive() || CurrentRoundState != ERoundState::RoundActive
+		|| !GM->ControllerCanRestart(Controller))
 	{
 		return;
 	}
 
-	// Destroy old pawn if exists
+	// A different restart path must never cause us to destroy an already living pawn.
 	if (APawn* OldPawn = Controller->GetPawn())
 	{
+		const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(OldPawn);
+		if (Health && !Health->IsDeadOrDying() && Health->GetHealth() > 0.0f)
+		{
+			return;
+		}
+		Controller->UnPossess();
 		OldPawn->Destroy();
 	}
 
-	// Spawn new pawn via GameMode (the only thing GameMode should do — spawn pawns)
-	if (AGameModeBase* GM = GetWorld()->GetAuthGameMode())
+	// Both human and bot controllers use the same authoritative restart path.
+	Controller->ResetIgnoreInputFlags();
+	GM->RestartPlayer(Controller);
+
+	const ULyraHealthComponent* NewHealth = ULyraHealthComponent::FindHealthComponent(Controller->GetPawn());
+	if (!NewHealth || NewHealth->IsDeadOrDying() || NewHealth->GetHealth() <= 0.0f)
 	{
-		GM->RestartPlayer(Controller);
+		UE_LOG(LogTemp, Warning, TEXT("BwayRoundManagement: Restart did not produce a living pawn for %s"),
+			*GetNameSafe(Controller));
+		return;
 	}
 
-	// Update alive count
-	if (BwayGS)
-	{
-		BwayGS->OnPlayerRespawned(PC->PlayerState);
-	}
-
-	// Clear respawn timer
-	RespawnTimers.Remove(Controller);
-
+	BwayGS->OnPlayerRespawned(Controller->PlayerState);
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Player %s respawned"),
-		*PC->PlayerState->GetPlayerName());
+		*Controller->PlayerState->GetPlayerName());
 }
 
 void UBwayRoundManagementComponent::ApplyGoldDeltaToPlayerState(APlayerState* PlayerState, float GoldDelta) const

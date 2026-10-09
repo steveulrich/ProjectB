@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Physics/LyraCollisionChannels.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayRawlinsJailCage)
 
@@ -17,6 +18,7 @@ ABwayRawlinsJailCage::ABwayRawlinsJailCage()
 {
 	bPersistsBetweenRounds = false;
 	BuildTime = 0.f;
+	bUsePlacementAttackBounds = false;
 	PrimaryActorTick.bCanEverTick = false;
 
 	KitConfig = TSoftObjectPtr<UBwayRawlinsKitConfig>(
@@ -31,6 +33,10 @@ ABwayRawlinsJailCage::ABwayRawlinsJailCage()
 	// Block WorldDynamic so Rawlins bullets (ECC_WorldDynamic + Block) stop on the cage.
 	CageHitSphere->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);
 	CageHitSphere->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	CageHitSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	CageHitSphere->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon, ECR_Block);
+	CageHitSphere->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon_Capsule, ECR_Block);
+	CageHitSphere->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon_Multi, ECR_Block);
 	CageHitSphere->SetGenerateOverlapEvents(false);
 	CageHitSphere->CanCharacterStepUpOn = ECB_No;
 

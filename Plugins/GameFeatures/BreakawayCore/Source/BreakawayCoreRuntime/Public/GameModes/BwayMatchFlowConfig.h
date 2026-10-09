@@ -26,10 +26,10 @@ public:
 	bool bOrchestrateMatchFlow = true;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Rules", meta = (ClampMin = "1"))
-	int32 PointsToWin = 1;
+	int32 PointsToWin = 3;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Rules", meta = (ClampMin = "1"))
-	float RoundDuration = 90.0f;
+	float RoundDuration = 240.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Match Flow|Phases", meta = (ClampMin = "0"))
 	float PrematchDuration = 1.0f;

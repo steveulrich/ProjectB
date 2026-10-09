@@ -11,6 +11,7 @@
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameModes/LyraExperienceManagerComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "GameFramework/PlayerController.h"
 #include "GameFramework/GameSession.h"
 #include "Character/LyraPawnExtensionComponent.h"
 #include "AI/BwayRelicBotController.h"
@@ -55,6 +56,12 @@ void UBwayBotCreationComponent::BeginPlay()
 				FOnLyraExperienceLoaded::FDelegate::CreateUObject(this, &UBwayBotCreationComponent::OnExperienceLoaded));
 		}
 	}
+}
+
+void UBwayBotCreationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	GetWorld()->GetTimerManager().ClearTimer(PendingHumanTravelTimer);
+	Super::EndPlay(EndPlayReason);
 }
 
 void UBwayBotCreationComponent::SetNumBotsOverride(int32 InNumBots)
@@ -185,6 +192,28 @@ void UBwayBotCreationComponent::SpawnMissingBots()
 		return;
 	}
 
+	// Travelling controllers exist before their new PlayerStates join this
+	// GameState. Wait for those carried teams/heroes before filling bot slots.
+	const ABwayGameState* GameState = GetOwner<ABwayGameState>();
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (IsValid(PC) && !PC->IsActorBeingDestroyed() && (!PC->HasClientLoadedCurrentWorld()
+			|| !PC->PlayerState || !GameState || GameState->GetPlayerTeam(PC->PlayerState) < 0))
+		{
+			if (!bWaitingForHumanTravel)
+				UE_LOG(LogTemp, Log, TEXT("BwayBotCreation: Waiting for travelling human teams before assigning bot heroes"));
+			bWaitingForHumanTravel = true;
+			if (!GetWorld()->GetTimerManager().IsTimerActive(PendingHumanTravelTimer))
+				GetWorld()->GetTimerManager().SetTimer(PendingHumanTravelTimer, this, &ThisClass::SpawnMissingBots, 0.25f, true);
+			return;
+		}
+	}
+	GetWorld()->GetTimerManager().ClearTimer(PendingHumanTravelTimer);
+	if (bWaitingForHumanTravel)
+		UE_LOG(LogTemp, Log, TEXT("BwayBotCreation: Human travel complete; assigning remaining team heroes"));
+	bWaitingForHumanTravel = false;
+
 	SpawnedBotList.RemoveAll([](const TObjectPtr<AAIController>& Bot)
 	{
 		return !IsValid(Bot);
@@ -278,7 +307,12 @@ void UBwayBotCreationComponent::SpawnOneBot()
 				const FPrimaryAssetId DirectPieBotHero = UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroId(this);
 				if (DirectPieBotHero.IsValid())
 				{
-					SelectionManager->AssignHeroToPlayer(BotPlayerState, DirectPieBotHero, bLockImmediately);
+					// The editor preference cannot leave a bot unassigned when that
+					// hero is already taken by a teammate, including after rematch.
+					if (!SelectionManager->AssignHeroToPlayer(BotPlayerState, DirectPieBotHero, bLockImmediately))
+					{
+						SelectionManager->AssignRandomHeroToPlayer(BotPlayerState, FPrimaryAssetId(), bLockImmediately);
+					}
 				}
 				else
 				{
@@ -414,6 +448,8 @@ void UBwayBotCreationComponent::StopAllBotLogic()
 
 void UBwayBotCreationComponent::ShutdownAllBotsForTravel()
 {
+	GetWorld()->GetTimerManager().ClearTimer(PendingHumanTravelTimer);
+	bWaitingForHumanTravel = false;
 	if (!GetOwner()->HasAuthority())
 	{
 		return;

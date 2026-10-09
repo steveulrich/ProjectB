@@ -25,6 +25,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Combat")
 	static float ResolveFinalDamage(float RawDamage, const UAbilitySystemComponent* TargetASC);
 
+	/** Primary attacks may damage constructed enemy structures, including Jail cages. */
+	static bool ApplyDamageToEnemyBuildable(ABwayCharacterWithAbilities* InstigatorCharacter,
+		AActor* TargetActor, float RawDamage, AActor* EffectCauser = nullptr);
+
 	/** Apply SetByCaller damage to TargetActor using SourceASC (server authoritative). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Combat")
 	static bool ApplyDamageFromSource(

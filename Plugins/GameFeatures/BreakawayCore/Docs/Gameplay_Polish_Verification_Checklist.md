@@ -10,6 +10,11 @@ Session Frontend → Automation → filter `Breakaway.CombatPolish`:
 - [ ] `Breakaway.CombatPolish.Nameplates.ScaleEvaluation`
 - [ ] `Breakaway.CombatPolish.Cooldown.PercentMath`
 
+September 14, 2026 source recheck: `Breakaway.CombatPolish` passed all six registered tests,
+including number placement/color/staggered animation helpers, with zero test errors or warnings.
+The run is source-level evidence only; rendered presentation, physical input, VFX, LOS, and
+performance rows below remain acceptance work. Evidence: `Saved/Logs/team-gameplay-20260912/automation-combatpolish-37b.json`.
+
 ## Editor asset wiring
 
 1. Rebuild + restart editor (picks up `DefaultGame.ini` primary asset scans).

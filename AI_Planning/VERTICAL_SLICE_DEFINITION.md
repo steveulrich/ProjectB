@@ -22,7 +22,9 @@ Decisions in this file are the slice bar. The September 5 direction below takes 
 
 The [final-alpha evidence notes](./FINAL_ALPHA_PARITY.md) establish that September builds included match-gold purchases. The earn-only exclusion is superseded. One buildable per hero per round is supported by those sources. The full inventory and exact final build remain unresolved.
 
-Design-spec Capture-the-Relic: **4v4**, **four heroes**, **one persistable buildable per hero**, **match-only gold (earn, no spend)**.
+Design-spec Capture-the-Relic: **4v4**, **four heroes**, **one persistable buildable per hero**, and
+**match-only gold**. Final-public-alpha parity adds spending that gold on match upgrades; buildable
+placement remains free and the slice does not save campaign/meta state.
 
 ## Earlier scope table (September 5 direction takes precedence)
 
@@ -31,7 +33,7 @@ Design-spec Capture-the-Relic: **4v4**, **four heroes**, **one persistable build
 | Mode | 4v4 listen server; bots fill to 8; real LAN front-end host/find/join | Dedicated server hardening; internet session service requirement |
 | Heroes | Argus, Alona, Korryn, Rawlins | Full roster; campaign liberation |
 | Buildables | **One** per hero; persist across rounds in a Best-of-5 match | Second buildable; SaveGame / meta |
-| Gold | Earn in-match; persist between rounds; reset on match end | Spend on buildables or items; campaign SaveGame |
+| Gold | Earn in-match, spend on match upgrades, persist between rounds, reset on match end | Spend on buildables; campaign SaveGame |
 | Maps | `L_BW_DevMap` (CI / integration) and `L_BW_Dorado` (demo) at parity | New arena |
 | Campaign | — | Ascension Rites |
 | Art polish | Complete presentation integration using replaceable placeholder assets | Final production art and locked setting |
@@ -51,7 +53,7 @@ Status reflects the August 19, 2026, doc refresh. Editor 3/3 PIE is still requir
 | Best-of-5 rounds, 3 win conditions | Implemented |
 | Relic pass / throw / score | Implemented |
 | Relic fumble-on-damage | **C++ landed** (Step 22 PIE) |
-| Gold earned in-match; persists round-to-round | Implemented (no spend in slice) |
+| Gold earned/spent in-match; persists round-to-round | Source economy suite passed; packaged shop, lifecycle, and final-alpha catalog verification remain open |
 | One buildable per hero; persist Round 1 → Round 2 | C++ ready; prove on Step 22 |
 | Results → Lyra front-end | Widgets exist; `11-8` E2E still deferred |
 | Dorado parity with DevMap | **Open** |

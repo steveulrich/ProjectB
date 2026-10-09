@@ -48,6 +48,14 @@ public:
     // Visual effect for scoring state
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual|Effects")
     TSoftObjectPtr<UNiagaraSystem> ScoringEffect;
+
+    // Continuous world-space trail while thrown or passed. Stopped on every flight exit.
+    // Optional Niagara inputs: User.Team_Color and User.Trail_Length_Second.
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual|Effects")
+    TSoftObjectPtr<UNiagaraSystem> TrailEffect;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual|Effects", meta = (ClampMin = "0.05", ClampMax = "2.0", Units = "s"))
+    float TrailLifetimeSeconds = 0.25f;
     
     //-----------------------------------------------------------
     // Audio Feedback

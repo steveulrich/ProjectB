@@ -19,6 +19,9 @@ void UBwayHeroAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, MoveSpeedRating, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, MoveSpeedMultiplier, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, IncomingDamageMultiplier, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, CooldownReduction, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, LifeLeech, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBwayHeroAttributeSet, RespawnTimeReduction, COND_None, REPNOTIFY_Always);
 }
 
 void UBwayHeroAttributeSet::PreAttributeBaseChange(const FGameplayAttribute& Attribute, float& NewValue) const
@@ -42,6 +45,11 @@ void UBwayHeroAttributeSet::ClampAttribute(const FGameplayAttribute& Attribute, 
 	else if (Attribute == GetIncomingDamageMultiplierAttribute())
 	{
 		NewValue = FMath::Clamp(NewValue, 0.05f, 5.f);
+	}
+	else if (Attribute == GetCooldownReductionAttribute() || Attribute == GetLifeLeechAttribute()
+		|| Attribute == GetRespawnTimeReductionAttribute())
+	{
+		NewValue = FMath::IsFinite(NewValue) ? FMath::Clamp(NewValue, 0.f, 1.f) : 0.f;
 	}
 }
 
@@ -68,4 +76,19 @@ void UBwayHeroAttributeSet::OnRep_MoveSpeedMultiplier(const FGameplayAttributeDa
 void UBwayHeroAttributeSet::OnRep_IncomingDamageMultiplier(const FGameplayAttributeData& OldValue)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UBwayHeroAttributeSet, IncomingDamageMultiplier, OldValue);
+}
+
+void UBwayHeroAttributeSet::OnRep_CooldownReduction(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBwayHeroAttributeSet, CooldownReduction, OldValue);
+}
+
+void UBwayHeroAttributeSet::OnRep_LifeLeech(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBwayHeroAttributeSet, LifeLeech, OldValue);
+}
+
+void UBwayHeroAttributeSet::OnRep_RespawnTimeReduction(const FGameplayAttributeData& OldValue)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBwayHeroAttributeSet, RespawnTimeReduction, OldValue);
 }

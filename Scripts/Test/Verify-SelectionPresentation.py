@@ -12,7 +12,7 @@ from pathlib import Path
 import unreal
 
 
-def selection_frontend_snapshot(label, expected_peers=4):
+def selection_frontend_snapshot(label, expected_peers=4, verbose=False):
     library = lambda p: unreal.get_default_object(unreal.load_class(None, p))
     worlds = library('/Script/EditorScriptingUtilities.EditorLevelLibrary').call_method('GetPIEWorlds', (False,))
     widgets = library('/Script/UMG.WidgetBlueprintLibrary')
@@ -48,7 +48,11 @@ def selection_frontend_snapshot(label, expected_peers=4):
     report = {'scope': 'Four same-process PIE peers; selection presentation and frontend state only.', 'passed': True, 'peers': rows}
     path = Path(unreal.Paths.project_saved_dir()).resolve() / 'Logs' / f'codex-selection-frontend-{label}.json'
     path.write_text(json.dumps(report, indent=2), encoding='utf-8')
-    print(json.dumps({'evidence': str(path), **report}))
+    if verbose:
+        print(json.dumps({'evidence': str(path), **report}))
+    else:
+        print(json.dumps({'passed': True, 'expectedPeers': expected_peers, 'observedPeers': len(rows),
+                          'evidence': str(path), 'scope': report['scope']}))
     return report
 
 

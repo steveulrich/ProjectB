@@ -16,7 +16,7 @@ class ULyraButtonBase : public UCommonButtonBase
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void SetButtonText(const FText& InText);
+	LYRAGAME_API void SetButtonText(const FText& InText);
 	
 protected:
 	// UUserWidget interface

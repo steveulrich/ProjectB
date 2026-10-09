@@ -10,6 +10,7 @@
 #include "BwayGameplayAbility_Slide.generated.h"
 
 
+class ACharacter;
 class UGameplayEffect;
 class UInputAction;
 
@@ -30,11 +31,17 @@ protected:
 	UFUNCTION()
 	void OnInputRelease(float TimeHeld);
 
+	UFUNCTION()
+	void OnMovementModeChanged(ACharacter* Character, EMovementMode PreviousMovementMode, uint8 PreviousCustomMode);
+
 	/** Tag representing the sliding state, applied by this ability via ActivationOwnedTags. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Slide Trigger")
 	FGameplayTag SlidingStateTag; // Assign State.Movement.Sliding in BP
 
 private:
 	UPROPERTY(Transient)
-	mutable TObjectPtr<UBwayCharacterMovementComponent> CachedBwayMoveComp;
+	TObjectPtr<UBwayCharacterMovementComponent> CachedBwayMoveComp;
+
+	bool bEndingSlide = false;
+	uint64 ActivationSerial = 0;
 };

@@ -4,6 +4,8 @@
 #include "Abilities/BwayGameplayAbility.h"
 #include "BwayGameplayAbility_PlaceBuildable.generated.h"
 
+struct FBwayPlacementQuery;
+
 class ABwayTargetActor_ActorPlacementFace;
 class ABwayWorldReticle_ActorVisualization;
 class UAbilityTask_WaitTargetData;
@@ -67,6 +69,7 @@ protected:
 
 	/** Apply ExposeOnSpawn parameters to the deferred target actor before FinishSpawning. */
 	void ConfigurePlacementTargetActor(ABwayTargetActor_ActorPlacementFace* TargetActor, UBwayBuildableDataAsset* BuildableData);
+	FBwayPlacementQuery MakePlacementQuery(const UBwayBuildableDataAsset* BuildableData, bool bAuthorityTolerance) const;
 
 	UFUNCTION()
 	void OnTargetDataValid(const FGameplayAbilityTargetDataHandle& Data);
@@ -88,4 +91,12 @@ protected:
 
 	void BindPlacementInputDebugCallbacks(UAbilitySystemComponent* ASC);
 	void UnbindPlacementInputDebugCallbacks(UAbilitySystemComponent* ASC);
+
+#if !UE_BUILD_SHIPPING
+	public:
+	/** Development-only access point for validating malformed target-data cleanup. */
+	void RunDevelopmentTargetDataProbe(const FGameplayAbilityTargetDataHandle& Data);
+	/** Find real supported ground for a development transport fixture without bypassing geometry. */
+	bool FindDevelopmentGroundTarget(FHitResult& OutHit) const;
+#endif
 };

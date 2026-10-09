@@ -17,8 +17,14 @@
 #include "System/LyraGameData.h"
 #include "Teams/LyraTeamSubsystem.h"
 #include "TimerManager.h"
+#include "HAL/IConsoleManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayAlonaSunShrineBuildable)
+
+#if !UE_BUILD_SHIPPING
+static TAutoConsoleVariable<int32> CVarShrineHealAudit(TEXT("bway.Debug.ShrineHealing"), 0,
+	TEXT("Development-only native Shrine healing journal."), ECVF_Default);
+#endif
 
 ABwayAlonaSunShrineBuildable::ABwayAlonaSunShrineBuildable()
 {
@@ -213,6 +219,12 @@ void ABwayAlonaSunShrineBuildable::TickHeal()
 		return;
 	}
 
+	// Zero-build-time auras start before placement assigns the stored team.
+	// Reconcile actual overlaps at the healing cadence so initial occupants,
+	// replacement pawns and missed component overlap transitions remain correct.
+	AlliesInRadius.Reset();
+	SeedAlliesAlreadyInRadius();
+
 	TArray<TWeakObjectPtr<ABwayCharacterWithAbilities>> Snapshot;
 	Snapshot.Reserve(AlliesInRadius.Num());
 	for (const TObjectPtr<ABwayCharacterWithAbilities>& AllyPtr : AlliesInRadius)
@@ -258,14 +270,15 @@ void ABwayAlonaSunShrineBuildable::ApplyHealToAlly(ABwayCharacterWithAbilities* 
 	}
 
 	AActor* EffectInstigator = GetInstigator();
-	if (!EffectInstigator)
+	if (!IsValid(EffectInstigator) || !UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EffectInstigator))
 	{
+		EffectInstigator = nullptr;
 		if (AController* OwningController = Cast<AController>(GetOwner()))
 		{
 			EffectInstigator = OwningController->GetPawn();
 		}
 	}
-	if (!EffectInstigator)
+	if (!IsValid(EffectInstigator) || !UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EffectInstigator))
 	{
 		EffectInstigator = this;
 	}
@@ -281,7 +294,22 @@ void ABwayAlonaSunShrineBuildable::ApplyHealToAlly(ABwayCharacterWithAbilities* 
 		{
 			Spec->SetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Heal, HealAmount);
 		}
+#if !UE_BUILD_SHIPPING
+		const float BeforeHeal = TargetASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute());
+#endif
 		TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+#if !UE_BUILD_SHIPPING
+		if (CVarShrineHealAudit.GetValueOnGameThread() != 0)
+		{
+			const auto* OwnerController = Cast<AController>(GetOwner());
+			const APawn* OwnerPawn = OwnerController ? OwnerController->GetPawn() : nullptr;
+			const auto* OwnerHealth = OwnerPawn ? ULyraHealthComponent::FindHealthComponent(OwnerPawn) : nullptr;
+			UE_LOG(LogTemp, Display, TEXT("BwayShrineAura: NativeHeal time=%.3f source=%s target=%s before=%.3f after=%.3f amount=%.3f ownerPawn=%s ownerAlive=%d instigator=%s"),
+				GetWorld()->GetTimeSeconds(), *GetName(), *Ally->GetName(), BeforeHeal,
+				TargetASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()), HealAmount,
+				*GetNameSafe(OwnerPawn), OwnerHealth && !OwnerHealth->IsDeadOrDying(), *GetNameSafe(EffectInstigator));
+		}
+#endif
 	}
 }
 
@@ -298,36 +326,13 @@ bool ABwayAlonaSunShrineBuildable::IsAllyOfShrine(ABwayCharacterWithAbilities* O
 		return false;
 	}
 
-	// Buildables are not Lyra team agents — compare via owner pawn / instigator (BlessingZone pattern).
-	// Do not use IGenericTeamAgentInterface / FGenericTeamId::NoTeam here: HeroAlonaRuntime does not link AIModule (BF-017).
-	AActor* TeamProxy = nullptr;
-	if (AController* OwningController = Cast<AController>(GetOwner()))
-	{
-		TeamProxy = OwningController->GetPawn();
-	}
-	if (!TeamProxy)
-	{
-		TeamProxy = GetInstigator();
-	}
-	if (!TeamProxy)
-	{
-		return false;
-	}
-
-	// Owner pawn itself is always an ally of its shrine.
-	if (TeamProxy == OtherCharacter)
-	{
-		return true;
-	}
-
-	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-	{
-		return GameState->AreOnSameTeam(TeamProxy, OtherCharacter);
-	}
-
+	// A persistent structure owns its team independently of the placer's pawn.
+	// Resolving through that pawn loses every tracked ally during death/respawn.
+	const int32 ShrineTeam = static_cast<int32>(GetTeamId().GetId());
 	if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 	{
-		return TeamSubsystem->CompareTeams(TeamProxy, OtherCharacter) == ELyraTeamComparison::OnSameTeam;
+		const int32 AllyTeam = TeamSubsystem->FindTeamFromObject(OtherCharacter);
+		return ShrineTeam != 0 && AllyTeam != INDEX_NONE && AllyTeam == ShrineTeam;
 	}
 
 	return false;

@@ -9,6 +9,9 @@
 #include "Engine/SkeletalMesh.h"
 #include "BuildableBase.generated.h"
 
+class UBoxComponent;
+class APlayerState;
+
 /**
  * Base class for all buildable structures in the game.
  * Each Warrior will have specific buildables derived from this or its subclasses.
@@ -42,13 +45,42 @@ public:
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Buildable")
     void InitializeBuildable(AController* InOwningPlayerController, int32 InTeamId);
 
+    /** Stable placement identity on every peer; null for ownerless effects such as Jail cages. */
+    APlayerState* GetPlacingPlayerState() const { return PlacingPlayerState; }
+
     UFUNCTION(BlueprintPure, Category = "Buildable")
     bool ShouldPersistBetweenRounds() const { return bPersistsBetweenRounds; }
 
     /** Authority: publish resolved mesh so every client applies the same skeletal mesh asset. */
     void CommitReplicatedVisualMesh(USkeletalMesh* VisualMesh);
+
+    /** Placement occupancy is independent of cosmetic mesh and effect overlap radii. */
+    void ConfigurePlacementBounds(const FVector& Center, const FVector& Extent);
+    FBox GetPlacementLocalBounds() const { return FBox(PlacementBoundsCenter - PlacementBoundsExtent, PlacementBoundsCenter + PlacementBoundsExtent); }
+    UBoxComponent* GetAttackCollision() const { return AttackCollision; }
     
 protected:
+    // Remote PlayerControllers are not replicated to other clients. Count by
+    // public PlayerState identity instead of comparing unavailable actor owners.
+    UPROPERTY(Replicated)
+    TObjectPtr<APlayerState> PlacingPlayerState;
+
+    UPROPERTY(ReplicatedUsing = OnRep_PlacementBounds)
+    FVector PlacementBoundsCenter = FVector::ZeroVector;
+
+    UPROPERTY(ReplicatedUsing = OnRep_PlacementBounds)
+    FVector PlacementBoundsExtent = FVector(50.f);
+
+    /** Query geometry belongs to gameplay, never to a cosmetic PhysicsAsset. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Buildable|Collision")
+    TObjectPtr<UBoxComponent> AttackCollision;
+
+    // Floor traps and cages with their own authored shape opt out in native code.
+    bool bUsePlacementAttackBounds = true;
+
+    UFUNCTION()
+    void OnRep_PlacementBounds();
+
     /** Root Component is Skeletal Mesh */
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TObjectPtr<USkeletalMeshComponent> MeshComponent;
@@ -81,7 +113,7 @@ protected:
     TObjectPtr<USkeletalMesh> ReplicatedVisualMesh;
 
     UFUNCTION()
-    void OnRep_BuildState();
+    virtual void OnRep_BuildState();
 
     UFUNCTION()
     void OnRep_ReplicatedVisualMesh();
@@ -112,6 +144,15 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Placement", meta=(ClampMin="0"))
     int32 MaxActiveBuildablesPerPlayer = 2;
+
+    /** Gameplay placement volume; cosmetic mesh swaps must not change its footprint. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Placement", meta=(ClampMin="1.0"))
+    FVector PlacementBoundsExtent = FVector(50.f);
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Buildables|Placement")
+    FVector PlacementBoundsCenter = FVector::ZeroVector;
+
+    FBox GetPlacementLocalBounds() const { return FBox(PlacementBoundsCenter - PlacementBoundsExtent, PlacementBoundsCenter + PlacementBoundsExtent); }
     
     /** Default mesh for placement preview and spawn when the buildable BP mesh is unset. */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")

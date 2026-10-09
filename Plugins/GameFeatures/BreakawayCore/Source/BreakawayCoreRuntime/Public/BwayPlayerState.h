@@ -23,8 +23,22 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectedHeroChanged, FPrimaryAsse
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroLocked, FPrimaryAssetId, LockedHeroId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerNumAssigned, int32, PlayerNum);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMatchStatsChanged);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRespawnScheduleChanged);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRelicPossessionChanged, bool, bHasRelic);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildablePlacedThisRoundChanged, bool, bHasPlacedBuildable);
+
+/** One coherent server-time deadline; zero means no scheduled respawn. */
+USTRUCT(BlueprintType)
+struct FBwayRespawnSchedule
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	double ServerEndTime = 0.0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 RoundNumber = 0;
+};
 
 UCLASS()
 class BREAKAWAYCORERUNTIME_API ABwayPlayerState : public ALyraPlayerState
@@ -47,6 +61,8 @@ public:
 	ABwayPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Economy")
 	TObjectPtr<class UBwayUpgradeComponent> UpgradeComponent;
+	UPROPERTY(VisibleAnywhere, Category="Combat")
+	TObjectPtr<class UBwayLifeLeechComponent> LifeLeechComponent;
 	
 	// ========== RELIC SYSTEM ==========
 	
@@ -85,6 +101,9 @@ public:
 	 */
 	UFUNCTION(Server, Reliable, BlueprintCallable, Category = "Hero")
 	void ServerSetSelectedHeroId(FPrimaryAssetId NewHeroId);
+
+	/** Authority-only selection update. Returns false when the request is rejected. */
+	bool TrySetSelectedHeroId(FPrimaryAssetId NewHeroId);
 
 	/**
 	 * Get the currently selected hero ID
@@ -223,6 +242,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMatchStatsChanged OnMatchStatsChanged;
 
+	UFUNCTION(BlueprintPure, Category = "Respawn")
+	FBwayRespawnSchedule GetRespawnSchedule() const { return RespawnSchedule; }
+
+	/** Authority only. Called by the timer owner, never by presentation. */
+	void SetRespawnSchedule(double ServerEndTime, int32 RoundNumber);
+
+	UPROPERTY(BlueprintAssignable, Category = "Respawn")
+	FOnRespawnScheduleChanged OnRespawnScheduleChanged;
+
 	// Replication
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void CopyProperties(APlayerState* PlayerState) override;
@@ -236,6 +264,12 @@ public:
 protected:
 	/** Tracks hero AbilitySet grants on the persistent PlayerState ASC. */
 	FLyraAbilitySet_GrantedHandles HeroAbilityGrantedHandles;
+
+	UPROPERTY(ReplicatedUsing=OnRep_RespawnSchedule)
+	FBwayRespawnSchedule RespawnSchedule;
+
+	UFUNCTION()
+	void OnRep_RespawnSchedule();
 
 	// The selected hero asset ID
 	UPROPERTY(ReplicatedUsing=OnRep_SelectedHeroId)

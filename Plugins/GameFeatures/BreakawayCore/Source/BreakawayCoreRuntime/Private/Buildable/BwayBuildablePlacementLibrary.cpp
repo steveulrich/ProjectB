@@ -47,6 +47,7 @@ ABuildableActor* UBwayBuildablePlacementLibrary::SpawnBuildableForPlayer(const U
 		TeamIndex = BwayGS->GetPlayerTeam(PlayerController ? PlayerController->PlayerState : nullptr);
 	}
 
+	Buildable->ConfigurePlacementBounds(BuildableData->PlacementBoundsCenter, BuildableData->PlacementBoundsExtent);
 	ApplyResolvedBuildableMesh(Buildable, BuildableData, GetBuildableCosmeticIndexForPlayer(PlayerController));
 
 	Buildable->InitializeBuildable(PlayerController, TeamIndex);

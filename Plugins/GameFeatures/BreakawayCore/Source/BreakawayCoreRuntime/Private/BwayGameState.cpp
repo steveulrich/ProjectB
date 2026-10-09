@@ -4,8 +4,10 @@
 #include "BwayCharacterWithAbilities.h"
 #include "BwayPlayerController.h"
 #include "BwayPlayerState.h"
+#include "Economy/BwayUpgradeComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/PlayerController.h"
+#include "Character/LyraHealthComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "GameState/BwayBotCreationComponent.h"
@@ -27,7 +29,9 @@
 
 #include "Engine/Engine.h"
 #include "Engine/World.h"
+#include "TimerManager.h"
 #include "Engine/NetDriver.h"
+#include "EngineUtils.h"
 #include "IPAddress.h"
 
 ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
@@ -50,19 +54,41 @@ ABwayGameState::ABwayGameState(const FObjectInitializer& ObjectInitializer)
 
 void ABwayGameState::AddPlayerState(APlayerState* PlayerState)
 {
+	const bool bAlreadyPresent = PlayerArray.Contains(PlayerState);
 	Super::AddPlayerState(PlayerState);
 	if (HasAuthority() && HeroSelectionManager && HeroSelectionManager->IsSelectionActive())
 	{
 		HeroSelectionManager->RegisterPlayer(PlayerState);
 	}
+	if (HasAuthority() && !bAlreadyPresent && HeroSelectionPhaseComponent)
+	{
+		HeroSelectionPhaseComponent->HandleSelectionRosterChanged(PlayerState);
+	}
 }
 
 void ABwayGameState::RemovePlayerState(APlayerState* PlayerState)
 {
+	const bool bWasPresent = PlayerArray.Contains(PlayerState);
 	Super::RemovePlayerState(PlayerState);
 	if (HasAuthority() && HeroSelectionManager)
 	{
 		HeroSelectionManager->UnregisterPlayer(PlayerState);
+	}
+	if (HasAuthority() && bWasPresent && HeroSelectionPhaseComponent)
+	{
+		HeroSelectionPhaseComponent->HandleSelectionRosterChanged();
+	}
+	if (HasAuthority() && bWasPresent && GetWorld() && !GetWorld()->bIsTearingDown)
+	{
+		// An uncovered destination arrival can be the last Prematch hold. Let
+		// logout/replacement finish, then re-evaluate the remaining human locks.
+		GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+		{
+			if (GetWorld() && !GetWorld()->bIsTearingDown && RoundManagementComponent)
+			{
+				RoundManagementComponent->TryCompletePrematchAfterHeroLocks();
+			}
+		}));
 	}
 }
 
@@ -71,6 +97,10 @@ void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABwayGameState, Teams);
+	#if !UE_BUILD_SHIPPING
+	DOREPLIFETIME(ABwayGameState, TeamPeerConvergenceEnemyId);
+	DOREPLIFETIME(ABwayGameState, TeamPeerConvergenceSample);
+	#endif
 }
 
 void ABwayGameState::PostInitializeComponents()
@@ -87,6 +117,86 @@ void ABwayGameState::PostInitializeComponents()
 	{
 		RoundManagementComponent->OnMatchEnded.AddDynamic(this, &ABwayGameState::HandleMatchEnded);
 	}
+}
+
+void ABwayGameState::Multicast_RunTeamPeerConvergence_Implementation(int32 EnemyPlayerId)
+{
+#if !UE_BUILD_SHIPPING
+	LogTeamPeerConvergenceSample(TEXT("Multicast"));
+#else
+	UE_UNUSED(EnemyPlayerId);
+#endif
+}
+
+void ABwayGameState::SetTeamPeerConvergenceEnemyId(int32 EnemyPlayerId)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	TeamPeerConvergenceEnemyId = EnemyPlayerId;
+	++TeamPeerConvergenceSample;
+	LogTeamPeerConvergenceSample(TEXT("Authority"));
+	ForceNetUpdate();
+}
+
+void ABwayGameState::OnRep_TeamPeerConvergenceSample()
+{
+#if !UE_BUILD_SHIPPING
+	UWorld* World = GetWorld();
+	if (!World || !World->IsGameWorld() || TeamPeerConvergenceEnemyId == INDEX_NONE)
+	{
+		return;
+	}
+
+	// GameState and pawn health can arrive in adjacent packets. Delay the
+	// sample so the probe measures settled replicated gameplay state.
+	TWeakObjectPtr<ABwayGameState> WeakState(this);
+	FTimerHandle SampleTimer;
+	World->GetTimerManager().SetTimer(
+		SampleTimer,
+		FTimerDelegate::CreateLambda([WeakState]()
+		{
+			if (const ABwayGameState* State = WeakState.Get())
+			{
+				State->LogTeamPeerConvergenceSample(TEXT("Replicated"));
+			}
+		}),
+		0.75f,
+		false);
+#endif
+}
+
+void ABwayGameState::LogTeamPeerConvergenceSample(const TCHAR* SampleLabel) const
+{
+#if !UE_BUILD_SHIPPING
+	UWorld* World = GetWorld();
+	if (!World || !World->IsGameWorld() || TeamPeerConvergenceEnemyId == INDEX_NONE)
+	{
+		return;
+	}
+
+	ABwayCharacterWithAbilities* EnemyCharacter = nullptr;
+	for (TActorIterator<ABwayCharacterWithAbilities> It(World); It; ++It)
+	{
+		ABwayCharacterWithAbilities* Candidate = *It;
+		if (Candidate && Candidate->GetPlayerState() && Candidate->GetPlayerState()->GetPlayerId() == TeamPeerConvergenceEnemyId)
+		{
+			EnemyCharacter = Candidate;
+			break;
+		}
+	}
+
+	const ULyraHealthComponent* Health = EnemyCharacter ? ULyraHealthComponent::FindHealthComponent(EnemyCharacter) : nullptr;
+	const float EnemyHealth = Health ? Health->GetHealth() : -1.0f;
+	const int32 EnemyTeam = (EnemyCharacter && EnemyCharacter->GetPlayerState())
+		? GetPlayerTeam(EnemyCharacter->GetPlayerState()) : INDEX_NONE;
+	UE_LOG(LogTemp, Display, TEXT("BwayTeamCombatTest: PeerConvergence%s world=%s netMode=%d sample=%d enemy=%d found=%d health=%.1f team=%d"),
+		SampleLabel,
+		*GetPathNameSafe(World), static_cast<int32>(World->GetNetMode()), TeamPeerConvergenceSample, TeamPeerConvergenceEnemyId,
+		EnemyCharacter ? 1 : 0, EnemyHealth, EnemyTeam);
+#endif
 }
 
 void ABwayGameState::Tick(float DeltaSeconds)
@@ -313,17 +423,30 @@ void ABwayGameState::OnPlayerDied(APlayerState* PlayerState)
 	}
 }
 
+void ABwayGameState::RecalculateTeamAliveCount(int32 TeamIndex)
+{
+	if (HasAuthority() && Teams.IsValidIndex(TeamIndex))
+	{
+		// Restart can complete through a death timer, a deferred obstruction retry,
+		// or round reset. Derive the count from living pawns so repeated completion
+		// notifications cannot credit a second life while another teammate is dead.
+		int32 Alive = 0;
+		for (APlayerState* Member : Teams[TeamIndex].TeamMembers)
+		{
+			const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(IsValid(Member) ? Member->GetPawn() : nullptr);
+			Alive += Health && !Health->IsDeadOrDying() && Health->GetHealth() > 0.0f ? 1 : 0;
+		}
+		UpdateTeamAliveCount(TeamIndex, Alive);
+	}
+}
+
 void ABwayGameState::OnPlayerRespawned(APlayerState* PlayerState)
 {
-	if (!HasAuthority() || !PlayerState)
-	{
-		return;
-	}
-
+	if (!HasAuthority() || !PlayerState) return;
 	const int32 TeamIndex = GetPlayerTeam(PlayerState);
 	if (Teams.IsValidIndex(TeamIndex))
 	{
-		Teams[TeamIndex].AlivePlayerCount = FMath::Min(Teams[TeamIndex].AlivePlayerCount + 1, Teams[TeamIndex].TeamMembers.Num());
+		RecalculateTeamAliveCount(TeamIndex);
 		UE_LOG(LogTemp, Log, TEXT("Player %s respawned. Team %d alive count: %d"), 
 			*PlayerState->GetPlayerName(), TeamIndex + 1, Teams[TeamIndex].AlivePlayerCount);
 	}
@@ -476,6 +599,22 @@ void ABwayGameState::RestartMatchFromResults()
 		UE_LOG(LogTemp, Error, TEXT("BwayGameState: Rematch travel rejected"));
 		return;
 	}
+	// NoSeamlessTravel creates fresh PlayerStates, but clear match-scoped state
+	// after travel is accepted so a retained state cannot carry upgrades or
+	// statistics into the next match. Keeping this after ServerTravel avoids
+	// destroying state when the engine rejects the request.
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		if (ABwayPlayerState* BwayPlayerState = Cast<ABwayPlayerState>(PlayerState))
+		{
+			if (BwayPlayerState->UpgradeComponent)
+			{
+				BwayPlayerState->UpgradeComponent->ResetUpgrades();
+			}
+			BwayPlayerState->ResetMatchStats();
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("BwayGameState: Cleared match-scoped upgrades and stats for rematch"));
 	if (UBwayBotCreationComponent* Bots = FindComponentByClass<UBwayBotCreationComponent>())
 	{
 		Bots->ShutdownAllBotsForTravel();

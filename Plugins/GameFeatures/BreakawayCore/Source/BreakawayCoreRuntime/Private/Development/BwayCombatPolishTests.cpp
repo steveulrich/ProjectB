@@ -128,7 +128,9 @@ bool FBwayCombatNumberLocationHelperTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Null target uses offset"),
 		UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(nullptr, Offset).Equals(Offset));
 
-	UObject* Dummy = NewObject<UObject>();
+	// UObject itself is abstract in UE 5.8; use a concrete transient object so
+	// this non-actor fallback test does not trigger a CoreUObject ensure.
+	UBwayCombatReadabilityConfig* Dummy = NewObject<UBwayCombatReadabilityConfig>();
 	TestTrue(TEXT("Non-actor uses offset"),
 		UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(Dummy, Offset).Equals(Offset));
 

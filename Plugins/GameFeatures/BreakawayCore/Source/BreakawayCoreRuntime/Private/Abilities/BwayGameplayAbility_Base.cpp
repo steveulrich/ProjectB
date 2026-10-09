@@ -451,13 +451,25 @@ ABwayCharacterWithAbilities* UBwayGameplayAbility_Base::GetBwayCharacterFromActo
 	return nullptr;
 }
 
+void UBwayGameplayAbility_Base::ApplyCooldown(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) const
+{
+	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, -1.f);
+}
+
 void UBwayGameplayAbility_Base::ApplyCooldownWithOptionalDuration(
 	const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
 	float DurationSeconds) const
 {
-	if (DurationSeconds <= 0.f || !CooldownGameplayEffectClass)
+	UGameplayEffect* CooldownGE = GetCooldownGameplayEffect();
+	if (!CooldownGE) return;
+	const UAbilitySystemComponent* ASC = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr;
+	const float RawReduction = ASC && ASC->GetSet<UBwayHeroAttributeSet>()
+		? ASC->GetNumericAttribute(UBwayHeroAttributeSet::GetCooldownReductionAttribute()) : 0.f;
+	const float Reduction = FMath::IsFinite(RawReduction) ? FMath::Clamp(RawReduction, 0.f, 1.f) : 0.f;
+	if (DurationSeconds <= 0.f && Reduction == 0.f)
 	{
 		Super::ApplyCooldown(Handle, ActorInfo, ActivationInfo);
 		return;
@@ -467,7 +479,7 @@ void UBwayGameplayAbility_Base::ApplyCooldownWithOptionalDuration(
 		Handle,
 		ActorInfo,
 		ActivationInfo,
-		CooldownGameplayEffectClass,
+		CooldownGE->GetClass(),
 		GetAbilityLevel(Handle, ActorInfo));
 
 	if (!SpecHandle.IsValid() || !SpecHandle.Data.IsValid())
@@ -476,7 +488,23 @@ void UBwayGameplayAbility_Base::ApplyCooldownWithOptionalDuration(
 		return;
 	}
 
-	SpecHandle.Data->SetDuration(DurationSeconds, /*bLockDuration*/ true);
+	if (CooldownGE->DurationPolicy == EGameplayEffectDurationType::HasDuration)
+	{
+		if (DurationSeconds <= 0.f)
+		{
+			// Resolve target-dependent magnitudes before freezing this cooldown's
+			// reduced duration. GAS still applies its normal duration modifiers.
+			SpecHandle.Data->CaptureAttributeDataFromTarget(ActorInfo->AbilitySystemComponent.Get());
+			ASC->GetOwnedGameplayTags(SpecHandle.Data->CapturedTargetTags.GetActorTags());
+			DurationSeconds = SpecHandle.Data->GetDuration();
+			SpecHandle.Data->AttemptCalculateDurationFromDef(DurationSeconds);
+		}
+		if (DurationSeconds > 0.f && FMath::IsFinite(DurationSeconds))
+		{
+			if (Reduction >= 1.f) return; // Full reduction creates no blocking cooldown.
+			SpecHandle.Data->SetDuration(DurationSeconds * (1.f - Reduction), /*bLockDuration*/ true);
+		}
+	}
 	ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 }
 
@@ -554,4 +582,3 @@ void UBwayGameplayAbility_Base::RemoveAbilityCue(FGameplayTag CueTag) const
 		ASC->RemoveGameplayCue(CueTag);
 	}
 }
-

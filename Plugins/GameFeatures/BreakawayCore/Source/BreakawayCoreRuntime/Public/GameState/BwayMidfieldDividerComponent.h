@@ -9,7 +9,7 @@
 class ABwayMidfieldDividerActor;
 
 /**
- * Spawns and drives the midfield sudden-death divider at world origin.
+ * Spawns and drives the midfield divider using the same goal geometry as scoring.
  * Called from ABreakawayGameMode during initial match object setup.
  */
 UCLASS(BlueprintType, meta = (BlueprintSpawnableComponent))
@@ -20,7 +20,7 @@ class BREAKAWAYCORERUNTIME_API UBwayMidfieldDividerComponent : public UGameState
 public:
 	UBwayMidfieldDividerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	/** Spawn the divider actor at MidfieldSpawnLocation if not already present. Authority only. */
+	/** Spawn or align the divider actor. Authority only. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Sudden Death")
 	void SpawnMidfieldDivider();
 
@@ -33,8 +33,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	TSubclassOf<ABwayMidfieldDividerActor> DividerActorClass;
 
+	/** Align local +X with the team-0 to team-1 goal axis. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	FVector MidfieldSpawnLocation = FVector::ZeroVector;
+	bool bAlignToTeamGoals = true;
+
+	/** XY offset from the goal midpoint and absolute floor height; absolute position when alignment is disabled. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
+	FVector MidfieldSpawnLocation = FVector(0.0f, 0.0f, 2.0f);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	FRotator MidfieldSpawnRotation = FRotator::ZeroRotator;

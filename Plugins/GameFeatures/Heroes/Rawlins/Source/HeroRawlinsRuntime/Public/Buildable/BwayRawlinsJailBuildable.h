@@ -26,6 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void FinishBuilding() override;
+	virtual void OnRep_BuildState() override;
 	virtual void OnOverlapBegin(
 		UPrimitiveComponent* OverlappedComponent,
 		AActor* OtherActor,
@@ -52,7 +53,6 @@ protected:
 	ABwayRawlinsJailCage* SpawnCageForVictim(ABwayCharacterWithAbilities* Victim) const;
 	bool IsEnemyOfTrap(ABwayCharacterWithAbilities* OtherCharacter) const;
 	bool IsAliveEnemy(ABwayCharacterWithAbilities* Enemy) const;
-	AActor* ResolveTeamProxy() const;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Jail|Config")
 	TSoftObjectPtr<UBwayRawlinsKitConfig> KitConfig;

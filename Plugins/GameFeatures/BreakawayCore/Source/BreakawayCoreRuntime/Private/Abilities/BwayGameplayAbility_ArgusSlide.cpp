@@ -1,9 +1,12 @@
 #include "Abilities/BwayGameplayAbility_ArgusSlide.h"
 
 #include "Abilities/BwayGameplayEffect_ArgusCooldowns.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
+#include "AbilitySystemComponent.h"
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
+#include "GameplayEffectTypes.h"
 #include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayAbility_ArgusSlide)
@@ -78,6 +81,15 @@ void UBwayGameplayAbility_ArgusSlide::ActivateAbility(
 
 	const FVector DashVelocity = DashDirection * (LocalDashDistance / FMath::Max(LocalDashDuration, 0.05f));
 	CachedCharacter->LaunchCharacter(DashVelocity, true, true);
+
+	if (UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get())
+	{
+		FGameplayCueParameters CueParams;
+		CueParams.Location = FVector_NetQuantize10(CachedCharacter->GetActorLocation());
+		CueParams.Instigator = CachedCharacter;
+		CueParams.EffectCauser = CachedCharacter;
+		ASC->ExecuteGameplayCue(BwayGameplayCueTags::MovementSlide, CueParams);
+	}
 
 	if (UWorld* World = GetWorld())
 	{

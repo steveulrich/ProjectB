@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayAbility_AlonaPrimary.h"
 
 #include "BwayGameplayTags.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
@@ -44,12 +45,6 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 		return;
 	}
 
-	if (!HasAuthority(&ActivationInfo))
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-		return;
-	}
-
 	UWorld* World = GetWorld();
 	if (!World || !ProjectileClass)
 	{
@@ -85,6 +80,21 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 	}
 
 	const FTransform SpawnTransform(SpawnRotation, SpawnLocation);
+	auto PlayFireCue = [this, &SpawnLocation]()
+	{
+		FGameplayCueParameters Parameters;
+		Parameters.Instigator = CachedCharacter;
+		Parameters.EffectCauser = CachedCharacter;
+		Parameters.Location = SpawnLocation;
+		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::AlonaPrimaryFire, Parameters);
+	};
+	if (!HasAuthority(&ActivationInfo))
+	{
+		PlayFireCue();
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
 	ABwayAlonaPrimaryProjectile* Projectile = World->SpawnActorDeferred<ABwayAlonaPrimaryProjectile>(
 		ProjectileClass,
 		SpawnTransform,
@@ -105,6 +115,10 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, LocalSpeed, LocalLife);
 	Projectile->FinishSpawning(SpawnTransform);
+
+	// GAS plays this immediately for the predicting owner and suppresses that
+	// owner's multicast duplicate. Authority publishes only after a real launch.
+	PlayFireCue();
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

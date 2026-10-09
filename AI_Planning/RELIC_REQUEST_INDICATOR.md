@@ -1,6 +1,22 @@
 # Relic request indicator: screen-space UI and lifecycle verification
 
-September 8, 2026. The hand is now a **2D screen-space UMG widget anchored above the pawn**, as requested. Four-player PIE verifies real requests, teammate-only visibility, expiry, death cleanup and a fresh visible request after automatic respawn. The death-material helper also preserves widget renderer ownership. [Team consistency](./TEAM_ASSIGNMENT_CONSISTENCY.md) records the preceding roster fix. Candidate `LAN-20260908-05` predates these changes and must not be used to claim their packaged acceptance.
+Updated September 26, 2026. The hand is a **2D screen-space UMG widget anchored above the pawn**, as requested. Candidate `LAN-20260926-01` now passes remote request, expiry, late join, team changes, death, and respawn checks across four rendered packaged processes at 200 ms latency. Physical/gamepad input, visual appearance, and second-PC LAN acceptance remain open. The earlier PIE evidence follows below. [Team consistency](./TEAM_ASSIGNMENT_CONSISTENCY.md) records the preceding roster fix.
+
+## Packaged lifecycle verification
+
+The direct-map fixture passed 45 observations containing 171 peer rows and four terminal peer passes. All three clients exited with code 0. The runner then stopped its owned listen host; that deliberate teardown is separate from gameplay status. All four logs contain zero runtime errors; warnings remain 86 on the host and 20 per client.
+
+- Every observed widget uses Screen space, 72-by-72 draw size, the correct local owner, and the cooked `/ControlRigModules/Modules/Icons/ModRigHand256.ModRigHand256` texture. No widget renderer MID or render target exists.
+- Actual remote GAS requests reach authority and appear only to other teammates. Three-second expiry was observed after 3.375 and 3.359 seconds, including replication and the fixture's settling interval.
+- Client 3 starts after authority applies a held request and sees its teammate's active indicator. The 90-second hold is a temporary fixture effect; it does not change the normal ability duration.
+- Changing the requester team and then a viewer team updates eligibility on every peer. Cleanup restores the original teams.
+- Lethal damage clears the held request before its duration ends. Automatic respawn creates a different pawn with no carried request. A fresh remote ability on that pawn appears and expires normally.
+
+The development-only `bway.Test.RelicIndicatorPeer` fixture samples production components and replicated state. It adds no production indicator behavior. The verifier independently checks peer visibility, teams, ownership, timing, artifact identity, and process exits. All 33 corrupted-evidence controls were rejected. This proves structured packaged lifecycle behavior; it does not prove physical input, aesthetic quality, frontend navigation, or a second machine.
+
+Evidence directory: `Saved/Logs/relic-indicator-20260926/`. The decision records are `runtime01-brief.json`, `verifier-controls01.json`, `packaged-LAN-20260926-01-indicator-r1-result.json`, and `candidate26-01-artifact-verification.json`. Raw process logs and mutation recipes remain beside them. All 131 staged hashes match, and the frozen per-file manifest covers the new untracked fixture source as well as tracked changes. The game executable SHA-256 is `1EA1101F251D4BBA087D0F34CD3204C6CE4397DAD010866983BC1C78267D4EDF`.
+
+Overhead: two LyraGame builds, one package, one runtime attempt, and no editor launches. The first build failed on the required `OutLifetimeProps` parameter name and an Actor `Owner` shadow; both were corrected before the passing build. Evidence closeout rechecked hashes without relaunching gameplay. Revalidate this scope after changes to request effects, indicator ownership/filtering, pawn lifecycle, team replication, widget assets, or package contents.
 
 ## Screen-space presentation
 

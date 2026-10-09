@@ -115,6 +115,7 @@ void UBwayGameplayAbility_KorrynFlock::ApplyEtherealMovement()
 		StoredCustomMovementMode = MoveComp->CustomMovementMode;
 		StoredGravityScale = MoveComp->GravityScale;
 		StoredMaxWalkSpeed = MoveComp->MaxWalkSpeed;
+		StoredMaxFlySpeed = MoveComp->MaxFlySpeed;
 		bStoredOrientRotationToMovement = MoveComp->bOrientRotationToMovement;
 
 		MoveComp->SetMovementMode(MOVE_Flying);
@@ -143,6 +144,7 @@ void UBwayGameplayAbility_KorrynFlock::RestoreMovement()
 	{
 		MoveComp->GravityScale = StoredGravityScale;
 		MoveComp->MaxWalkSpeed = StoredMaxWalkSpeed;
+		MoveComp->MaxFlySpeed = StoredMaxFlySpeed;
 		MoveComp->bOrientRotationToMovement = bStoredOrientRotationToMovement;
 
 		if (StoredMovementMode == MOVE_Custom)

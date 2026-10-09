@@ -5,10 +5,32 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Combat/BwayGameplayEffect_DamageSetByCaller.h"
 #include "LyraGameplayTags.h"
+#include "Buildable/BuildableBase.h"
+#include "Teams/LyraTeamSubsystem.h"
+#include "Engine/World.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayDamageLibrary)
 
 DEFINE_LOG_CATEGORY_STATIC(LogBwayDamage, Log, All);
+
+bool UBwayDamageLibrary::ApplyDamageToEnemyBuildable(ABwayCharacterWithAbilities* InstigatorCharacter,
+	AActor* TargetActor, float RawDamage, AActor* EffectCauser)
+{
+	const ABuildableActor* Buildable = Cast<ABuildableActor>(TargetActor);
+	UE_LOG(LogBwayDamage, Verbose, TEXT("BuildablePrimary source=%s target=%s buildable=%d sourceAuthority=%d damageable=%d raw=%.3f"),
+		*GetNameSafe(InstigatorCharacter), *GetNameSafe(TargetActor), Buildable != nullptr, InstigatorCharacter && InstigatorCharacter->HasAuthority(),
+		Buildable && Buildable->CanBeDamaged(), RawDamage);
+	if (!InstigatorCharacter || !InstigatorCharacter->HasAuthority() || !Buildable
+		|| !Buildable->CanBeDamaged() || Buildable->IsActorBeingDestroyed()) return false;
+	const ULyraTeamSubsystem* Teams = InstigatorCharacter->GetWorld()->GetSubsystem<ULyraTeamSubsystem>();
+	const int32 SourceTeam = Teams ? Teams->FindTeamFromObject(InstigatorCharacter) : INDEX_NONE;
+	const int32 TargetTeam = Buildable->GetTeamId().GetId();
+	UE_LOG(LogBwayDamage, Verbose, TEXT("BuildablePrimary teams=%d/%d sourceASC=%s"), SourceTeam, TargetTeam, *GetNameSafe(InstigatorCharacter->GetAbilitySystemComponent()));
+	if (SourceTeam == INDEX_NONE || Buildable->GetTeamId() == FGenericTeamId::NoTeam
+		|| TargetTeam == 0 || SourceTeam == TargetTeam) return false;
+	return ApplyDamageFromSource(InstigatorCharacter->GetAbilitySystemComponent(), TargetActor,
+		RawDamage, EffectCauser ? EffectCauser : InstigatorCharacter, InstigatorCharacter);
+}
 
 float UBwayDamageLibrary::ResolveFinalDamage(float RawDamage, const UAbilitySystemComponent* TargetASC)
 {
@@ -45,6 +67,11 @@ bool UBwayDamageLibrary::ApplyDamageFromSource(
 	if (!SourceASC || !TargetActor || RawDamage <= 0.f)
 	{
 		return false;
+	}
+	// GAS does not consult AActor::CanBeDamaged: enforce the construction/trap contract here.
+	if (const ABuildableActor* Buildable = Cast<ABuildableActor>(TargetActor))
+	{
+		if (!Buildable->HasAuthority() || !Buildable->CanBeDamaged() || Buildable->IsActorBeingDestroyed()) return false;
 	}
 
 	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(TargetActor);

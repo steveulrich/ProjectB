@@ -10,6 +10,7 @@ class ABwayWorldReticle_ActorVisualization;
 class UGameplayAbility;
 class UMaterialInterface;
 class UBwayBuildableDataAsset;
+struct FBwayPlacementQuery;
 
 USTRUCT(BlueprintType)
 struct FPlacementValidationResult
@@ -34,6 +35,8 @@ class BREAKAWAYCORERUNTIME_API ABwayTargetActor_ActorPlacementFace : public AGam
 	GENERATED_UCLASS_BODY()
 
 public:
+	/** Build a geometry query without starting targeting or creating a preview actor. */
+	FBwayPlacementQuery MakePlacementQuery(AActor* InSourceActor, const APlayerController* PlayerController) const;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void StartTargeting(UGameplayAbility* InAbility) override;
 	virtual void Tick(float DeltaSeconds) override;
@@ -98,12 +101,6 @@ protected:
 	virtual FGameplayAbilityTargetDataHandle CreateTargetData(const FHitResult& InHitResult) const;
 	
 	FPlacementValidationResult PerformPlacementValidation(const FHitResult& GroundHit) const;
-	bool CheckSurfaceAngle(const FVector& SurfaceNormal) const;
-	bool CheckOverhangs(const FVector& CenterLocationOnGround, const FRotator& InitialPlacementRotation, FVector& OutAdjustedFootprintCenter, const FVector& SurfaceNormal) const;
-	bool CheckObstructions(const FVector& CenterLocation, const FRotator& PlacementRotation, AActor* GroundHitActor) const;
-
-	/** Distance along actor +Z to lift the pivot so blocking collision bottoms sit on the ground plane. */
-	float ComputePivotLiftAlongLocalUp() const;
 
 	// To update material in Tick based on NewTraceResult's findings
 	mutable bool bLastTickPlacementValid = false;

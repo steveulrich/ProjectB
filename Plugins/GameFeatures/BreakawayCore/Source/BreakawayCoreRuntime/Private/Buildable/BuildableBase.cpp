@@ -15,6 +15,8 @@
 #include "GameState/BwayBuildableRegistryComponent.h"
 #include "Buildable/BwayBuildablePlacementLibrary.h"
 #include "GameFramework/PlayerController.h"
+#include "Components/BoxComponent.h"
+#include "Physics/LyraCollisionChannels.h"
 
 
 const FName ABuildableActor::MeshComponentName = TEXT("MeshComponent");
@@ -29,6 +31,23 @@ ABuildableActor::ABuildableActor()
     MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(MeshComponentName);
     RootComponent = MeshComponent;
     MeshComponent->SetIsReplicated(true);
+    MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    AttackCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackCollision"));
+    AttackCollision->SetupAttachment(RootComponent);
+    AttackCollision->SetCollisionObjectType(ECC_WorldDynamic);
+    AttackCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
+    AttackCollision->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+    // Preserve player movement and let projectiles pass friendly/invulnerable structures.
+    AttackCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    AttackCollision->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
+    AttackCollision->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+    AttackCollision->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon, ECR_Block);
+    AttackCollision->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon_Capsule, ECR_Block);
+    AttackCollision->SetCollisionResponseToChannel(Lyra_TraceChannel_Weapon_Multi, ECR_Block);
+    AttackCollision->SetGenerateOverlapEvents(true);
+    AttackCollision->CanCharacterStepUpOn = ECB_No;
+    OnRep_PlacementBounds();
 }
 
 void ABuildableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -39,6 +58,26 @@ void ABuildableActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME(ABuildableActor, bIsActive);
     DOREPLIFETIME(ABuildableActor, CurrentBuildProgress);
     DOREPLIFETIME(ABuildableActor, ReplicatedVisualMesh);
+    DOREPLIFETIME(ABuildableActor, PlacementBoundsCenter);
+    DOREPLIFETIME(ABuildableActor, PlacementBoundsExtent);
+    DOREPLIFETIME(ABuildableActor, PlacingPlayerState);
+}
+
+void ABuildableActor::ConfigurePlacementBounds(const FVector& Center, const FVector& Extent)
+{
+    if (!HasAuthority() || Center.ContainsNaN() || Extent.ContainsNaN() || Extent.GetMin() <= 0.f) return;
+    PlacementBoundsCenter = Center;
+    PlacementBoundsExtent = Extent;
+    OnRep_PlacementBounds();
+    ForceNetUpdate();
+}
+
+void ABuildableActor::OnRep_PlacementBounds()
+{
+    if (!AttackCollision) return;
+    AttackCollision->SetRelativeLocation(PlacementBoundsCenter);
+    AttackCollision->SetBoxExtent(PlacementBoundsExtent);
+    AttackCollision->SetCollisionEnabled(bUsePlacementAttackBounds ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
 }
 
 void ABuildableActor::InitializeAbilitySystem()
@@ -117,6 +156,9 @@ void ABuildableActor::BeginPlay()
 {
     Super::BeginPlay();
 
+    // Blueprint visual defaults must not reintroduce art-dependent hit geometry.
+    MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    OnRep_PlacementBounds();
     TryResolveMeshVisual();
 
     if (HasAuthority())
@@ -167,6 +209,7 @@ void ABuildableActor::InitializeBuildable(AController* InOwningPlayerController,
     if (HasAuthority())
     {
         SetOwner(InOwningPlayerController);
+        PlacingPlayerState = InOwningPlayerController ? InOwningPlayerController->PlayerState.Get() : nullptr;
         // Breakaway team indices are 0/1; Lyra team IDs are 1/2.
         SetTeamId(FGenericTeamId(static_cast<uint8>(FMath::Max(0, InTeamId) + 1)));
 

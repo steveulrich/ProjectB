@@ -2,7 +2,9 @@
 
 ## Current candidate
 
-Candidate `LAN-20260908-04`, based on `bcec5a3e` plus its captured build inputs, is the current packaged artifact. Build/cook/stage and a natural headless two-round match passed their recorded scopes. It contains the phase-lifecycle, bot-ownership, and footstep fixes. Rendered LAN acceptance is next. Candidate 0803's two-process manual rematch and shared frontend-return results remain historical evidence for their covered changes. See `SLICE_STATUS.md` for the next action.
+Candidate `LAN-20260930-49`, based on source head `cf5c1b06` and the Candidate49 package preflight, is the current packaged artifact. The `LyraGame` target compiled cleanly, AutomationTool ACL preflight passed, Cook/Stage/Pak completed with exit 0, and the staged hash manifest was captured. Candidate45's Connected, SelectionEdges, and Rediscovery four-process listen-host fixtures remain valid for unchanged transport scope. Candidate46's real remote damage/pass/goal fixture routed the authored hit-confirm and goal cues once on all four peers with zero fixture errors. Candidate49 completed the 16-family all-kit activation/cooldown fixture and observed real Argus and Rawlins slide cue routes on the host and all three clients with resident mappings and matching instigators. Six cue mappings pass the editor registration test and the packaged registry audit. These are structured same-PC transport and cue-route scopes; physical frontend input, normal human selection, second-PC LAN, clean-device deployment, final visual quality, perceived VFX/audio, and target-resolution performance remain open because the Computer Use channel currently exposes no targetable native windows. See `SLICE_STATUS.md` for the next action.
+
+Candidate49 evidence: `Saved/Logs/codex-packaged-LAN-20260930-49-preflight.json`, `Saved/Logs/codex-packaged-LAN-20260930-49-build.log`, `Saved/Logs/codex-packaged-LAN-20260930-49-sha256.csv`, `Saved/Logs/rawlins-cue-audit-20260930/`, and `Saved/Logs/lan-connected-20260930-49/`. Candidate45's SelectionEdges and Rediscovery transport evidence remains under `Saved/Logs/selection-edges-20260929-45/` and `Saved/Logs/lan-rediscovery-20260929-45/`. The input-context repair is recorded in `Saved/Logs/selected-presentation-20260927/input-merge-result.json` and `input-carry-pie03.json`. On September 30 the active gameplay context was repaired through the live editor bridge: primary fire now has right-trigger input, placement has D-pad Down/Right/Left start/confirm/cancel routes, and relic dash has the right-face-button route. The exact readback and pre-edit hash are in `Saved/Logs/input-mapping-audit-20260930/input-mapping-result.json`; Candidate49 includes this compiled and cooked asset repair. The 200 ms fixtures remain structured evidence only; they do not prove physical cursor targeting, physical keyboard/gamepad activation, visual presentation, second-PC networking, or clean-device deployment.
 
 ## Candidate LAN-20260907-01 history
 
@@ -646,3 +648,103 @@ The mixed 0805 connection errors were traced to the PIE-only `OpenLevel` branch 
 One build passed in 67.11 seconds. Two-peer PIE on port 17777 completed a natural 1–0 match and a physical remote lobby return with one authoritative frontend/two connected humans on both peers. A rebuilt PIE host plus an unchanged packaged 0805 client on port 7777 completed a natural 0–3, then a physical client lobby return without network errors. The host rehosted through the frontend; client followed automatically and both manually locked new Argus/Korryn kits before timeout. The second match was deliberately stopped after its first round to test real host loss; this produced the expected network failures and `?closed` recovery. Zero client error lines existed before that checkpoint. No global failure suppression was added.
 
 Editor/client exited OS code 0; no dirty assets; settings and DevMap restored, including direct closed-editor verification of four clients/one process. Overhead: one build, one editor, two PIE runs, one packaged client, zero packages. BF-115 was appended to the local bug-fixer catalog. The current 0805 artifact has not gained this host fix; newly packaged-host and final four-player/second-PC verification remain open. Continue with material/debug/frontend polish and measured GPU-memory work before the next coherent package.
+
+### Candidate 02 packaged verification (September 14, 2026)
+
+Candidate `LAN-20260914-01` was first staged with `-skipbuild` after the current source had only a `LyraEditor` compile. Its direct Dorado smoke reached experience load, then crashed while deserializing `BW_Character_Default`: the cooked asset referenced `/Script/BreakawayCoreRuntime.BwayRelicRequestIndicatorComponent`, but the reused `LyraGame.exe` did not contain the newly added runtime class. The first causal lines and async-loading callstack are preserved in `Saved/Logs/packaged-LAN-20260914-01-directmatch.log`. This is a stale-binary packaging failure, not a source-class removal; the candidate is retained and not promoted.
+
+The initial candidate 01 package attempt also stopped at AutomationTool setup because the engine-side `Saved/Logs/ErrorLog.txt` was not writable in the restricted permission context. `Package-Preflight.ps1` now supports `-RequireAutomationToolLogWrite`; the elevated candidate 02 preflight opened that exact path with read/write sharing and recorded cleanup in `Saved/Logs/team-gameplay-20260912/package-preflight-automationtool-35a.json`. A future package can fail at this short check and request the needed permission before Cook/Stage/Pak.
+
+The `LyraGame` target was then compiled directly with the bundled .NET/UBT runner at source head `cf5c1b06` (90.60 seconds, exit 0; `Saved/Logs/team-gameplay-20260912/compile-tier1-packaged-game-35a.json`). Candidate `LAN-20260914-02` reused that exact binary for Cook/Stage/Pak through precompiled AutomationTool with elevated access for the engine log directory. BuildCookRun completed in 99.73 seconds, exit 0. The stage contains 131 files totaling 4,257,183,042 bytes; the executable hash `3A9D3F35E16B7485649289C0CBF479C2D00FE1E8205E6FA654BE5D31267510B5` matches its manifest. Provenance, status, engine patch, exit, and hashes are under `Saved/Logs/codex-packaged-LAN-20260914-02-*`.
+
+The exact 02 binary passed a direct natural cooked match with seven bots, two points to win, and real PostMatch exit in 71.81 seconds. It produced natural goals and a 1–2 result, with 2,904 log lines, zero runtime errors, zero unknown errors, and zero critical lines (`Saved/Logs/packaged-LAN-20260914-02-directmatch-flow.json`). A second headless frontend-host run started from `L_LyraFrontEnd`, invoked the production `bway.Test.HostLAN` LAN playlist, travelled to staging and Dorado, timed out selection normally, completed a natural three-round 0–3 result, and exited 0 with zero error/critical lines (`Saved/Logs/packaged-LAN-20260914-02-frontend-host-flow.json`). This proves cooked runtime and structured playlist flow; it does not prove physical UI input.
+
+One direct packaged transport run launched a listen host and three separate packaged clients against candidate 02. The host accepted three connections and logged three successful joins; host and all three clients reached a results screen with no critical lines. The commandline bypass intentionally skipped hero selection, so the host recorded one bounded remote-fixture timeout and eight `no hero selected` admission warnings. This is transport/results evidence only, not normal human selection or combat proof. The compact inventory is `Saved/Logs/team-gameplay-20260912/packaged-remote-score-35b-flow.json`; all four raw logs remain under `Saved/Logs/packaged-LAN-20260914-02-remote2-*.log`.
+
+Computer Use exposed no targetable native windows during the rendered frontend launch, despite the process owning a valid window handle. Physical frontend, normal human selection, four-player UI flow, second-PC LAN, and clean-device validation therefore remain open. Existing 0805 mixed frontend evidence remains valid only for its recorded source; candidate 02 must be rerun through the visible frontend when the UI channel is available.
+
+### Candidate 01 packaged verification (September 15, 2026)
+
+Candidate `LAN-20260915-01` was staged from the freshly compiled `LyraGame` target at source head
+`cf5c1b06` after `Package-Preflight.ps1 -RequireAutomationToolLogWrite -CompiledTargetRecord`
+passed. Cook/Stage/Pak exited 0; the complete provenance, package log, exit record and staged-file
+hashes are under `Saved/Logs/codex-packaged-LAN-20260915-01-*`. This candidate contains the same
+runtime source as candidate 02 and is the current packaged artifact for the next UI gate.
+
+The exact candidate passed a direct NullRHI natural Dorado match and a structured frontend-host
+playlist flow. The direct flow reached a natural result and real PostMatch exit with 2,495 log lines;
+the frontend flow started from `L_LyraFrontEnd`, selected the production `bway.Test.HostLAN` path,
+travelled through staging and gameplay, reached results, and exited 0. Both compact inventories have
+zero runtime error, unknown-error, or critical lines: `Saved/Logs/packaged-LAN-20260915-01-directmatch-flow.json`
+and `Saved/Logs/packaged-LAN-20260915-01-frontend-host-flow.json`.
+
+A four-process listen-server fixture launched one host and three separate packaged clients. The v1
+fixture exposed a harness shutdown race: the host's PostMatch test-exit closed the connection while
+one client was still turning its replicated PostRound summary into the results screen. A v2 client-side
+results trigger confirmed the same ordering (two clients passed, one timed out). The v3 harness then
+left the host alive until all three client processes reached their results trigger and terminated the
+host during fixture cleanup. All three clients exited 0, each compact inventory reports four results
+screen events, and all four logs have zero runtime error, unknown-error, or critical lines. The host's
+forced cleanup exit code `-1` is harness teardown and is not a gameplay failure. Evidence:
+`Saved/Logs/packaged-LAN-20260915-01-fourprocess-v3-flow.json` and the four `*-v3-*.log` files.
+
+This proves cooked runtime, structured frontend flow, and four-process LAN transport/results for the
+command-line fixture. It still does not prove physical frontend input, normal human hero selection,
+buildable UI interaction, second-PC LAN, clean-device deployment, or rendered presentation. Preserve
+the v1/v2 logs as the causal record for the shutdown-race fix; future transport fixtures should use
+client-owned result exits and hold the host until all clients complete.
+
+### Candidate 03 packaged shop verification (September 15, 2026)
+
+The packaged shop probe initially exposed two harness issues. `-ExecCmds` runs before the local
+controller is ready, so an immediate `ToggleUpgradeShop` command never opened the screen. The first
+delayed probe then debited gold but queried a hard-coded `Attack` ID while the catalog's stable ID was
+`AttackStrength`. Both findings were kept as setup/verification evidence; neither changed shipping
+behavior.
+
+The development-only `bway.Test.ShopOpenAndBuy` command now waits until startup completes, seeds a
+temporary 500-gold wallet, opens the existing production `ToggleUpgradeShop` screen, invokes its
+existing `BuySelected` handler, and verifies the first catalog ID and owner state. Candidate
+`LAN-20260915-03` was compiled through the hardened `Tier1-CompileGate.ps1`, staged with the compiled
+target preflight, and the packaged probe passed: `AttackStrength` rank `1`, gold `425`, widget still
+active at the verification point, process exit `0`, and zero runtime/unknown/critical error lines.
+Evidence: `Saved/Logs/packaged-LAN-20260915-03-shop-flow.json` and
+`Saved/Logs/packaged-LAN-20260915-03-shop.log`.
+
+The first compile attempt exposed a tooling false positive: the bundled UBT process returned zero
+even though its log contained `Result: Failed` and a C++ diagnostic. The hardened compile record
+maps those signatures to an effective failure, and package preflight now requires a present,
+empty `failureSignals` field before admitting a skip-build artifact. The original failure remains in
+`Saved/Logs/buildable-placement-20260914/compile-shop-command-raw-failure.log`; the corrected
+admission is recorded in
+`Saved/Logs/buildable-placement-20260914/package-preflight-compiled-target-admission-pass.json`.
+
+This proves the packaged development command can drive the real shop widget and owner purchase RPC;
+it does not replace physical B-key/gamepad input, separate-process shop transport, death/round/new-match
+lifecycle checks, or final UI presentation acceptance. Candidate 01 remains the complete cooked natural
+match/transport baseline; candidate 03 is the latest artifact containing the shop probe.
+
+### Candidate 09 packaged remote shop transport — September 15, 2026
+
+Candidate `LAN-20260915-09` was compiled from the current `LyraGame` target with an absolute project
+path, admitted by `Package-Preflight.ps1 -CompiledTargetRecord`, and Cook/Stage/Pak completed with
+exit 0. The development-only remote probe uses a no-world console delegate: it waits for the
+post-travel client gameplay world, opens the production CommonUI upgrade shop, and invokes the
+existing widget purchase/RPC path. The assertion reads the loaded catalog's first stable ID and
+rank cost, captures the immediate wallet baseline, and allows a bounded passive-income delta.
+
+The listen host seeded one remote owner's authority wallet to 500 gold. The client logged
+`AttackStrength`, rank 1, cost 75, and gold 425 after the purchase, emitted the `TestExit` marker,
+and exited 0. Host and client logs contain zero runtime error, unknown-error, or critical lines;
+the host's exit `-1` is owned fixture teardown after the client passed. Evidence is preserved in
+`Saved/Logs/packaged-LAN-20260915-09-remote-shop-acceptance.json` and the reusable compact brief
+`Saved/Logs/packaged-LAN-20260915-09-remote-shop-brief.json`, with the compile, preflight,
+package, candidate source snapshot, run-script, host log, and client log paths.
+
+Attempts `04` through `08` remain diagnostic history. They record, in order, a false process-zero
+compile admission caught by stdout scanning, a client command bound to the pre-travel frontend
+world, a hard-coded wallet expectation, a raw-world verification-timer crash, and a wrapper regex
+that omitted Unreal's `LogTemp: Display:` category. Each retry changed source or evidence
+hypothesis; the final wrapper reused candidate 09 without recooking. This scope proves a
+client-originated packaged shop transaction over a local listen session. Physical input, normal
+hero selection, packaged buildable UI, second-PC LAN, and clean-device deployment remain open.

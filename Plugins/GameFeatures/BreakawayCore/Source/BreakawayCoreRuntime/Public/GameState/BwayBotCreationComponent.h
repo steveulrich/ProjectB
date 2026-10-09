@@ -4,6 +4,8 @@
 #include "Components/GameStateComponent.h"
 #include "BwayBotCreationComponent.generated.h"
 
+namespace BwaySpawnRecoveryAudit { struct FRun; }
+
 UCLASS(Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayBotCreationComponent : public UGameStateComponent
 {
@@ -13,6 +15,7 @@ public:
 	UBwayBotCreationComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/** Release filled bot slots before assigning an arriving human to a team. */
 	void MakeRoomForHumanPlayer();
@@ -38,6 +41,7 @@ public:
 	void StopAllBotLogic();
 
 protected:
+	friend struct BwaySpawnRecoveryAudit::FRun;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bots")
 	int32 NumBotsToCreate = 7;
 
@@ -64,6 +68,8 @@ protected:
 
 	/** -1 = use NumBotsToCreate / TargetPlayerCount scaling. */
 	int32 NumBotsOverride = -1;
+	FTimerHandle PendingHumanTravelTimer;
+	bool bWaitingForHumanTravel = false;
 
 	void OnExperienceLoaded(const class ULyraExperienceDefinition* Experience);
 

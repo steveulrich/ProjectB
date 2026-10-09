@@ -44,6 +44,7 @@ private:
 	bool bStoredOrientRotationToMovement = false;
 	float StoredGravityScale = 1.f;
 	float StoredMaxWalkSpeed = 600.f;
+	float StoredMaxFlySpeed = 600.f;
 	EMovementMode StoredMovementMode = MOVE_Walking;
 	uint8 StoredCustomMovementMode = 0;
 	ECollisionResponse StoredPawnResponse = ECR_Block;

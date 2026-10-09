@@ -19,6 +19,25 @@
 
 DEFINE_LOG_CATEGORY_STATIC(LogBwayGameplayUrl, Log, All);
 
+void UBwayGameplayUrlLibrary::AppendMatchRulesToTravelUrl(FString& TravelUrl, const FString& StagingOptions)
+{
+	// Absolute travel intentionally removes the staging experience and route. Match rules
+	// belong to the hosted session and must be carried explicitly to the selected arena.
+	static const TCHAR* Keys[] = { TEXT("NumBots"), TEXT("PointsToWin"), TEXT("MatchFlowConfig"),
+		TEXT("PrematchDuration"), TEXT("WarmupDuration"), TEXT("PostRoundDuration"),
+		TEXT("PostMatchSummaryDuration"), TEXT("RoundDuration"), TEXT("DisableRelicBotAI") };
+	int32 QueryStart = INDEX_NONE;
+	const FString ExistingOptions = TravelUrl.FindChar(TEXT('?'), QueryStart) ? TravelUrl.Mid(QueryStart) : FString();
+	for (const TCHAR* Key : Keys)
+	{
+		if (UGameplayStatics::HasOption(StagingOptions, Key) && !UGameplayStatics::HasOption(ExistingOptions, Key))
+		{
+			const FString Value = UGameplayStatics::ParseOption(StagingOptions, Key);
+			TravelUrl += Value.IsEmpty() ? FString::Printf(TEXT("?%s"), Key) : FString::Printf(TEXT("?%s=%s"), Key, *Value);
+		}
+	}
+}
+
 void UBwayGameplayUrlLibrary::ResetMatchTravelOptions(FURL& Url)
 {
 	Url.Op.RemoveAll([](const FString& Option)
@@ -47,6 +66,8 @@ struct FNamedOptionSource
 const TArray<FName>& GetKnownGameplayOptionKeys()
 {
 	static const TArray<FName> Keys = {
+		// Preserve the engine's listen-server marker when rebuilding options from PIE/LAN sources.
+		TEXT("listen"),
 		TEXT("NumBots"),
 		TEXT("PointsToWin"),
 		TEXT("SkipHeroSelection"),
@@ -183,6 +204,39 @@ bool TryFindOptionInSource(const FNamedOptionSource& Source, const FString& Key,
 	return false;
 }
 
+bool IsHeroSelectStagingRoutingKey(const FString& Key)
+{
+	return Key.Equals(TEXT("HeroSelectStaging"), ESearchCase::IgnoreCase)
+		|| Key.Equals(TEXT("HeroSelectTargetMap"), ESearchCase::IgnoreCase)
+		|| Key.Equals(TEXT("HeroSelectTargetExperience"), ESearchCase::IgnoreCase);
+}
+
+bool RequestsHeroSelection(const TMap<FString, FString>& Options)
+{
+	const FString* Staging = Options.Find(TEXT("HeroSelectStaging"));
+	return Staging && FCString::Atoi(**Staging) != 0;
+}
+
+bool CurrentTravelRequestsHeroSelection(const TArray<FNamedOptionSource>& Sources)
+{
+	for (const FNamedOptionSource& Source : Sources)
+	{
+		// Startup/editor defaults cannot establish the current destination.
+		if (Source.Label == TEXT("World.URL") || Source.Label == TEXT("GameMode.OptionsString"))
+		{
+			TMap<FString, FString> Options;
+			ParseOptionsStringToMap(Source.Value, Options);
+			if (RequestsHeroSelection(Options)) { return true; }
+		}
+	}
+	return false;
+}
+
+bool SuppressStartupShortcut(const TArray<FNamedOptionSource>& Sources, FName OptionName)
+{
+	return OptionName == FName(TEXT("SkipHeroSelection")) && CurrentTravelRequestsHeroSelection(Sources);
+}
+
 void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOptionSource>& OutSources)
 {
 	OutSources.Reset();
@@ -281,6 +335,21 @@ void ApplyPriorityGameplayOptions(FString& OptionsString, const TArray<FNamedOpt
 {
 	TMap<FString, FString> MergedOptions;
 	ParseOptionsStringToMap(OptionsString, MergedOptions);
+	const bool bExplicitSelectionTravel = RequestsHeroSelection(MergedOptions) || CurrentTravelRequestsHeroSelection(Sources);
+	if (bExplicitSelectionTravel)
+	{
+		// A rematch requests normal selection even if the initial process launch
+		// skipped it. Do not resurrect that one-match shortcut from fallback sources.
+		MergedOptions.Remove(TEXT("SkipHeroSelection"));
+	}
+	// A destination match URL explicitly carries SkipHeroSelection (and usually
+	// SeamlessTravel). Do not re-add staging-only routing options from stale PIE
+	// AdditionalServerGameOptions, or the gameplay map will be treated as the
+	// staging world and its relic/goal actors will never spawn. A rematch URL
+	// that intentionally contains HeroSelectStaging remains explicit in the
+	// merged map and is preserved.
+	const bool bExplicitMatchTravel = !bExplicitSelectionTravel && (MergedOptions.Contains(TEXT("SkipHeroSelection"))
+		|| MergedOptions.Contains(TEXT("SeamlessTravel")));
 
 	TMap<FString, FString> GameplayOverrides;
 
@@ -297,6 +366,14 @@ void ApplyPriorityGameplayOptions(FString& OptionsString, const TArray<FNamedOpt
 		for (const FName& OptionName : GetKnownGameplayOptionKeys())
 		{
 			const FString Key = OptionName.ToString();
+			if (bExplicitSelectionTravel && OptionName == FName(TEXT("SkipHeroSelection")))
+			{
+				continue;
+			}
+			if (bExplicitMatchTravel && IsHeroSelectStagingRoutingKey(Key))
+			{
+				continue;
+			}
 			if (GameplayOverrides.Contains(Key))
 			{
 				continue;
@@ -313,7 +390,15 @@ void ApplyPriorityGameplayOptions(FString& OptionsString, const TArray<FNamedOpt
 
 	for (const TPair<FString, FString>& Pair : GameplayOverrides)
 	{
-		MergedOptions.Add(Pair.Key, Pair.Value);
+		// GameMode::OptionsString comes from the current map/travel URL. Keep an
+		// explicit value there; editor and command-line sources only fill keys
+		// that the current travel did not provide. This prevents stale PIE
+		// AdditionalServerGameOptions (especially Experience) from overriding a
+		// hero-selection destination during seamless travel.
+		if (!MergedOptions.Contains(Pair.Key))
+		{
+			MergedOptions.Add(Pair.Key, Pair.Value);
+		}
 	}
 
 	OptionsString = BuildOptionsStringFromMap(MergedOptions);
@@ -325,6 +410,7 @@ bool TryGetOptionFromSources(
 	int32& OutValue,
 	FString* OutSourceLabel)
 {
+	if (SuppressStartupShortcut(Sources, OptionName)) { return false; }
 	const FString Key = OptionName.ToString();
 	for (const FNamedOptionSource& Source : Sources)
 	{
@@ -349,6 +435,7 @@ bool TryGetFloatOptionFromSources(
 	float& OutValue,
 	FString* OutSourceLabel)
 {
+	if (SuppressStartupShortcut(Sources, OptionName)) { return false; }
 	const FString Key = OptionName.ToString();
 	for (const FNamedOptionSource& Source : Sources)
 	{
@@ -372,6 +459,7 @@ bool TryGetStringOptionFromSources(
 	FString& OutValue,
 	FString* OutSourceLabel)
 {
+	if (SuppressStartupShortcut(Sources, OptionName)) { return false; }
 	const FString Key = OptionName.ToString();
 	for (const FNamedOptionSource& Source : Sources)
 	{
@@ -416,6 +504,8 @@ void UBwayGameplayUrlLibrary::AppendMissingOptionsFromUrlSource(FString& Options
 
 	TMap<FString, FString> MergedOptions;
 	BwayGameplayUrl::ParseOptionsStringToMap(OptionsString, MergedOptions);
+	const bool bExplicitSelectionTravel = BwayGameplayUrl::RequestsHeroSelection(MergedOptions);
+	if (bExplicitSelectionTravel) { MergedOptions.Remove(TEXT("SkipHeroSelection")); }
 
 	TMap<FString, FString> SourceMap;
 	BwayGameplayUrl::ParseOptionsStringToMap(UrlSource, SourceMap);
@@ -423,6 +513,7 @@ void UBwayGameplayUrlLibrary::AppendMissingOptionsFromUrlSource(FString& Options
 	for (const FName& OptionName : BwayGameplayUrl::GetKnownGameplayOptionKeys())
 	{
 		const FString Key = OptionName.ToString();
+		if (bExplicitSelectionTravel && OptionName == FName(TEXT("SkipHeroSelection"))) { continue; }
 		if (MergedOptions.Contains(Key))
 		{
 			continue;
@@ -462,6 +553,7 @@ bool UBwayGameplayUrlLibrary::HasGameplayUrlOption(const UObject* WorldContextOb
 {
 	TArray<BwayGameplayUrl::FNamedOptionSource> Sources;
 	BwayGameplayUrl::GatherNamedOptionSources(WorldContextObject, Sources);
+	if (BwayGameplayUrl::SuppressStartupShortcut(Sources, OptionName)) { return false; }
 
 	FString Value;
 	const FString Key = OptionName.ToString();

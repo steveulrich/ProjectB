@@ -82,6 +82,13 @@ void UBwayHeroSelectionManager::RegisterPlayer(APlayerState* PlayerState)
 	{
 		return;
 	}
+	if (auto* PS = Cast<ABwayPlayerState>(PlayerState); PS && PS->IsHeroLocked()
+		&& !UBwayHeroRegistry::GetHeroDataById(PS->GetSelectedHeroId()))
+	{
+		// A carried lock is useful only with a resolvable hero. Preserve valid
+		// locks, but let an invalid carried selection make a new choice.
+		PS->UnlockHeroSelection();
+	}
 
 	// Check if already registered
 	for (const FPlayerHeroSelectionState& Selection : PlayerSelections)
@@ -183,12 +190,15 @@ bool UBwayHeroSelectionManager::IsHeroAvailableForTeam(FPrimaryAssetId HeroId, i
 		return true;
 	}
 
-	// Check if any player on the same team has already selected this hero
-	for (const FPlayerHeroSelectionState& Selection : PlayerSelections)
+	// PlayerSelections is a staging/UI projection. Gameplay and late joins must
+	// also reserve heroes, even when no selection phase is active.
+	const ABwayGameState* GameState = GetBwayGameState();
+	if (!GameState) return false;
+	for (APlayerState* PlayerState : GameState->PlayerArray)
 	{
-		if (Selection.TeamIndex == TeamIndex && 
-			Selection.SelectedHeroId.IsValid() && 
-			Selection.SelectedHeroId == HeroId)
+		const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState);
+		if (BwayPS && !BwayPS->IsInactive() && GameState->GetPlayerTeam(BwayPS) == TeamIndex
+			&& BwayPS->GetSelectedHeroId().IsValid() && BwayPS->GetSelectedHeroId() == HeroId)
 		{
 			return false;
 		}
@@ -255,7 +265,15 @@ void UBwayHeroSelectionManager::StartHeroSelection()
 		}
 	}
 
-	// Start selection timer if configured
+	RefreshSelectionDeadline();
+}
+
+void UBwayHeroSelectionManager::RefreshSelectionDeadline()
+{
+	if (!GetOwner()->HasAuthority() || !bSelectionActive || !GetWorld() || GetWorld()->bIsTearingDown) return;
+	GetWorld()->GetTimerManager().ClearTimer(SelectionTimerHandle);
+	SelectionTimeRemaining = FMath::Max(0.f, SelectionTimeLimit);
+	// Start selection timer if configured, preserving every current choice and lock.
 	if (SelectionTimeLimit > 0.0f)
 	{
 		GetWorld()->GetTimerManager().SetTimer(
@@ -576,7 +594,7 @@ bool UBwayHeroSelectionManager::AssignRandomHeroToPlayer(ABwayPlayerState* Playe
 
 	if (PlayerState->GetSelectedHeroId() != HeroToAssign)
 	{
-		PlayerState->ServerSetSelectedHeroId(HeroToAssign);
+		if (!PlayerState->TrySetSelectedHeroId(HeroToAssign)) return false;
 	}
 
 	if (bLockImmediately && !PlayerState->IsHeroLocked())
@@ -609,7 +627,7 @@ bool UBwayHeroSelectionManager::AssignHeroToPlayer(ABwayPlayerState* PlayerState
 	if (ABwayGameState* GameState = GetBwayGameState())
 	{
 		const int32 TeamIndex = GameState->GetPlayerTeam(PlayerState);
-		if (TeamIndex >= 0 && !IsHeroAvailableForTeam(HeroId, TeamIndex))
+		if (PlayerState->GetSelectedHeroId() != HeroId && TeamIndex >= 0 && !IsHeroAvailableForTeam(HeroId, TeamIndex))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionManager: Cannot assign duplicate hero %s to team %d"),
 				*HeroId.ToString(), TeamIndex + 1);
@@ -619,7 +637,7 @@ bool UBwayHeroSelectionManager::AssignHeroToPlayer(ABwayPlayerState* PlayerState
 
 	if (PlayerState->GetSelectedHeroId() != HeroId)
 	{
-		PlayerState->ServerSetSelectedHeroId_Implementation(HeroId);
+		if (!PlayerState->TrySetSelectedHeroId(HeroId)) return false;
 	}
 
 	if (bLockImmediately && !PlayerState->IsHeroLocked())

@@ -22,6 +22,8 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHeroProjectileBase)
 
+DEFINE_LOG_CATEGORY_STATIC(LogBwayProjectileCollision, Log, All);
+
 ABwayHeroProjectileBase::ABwayHeroProjectileBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -178,6 +180,8 @@ void ABwayHeroProjectileBase::OnSphereBeginOverlap(
 	(void)OtherComp;
 	(void)OtherBodyIndex;
 	(void)bFromSweep;
+	UE_LOG(LogBwayProjectileCollision, Verbose, TEXT("Overlap projectile=%s other=%s sweepActor=%s authority=%d"),
+		*GetName(), *GetNameSafe(OtherActor), *GetNameSafe(SweepResult.GetActor()), HasAuthority());
 
 	if (ShouldIgnoreActor(OtherActor))
 	{
@@ -219,6 +223,8 @@ void ABwayHeroProjectileBase::ProcessHit(const FHitResult& Hit, bool bForceExpir
 	if (HasAuthority())
 	{
 		bShouldExpire = HandleDamageHit(Hit) || bForceExpire;
+		UE_LOG(LogBwayProjectileCollision, Verbose, TEXT("DamageHit projectile=%s target=%s instigator=%s expire=%d"),
+			*GetName(), *GetNameSafe(Hit.GetActor()), *GetNameSafe(GetInstigator()), bShouldExpire);
 	}
 
 	if (bShouldExpire)

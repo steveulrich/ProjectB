@@ -59,12 +59,12 @@ protected:
 	void StartSlowAura();
 	void StopSlowAura();
 	void SeedEnemiesAlreadyInRadius();
+	void ReconcileSlowAura();
 	void ApplySlowToEnemy(ABwayCharacterWithAbilities* Enemy);
 	void RemoveSlowFromEnemy(ABwayCharacterWithAbilities* Enemy);
 	void ClearAllSlowEffects();
 	bool IsEnemyOfWard(ABwayCharacterWithAbilities* OtherCharacter) const;
 	bool IsAliveEnemy(ABwayCharacterWithAbilities* Enemy) const;
-	AActor* ResolveTeamProxy() const;
 	void ApplyKitConfigOverrides();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "CursedWard")
@@ -88,6 +88,7 @@ protected:
 	TSubclassOf<UGameplayEffect> SlowEffectClass;
 
 	TMap<TWeakObjectPtr<ABwayCharacterWithAbilities>, FActiveGameplayEffectHandle> ActiveEnemySlowHandles;
+	FTimerHandle SlowAuraReconcileTimer;
 
 	bool bSlowAuraActive = false;
 	bool bDeathHandled = false;

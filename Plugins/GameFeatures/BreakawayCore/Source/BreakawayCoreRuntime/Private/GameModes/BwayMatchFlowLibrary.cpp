@@ -163,8 +163,10 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 
 	if (!BaseConfig)
 	{
-		const FSoftObjectPath DefaultDevPath(TEXT("/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Dev.DA_BW_MatchFlow_Dev"));
-		BaseConfig = Cast<UBwayMatchFlowConfig>(DefaultDevPath.TryLoad());
+		// Experiences with an explicit development config keep their short timings.
+		// A normal hosted match must never inherit that testing shortcut.
+		const FSoftObjectPath DefaultDemoPath(TEXT("/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Demo.DA_BW_MatchFlow_Demo"));
+		BaseConfig = Cast<UBwayMatchFlowConfig>(DefaultDemoPath.TryLoad());
 	}
 
 	CopyConfigToResolved(BaseConfig, Resolved);

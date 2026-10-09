@@ -25,10 +25,10 @@ struct FBwayResolvedMatchFlowSettings
 	bool bOrchestrateMatchFlow = true;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
-	int32 PointsToWin = 1;
+	int32 PointsToWin = 3;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
-	float RoundDuration = 90.0f;
+	float RoundDuration = 240.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
 	float PrematchDuration = 1.0f;
@@ -74,7 +74,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow", meta = (WorldContext = "WorldContextObject"))
 	static bool GetUrlOptionPrimaryAssetId(const UObject* WorldContextObject, FName OptionName, FPrimaryAssetType ExpectedType, FPrimaryAssetId& OutAssetId);
 
-	/** Build resolved settings: URL overrides on top of config asset (URL, experience default, then dev fallback). */
+	/** Build resolved settings: URL overrides on top of config asset (URL, experience default, then demo fallback). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Match Flow", meta = (WorldContext = "WorldContextObject"))
 	static FBwayResolvedMatchFlowSettings ResolveMatchFlowSettings(
 		const UObject* WorldContextObject,

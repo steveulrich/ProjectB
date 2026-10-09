@@ -1,5 +1,7 @@
 #include "UI/BwayUpgradeShopWidget.h"
 #include "BwayPlayerState.h"
+#include "BwayPlayerController.h"
+#include "EnhancedInputSubsystems.h"
 #include "Economy/BwayUpgradeComponent.h"
 #include "Economy/BwayUpgradeCatalog.h"
 #include "Economy/BwayGoldAttributeSet.h"
@@ -20,6 +22,12 @@
 #include "Input/Reply.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayUpgradeShopWidget)
+
+UBwayUpgradeShopWidget::UBwayUpgradeShopWidget(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	bIsBackHandler = true;
+}
 
 TSharedRef<SWidget> UBwayUpgradeShopWidget::RebuildWidget()
 {
@@ -50,6 +58,7 @@ TSharedRef<SWidget> UBwayUpgradeShopWidget::RebuildWidget()
 		AddText(NSLOCTEXT("BwayShop", "Title", "MATCH UPGRADES"));
 		Balance = AddText(FText::GetEmpty());
 		Selector = WidgetTree->ConstructWidget<UComboBoxString>();
+		Selector->SetEnableGamepadNavigationMode(true);
 		Column->AddChildToVerticalBox(Selector)->SetPadding(FMargin(0, 12));
 		Selector->OnSelectionChanged.AddDynamic(this, &ThisClass::SelectionChanged);
 		Details = AddText(FText::GetEmpty());
@@ -71,7 +80,10 @@ TSharedRef<SWidget> UBwayUpgradeShopWidget::RebuildWidget()
 
 TOptional<FUIInputConfig> UBwayUpgradeShopWidget::GetDesiredInputConfig() const
 {
-	return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+	FUIInputConfig Config(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+	Config.bIgnoreMoveInput = true;
+	Config.bIgnoreLookInput = true;
+	return Config;
 }
 
 void UBwayUpgradeShopWidget::NativeOnActivated()
@@ -99,7 +111,7 @@ void UBwayUpgradeShopWidget::NativeOnActivated()
 
 void UBwayUpgradeShopWidget::NativeOnDeactivated()
 {
-	GetWorld()->GetTimerManager().ClearTimer(AccessTimer);
+	if (UWorld* World = GetWorld()) World->GetTimerManager().ClearTimer(AccessTimer);
 	if (Shop)
 	{
 		Shop->OnUpgradesChanged.RemoveDynamic(this, &ThisClass::Refresh);
@@ -158,9 +170,13 @@ void UBwayUpgradeShopWidget::RefreshAccess()
 	const bool bOpen = Shop->IsPurchaseWindowOpen();
 	if (bOpen && !bAccessWasOpen && !bPending) Status->SetText(FText::GetEmpty());
 	bAccessWasOpen = bOpen;
+	const bool bBuyHadFocus = BuyButton->HasUserFocus(GetOwningPlayer());
 	BuyButton->SetIsEnabled(!bPending && bOpen && Entry && Entry->Ranks.IsValidIndex(Rank) && Gold
 		&& Gold->GetCurrentGold() >= Entry->Ranks[Rank].Cost
 		&& (Rank > 0 || Shop->GetOwnedUpgrades().Num() < Shop->GetCatalog()->MaxOwnedUpgrades));
+	// A pending purchase or a depleted wallet must not strand controller focus
+	// on a disabled button. Keep selection available for the next decision.
+	if (bBuyHadFocus && !BuyButton->GetIsEnabled()) Selector->SetUserFocus(GetOwningPlayer());
 	if (!bOpen) Status->SetText(NSLOCTEXT("BwayShop", "Access", "Buy at your base, while dead, or during round planning."));
 }
 
@@ -185,12 +201,17 @@ void UBwayUpgradeShopWidget::PurchaseResult(FName Id, bool bSuccess)
 void UBwayUpgradeShopWidget::SelectionChanged(FString Selected, ESelectInfo::Type Type) { Refresh(); }
 void UBwayUpgradeShopWidget::CloseShop() { DeactivateWidget(); }
 UWidget* UBwayUpgradeShopWidget::NativeGetDesiredFocusTarget() const { return Selector ? static_cast<UWidget*>(Selector) : CloseButton.Get(); }
-FReply UBwayUpgradeShopWidget::NativeOnKeyDown(const FGeometry& Geometry, const FKeyEvent& Event)
+FReply UBwayUpgradeShopWidget::NativeOnPreviewKeyDown(const FGeometry& Geometry, const FKeyEvent& Event)
 {
-	if (Event.GetKey() == EKeys::Escape || Event.GetKey() == EKeys::B || Event.GetKey() == EKeys::Gamepad_FaceButton_Right)
+	const ABwayPlayerController* Controller = Cast<ABwayPlayerController>(GetOwningPlayer());
+	const UEnhancedInputLocalPlayerSubsystem* Input = GetOwningLocalPlayer()
+		? GetOwningLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>() : nullptr;
+	// CommonUI owns Back. A keyboard toggle closes the menu, but gamepad
+	// directions must remain available for navigating the selector and buttons.
+	if (!Event.GetKey().IsGamepadKey() && Controller && Input && Input->QueryKeysMappedToAction(Controller->GetUpgradeShopInputAction()).Contains(Event.GetKey()))
 	{
-		CloseShop();
+		if (!Event.IsRepeat()) CloseShop();
 		return FReply::Handled();
 	}
-	return Super::NativeOnKeyDown(Geometry, Event);
+	return Super::NativeOnPreviewKeyDown(Geometry, Event);
 }

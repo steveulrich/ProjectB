@@ -5,9 +5,12 @@
 #include "Relic/RelicMovementReplicationComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h" // Make sure this is included
 #include "AbilitySystem/LyraAbilitySet.h"         // Make sure this is included
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "AbilitySystemGlobals.h"
+#include "Abilities/BwayGameplayAbility_RelicPass.h"
 #include "BwayGameState.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "Engine/AssetManager.h"
@@ -18,9 +21,23 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "HAL/IConsoleManager.h"
+
+#if !UE_BUILD_SHIPPING
+static TAutoConsoleVariable<int32> CVarBwayRelicDebugFeedback(
+    TEXT("bway.Relic.DebugFeedback"), 0,
+    TEXT("Log accepted relic audio events and their actual per-peer delivery."));
+#endif
 
 namespace
 {
+bool IsRelicPickupState(ERelicState State)
+{
+    return State == ERelicState::Neutral || State == ERelicState::Dropped ||
+        State == ERelicState::Thrown || State == ERelicState::BeingPassed ||
+        State == ERelicState::PendingRequest;
+}
+
 FVector ComputeSpawnDirectedFumbleVelocity(const FVector& CarrierLocation, const FVector& SpawnLocation, const URelicSettings* RelicSettings)
 {
 	const float ImpulseScale = RelicSettings ? RelicSettings->DropImpulseMultiplier : 1.0f;
@@ -96,6 +113,12 @@ ARelicActor::ARelicActor()
     RelicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RelicMesh"));
     SetRootComponent(RelicMesh);
     RelicMesh->SetIsReplicated(true); // Replicate the component itself if needed
+
+    // SceneComponent replicates AttachChildren. Only this stable default subobject
+    // belongs in the mesh's networked list; each peer owns its Niagara children.
+    VisualEffectsRoot = CreateDefaultSubobject<USceneComponent>(TEXT("VisualEffectsRoot"));
+    VisualEffectsRoot->SetupAttachment(RelicMesh);
+    VisualEffectsRoot->SetIsReplicated(false);
 
     InteractionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractionSphere"));
     InteractionSphere->SetupAttachment(RootComponent);
@@ -200,6 +223,19 @@ void ARelicActor::BeginPlay()
             }
         }
     }
+    // Neutral can equal the class default and therefore receive no state RepNotify.
+    UpdateStateVFX(CurrentState);
+    UpdateTeamColorTinting();
+}
+
+void ARelicActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    for (ERelicState State : {ERelicState::Neutral, ERelicState::Carried, ERelicState::Dropped, ERelicState::Scoring})
+    {
+        CleanupStateVFX(State);
+    }
+    DestroyTrailEffect();
+    Super::EndPlay(EndPlayReason);
 }
 
 void ARelicActor::InitializeRelicData(const URelicSettings* InRelicSettings)
@@ -215,6 +251,12 @@ void ARelicActor::InitializeRelicData(const URelicSettings* InRelicSettings)
 
     // Apply configuration immediately (before BeginPlay)
     ApplyRelicConfiguration();
+
+    if (HasActorBegunPlay())
+    {
+        UpdateStateVFX(CurrentState);
+        UpdateTeamColorTinting();
+    }
 
     UE_LOG(LogTemp, Log, TEXT("Relic initialized with data asset: %s"), *InRelicSettings->GetName());
 }
@@ -335,7 +377,8 @@ bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
     }
 
     // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return CurrentState != ERelicState::Carried && IsCharacterRequestingRelic(Character, RelicSettings);
+    return !CurrentCarrier && !bHasScoredThisRound && IsRelicPickupState(CurrentState) &&
+        IsCharacterRequestingRelic(Character, RelicSettings);
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
@@ -345,7 +388,8 @@ UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
 
 void ARelicActor::OnRep_CurrentState()
 {
-    // Update VFX and audio based on state change
+    // Persistent presentation follows current state. Audio is a transient event;
+    // a late join or relevancy refresh must not replay a previous pickup/goal.
     UpdateStateVFX(CurrentState);
     UpdateTeamColorTinting();
 
@@ -364,10 +408,21 @@ void ARelicActor::OnRep_CurrentState()
     }
 
     UE_LOG(LogTemp, Verbose, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), static_cast<int32>(CurrentState));
+#if !UE_BUILD_SHIPPING
+    if (CVarBwayRelicDebugFeedback.GetValueOnGameThread() != 0)
+    {
+        UE_LOG(LogTemp, Display, TEXT("BwayRelicFeedback: State state=%d net=%d settings=%s"),
+            int32(CurrentState), int32(GetNetMode()), *GetPathNameSafe(RelicSettings));
+    }
+#endif
 }
 
 void ARelicActor::OnRep_CurrentCarrier()
 {
+    // Authority performs attachment and ability grants once in the accepted
+    // transition. A RepNotify is presentation-only and must not grant twice.
+    if (HasAuthority()) return;
+
     // Client-side reaction to carrier changes
     if (CurrentCarrier)
     {
@@ -381,6 +436,12 @@ void ARelicActor::OnRep_CurrentCarrier()
         // If carrier is null, detach visually
         DetachFromCarrier();
     }
+}
+
+void ARelicActor::OnRep_LastPossessingTeam()
+{
+    // Team and state RepNotifies can arrive in either order.
+    UpdateTeamColorTinting();
 }
 
 void ARelicActor::SetRelicState(ERelicState NewState)
@@ -459,7 +520,8 @@ ABwayPlayerState* ARelicActor::GetLastPossessingPlayerState() const
 
 void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 {
-    if (!HasAuthority() || !NewCarrier)
+    if (!HasAuthority() || !IsValid(NewCarrier) || CurrentCarrier ||
+        bHasScoredThisRound || !IsRelicPickupState(CurrentState))
     {
         return;
     }
@@ -476,6 +538,11 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
         }
     }
 
+    // Commit ownership before callbacks or attachment can synchronously produce
+    // another pickup overlap. Repeated and competing calls are now no-ops.
+    CurrentCarrier = NewCarrier;
+    SetRelicState(ERelicState::Carried);
+
     // Notify relic manager component of carrier change
     if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
     {
@@ -485,11 +552,7 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
         }
     }
 
-    CurrentCarrier = NewCarrier; // Set replicated property
-    OnRep_CurrentCarrier(); // Call RepNotify manually on server
-
     AttachToCarrier(NewCarrier);
-    SetRelicState(ERelicState::Carried);
 
     // Play pickup audio
     PlayStateAudio(ERelicState::Carried);
@@ -569,13 +632,18 @@ void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool b
 
     // Now clear the replicated carrier property
     CurrentCarrier = nullptr;
-    OnRep_CurrentCarrier();
 
+    const bool bChangedState = CurrentState != ERelicState::Dropped;
+    const bool bCompletingReset = CurrentState == ERelicState::Resetting;
     // Set state (LastPossessingTeam is maintained - don't reset it)
     SetRelicState(ERelicState::Dropped);
 
-    // Play drop audio
-    PlayStateAudio(ERelicState::Dropped);
+    // A reset uses this release/physics path after relocation. Announce its
+    // destination once instead of playing a drop sound or the old-location sound.
+    if (bChangedState)
+    {
+        PlayStateAudio(bCompletingReset ? ERelicState::Resetting : ERelicState::Dropped);
+    }
 }
 
 void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
@@ -599,12 +667,14 @@ void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
         return;
     }
 
+    // Preserve the scorer for cue ownership before release clears CurrentCarrier.
+    ABwayCharacterWithAbilities* ScoringCarrier = CurrentCarrier;
+
     // Release the carrier before scoring VFX so round-reset pawn destroy/restart is safe.
     if (CurrentCarrier)
     {
         DetachFromCarrier();
         CurrentCarrier = nullptr;
-        OnRep_CurrentCarrier();
     }
 
     // Set scoring state internally
@@ -612,6 +682,17 @@ void ARelicActor::OnEnteredGoal(int32 ScoringTeam)
 
     // Mark as scored
     bHasScoredThisRound = true;
+
+    if (AbilitySystemComponent)
+    {
+        FGameplayCueParameters CueParams;
+        CueParams.Location = FVector_NetQuantize10(GetActorLocation());
+        CueParams.RawMagnitude = static_cast<float>(ScoringTeam);
+        CueParams.NormalizedMagnitude = static_cast<float>(ScoringTeam);
+        CueParams.Instigator = ScoringCarrier;
+        CueParams.EffectCauser = this;
+        AbilitySystemComponent->ExecuteGameplayCue(BwayGameplayCueTags::ScoringGoal, CueParams);
+    }
 
     // Play scoring audio (VFX will be handled by OnRep_CurrentState)
     PlayStateAudio(ERelicState::Scoring);
@@ -640,7 +721,7 @@ void ARelicActor::BeginResettingState()
     LastPossessingPlayerState.Reset();
     LastPossessingTeam = INDEX_NONE;
     SetRelicState(ERelicState::Resetting);
-    PlayStateAudio(ERelicState::Resetting);
+    // The completed reset emits audio after relocation through OnDropped.
 }
 
 // --- Throw/Pass RPCs ---
@@ -673,10 +754,8 @@ void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
 
         DetachFromCarrier(&ThrowVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
-        OnRep_CurrentCarrier(); // Call RepNotify manually on server
 
         SetRelicState(ERelicState::Thrown);
-        Multicast_PlayThrowPassFX(); // Trigger cosmetic effects on all clients
     }
 }
 
@@ -702,17 +781,9 @@ void ARelicActor::Server_PassRelic_Implementation(const FVector& PassVelocity)
 
         DetachFromCarrier(&PassVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
-        OnRep_CurrentCarrier(); // Call RepNotify manually on server
 
         SetRelicState(ERelicState::BeingPassed);
-        Multicast_PlayThrowPassFX(); // Trigger cosmetic effects on all clients
     }
-}
-
-void ARelicActor::Multicast_PlayThrowPassFX_Implementation()
-{
-    // Spawn trail effect for thrown/passed relic
-    SpawnTrailEffect();
 }
 
 // --- Attachment/Detachment Helpers ---
@@ -746,6 +817,15 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
             {
                 AbilitySetToGrant->GiveToAbilitySystem(PlayerStateASC, &GrantedCarrierSetHandle, this);
                 UE_LOG(LogTemp, Log, TEXT("Server: Granted RelicAbilitySet '%s' to PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(AbilitySetToGrant), *GetNameSafe(CarrierPlayerState), *GetNameSafe(Carrier));
+
+                if (!GrantedPassAbilityHandle.IsValid())
+                {
+                    FGameplayAbilitySpec PassSpec(UBwayGameplayAbility_RelicPass::StaticClass(), 1);
+                    PassSpec.SourceObject = this;
+                    PassSpec.GetDynamicSpecSourceTags().AddTag(FGameplayTag::RequestGameplayTag(FName("InputTag.Relic.Pass"), false));
+                    GrantedPassAbilityHandle = PlayerStateASC->GiveAbility(PassSpec);
+                    UE_LOG(LogTemp, Log, TEXT("Server: Granted native RelicPass ability to %s (Handle: %s)"), *GetNameSafe(CarrierPlayerState), *GrantedPassAbilityHandle.ToString());
+                }
             }
             else
             {
@@ -797,6 +877,11 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
                 if (ULyraAbilitySystemComponent* PlayerStateASC = Cast<ULyraAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPlayerState))) // Ensure the handle is valid before taking
                 {
                     GrantedCarrierSetHandle.TakeFromAbilitySystem(PlayerStateASC);
+					if (GrantedPassAbilityHandle.IsValid())
+					{
+						PlayerStateASC->ClearAbility(GrantedPassAbilityHandle);
+						GrantedPassAbilityHandle = FGameplayAbilitySpecHandle();
+					}
                     UE_LOG(LogTemp, Log, TEXT("Server: Cleared Ability Set from PlayerState ASC of %s (Carrier: %s)"), *GetNameSafe(CarrierPlayerState), *GetNameSafe(CurrentCarrier));
 
                 }
@@ -833,77 +918,68 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
 
 void ARelicActor::UpdateStateVFX(ERelicState NewState)
 {
-    if (!RelicSettings)
+    // Persistent effects are reconciled from state, including initial replication
+    // and relevancy re-entry. Repeated notifications must not restart the effect.
+    const bool bCanRender = RelicSettings && VisualEffectsRoot && GetNetMode() != NM_DedicatedServer;
+    UNiagaraSystem* EffectToSpawn = nullptr;
+    TObjectPtr<UNiagaraComponent>* ComponentToSet = nullptr;
+    if (bCanRender)
     {
-        return;
+        switch (NewState)
+        {
+        case ERelicState::Neutral:
+            EffectToSpawn = RelicSettings->IdleEffect.LoadSynchronous();
+            ComponentToSet = &IdleEffectComponent;
+            break;
+        case ERelicState::Carried:
+            EffectToSpawn = RelicSettings->CarriedEffect.LoadSynchronous();
+            ComponentToSet = &CarriedEffectComponent;
+            break;
+        case ERelicState::Dropped:
+            EffectToSpawn = RelicSettings->DroppedEffect.LoadSynchronous();
+            ComponentToSet = &DroppedEffectComponent;
+            break;
+        case ERelicState::Scoring:
+            EffectToSpawn = RelicSettings->ScoringEffect.LoadSynchronous();
+            ComponentToSet = &ScoringEffectComponent;
+            break;
+        default:
+            break;
+        }
     }
-
-    // Clean up all existing state effects first
-    if (IdleEffectComponent)
+    for (TObjectPtr<UNiagaraComponent>* Component : {&IdleEffectComponent, &CarriedEffectComponent, &DroppedEffectComponent, &ScoringEffectComponent})
     {
-        IdleEffectComponent->DestroyComponent();
-        IdleEffectComponent = nullptr;
+        if (Component != ComponentToSet || !IsValid(*Component) || (*Component)->GetAsset() != EffectToSpawn)
+        {
+            if (IsValid(*Component)) (*Component)->DestroyComponent();
+            *Component = nullptr;
+        }
     }
-    if (CarriedEffectComponent)
+    if (EffectToSpawn && ComponentToSet && !IsValid(*ComponentToSet))
     {
-        CarriedEffectComponent->DestroyComponent();
-        CarriedEffectComponent = nullptr;
+        *ComponentToSet = UNiagaraFunctionLibrary::SpawnSystemAttached(
+            EffectToSpawn, VisualEffectsRoot, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
+            EAttachLocation::KeepRelativeOffset, false, true, ENCPoolMethod::None, false);
     }
-    if (DroppedEffectComponent)
+    if (bCanRender && (NewState == ERelicState::Thrown || NewState == ERelicState::BeingPassed))
     {
-        DroppedEffectComponent->DestroyComponent();
-        DroppedEffectComponent = nullptr;
+        SpawnTrailEffect();
     }
-    if (ScoringEffectComponent)
-    {
-        ScoringEffectComponent->DestroyComponent();
-        ScoringEffectComponent = nullptr;
-    }
-
-    // Destroy trail when entering certain states
-    if (NewState == ERelicState::Carried || NewState == ERelicState::Neutral)
+    else
     {
         DestroyTrailEffect();
     }
-
-    // Spawn new effects based on state
-    UNiagaraSystem* EffectToSpawn = nullptr;
-    TObjectPtr<UNiagaraComponent>* ComponentToSet = nullptr;
-
-    switch (NewState)
+#if !UE_BUILD_SHIPPING
+    if (CVarBwayRelicDebugFeedback.GetValueOnGameThread() != 0)
     {
-    case ERelicState::Neutral:
-        EffectToSpawn = RelicSettings->IdleEffect.LoadSynchronous();
-        ComponentToSet = &IdleEffectComponent;
-        break;
-    case ERelicState::Carried:
-        EffectToSpawn = RelicSettings->CarriedEffect.LoadSynchronous();
-        ComponentToSet = &CarriedEffectComponent;
-        break;
-    case ERelicState::Dropped:
-        EffectToSpawn = RelicSettings->DroppedEffect.LoadSynchronous();
-        ComponentToSet = &DroppedEffectComponent;
-        break;
-    case ERelicState::Scoring:
-        EffectToSpawn = RelicSettings->ScoringEffect.LoadSynchronous();
-        ComponentToSet = &ScoringEffectComponent;
-        break;
-    default:
-        break;
+        const UNiagaraComponent* StateComponent = ComponentToSet ? ComponentToSet->Get() : nullptr;
+        UE_LOG(LogTemp, Display, TEXT("BwayRelicFeedback: VFX state=%d net=%d stateComponent=%s trailComponent=%s stateParent=%s trailParent=%s anchorReplicated=%d meshReplicated=%d"),
+            int32(NewState), int32(GetNetMode()), *GetNameSafe(StateComponent), *GetNameSafe(TrailEffectComponent),
+            *GetNameSafe(StateComponent ? StateComponent->GetAttachParent() : nullptr),
+            *GetNameSafe(TrailEffectComponent ? TrailEffectComponent->GetAttachParent() : nullptr),
+            VisualEffectsRoot && VisualEffectsRoot->GetIsReplicated(), RelicMesh && RelicMesh->GetIsReplicated());
     }
-
-    if (EffectToSpawn && ComponentToSet && RelicMesh)
-    {
-        *ComponentToSet = UNiagaraFunctionLibrary::SpawnSystemAttached(
-            EffectToSpawn,
-            RelicMesh,
-            NAME_None,
-            FVector::ZeroVector,
-            FRotator::ZeroRotator,
-            EAttachLocation::KeepRelativeOffset,
-            true
-        );
-    }
+#endif
 }
 
 void ARelicActor::CleanupStateVFX(ERelicState OldState)
@@ -928,42 +1004,42 @@ void ARelicActor::CleanupStateVFX(ERelicState OldState)
         break;
     }
 
-    if (ComponentToCleanup && *ComponentToCleanup)
+    if (ComponentToCleanup)
     {
-        (*ComponentToCleanup)->DestroyComponent();
+        if (IsValid(*ComponentToCleanup)) (*ComponentToCleanup)->DestroyComponent();
         *ComponentToCleanup = nullptr;
     }
 }
 
 void ARelicActor::SpawnTrailEffect()
 {
-    if (!RelicSettings || !RelicMesh || TrailEffectComponent)
+    if (!RelicSettings || !VisualEffectsRoot || GetNetMode() == NM_DedicatedServer)
     {
-        return; // Already has trail or no settings
+        return;
     }
-
-    // Note: Trail effect should be configured in RelicSettings
-    // For now, we'll create a placeholder - actual trail effect should be added to RelicSettings
-    // This is a hook for future implementation
-    UE_LOG(LogTemp, Verbose, TEXT("Trail effect spawn requested (not yet implemented in RelicSettings)"));
+    UNiagaraSystem* Effect = RelicSettings->TrailEffect.LoadSynchronous();
+    if (IsValid(TrailEffectComponent) && TrailEffectComponent->GetAsset() == Effect) return;
+    DestroyTrailEffect();
+    if (!Effect) return;
+    TrailEffectComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(
+        Effect, VisualEffectsRoot, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
+        EAttachLocation::KeepRelativeOffset, false, false, ENCPoolMethod::None, false);
+    if (TrailEffectComponent)
+    {
+        TrailEffectComponent->SetVariableFloat(TEXT("User.Trail_Length_Second"), FMath::Clamp(RelicSettings->TrailLifetimeSeconds, 0.05f, 2.0f));
+        UpdateTeamColorTinting();
+        TrailEffectComponent->Activate(true);
+    }
 }
 
 void ARelicActor::DestroyTrailEffect()
 {
-    if (TrailEffectComponent)
-    {
-        TrailEffectComponent->DestroyComponent();
-        TrailEffectComponent = nullptr;
-    }
+    if (IsValid(TrailEffectComponent)) TrailEffectComponent->DestroyComponent();
+    TrailEffectComponent = nullptr;
 }
 
 void ARelicActor::UpdateTeamColorTinting()
 {
-    if (!TeamColorMaterialInstance)
-    {
-        return;
-    }
-
     // Get team color based on LastPossessingTeam
     FLinearColor TeamColor = FLinearColor::White; // Default neutral color
 
@@ -974,12 +1050,19 @@ void ARelicActor::UpdateTeamColorTinting()
     }
 
     // Update material parameter (assuming material has "TeamColor" parameter)
-    TeamColorMaterialInstance->SetVectorParameterValue(FName("TeamColor"), TeamColor);
+    if (TeamColorMaterialInstance)
+    {
+        TeamColorMaterialInstance->SetVectorParameterValue(FName("TeamColor"), TeamColor);
+    }
+    if (IsValid(TrailEffectComponent))
+    {
+        TrailEffectComponent->SetVariableLinearColor(TEXT("User.Team_Color"), TeamColor);
+    }
 }
 
 void ARelicActor::PlayStateAudio(ERelicState State)
 {
-    if (!RelicSettings)
+    if (!HasAuthority() || !RelicSettings)
     {
         return;
     }
@@ -1006,10 +1089,20 @@ void ARelicActor::PlayStateAudio(ERelicState State)
 
     if (SoundToPlay && RelicMesh)
     {
+        Multicast_PlayStateAudio(State, SoundToPlay, RelicMesh->GetComponentLocation(), ++NextAudioEventId);
+    }
+}
+
+void ARelicActor::Multicast_PlayStateAudio_Implementation(ERelicState State, USoundBase* Sound,
+    FVector_NetQuantize Location, uint32 EventId)
+{
+    const bool bSubmitAudio = Sound && GetNetMode() != NM_DedicatedServer;
+    if (bSubmitAudio)
+    {
         UGameplayStatics::PlaySoundAtLocation(
             GetWorld(),
-            SoundToPlay,
-            RelicMesh->GetComponentLocation(),
+            Sound,
+            Location,
             FRotator::ZeroRotator,
             1.0f,
             1.0f,
@@ -1019,6 +1112,14 @@ void ARelicActor::PlayStateAudio(ERelicState State)
             nullptr
         );
     }
+#if !UE_BUILD_SHIPPING
+    if (CVarBwayRelicDebugFeedback.GetValueOnGameThread() != 0)
+    {
+        UE_LOG(LogTemp, Display, TEXT("BwayRelicFeedback: Audio event=%u state=%d net=%d sound=%s submitted=%d settings=%s location=%s"),
+            EventId, int32(State), int32(GetNetMode()), *GetPathNameSafe(Sound), bSubmitAudio,
+            *GetPathNameSafe(RelicSettings), *Location.ToCompactString());
+    }
+#endif
 }
 
 void ARelicActor::ClientPredictThrow_Implementation(const FVector& ThrowVelocity)

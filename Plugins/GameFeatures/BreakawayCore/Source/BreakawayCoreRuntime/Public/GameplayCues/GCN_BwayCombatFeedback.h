@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Audio")
 	TObjectPtr<USoundBase> FeedbackSound;
 
-	/** Camera shake class to apply to the instigator */
+	/** Camera shake for the local player controlling the cue's target avatar. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Camera")
 	TSubclassOf<UCameraShakeBase> FeedbackCameraShake;
 

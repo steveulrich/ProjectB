@@ -5,13 +5,20 @@
 #include "BwayGameState.h"
 #include "Combat/BwayDamageLibrary.h"
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
+#include "HAL/IConsoleManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwaySiegeEngineBuildable)
+
+#if !UE_BUILD_SHIPPING
+static TAutoConsoleVariable<int32> CVarSiegeDamageAudit(TEXT("bway.Debug.SiegeDamage"), 0,
+	TEXT("Emit native Siege damage evidence for the owned development fixture."));
+#endif
 
 ABwaySiegeEngineBuildable::ABwaySiegeEngineBuildable()
 {
@@ -42,12 +49,28 @@ void ABwaySiegeEngineBuildable::InitializeAbilitySystem()
 	{
 		HealthSet->InitMaxHealth(MaxHealth);
 		HealthSet->InitHealth(MaxHealth);
+		HealthSet->OnOutOfHealth.AddUObject(this, &ABwaySiegeEngineBuildable::HandleOutOfHealth);
 	}
 
 	if (DamageSphere)
 	{
 		DamageSphere->SetSphereRadius(DamageRadius);
 	}
+}
+
+void ABwaySiegeEngineBuildable::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (HealthSet) HealthSet->OnOutOfHealth.RemoveAll(this);
+	Super::EndPlay(EndPlayReason);
+}
+
+void ABwaySiegeEngineBuildable::HandleOutOfHealth(AActor*, AActor*, const FGameplayEffectSpec*, float, float, float)
+{
+#if !UE_BUILD_SHIPPING
+	UE_LOG(LogTemp, Display, TEXT("BwaySiegeAudit: NativeStop name=%s reason=health elapsed=%.3f maximum=%.3f time=%.3f"),
+		*GetName(), RollElapsed, MaxRollDuration, GetWorld()->GetTimeSeconds());
+#endif
+	StopRollAndExpire();
 }
 
 void ABwaySiegeEngineBuildable::FinishBuilding()
@@ -110,15 +133,28 @@ void ABwaySiegeEngineBuildable::Tick(float DeltaTime)
 	RollElapsed += DeltaTime;
 	if (RollElapsed >= MaxRollDuration)
 	{
+#if !UE_BUILD_SHIPPING
+		UE_LOG(LogTemp, Display, TEXT("BwaySiegeAudit: NativeStop name=%s reason=duration elapsed=%.3f maximum=%.3f time=%.3f"), *GetName(), RollElapsed, MaxRollDuration, GetWorld()->GetTimeSeconds());
+#endif
 		StopRollAndExpire();
 		return;
 	}
 
 	const FVector Delta = RollDirection * RollSpeed * DeltaTime;
 	FHitResult MoveHit;
-	AddActorWorldOffset(Delta, true, &MoveHit, ETeleportType::None);
+	// Sweep the authored gameplay volume; the skeletal root is presentation only.
+	const FVector Start = AttackCollision->GetComponentLocation();
+	FCollisionQueryParams Query(SCENE_QUERY_STAT(SiegeMovement), false, this);
+	GetWorld()->SweepSingleByChannel(MoveHit, Start, Start + Delta, AttackCollision->GetComponentQuat(),
+		AttackCollision->GetCollisionObjectType(), FCollisionShape::MakeBox(AttackCollision->GetScaledBoxExtent()),
+		Query, FCollisionResponseParams(AttackCollision->GetCollisionResponseToChannels()));
+	AddActorWorldOffset(Delta * (MoveHit.bBlockingHit ? MoveHit.Time : 1.f), false);
 	if (MoveHit.bBlockingHit)
 	{
+#if !UE_BUILD_SHIPPING
+		UE_LOG(LogTemp, Display, TEXT("BwaySiegeAudit: NativeStop name=%s reason=collision elapsed=%.3f maximum=%.3f time=%.3f obstacle=%s x=%.3f"),
+			*GetName(), RollElapsed, MaxRollDuration, GetWorld()->GetTimeSeconds(), *GetNameSafe(MoveHit.GetActor()), GetActorLocation().X);
+#endif
 		StopRollAndExpire();
 		return;
 	}
@@ -133,25 +169,11 @@ bool ABwaySiegeEngineBuildable::IsEnemyBuildable(const ABuildableActor* OtherBui
 		return false;
 	}
 
-	if (OtherBuildable->GetTeamId() != FGenericTeamId::NoTeam && OtherBuildable->GetTeamId() != GetTeamId())
-	{
-		return true;
-	}
-
-	if (UWorld* World = GetWorld())
-	{
-		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			return !GameState->AreOnSameTeam(this, OtherBuildable);
-		}
-
-		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			return TeamSubsystem->CompareTeams(this, OtherBuildable) == ELyraTeamComparison::DifferentTeams;
-		}
-	}
-
-	return false;
+	// GameState resolves player teams, not buildable ownership. A same-team result
+	// must never fall through to its unknown-actor fallback.
+	return GetTeamId() != FGenericTeamId::NoTeam && OtherBuildable->GetTeamId() != FGenericTeamId::NoTeam
+		&& GetTeamId().GetId() != 0 && OtherBuildable->GetTeamId().GetId() != 0
+		&& OtherBuildable->GetTeamId() != GetTeamId();
 }
 
 void ABwaySiegeEngineBuildable::ApplyDamageToBuildable(ABuildableActor* TargetBuildable, float DamageAmount)
@@ -192,7 +214,17 @@ void ABwaySiegeEngineBuildable::ApplyDamageToOverlappingEnemyBuildables(float De
 
 		if (FVector::DistSquared(Origin, Buildable->GetActorLocation()) <= DamageRadiusSq)
 		{
+#if !UE_BUILD_SHIPPING
+			const auto* TargetASC = Buildable->GetAbilitySystemComponent();
+			const bool bAudit = CVarSiegeDamageAudit.GetValueOnGameThread() != 0 && TargetASC;
+			const float Before = bAudit ? TargetASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()) : 0;
+#endif
 			ApplyDamageToBuildable(Buildable, DamageThisTick);
+#if !UE_BUILD_SHIPPING
+			if (bAudit) UE_LOG(LogTemp, Display, TEXT("BwaySiegeCombat: Damage siege=%s target=%s delta=%.6f raw=%.6f before=%.6f after=%.6f rate=%.3f radius=%.3f"),
+				*GetName(), *GetNameSafe(Buildable), DeltaTime, DamageThisTick, Before,
+				TargetASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()), BuildableDamagePerSecond, DamageRadius);
+#endif
 		}
 	}
 }

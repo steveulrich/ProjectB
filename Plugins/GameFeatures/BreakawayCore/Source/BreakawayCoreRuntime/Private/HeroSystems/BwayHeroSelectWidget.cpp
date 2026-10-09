@@ -3,12 +3,16 @@
 #include "HeroSystems/BwayHeroSelectWidget.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "BwayPlayerController.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerController.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "UI/Foundation/LyraButtonBase.h"
 #include "TimerManager.h"
 #include "CommonTextBlock.h"
 #include "CommonInputModeTypes.h"
@@ -26,6 +30,7 @@ void UBwayHeroSelectWidget::NativeConstruct() {
   Super::NativeConstruct();
   // Preserve the Blueprint's concrete timer type used by its text-update graph.
   SelectionTimerWidget = GetWidgetFromName(TEXT("Widget_Timer"));
+  TravelConfirmButton = Cast<ULyraButtonBase>(GetWidgetFromName(TEXT("Button_Lock")));
 
   // Get references to required systems
   if (APlayerController *PC = GetOwningPlayer()) {
@@ -68,6 +73,7 @@ void UBwayHeroSelectWidget::NativeConstruct() {
 void UBwayHeroSelectWidget::NativeDestruct() {
   UnbindFromPlayerState();
   UnbindFromSelectionManager();
+  UnbindFromSelectionPhase();
 
   // Clear timer
   if (UWorld *World = GetWorld()) {
@@ -111,6 +117,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
     OnLocalSelectionUnlocked();
   }
   RefreshHeroDetails();
+  RefreshTravelFailurePresentation();
 
   bIsInitialized = true;
   RequestRefreshFocus();
@@ -119,6 +126,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
 void UBwayHeroSelectWidget::NativeOnDeactivated() {
   UnbindFromPlayerState();
   UnbindFromSelectionManager();
+  UnbindFromSelectionPhase();
 
   // Clear timer
   if (UWorld *World = GetWorld()) {
@@ -280,6 +288,11 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
 bool UBwayHeroSelectWidget::LockSelection() {
   RefreshSelectionManager();
   RefreshLocalPlayerState();
+  if (SelectionPhase && SelectionPhase->HasPostSelectionTravelFailed() && IsSelectionLocked()) {
+    if (auto* Controller = Cast<ABwayPlayerController>(GetOwningPlayer())) Controller->RetryHeroSelectionTravel();
+    RefreshTravelFailurePresentation();
+    return false; // Retry intent is not a second lock/confirmation in an authored graph.
+  }
   if ((!LocalPlayerState || !SelectionManager) && GetWorld() && GetWorld()->GetNetMode() == NM_Client) {
     return false;
   }
@@ -319,6 +332,11 @@ bool UBwayHeroSelectWidget::LockSelection() {
 void UBwayHeroSelectWidget::ConfirmSelection() {
   RefreshSelectionManager();
   RefreshLocalPlayerState();
+  if (SelectionPhase && SelectionPhase->HasPostSelectionTravelFailed() && IsSelectionLocked()) {
+    if (auto* Controller = Cast<ABwayPlayerController>(GetOwningPlayer())) Controller->RetryHeroSelectionTravel();
+    RefreshTravelFailurePresentation();
+    return;
+  }
   FPrimaryAssetId SelectedHero = GetSelectedHeroId();
   if (!SelectedHero.IsValid()) {
     UE_LOG(LogTemp, Warning,
@@ -362,6 +380,17 @@ int32 UBwayHeroSelectWidget::GetLocalPlayerTeam() const {
 }
 
 bool UBwayHeroSelectWidget::IsHeroAvailable(FPrimaryAssetId HeroId) const {
+  if (!HeroId.IsValid()) {
+    return false;
+  }
+
+  // The selection manager reports a selected hero as occupied by its owner.
+  // Keep the owner's current choice selectable so refresh/reselection input
+  // follows the same availability rule used by GetAvailableHeroes().
+  if (HeroId == GetSelectedHeroId()) {
+    return true;
+  }
+
   if (!SelectionManager) {
     return true; // If no manager, assume all heroes available
   }
@@ -460,6 +489,7 @@ bool UBwayHeroSelectWidget::GetSelectedHeroDisplayInfo(
 // ========== BINDING ==========
 
 void UBwayHeroSelectWidget::RefreshSelectionManager() {
+  RefreshSelectionPhase();
   AGameStateBase* GS = GetWorld() ? GetWorld()->GetGameState() : nullptr;
   UBwayHeroSelectionManager* CurrentManager = GS ? GS->FindComponentByClass<UBwayHeroSelectionManager>() : nullptr;
   if (SelectionManager == CurrentManager) {
@@ -470,6 +500,60 @@ void UBwayHeroSelectWidget::RefreshSelectionManager() {
   BindToSelectionManager();
   OnHeroListChanged();
   RequestRefreshFocus();
+}
+
+void UBwayHeroSelectWidget::RefreshSelectionPhase() {
+  const auto* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+  auto* CurrentPhase = GS ? GS->HeroSelectionPhaseComponent.Get() : nullptr;
+  if (SelectionPhase == CurrentPhase) return;
+  UnbindFromSelectionPhase();
+  SelectionPhase = CurrentPhase;
+  if (SelectionPhase) SelectionPhase->OnTravelFailureChanged.AddUniqueDynamic(this, &ThisClass::RefreshTravelFailurePresentation);
+  RefreshTravelFailurePresentation();
+}
+
+void UBwayHeroSelectWidget::UnbindFromSelectionPhase() {
+  if (SelectionPhase) SelectionPhase->OnTravelFailureChanged.RemoveDynamic(this, &ThisClass::RefreshTravelFailurePresentation);
+  SelectionPhase = nullptr;
+}
+
+void UBwayHeroSelectWidget::RefreshTravelFailurePresentation() {
+  const bool bFailed = SelectionPhase && SelectionPhase->HasPostSelectionTravelFailed();
+  if (!bFailed) {
+    if (bShowingTravelFailure) {
+      bShowingTravelFailure = false;
+      bTravelRetryAvailable = false;
+      if (IsSelectionLocked()) OnLocalSelectionLocked(GetSelectedHeroId());
+      else OnLocalSelectionUnlocked();
+      RefreshHeroDetails();
+    }
+    return;
+  }
+  const auto* Controller = Cast<ABwayPlayerController>(GetOwningPlayer());
+  const bool bHost = Controller && Controller->HasAuthority() && Controller->IsLocalController() && Controller->GetLocalPlayer();
+  const bool bCanRetry = Controller && Controller->CanRetryHeroSelectionTravel();
+  if (TravelConfirmButton && IsSelectionLocked()) {
+    TravelConfirmButton->SetButtonText(bHost
+        ? NSLOCTEXT("BwayHeroSelect", "RetryTravel", "Retry travel")
+        : NSLOCTEXT("BwayHeroSelect", "WaitForHostRetry", "Waiting for host"));
+    TravelConfirmButton->SetIsEnabled(bCanRetry);
+  }
+  if (Text_HeroDetails) {
+    Text_HeroDetails->SetText(!IsSelectionLocked()
+        ? NSLOCTEXT("BwayHeroSelect", "TravelFailedSelect", "Match travel failed. Choose and lock your hero; the host can retry when everyone is ready.")
+        : bCanRetry ? NSLOCTEXT("BwayHeroSelect", "TravelFailedRetry", "Match travel failed. Your selections are saved. Choose Retry travel to try again.")
+        : bHost ? NSLOCTEXT("BwayHeroSelect", "TravelFailedPlayers", "Match travel failed. Waiting for all players to lock before you can retry.")
+        : NSLOCTEXT("BwayHeroSelect", "TravelFailedWait", "Match travel failed. Your selection is saved. Waiting for the host to retry."));
+  }
+  const bool bFocusRetry = bCanRetry && !bTravelRetryAvailable;
+  bShowingTravelFailure = true;
+  bTravelRetryAvailable = bCanRetry;
+  if (bFocusRetry) RequestRefreshFocus();
+}
+
+UWidget* UBwayHeroSelectWidget::NativeGetDesiredFocusTarget() const {
+  if (bTravelRetryAvailable && TravelConfirmButton) return TravelConfirmButton;
+  return Super::NativeGetDesiredFocusTarget();
 }
 
 void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
@@ -492,6 +576,7 @@ void UBwayHeroSelectWidget::RefreshLocalPlayerState() {
     }
     RefreshHeroDetails();
     OnHeroListChanged();
+    RefreshTravelFailurePresentation();
     RequestRefreshFocus();
   }
 }
@@ -573,6 +658,7 @@ void UBwayHeroSelectWidget::HandlePlayerSelectionChanged(
 
   // Refresh hero list (availability may have changed)
   OnHeroListChanged();
+  RefreshTravelFailurePresentation();
 }
 
 void UBwayHeroSelectWidget::HandlePlayerHeroLocked(
@@ -583,6 +669,7 @@ void UBwayHeroSelectWidget::HandlePlayerHeroLocked(
 
   // Notify blueprint
   OnLocalSelectionLocked(LockedHeroId);
+  RefreshTravelFailurePresentation();
 }
 
 void UBwayHeroSelectWidget::HandleOtherPlayerSelectionChanged(
@@ -599,6 +686,7 @@ void UBwayHeroSelectWidget::HandleOtherPlayerSelectionChanged(
 
   // Notify blueprint about any player selection
   OnOtherPlayerSelectionChanged(PlayerState, HeroId, TeamIndex);
+  RefreshTravelFailurePresentation();
 }
 
 void UBwayHeroSelectWidget::HandleAllPlayersReady() {
@@ -606,11 +694,30 @@ void UBwayHeroSelectWidget::HandleAllPlayersReady() {
 
   // Notify blueprint
   OnAllPlayersReady();
+  RefreshTravelFailurePresentation();
 }
 
 void UBwayHeroSelectWidget::UpdateSelectionTimer() {
   RefreshSelectionManager();
   RefreshLocalPlayerState();
+  // A late show RPC or activation can follow the phase's one-shot hide request.
+  // Reconcile durable server state once the approved player's pawn has arrived.
+  // Keep shared selection and unlocked late arrivals on their selection screen.
+  ABwayGameState* State = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+  UBwayRoundManagementComponent* Rounds = State ? State->GetRoundManagement() : nullptr;
+  APlayerController* Controller = GetOwningPlayer();
+  if (LocalPlayerState && LocalPlayerState->IsHeroLocked() && Controller && Controller->GetPawn() && Rounds
+      && (Rounds->GetCurrentMatchPhase() == EBwayMatchPhase::Playing
+          || Rounds->GetCurrentMatchPhase() == EBwayMatchPhase::PostRound)) {
+    UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Dismissing locked selection after gameplay pawn arrived player=%d"),
+        LocalPlayerState->GetPlayerId());
+    if (ABwayPlayerController* BwayController = Cast<ABwayPlayerController>(Controller)) {
+      BwayController->Client_HideHeroSelection();
+    } else {
+      DeactivateWidget();
+    }
+    return;
+  }
   const float RemainingTime = GetRemainingSelectionTime();
   OnSelectionTimerUpdated(RemainingTime);
   if (SelectionTimerWidget) {

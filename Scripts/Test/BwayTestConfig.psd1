@@ -9,6 +9,11 @@
     GameTarget    = 'LyraGame'
     GameBinary    = 'LyraGame.exe'
 
+    # Source-built engine compile path. Direct bundled UBT avoids the
+    # unbounded dependency-scan wrapper and keeps UBA state in the project.
+    CompileMode    = 'DirectBundledUbt'
+    CompileUbaRoot = 'E:\Unreal Projects\ProjectB\Saved\Logs\compile\UBARoot'
+
     Platform      = 'Win64'
     Configuration = 'Development'
 

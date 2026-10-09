@@ -32,6 +32,40 @@ public:
 	UBwayUpgradeEffect_Armor();
 };
 
+/** Additive fraction of normal movement speed; 0.10 adds ten percent before slow modifiers. */
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayUpgradeEffect_MoveSpeed : public UBwayUpgradeEffect
+{
+	GENERATED_BODY()
+public:
+	UBwayUpgradeEffect_MoveSpeed();
+};
+
+/** Additive fraction removed from future finite cooldown durations. */
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayUpgradeEffect_CooldownReduction : public UBwayUpgradeEffect
+{
+	GENERATED_BODY()
+public:
+	UBwayUpgradeEffect_CooldownReduction();
+};
+
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayUpgradeEffect_LifeLeech : public UBwayUpgradeEffect
+{
+	GENERATED_BODY()
+public:
+	UBwayUpgradeEffect_LifeLeech();
+};
+
+UCLASS()
+class BREAKAWAYCORERUNTIME_API UBwayUpgradeEffect_RespawnTimeReduction : public UBwayUpgradeEffect
+{
+	GENERATED_BODY()
+public:
+	UBwayUpgradeEffect_RespawnTimeReduction();
+};
+
 USTRUCT(BlueprintType)
 struct FBwayUpgradeRank
 {

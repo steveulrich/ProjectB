@@ -15,6 +15,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "GameplayEffectTypes.h"
+#include "GameplayPrediction.h"
 #include "HAL/IConsoleManager.h"
 #include "Messages/LyraVerbMessageHelpers.h"
 
@@ -51,12 +52,9 @@ void UBwayCombatFeedbackRouterComponent::BeginPlay()
 
 void UBwayCombatFeedbackRouterComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UWorld* World = GetWorld())
-	{
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(World);
-		MessageSubsystem.UnregisterListener(DamageListenerHandle);
-		MessageSubsystem.UnregisterListener(HealListenerHandle);
-	}
+	// Only authority registered these listeners. Each handle owns its subsystem.
+	DamageListenerHandle.Unregister();
+	HealListenerHandle.Unregister();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -234,6 +232,22 @@ void UBwayCombatFeedbackRouterComponent::RouteDamageFeedback(const FLyraVerbMess
 						FGameplayCueParameters CueParams;
 						CueParams.Location = FVector(WorldLocation);
 						CueParams.NormalizedMagnitude = static_cast<float>(Magnitude);
+						// Damage confirmation is emitted only by authority. It was not
+						// predicted by the attacker, even when damage happens inside a
+						// predicted ability's scope (for example a projectile spawn hit).
+						// Do not let GAS discard it as an owner-predicted duplicate.
+#if !UE_BUILD_SHIPPING
+						const bool bPriorPrediction = InstigatorASC->ScopedPredictionKey.IsValidKey();
+#endif
+						FScopedPredictionWindow ConfirmedHit(InstigatorASC, FPredictionKey(), false);
+#if !UE_BUILD_SHIPPING
+						const IConsoleVariable* DebugCue = IConsoleManager::Get().FindConsoleVariable(TEXT("bway.Combat.DebugCueFeedback"));
+						if (DebugCue && DebugCue->GetInt() != 0)
+						{
+							UE_LOG(LogTemp, Display, TEXT("BwayCueFeedback: Dispatch player=%d priorPrediction=%d appliedPrediction=%d"),
+								InstigatorPS->GetPlayerId(), bPriorPrediction, InstigatorASC->ScopedPredictionKey.IsValidKey());
+						}
+#endif
 						InstigatorASC->ExecuteGameplayCue(Config->HitConfirmationCueTag, CueParams);
 					}
 				}

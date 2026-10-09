@@ -10,7 +10,7 @@ class UStaticMeshComponent;
 
 /**
  * Visual midfield divider for sudden-death awareness.
- * Spawned at world origin by the game mode; visibility is driven by UBwayMidfieldDividerComponent.
+ * Aligned to the team goals by UBwayMidfieldDividerComponent, which also drives visibility.
  */
 UCLASS(Blueprintable)
 class BREAKAWAYCORERUNTIME_API ABwayMidfieldDividerActor : public AActor

@@ -14,6 +14,9 @@ class UBwayPostRoundSummaryWidget;
 class UBwayRoundManagementComponent;
 class UBwayCombatNumberPopComponent;
 class UBwayNameplatePolicyComponent;
+class UBwayRespawnHUDWidget;
+class ABuildableActor;
+class ABwayPlayerState;
 
 /**
  * ABwayPlayerController
@@ -38,6 +41,7 @@ public:
 	ABwayPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	UFUNCTION(Exec, BlueprintCallable, Category="Breakaway|Economy")
 	void ToggleUpgradeShop();
+	const class UInputAction* GetUpgradeShopInputAction() const { return UpgradeShopInputAction; }
 
 	/**
 	 * Opens the hero selection UI for this player.
@@ -57,6 +61,12 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|HeroSelection")
 	void ToggleHeroSelect();
+
+	/** Only the local authority host can retry a rejected staging travel. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|HeroSelection")
+	bool CanRetryHeroSelectionTravel() const;
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|HeroSelection")
+	bool RetryHeroSelectionTravel();
 
 	/** Ask the owning client to send its frontend-selected hero back to the server. */
 	UFUNCTION(Client, Reliable)
@@ -102,9 +112,62 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_DismissResultsScreen();
 
-	/** Restores mouse capture and hides the cursor for local gameplay (e.g. after frontend UI or hero select). */
+	/** Development-only probe used by the team-combat fixture to sample replicated peer state. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunTeamPeerConvergence(int32 EnemyPlayerId);
+
+	/** Development-only remote-owner fixture; runs production damage/pass input on a remote client. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunTeamRemoteAction(int32 TeammatePlayerId, int32 EnemyPlayerId, bool bPassPhase);
+
+	/** Development-only owned fixture: leave through the local GameInstance session flow. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunCreditDisconnectProbe();
+
+	/** Development-only packaged fixture; sends the normal owner purchase RPC. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunRespawnUpgradePurchase(int32 ExpectedRank, int32 AuditStage);
+
+	/** Development-only fixture: activate/submit through the real owning-client GAS path. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunBuildableAuditAction(int32 Action, int32 Sequence);
+
+	/** Development-only independent journal for an authority-selected player's buildables. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunBuildableAuditObserver(int32 ObservedPlayerId);
+
+	/** Development-only journal for the unmodified rolling Siege Engine lifecycle. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunSiegeAuditObserver(int32 ObservedPlayerId);
+
+	/** Development-only actual primary activation and independent buildable state journal. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunBuildableCombatProbe(ABuildableActor* Target, int32 Sequence, int32 FiringPlayerId);
+
+	/** Development-only independent Siege movement, health and destruction journal. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunSiegeCombatProbe(ABuildableActor* Siege, ABuildableActor* Enemy, ABuildableActor* Friendly, int32 Sequence);
+
+	/** Development-only independent aura health, pawn and registry observations. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunShrineAuraProbe(ABwayPlayerState* OwnerPlayer, ABwayPlayerState* Ally, ABwayPlayerState* Enemy, ABwayPlayerState* Outside, int32 Phase);
+
+	/** Development-only independent Ward speed, status, pawn and registry observations. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunWardAuraProbe(ABwayPlayerState* OwnerPlayer, ABwayPlayerState* Ally, ABwayPlayerState* Enemy, ABwayPlayerState* Outside, int32 Phase);
+
+	/** Development-only Jail attachment, status and registry observations; phase 2 requests the owner's real primary. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunJailCaptureProbe(ABwayPlayerState* Placer, ABwayPlayerState* Ally, ABwayPlayerState* Victim, ABwayPlayerState* SecondVictim, int32 Phase);
+
+	/** Development-only aim handoff used by the remote-owner fixture before a server-only pass. */
+	UFUNCTION(Server, Reliable)
+	void Server_SetTeamRemoteAim(FRotator AimRotation, int32 TeammatePlayerId);
+
+	/** Restores the active CommonUI screen's input, or gameplay capture when no screen owns it. */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Input")
 	void RestoreGameplayInputMode();
+	virtual void ResetIgnoreInputFlags() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Breakaway|Combat")
 	TObjectPtr<UBwayCombatNumberPopComponent> CombatNumberPopComponent;
@@ -114,11 +177,24 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnRep_PlayerState() override;
 	virtual void SetupInputComponent() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void OnPossess(APawn* InPawn) override;
 
+	/** Replaceable presentation skin; canonical timing remains on PlayerState. */
+	UPROPERTY(EditDefaultsOnly, Category="Breakaway|UI")
+	TSubclassOf<UBwayRespawnHUDWidget> RespawnHUDWidgetClass;
+
 private:
+	void RefreshRespawnHUD();
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayRespawnHUDWidget> RespawnHUDWidget;
+	/** Shared with the authored default mapping context; survives pawn replacement. */
+	UPROPERTY(Transient)
+	TObjectPtr<class UInputAction> UpgradeShopInputAction;
+	TWeakObjectPtr<class UEnhancedInputComponent> ShopBoundInputComponent;
+	uint32 ShopInputBindingHandle = 0;
 	UPROPERTY(Transient)
 	TObjectPtr<class UBwayUpgradeShopWidget> UpgradeShopWidget;
 	void BindPostRoundSummaryListeners();

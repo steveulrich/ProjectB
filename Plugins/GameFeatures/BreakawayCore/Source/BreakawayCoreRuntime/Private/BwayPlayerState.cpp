@@ -6,6 +6,7 @@
 #include "AbilitySystemGlobals.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "Economy/BwayUpgradeComponent.h"
+#include "Combat/BwayLifeLeechComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "Net/UnrealNetwork.h"
@@ -14,6 +15,7 @@ ABwayPlayerState::ABwayPlayerState(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	UpgradeComponent = CreateDefaultSubobject<UBwayUpgradeComponent>(TEXT("UpgradeComponent"));
+	LifeLeechComponent = CreateDefaultSubobject<UBwayLifeLeechComponent>(TEXT("LifeLeechComponent"));
 	bHasRelic = false;
 	bHasCalledForRelic = false;
 	bHeroLocked = false;
@@ -116,19 +118,24 @@ void ABwayPlayerState::OnRep_HasCalledForRelic()
 
 void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId NewHeroId)
 {
-	if (!HasAuthority()) return;
+	TrySetSelectedHeroId(NewHeroId);
+}
+
+bool ABwayPlayerState::TrySetSelectedHeroId(FPrimaryAssetId NewHeroId)
+{
+	if (!HasAuthority()) return false;
 	// Don't allow changes if hero is already locked
 	if (bHeroLocked)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Cannot change hero for %s - selection is locked"), *GetName());
-		return;
+		return false;
 	}
 
 	// Validate the hero ID is not null
 	if (!NewHeroId.IsValid() || !UBwayHeroRegistry::GetHeroDataById(NewHeroId))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Attempted to set invalid hero ID for %s"), *GetName());
-		return;
+		return false;
 	}
 
 	if (SelectedHeroId != NewHeroId)
@@ -141,7 +148,7 @@ void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId Ne
 				if (TeamIndex >= 0 && !SelectionManager->IsHeroAvailableForTeam(NewHeroId, TeamIndex))
 				{
 					UE_LOG(LogTemp, Warning, TEXT("BwayPlayerState: Rejecting duplicate hero %s for team %d"), *NewHeroId.ToString(), TeamIndex + 1);
-					return;
+					return false;
 				}
 			}
 		}
@@ -151,6 +158,7 @@ void ABwayPlayerState::ServerSetSelectedHeroId_Implementation(FPrimaryAssetId Ne
 	OnRep_SelectedHeroId();
 	
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s selected hero: %s"), *GetName(), *SelectedHeroId.ToString());
+	return true;
 }
 
 void ABwayPlayerState::OnRep_SelectedHeroId()
@@ -226,7 +234,25 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, BuildablesDestroyed);
 	DOREPLIFETIME(ABwayPlayerState, MatchGoldEarned);
 	DOREPLIFETIME(ABwayPlayerState, LastRoundStats);
+	DOREPLIFETIME(ABwayPlayerState, RespawnSchedule);
 	DOREPLIFETIME_CONDITION(ABwayPlayerState, bHasPlacedBuildableThisRound, COND_OwnerOnly);
+}
+
+void ABwayPlayerState::SetRespawnSchedule(double ServerEndTime, int32 RoundNumber)
+{
+	if (!HasAuthority()) return;
+	const double EndTime = FMath::IsFinite(ServerEndTime) && ServerEndTime > 0.0 ? ServerEndTime : 0.0;
+	const int32 ScheduledRound = EndTime > 0.0 ? RoundNumber : 0;
+	if (RespawnSchedule.ServerEndTime == EndTime && RespawnSchedule.RoundNumber == ScheduledRound) return;
+	RespawnSchedule.ServerEndTime = EndTime;
+	RespawnSchedule.RoundNumber = ScheduledRound;
+	OnRep_RespawnSchedule();
+	ForceNetUpdate();
+}
+
+void ABwayPlayerState::OnRep_RespawnSchedule()
+{
+	OnRespawnScheduleChanged.Broadcast();
 }
 
 void ABwayPlayerState::SetPlayerNum(int32 NewPlayerNum)
@@ -317,6 +343,7 @@ void ABwayPlayerState::ResetMatchStats()
 {
 	if (HasAuthority())
 	{
+		SetRespawnSchedule(0.0, 0);
 		Kills = 0;
 		Deaths = 0;
 		Assists = 0;
@@ -389,6 +416,7 @@ void ABwayPlayerState::BeginRoundStatTracking()
 	}
 
 	RoundStartStatsBaseline = BuildCurrentStatSnapshot();
+	SetRespawnSchedule(0.0, 0);
 	if (bHasPlacedBuildableThisRound)
 	{
 		bHasPlacedBuildableThisRound = false;

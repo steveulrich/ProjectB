@@ -4,6 +4,8 @@
 #include "BwayGameplayTags.h"
 #include "Engine/World.h"
 #include "NativeGameplayTags.h"
+#include "Combat/BwayDamageLibrary.h"
+#include "Buildable/BuildableBase.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Ability_Argus_PrimaryAttack, "Ability.Argus.PrimaryAttack");
 
@@ -68,16 +70,23 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 
 	const float AppliedDamage = CalculateScaledDamage(LocalBaseDamage, LocalScaling);
 
-	TSet<TObjectPtr<ABwayCharacterWithAbilities>> DamagedTargets;
+	TSet<TObjectPtr<AActor>> DamagedTargets;
 	for (const FHitResult& Hit : Hits)
 	{
+		AActor* HitActor = Hit.GetActor();
+		if (!HitActor || DamagedTargets.Contains(HitActor)) continue;
+		DamagedTargets.Add(HitActor);
+		if (HitActor->IsA<ABuildableActor>())
+		{
+			UBwayDamageLibrary::ApplyDamageToEnemyBuildable(Character, HitActor, AppliedDamage, Character);
+			continue;
+		}
 		ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(Hit.GetActor());
-		if (!HitCharacter || DamagedTargets.Contains(HitCharacter) || !IsEnemy(HitCharacter))
+		if (!HitCharacter || !IsEnemy(HitCharacter))
 		{
 			continue;
 		}
 
-		DamagedTargets.Add(HitCharacter);
 		ApplyDamageToEnemy(HitCharacter, AppliedDamage);
 	}
 

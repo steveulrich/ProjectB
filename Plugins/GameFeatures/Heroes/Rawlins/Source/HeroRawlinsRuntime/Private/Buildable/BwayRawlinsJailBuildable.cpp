@@ -20,6 +20,7 @@ ABwayRawlinsJailBuildable::ABwayRawlinsJailBuildable()
 	bPersistsBetweenRounds = true;
 	bDestroyOnTrigger = false; // We destroy explicitly after spawning cages.
 	BuildTime = 0.f;
+	bUsePlacementAttackBounds = false;
 	PrimaryActorTick.bCanEverTick = false;
 
 	KitConfig = TSoftObjectPtr<UBwayRawlinsKitConfig>(
@@ -85,6 +86,7 @@ void ABwayRawlinsJailBuildable::InitializeAbilitySystem()
 void ABwayRawlinsJailBuildable::BeginPlay()
 {
 	Super::BeginPlay();
+	SetCanBeDamaged(false);
 
 	ApplyKitConfigOverrides();
 	if (TriggerVolume)
@@ -117,6 +119,14 @@ void ABwayRawlinsJailBuildable::FinishBuilding()
 {
 	Super::FinishBuilding();
 	ArmTrap();
+}
+
+void ABwayRawlinsJailBuildable::OnRep_BuildState()
+{
+	Super::OnRep_BuildState();
+	// Activation makes ordinary structures vulnerable, but an armed Jail floor
+	// trap stays immune on every peer. Only its separately spawned cages take damage.
+	SetCanBeDamaged(false);
 }
 
 void ABwayRawlinsJailBuildable::ArmTrap()
@@ -248,7 +258,9 @@ ABwayRawlinsJailCage* ABwayRawlinsJailBuildable::SpawnCageForVictim(ABwayCharact
 		return nullptr;
 	}
 
-	Cage->SetTeamId(GetTeamId());
+	// Cages participate in match tracking and replication but never use a
+	// placer's quota. Initialize through the same registry path with no owner.
+	Cage->InitializeBuildable(nullptr, static_cast<int32>(GetTeamId().GetId()) - 1);
 	if (!Cage->GetInstigator())
 	{
 		Cage->SetInstigator(GetInstigator());
@@ -256,24 +268,6 @@ ABwayRawlinsJailCage* ABwayRawlinsJailBuildable::SpawnCageForVictim(ABwayCharact
 
 	Cage->CaptureVictim(Victim);
 	return Cage;
-}
-
-AActor* ABwayRawlinsJailBuildable::ResolveTeamProxy() const
-{
-	if (AController* OwningController = Cast<AController>(GetOwner()))
-	{
-		if (APawn* OwnedPawn = OwningController->GetPawn())
-		{
-			return OwnedPawn;
-		}
-	}
-
-	if (AActor* InstigatorActor = GetInstigator())
-	{
-		return InstigatorActor;
-	}
-
-	return nullptr;
 }
 
 bool ABwayRawlinsJailBuildable::IsEnemyOfTrap(ABwayCharacterWithAbilities* OtherCharacter) const
@@ -289,32 +283,14 @@ bool ABwayRawlinsJailBuildable::IsEnemyOfTrap(ABwayCharacterWithAbilities* Other
 		return false;
 	}
 
-	AActor* TeamProxy = ResolveTeamProxy();
-	if (TeamProxy)
-	{
-		if (TeamProxy == OtherCharacter)
-		{
-			return false;
-		}
-
-		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			return !GameState->AreOnSameTeam(TeamProxy, OtherCharacter);
-		}
-
-		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			return TeamSubsystem->CompareTeams(TeamProxy, OtherCharacter) == ELyraTeamComparison::DifferentTeams;
-		}
-
-		return false;
-	}
-
+	// The persistent trap retains its team even after the placer loses its pawn.
+	// A stale pawn proxy has no team and must not turn allies into enemies.
 	if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 	{
 		const int32 TrapTeam = static_cast<int32>(GetTeamId().GetId());
 		const int32 OtherTeam = TeamSubsystem->FindTeamFromObject(OtherCharacter);
-		return OtherTeam != INDEX_NONE && TrapTeam != 0 && OtherTeam != TrapTeam;
+		return TrapTeam != 0 && TrapTeam != FGenericTeamId().GetId()
+			&& OtherTeam != INDEX_NONE && OtherTeam != TrapTeam;
 	}
 
 	return false;

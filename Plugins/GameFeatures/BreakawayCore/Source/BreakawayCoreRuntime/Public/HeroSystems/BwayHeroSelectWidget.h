@@ -9,6 +9,8 @@
 
 class UBwayHeroRegistry;
 class UBwayHeroSelectionManager;
+class UBwayHeroSelectionPhaseComponent;
+class ULyraButtonBase;
 class ABwayPlayerState;
 class UBwayFrontendStateSubsystem;
 class UCommonTextBlock;
@@ -91,6 +93,7 @@ protected:
 	//~UCommonActivatableWidget interface
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 	//~End of UCommonActivatableWidget interface
 
 public:
@@ -258,6 +261,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
 	TObjectPtr<UBwayHeroRegistry> HeroRegistry;
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayHeroSelectionPhaseComponent> SelectionPhase;
+	UPROPERTY(Transient)
+	TObjectPtr<ULyraButtonBase> TravelConfirmButton;
 
 private:
 	// Timer for updating selection countdown
@@ -270,6 +277,10 @@ private:
 	void UnbindFromPlayerState();
 	void BindToSelectionManager();
 	void UnbindFromSelectionManager();
+	void RefreshSelectionPhase();
+	void UnbindFromSelectionPhase();
+	UFUNCTION()
+	void RefreshTravelFailurePresentation();
 
 	// Delegate callbacks
 	UFUNCTION()
@@ -293,4 +304,6 @@ private:
 	TArray<TObjectPtr<UBwayHeroDataAsset>> CachedHeroData;
 
 	bool bIsInitialized = false;
+	bool bShowingTravelFailure = false;
+	bool bTravelRetryAvailable = false;
 };

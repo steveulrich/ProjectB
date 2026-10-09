@@ -12,6 +12,7 @@ class ABwayPlayerState;
 class UBwayHeroDataAsset;
 class ULyraGamePhaseAbility;
 class ULyraExperienceDefinition;
+class APlayerController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroSelectionPhaseEndedEvent);
@@ -33,6 +34,7 @@ public:
 	//~UActorComponent interface
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	//~End of UActorComponent interface
 
 	/**
@@ -71,6 +73,15 @@ public:
 	/** PrimaryAssetId used when random team-aware selection cannot find a valid hero. */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection Phase")
 	FPrimaryAssetId ResolveFallbackHeroId() const;
+
+	/** Authority roster changes invalidate a pending staging travel without resetting locks. */
+	void HandleSelectionRosterChanged(APlayerState* AddedPlayer = nullptr);
+
+	/** A rejected staging travel requires a deliberate host retry; existing locks remain valid. */
+	UFUNCTION(BlueprintPure, Category = "Hero Selection Phase|Travel")
+	bool HasPostSelectionTravelFailed() const { return bPostSelectionTravelFailed; }
+	bool CanRetryPostSelectionTravel(const APlayerController* RequestingPlayer) const;
+	bool RetryPostSelectionTravel(APlayerController* RequestingPlayer);
 
 	// ========== CONFIGURATION ==========
 
@@ -137,6 +148,10 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Phase")
 	FOnHeroSelectionPhaseEndedEvent OnHeroSelectionPhaseEnded;
 
+	/** Local notification on authority and after replicated failure state arrives. */
+	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Phase|Travel")
+	FOnHeroSelectionPhaseEvent OnTravelFailureChanged;
+
 protected:
 	// Show UI to all players - implement in Blueprint
 	UFUNCTION(BlueprintNativeEvent, Category = "Hero Selection Phase")
@@ -165,10 +180,26 @@ protected:
 
 	bool ShouldSkipHeroSelectionPhase() const;
 	bool ShouldTravelToPostHeroSelectionMap() const;
-	bool TryTravelToPostHeroSelectionMap() const;
+	bool TryTravelToPostHeroSelectionMap(bool bExplicitRetry = false);
 
 private:
+#if WITH_DEV_AUTOMATION_TESTS
+	friend struct FBwayLateArrivalSelectionTestAccess;
+#endif
 	bool IsCanonicalInstance() const;
+	bool IsCurrentRosterReadyForTravel() const;
+	void SchedulePostHeroSelectionTravel();
+	void CancelPendingTravel();
+	void CommitPendingTravel();
+	FTimerHandle PendingTravelTimerHandle;
+	FTimerHandle RosterRecheckTimerHandle;
+	bool bTravelCommitted = false;
+	uint64 LastExplicitRetryFrame = MAX_uint64;
+	UPROPERTY(ReplicatedUsing = OnRep_PostSelectionTravelFailed)
+	bool bPostSelectionTravelFailed = false;
+	UFUNCTION()
+	void OnRep_PostSelectionTravelFailed();
+	void SetPostSelectionTravelFailed(bool bFailed);
 
 	// Called when all players are ready
 	UFUNCTION()

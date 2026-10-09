@@ -5,7 +5,6 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "BwayCharacterWithAbilities.h"
-#include "BwayGameState.h"
 #include "BwayKorrynKitConfig.h"
 #include "Character/LyraHealthComponent.h"
 #include "Components/SphereComponent.h"
@@ -14,6 +13,7 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/Pawn.h"
 #include "Teams/LyraTeamSubsystem.h"
+#include "TimerManager.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayKorrynCursedWardBuildable)
 
@@ -126,24 +126,37 @@ void ABwayKorrynCursedWardBuildable::FinishBuilding()
 
 void ABwayKorrynCursedWardBuildable::StartSlowAura()
 {
-	if (!HasAuthority() || bSlowAuraActive || !bIsActive || bDeathHandled)
+	if (!HasAuthority() || !bIsActive || bDeathHandled)
 	{
 		return;
 	}
 
 	bSlowAuraActive = true;
 	SeedEnemiesAlreadyInRadius();
+	// Overlaps may precede pawn ASC/team initialization; later team/avatar changes
+	// do not necessarily produce another begin/end overlap pair.
+	if (!GetWorldTimerManager().IsTimerActive(SlowAuraReconcileTimer))
+	{
+		GetWorldTimerManager().SetTimer(SlowAuraReconcileTimer, this,
+			&ABwayKorrynCursedWardBuildable::ReconcileSlowAura, .2f, true);
+	}
 }
 
 void ABwayKorrynCursedWardBuildable::StopSlowAura()
 {
 	bSlowAuraActive = false;
+	GetWorldTimerManager().ClearTimer(SlowAuraReconcileTimer);
 }
 
 void ABwayKorrynCursedWardBuildable::SeedEnemiesAlreadyInRadius()
 {
+	ReconcileSlowAura();
+}
+
+void ABwayKorrynCursedWardBuildable::ReconcileSlowAura()
+{
 	UWorld* World = GetWorld();
-	if (!World)
+	if (!World || !HasAuthority() || !bSlowAuraActive || bDeathHandled)
 	{
 		return;
 	}
@@ -160,13 +173,32 @@ void ABwayKorrynCursedWardBuildable::SeedEnemiesAlreadyInRadius()
 		FCollisionShape::MakeSphere(SlowRadius),
 		QueryParams);
 
+	TSet<TWeakObjectPtr<ABwayCharacterWithAbilities>> EligibleEnemies;
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		ABwayCharacterWithAbilities* Enemy = Cast<ABwayCharacterWithAbilities>(Overlap.GetActor());
-		if (Enemy && IsEnemyOfWard(Enemy) && IsAliveEnemy(Enemy))
+		UAbilitySystemComponent* ASC = Enemy ? UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy) : nullptr;
+		if (ASC && ASC->GetAvatarActor() == Enemy && IsEnemyOfWard(Enemy) && IsAliveEnemy(Enemy))
 		{
-			ApplySlowToEnemy(Enemy);
+			EligibleEnemies.Add(Enemy);
 		}
+	}
+
+	for (auto It = ActiveEnemySlowHandles.CreateIterator(); It; ++It)
+	{
+		UAbilitySystemComponent* AppliedASC = It.Value().GetOwningAbilitySystemComponent();
+		ABwayCharacterWithAbilities* Enemy = It.Key().Get();
+		UAbilitySystemComponent* CurrentASC = Enemy ? UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy) : nullptr;
+		if (!EligibleEnemies.Contains(It.Key()) || !AppliedASC || AppliedASC != CurrentASC)
+		{
+			// The applied effect knows its ASC even after the old pawn loses it.
+			if (AppliedASC) AppliedASC->RemoveActiveGameplayEffect(It.Value());
+			It.RemoveCurrent();
+		}
+	}
+	for (const TWeakObjectPtr<ABwayCharacterWithAbilities>& Enemy : EligibleEnemies)
+	{
+		ApplySlowToEnemy(Enemy.Get());
 	}
 }
 
@@ -211,7 +243,8 @@ void ABwayKorrynCursedWardBuildable::OnSlowSphereEndOverlap(
 		return;
 	}
 
-	if (ABwayCharacterWithAbilities* OtherCharacter = Cast<ABwayCharacterWithAbilities>(OtherActor))
+	if (ABwayCharacterWithAbilities* OtherCharacter = Cast<ABwayCharacterWithAbilities>(OtherActor);
+		OtherCharacter && (!SlowSphere || !SlowSphere->IsOverlappingActor(OtherCharacter)))
 	{
 		RemoveSlowFromEnemy(OtherCharacter);
 	}
@@ -227,20 +260,21 @@ void ABwayKorrynCursedWardBuildable::ApplySlowToEnemy(ABwayCharacterWithAbilitie
 	// Use the ward's own ASC so the aura survives owner-pawn replacement between rounds.
 	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponent();
 	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy);
-	if (!SourceASC || !TargetASC)
+	if (!SourceASC || !TargetASC || TargetASC->GetAvatarActor() != Enemy)
 	{
 		return;
 	}
 
 	AActor* EffectInstigator = GetInstigator();
-	if (!EffectInstigator)
+	if (!IsValid(EffectInstigator) || !UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EffectInstigator))
 	{
+		EffectInstigator = nullptr;
 		if (AController* OwningController = Cast<AController>(GetOwner()))
 		{
 			EffectInstigator = OwningController->GetPawn();
 		}
 	}
-	if (!EffectInstigator)
+	if (!IsValid(EffectInstigator) || !UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(EffectInstigator))
 	{
 		EffectInstigator = this;
 	}
@@ -276,12 +310,9 @@ void ABwayKorrynCursedWardBuildable::RemoveSlowFromEnemy(ABwayCharacterWithAbili
 		return;
 	}
 
-	if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy))
+	if (UAbilitySystemComponent* TargetASC = Handle->GetOwningAbilitySystemComponent())
 	{
-		if (Handle->IsValid())
-		{
-			TargetASC->RemoveActiveGameplayEffect(*Handle);
-		}
+		TargetASC->RemoveActiveGameplayEffect(*Handle);
 	}
 
 	ActiveEnemySlowHandles.Remove(Enemy);
@@ -289,34 +320,14 @@ void ABwayKorrynCursedWardBuildable::RemoveSlowFromEnemy(ABwayCharacterWithAbili
 
 void ABwayKorrynCursedWardBuildable::ClearAllSlowEffects()
 {
-	TArray<TWeakObjectPtr<ABwayCharacterWithAbilities>> Enemies;
-	ActiveEnemySlowHandles.GetKeys(Enemies);
-	for (const TWeakObjectPtr<ABwayCharacterWithAbilities>& WeakEnemy : Enemies)
+	for (const auto& Entry : ActiveEnemySlowHandles)
 	{
-		if (ABwayCharacterWithAbilities* Enemy = WeakEnemy.Get())
+		if (UAbilitySystemComponent* TargetASC = Entry.Value.GetOwningAbilitySystemComponent())
 		{
-			RemoveSlowFromEnemy(Enemy);
+			TargetASC->RemoveActiveGameplayEffect(Entry.Value);
 		}
 	}
 	ActiveEnemySlowHandles.Reset();
-}
-
-AActor* ABwayKorrynCursedWardBuildable::ResolveTeamProxy() const
-{
-	if (AController* OwningController = Cast<AController>(GetOwner()))
-	{
-		if (APawn* OwnedPawn = OwningController->GetPawn())
-		{
-			return OwnedPawn;
-		}
-	}
-
-	if (AActor* InstigatorActor = GetInstigator())
-	{
-		return InstigatorActor;
-	}
-
-	return nullptr;
 }
 
 bool ABwayKorrynCursedWardBuildable::IsEnemyOfWard(ABwayCharacterWithAbilities* OtherCharacter) const
@@ -332,34 +343,13 @@ bool ABwayKorrynCursedWardBuildable::IsEnemyOfWard(ABwayCharacterWithAbilities* 
 		return false;
 	}
 
-	// Prefer owner pawn / instigator (Alona shrine pattern). When the placer pawn is
-	// replaced between rounds, fall back to the ward's stored TeamId so the aura keeps working.
-	AActor* TeamProxy = ResolveTeamProxy();
-	if (TeamProxy)
-	{
-		if (TeamProxy == OtherCharacter)
-		{
-			return false;
-		}
-
-		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			return !GameState->AreOnSameTeam(TeamProxy, OtherCharacter);
-		}
-
-		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			return TeamSubsystem->CompareTeams(TeamProxy, OtherCharacter) == ELyraTeamComparison::DifferentTeams;
-		}
-
-		return false;
-	}
-
+	// A persistent Ward owns its team independently of the placer's pawn.
 	if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 	{
 		const int32 WardTeam = static_cast<int32>(GetTeamId().GetId());
 		const int32 OtherTeam = TeamSubsystem->FindTeamFromObject(OtherCharacter);
-		return OtherTeam != INDEX_NONE && WardTeam != 0 && OtherTeam != WardTeam;
+		return WardTeam != 0 && WardTeam != FGenericTeamId().GetId()
+			&& OtherTeam != INDEX_NONE && OtherTeam != FGenericTeamId().GetId() && OtherTeam != WardTeam;
 	}
 
 	return false;

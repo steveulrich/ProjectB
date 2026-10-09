@@ -21,6 +21,7 @@
 #include "Camera/LyraCameraMode.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "InputMappingContext.h"
+#include "Input/CommonUIActionRouterBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(LyraHeroComponent)
 
@@ -171,13 +172,22 @@ void ULyraHeroComponent::HandleChangeInitState(UGameFrameworkComponentManager* M
 				InitializePlayerInput(Pawn->InputComponent);
 			}
 
-			// Frontend CommonUI leaves the local PC in UI-only mode across ServerTravel.
-			// Re-capture the mouse once gameplay input is bound so mouse look works in-match.
+			// Pawn initialization can finish after a local menu has opened. Keep
+			// CommonUI's active screen in control of capture and focus in that case.
 			if (LyraPC->IsLocalController())
 			{
-				FInputModeGameOnly InputMode;
-				LyraPC->SetInputMode(InputMode);
-				LyraPC->SetShowMouseCursor(false);
+				UCommonUIActionRouterBase* Router = ULocalPlayer::GetSubsystem<UCommonUIActionRouterBase>(LyraPC->GetLocalPlayer());
+				if (Router && Router->GetLeafmostActivatableWidget())
+				{
+					Router->RefreshUIInputConfig();
+					Router->RefreshActiveRootFocus();
+				}
+				else
+				{
+					FInputModeGameOnly InputMode;
+					LyraPC->SetInputMode(InputMode);
+					LyraPC->SetShowMouseCursor(false);
+				}
 			}
 		}
 
@@ -525,4 +535,3 @@ void ULyraHeroComponent::ClearAbilityCameraMode(const FGameplayAbilitySpecHandle
 		AbilityCameraModeOwningSpecHandle = FGameplayAbilitySpecHandle();
 	}
 }
-

@@ -1,8 +1,10 @@
 # BreakawayCore systems documentation index
 
-Developer reference for the BreakawayCore Game Feature plugin. Slice planning lives in [`AI_Planning/`](../../../AI_Planning/) — start with [the planning hub](../../../AI_Planning/README.md).
+Developer reference for the BreakawayCore Game Feature plugin. Slice planning lives in [`AI_Planning/`](../../../../AI_Planning/) — start with [the planning hub](../../../../AI_Planning/README.md).
 
-**Last reviewed:** August 27, 2026
+**Last reviewed:** September 6, 2026
+
+Start with the [BreakawayCore Game Feature Plugin systems](./BreakawayCore_GFP_Systems.md) for the canonical architecture map, then use the [BreakawayCore onboarding tutorial](./BreakawayCore_Onboarding.md) to learn the repository in a working editor session.
 
 ## Architecture overview
 
@@ -20,6 +22,8 @@ Four slice heroes (Argus, Alona, Korryn, Rawlins) ship as Game Feature plugins u
 
 | System | Document |
 |--------|----------|
+| Canonical GFP architecture | [BreakawayCore_GFP_Systems.md](./BreakawayCore_GFP_Systems.md) |
+| Onboarding tutorial | [BreakawayCore_Onboarding.md](./BreakawayCore_Onboarding.md) |
 | Lyra integration | [Lyra_Integration.md](./Lyra_Integration.md) |
 | Match flow and phases | [MatchFlow_and_Phases.md](./MatchFlow_and_Phases.md) |
 | Core loop plan | [CoreLoop_Implementation_Plan.md](./CoreLoop_Implementation_Plan.md) |
@@ -68,7 +72,7 @@ Four slice heroes (Argus, Alona, Korryn, Rawlins) ship as Game Feature plugins u
 ## Config and tags
 
 - [`Config/Tags/BreakawayCore.ini`](../Config/Tags/BreakawayCore.ini)
-- [`Config/DefaultGame.ini`](../../../Config/DefaultGame.ini) — AssetManager scans for `/BreakawayCore/` and hero plugin paths
+- [`Config/DefaultGame.ini`](../../../../Config/DefaultGame.ini) — AssetManager scans for `/BreakawayCore/` and hero plugin paths
 
 ## Asset audit
 

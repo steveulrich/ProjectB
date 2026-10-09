@@ -47,8 +47,10 @@ public class BreakawayCoreRuntime : ModuleRules
         
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
+				"ApplicationCore", // Platform-user input device routing in development fixtures.
 				"AssetRegistry",
 				"CommonGame",
+				"CommonInput",
 				"CommonUser",
 				"DeveloperSettings",
 				"GameplayMessageRuntime",

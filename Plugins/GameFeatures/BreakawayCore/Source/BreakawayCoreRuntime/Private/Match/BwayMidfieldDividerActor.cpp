@@ -2,6 +2,7 @@
 
 #include "Match/BwayMidfieldDividerActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -11,10 +12,12 @@ ABwayMidfieldDividerActor::ABwayMidfieldDividerActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
+	SetReplicateMovement(true);
 	bAlwaysRelevant = true;
 
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot")));
 	DividerMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DividerMesh"));
-	SetRootComponent(DividerMesh);
+	DividerMesh->SetupAttachment(RootComponent);
 	DividerMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	DividerMesh->SetGenerateOverlapEvents(false);
 	DividerMesh->SetCastShadow(false);
@@ -28,9 +31,10 @@ ABwayMidfieldDividerActor::ABwayMidfieldDividerActor()
 		DividerMesh->SetStaticMesh(PlaneMeshFinder.Object);
 	}
 
-	// Plane lies in XY by default; rotate so the surface lies in YZ (midfield at X = 0).
-	DividerMesh->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));
-	DividerMesh->SetRelativeScale3D(FVector(1.0f, 50.0f, 8.0f));
+	// The ground stripe spans local Y; its thin local X axis follows the goal axis.
+	// Keep rotation on the actor so the authored Blueprint's floor styling survives.
+	DividerMesh->SetRelativeRotation(FRotator::ZeroRotator);
+	DividerMesh->SetRelativeScale3D(FVector(0.1f, 50.0f, 1.0f));
 }
 
 void ABwayMidfieldDividerActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -46,11 +46,16 @@ public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 	virtual bool ControllerCanRestart(AController* Controller) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
+	virtual void FailedToRestartPlayer(AController* NewPlayer) override;
 	//~End of AGameModeBase interface
+
+	/** Cancel obstruction retries before a round reset, phase exit, or world teardown. */
+	void ClearPendingPlayerRestarts();
 
 	/**
 	 * Called after RestartPlayer to apply hero data to the newly spawned pawn.
@@ -88,6 +93,13 @@ public:
 	FName Team2SpawnPointTag = FName("Team2Spawn");
 
 protected:
+#if WITH_DEV_AUTOMATION_TESTS
+	friend struct FBwayLateArrivalSelectionTestAccess;
+#endif
+	/** One weak, delayed retry per controller, including modular relic bots. */
+	TMap<TWeakObjectPtr<AController>, FTimerHandle> PendingPlayerRestarts;
+	void QueuePlayerRestart(AController* Controller);
+	void CancelPlayerRestart(AController* Controller);
 
 	/** Get the Breakaway game state (casted for convenience) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway")
@@ -123,6 +135,10 @@ protected:
 
 	/** New arrivals select independently after the shared staging phase has ended. */
 	TSet<TWeakObjectPtr<const AController>> PlayersAwaitingLateJoinHeroSelection;
+	TSet<TWeakObjectPtr<const AController>> PlayersShownLateJoinHeroSelection;
+	TSet<TWeakObjectPtr<const AController>> PendingHeroSelectionCompletions;
+	bool PreparePlayerHeroSelection(APlayerController* Player);
+	void ShowPendingHeroSelection(APlayerController* Player);
 
 	UFUNCTION()
 	void HandleLateJoinHeroLocked(APlayerState* PlayerState, FPrimaryAssetId HeroId);

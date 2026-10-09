@@ -149,6 +149,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Teams", meta = (BlueprintAuthorityOnly))
 	void UpdateTeamAliveCount(int32 TeamIndex, int32 AliveCount);
 
+	/** Reconcile spawn/restart outcomes from actual living pawns; safe to repeat. */
+	void RecalculateTeamAliveCount(int32 TeamIndex);
+
 	/** Called when a player dies to update team state */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Teams", meta = (BlueprintAuthorityOnly))
 	void OnPlayerDied(APlayerState* PlayerState);
@@ -174,6 +177,13 @@ public:
 
 	/** Send the retained final snapshot to one owning connection, including a PostMatch arrival. */
 	bool SendResultsToPlayer(ABwayPlayerController* Player);
+
+	/** Development-only replicated probe used by the team-combat fixture to sample peer state. */
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_RunTeamPeerConvergence(int32 EnemyPlayerId);
+
+	/** Set the development-only replicated peer probe on authority. */
+	void SetTeamPeerConvergenceEnemyId(int32 EnemyPlayerId);
 
 	/**
 	 * Return all players to the front-end / lobby map.
@@ -252,6 +262,20 @@ protected:
 
 	UFUNCTION()
 	void OnRep_TeamInfo();
+
+	/** Development-only replicated probe value; clients sample their local enemy state on sequence arrival. */
+	UPROPERTY(Replicated, Transient)
+	int32 TeamPeerConvergenceEnemyId = INDEX_NONE;
+
+	UFUNCTION()
+	void OnRep_TeamPeerConvergenceSample();
+
+	/** Each authority call advances the probe sequence so repeated settled samples cannot be coalesced. */
+	UPROPERTY(ReplicatedUsing = OnRep_TeamPeerConvergenceSample, Transient)
+	int32 TeamPeerConvergenceSample = 0;
+
+	/** Emit one development-only local peer sample after replicated state settles. */
+	void LogTeamPeerConvergenceSample(const TCHAR* SampleLabel) const;
 
 	// ========================================
 	// Internal State

@@ -57,8 +57,6 @@ Templates: [`Plugins/GameFeatures/Heroes/README.md`](../../Heroes/README.md)
 ## Argus / Spartacus
 
 - **Current path:** Core Loop Step 18 complete in C++. DisplayName **Argus**; plugin `Hero_Spartacus`.
-- **Editor checklists:** [Argus_18a](./Argus_18a_Editor_Setup.md) / [18b](./Argus_18b_Editor_Setup.md) / [18c](./Argus_18c_Editor_Setup.md)
-- **Legacy C++ kit notes:** [Spartacus_Implementation_Summary.md](./Spartacus_Implementation_Summary.md) (ShieldBash/WarCry stand-ins replaced by 18c sheet names)
 
 ## Slide
 
@@ -72,9 +70,32 @@ Base: **`UGCN_BwayCombatFeedback`**
 
 ## Input
 
-Lyra Enhanced Input + gameplay input tags (`InputTag.Ability.*`, `InputTag.Relic.*`). No custom IMC C++ in BreakawayCore — configured in experience ActionSets / `DA_BW_InputData_Humanoid`.
+Lyra Enhanced Input routes actions through gameplay input tags (`InputTag.Ability.*`,
+`InputTag.Relic.*`) in `DA_BW_InputData_Humanoid`.
 
-Placement Confirm/Cancel dual-bind on LMB/RMB alongside Primary / RelicRequest — see 18b editor setup.
+`IMC_BW_HeroAbilities` contains the common hero, placement, and relic mappings at priority 1.
+Both gameplay experiences use this context. They must not also install
+`IMC_BW_RelicAbilities`: an independently applied context consumes overlapping keys before
+the hero mappings reach the input component. Equal context priorities do not prevent this.
+The older relic context remains as an uninstalled reference asset.
+
+Shared keys intentionally coexist inside the gameplay context. LMB routes primary fire,
+relic throw, and placement confirm; RMB routes relic request/drop and placement cancel.
+E routes the second hero ability and relic pass; F routes defense and relic dash.
+GAS grant lifetime, carrier restrictions, and placement tags decide which action may run.
+Keep these restrictions when changing mappings; context availability is not gameplay authority.
+
+The gameplay context now also provides controller routes for the same intents: right trigger
+for primary fire, D-pad Down to start placement, D-pad Right/Left to confirm/cancel placement,
+and the right face button for relic dash. Primary/right-trigger and relic throw, plus the
+right-face-button hero slot and relic dash, intentionally share keys because the active GAS
+grant and carrier/placement tags decide which action is eligible. D-pad directions avoid the
+existing ability slots and the D-pad Up shop toggle.
+
+The consolidation preserves all valid existing keys and the relic press triggers. The authored
+mapping gap is closed, but this does not establish physical-input acceptance. Verify resolved
+mappings and carrier/placement transitions after changing either the experience, the context,
+the input config, or the relevant GAS restrictions.
 
 ## TODO
 

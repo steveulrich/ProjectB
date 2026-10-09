@@ -4,6 +4,9 @@
 #include "BwayCharacterWithAbilities.h"
 #include "Camera/LyraCameraComponent.h"
 #include "Camera/CameraShakeBase.h"
+#include "Camera/CameraModifier_CameraShake.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameFramework/PlayerController.h"
 #include "BwayCharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -27,6 +30,9 @@
 #include "Teams/LyraTeamDisplayAsset.h"
 #include "Teams/LyraTeamSubsystem.h"
 #include "Net/UnrealNetwork.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
+#include "Character/LyraHealthComponent.h"
+#include "Messages/LyraVerbMessageHelpers.h"
 
 
 ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
@@ -45,6 +51,23 @@ ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitialize
 void ABwayCharacterWithAbilities::OnAbilitySystemInitialized()
 {
 	Super::OnAbilitySystemInitialized();
+	UnbindCombatHealth();
+	CombatContributors.Reset();
+	LastDamagePlayerState.Reset();
+	CombatRound = INDEX_NONE;
+	bLastDamageWasLethal = false;
+	bCombatDeathConsumed = false;
+	if (HasAuthority())
+	{
+		if (const auto* ASC = GetLyraAbilitySystemComponent())
+		{
+			if (const auto* Health = ASC->GetSet<ULyraHealthSet>())
+			{
+				CombatHealthSet = Health;
+				CombatHealthChangedHandle = Health->OnHealthChanged.AddUObject(this, &ThisClass::HandleCombatHealthChanged);
+			}
+		}
+	}
 
 	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
 	{
@@ -54,6 +77,9 @@ void ABwayCharacterWithAbilities::OnAbilitySystemInitialized()
 
 void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 {
+	UnbindCombatHealth();
+	CombatContributors.Reset();
+	LastDamagePlayerState.Reset();
 	ClearRelicRequestForCurrentPawn();
 	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
 	{
@@ -97,6 +123,7 @@ void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimePro
 
 void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 {
+	StopSlideCameraShake(true);
 	Super::OnDeathStarted(OwningActor);
 	ClearRelicRequestForCurrentPawn();
 	if (HasAuthority())
@@ -105,38 +132,7 @@ void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 		{
 			if (UBwayRoundManagementComponent* RoundMgmt = GS->FindComponentByClass<UBwayRoundManagementComponent>())
 			{
-				AController* VictimController = GetController();
-
-				// Determine killer from the last damage instigator
-				AController* KillerController = nullptr;
-				if (LastDamageInstigator.IsValid())
-				{
-					if (APawn* InstigatorPawn = Cast<APawn>(LastDamageInstigator.Get()))
-					{
-						KillerController = InstigatorPawn->GetController();
-					}
-				}
-
-				// Record stats on PlayerStates
-				if (VictimController)
-				{
-					if (ABwayPlayerState* VictimPS = VictimController->GetPlayerState<ABwayPlayerState>())
-					{
-						VictimPS->AddDeath();
-					}
-				}
-				if (KillerController && KillerController != VictimController)
-				{
-					if (ABwayPlayerState* KillerPS = KillerController->GetPlayerState<ABwayPlayerState>())
-					{
-						KillerPS->AddKill();
-					}
-				}
-
-				// TODO: Assist tracking - need damage contribution system
-				// For now, only direct killer gets credit
-
-				RoundMgmt->OnPlayerDied(VictimController, KillerController);
+				RoundMgmt->OnPlayerDied(GetController(), nullptr);
 			}
 
 			if (UBwayRelicManagerComponent* RelicMgr = GS->FindComponentByClass<UBwayRelicManagerComponent>())
@@ -145,6 +141,124 @@ void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 			}
 		}
 	}
+}
+
+void ABwayCharacterWithAbilities::UnbindCombatHealth()
+{
+	if (const auto* Health = CombatHealthSet.Get())
+	{
+		Health->OnHealthChanged.Remove(CombatHealthChangedHandle);
+	}
+	CombatHealthChangedHandle.Reset();
+	CombatHealthSet.Reset();
+}
+
+void ABwayCharacterWithAbilities::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	StopSlideCameraShake(true);
+	UnbindCombatHealth();
+	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayCharacterWithAbilities::HandleCombatHealthChanged(AActor* DamageInstigator, AActor* Causer,
+	const FGameplayEffectSpec* Spec, float Magnitude, float OldHealth, float NewHealth)
+{
+	// Observe the actual health loss before OnOutOfHealth starts the death ability. Healing,
+	// blocked damage and fractional UI rounding cannot create or hide a contribution.
+	if (!HasAuthority() || bCombatDeathConsumed || !FMath::IsFinite(OldHealth)
+		|| !FMath::IsFinite(NewHealth) || OldHealth <= NewHealth || OldHealth <= 0.0f)
+	{
+		return;
+	}
+	auto* GS = GetWorld()->GetGameState<ABwayGameState>();
+	auto* Round = GS ? GS->FindComponentByClass<UBwayRoundManagementComponent>() : nullptr;
+	auto* Victim = GetPlayerState<ABwayPlayerState>();
+	if (!Round || !Victim || Victim->GetPawn() != this || !GS->PlayerArray.Contains(Victim)
+		|| Round->GetCurrentMatchPhase() != EBwayMatchPhase::Playing
+		|| Round->GetCurrentRoundState() != ERoundState::RoundActive)
+	{
+		return;
+	}
+	const int32 VictimTeam = GS->GetPlayerTeam(Victim);
+	if (CombatRound != Round->GetCurrentRoundNumber() || CombatVictimTeam != VictimTeam)
+	{
+		CombatContributors.Reset();
+	}
+	CombatRound = Round->GetCurrentRoundNumber();
+	CombatVictimTeam = VictimTeam;
+
+	// The ASC owner survives the source pawn. This also covers a projectile or periodic
+	// effect that kills after its source pawn dies or is replaced.
+	ABwayPlayerState* Source = nullptr;
+	if (Spec)
+	{
+		if (const auto* SourceASC = Spec->GetEffectContext().GetOriginalInstigatorAbilitySystemComponent())
+		{
+			Source = Cast<ABwayPlayerState>(SourceASC->GetOwnerActor());
+		}
+	}
+	if (!Source) Source = Cast<ABwayPlayerState>(ULyraVerbMessageHelpers::GetPlayerStateFromObject(DamageInstigator));
+	if (!Source && Causer) Source = Cast<ABwayPlayerState>(ULyraVerbMessageHelpers::GetPlayerStateFromObject(Causer->GetInstigator()));
+	const int32 SourceTeam = Source ? GS->GetPlayerTeam(Source) : INDEX_NONE;
+	const bool bEnemy = Source && Source != Victim && GS->PlayerArray.Contains(Source)
+		&& SourceTeam != INDEX_NONE && VictimTeam != INDEX_NONE && SourceTeam != VictimTeam;
+	LastDamagePlayerState = bEnemy ? Source : nullptr;
+	bLastDamageWasLethal = NewHealth <= 0.0f;
+	if (bEnemy)
+	{
+		CombatContributors.FindOrAdd(Source) = {GetWorld()->GetTimeSeconds(), SourceTeam};
+	}
+}
+
+bool ABwayCharacterWithAbilities::ConsumeCombatCredit(ABwayPlayerState*& OutKiller,
+	TArray<ABwayPlayerState*>& OutAssisters)
+{
+	OutKiller = nullptr;
+	OutAssisters.Reset();
+	const auto* Health = ULyraHealthComponent::FindHealthComponent(this);
+	if (!HasAuthority() || bCombatDeathConsumed || !Health || !Health->IsDeadOrDying() || Health->GetHealth() > 0.0f)
+	{
+		return false;
+	}
+	// Set this before callbacks can reenter the round component.
+	bCombatDeathConsumed = true;
+	auto* GS = GetWorld()->GetGameState<ABwayGameState>();
+	auto* Round = GS ? GS->FindComponentByClass<UBwayRoundManagementComponent>() : nullptr;
+	auto* Victim = GetPlayerState<ABwayPlayerState>();
+	const bool bSameLife = Round && Victim && Victim->GetPawn() == this
+		&& CombatRound == Round->GetCurrentRoundNumber() && CombatVictimTeam == GS->GetPlayerTeam(Victim);
+	if (bSameLife && bLastDamageWasLethal)
+	{
+		const double Now = GetWorld()->GetTimeSeconds();
+		const auto Eligible = [&](ABwayPlayerState* Player, const FCombatContribution& Contribution)
+		{
+			return Player && Player != Victim && GS->PlayerArray.Contains(Player)
+				&& Contribution.Team != INDEX_NONE && Contribution.Team != CombatVictimTeam
+				&& GS->GetPlayerTeam(Player) == Contribution.Team;
+		};
+		auto* Killer = LastDamagePlayerState.Get();
+		const auto* KillingHit = CombatContributors.Find(Killer);
+		if (KillingHit && Eligible(Killer, *KillingHit))
+		{
+			OutKiller = Killer;
+			for (const auto& Pair : CombatContributors)
+			{
+				auto* Player = Pair.Key.Get();
+				const double Age = Now - Pair.Value.LastDamageTime;
+				if (Player != Killer && Eligible(Player, Pair.Value) && Age >= 0.0
+					&& Age <= FMath::Max(0.0f, Round->AssistCreditWindowSeconds))
+				{
+					OutAssisters.Add(Player);
+				}
+			}
+		}
+	}
+	CombatContributors.Reset();
+	LastDamagePlayerState.Reset();
+	#if !UE_BUILD_SHIPPING
+	ConsumedAssisterCountForAudit = OutAssisters.Num();
+	#endif
+	return true;
 }
 
 void ABwayCharacterWithAbilities::Tick(float DeltaSeconds)
@@ -165,23 +279,69 @@ void ABwayCharacterWithAbilities::Tick(float DeltaSeconds)
 				CameraComp->AddFieldOfViewOffset(CurrentSlideFOVOffset);
 			}
 
-			// --- Camera Shake ---
-			if (MoveComp->IsSliding() && MoveComp->SlideCameraShakeClass)
+		}
+	}
+	UpdateSlideCameraShake();
+}
+
+void ABwayCharacterWithAbilities::StopSlideCameraShake(bool bImmediately)
+{
+	if (UCameraShakeBase* Shake = ActiveSlideCameraShake.Get())
+	{
+		if (APlayerCameraManager* Manager = SlideCameraShakeManager.Get())
+		{
+			Manager->StopCameraShake(Shake, bImmediately);
+			if (!bImmediately)
 			{
-				if (APlayerController* PC = Cast<APlayerController>(GetController()))
-				{
-					if (PC->PlayerCameraManager && !ActiveSlideCameraShake.IsValid())
-					{
-						// Scale the shake intensity by the slide intensity
-						ActiveSlideCameraShake = PC->PlayerCameraManager->StartCameraShake(MoveComp->SlideCameraShakeClass, MoveComp->GetSlideIntensity());
-					}
-				}
-			}
-			else
-			{
-				ActiveSlideCameraShake.Reset();
+				// Keep ownership through the authored blend-out, so teardown can
+				// still remove this exact instance and rapid re-entry cannot stack it.
+				bSlideCameraShakeStopping = true;
+				return;
 			}
 		}
+	}
+	ActiveSlideCameraShake = nullptr;
+	SlideCameraShakeManager.Reset();
+	SlideCameraShakeController.Reset();
+	bSlideCameraShakeStopping = false;
+}
+
+void ABwayCharacterWithAbilities::UpdateSlideCameraShake()
+{
+	const UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement();
+	APlayerController* PC = IsLocallyControlled() ? Cast<APlayerController>(GetController()) : nullptr;
+	APlayerCameraManager* Manager = PC ? PC->PlayerCameraManager.Get() : nullptr;
+	const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(this);
+	const bool bAlive = !Health || !Health->IsDeadOrDying();
+	const bool bWantsShake = bAlive && MoveComp && MoveComp->IsSliding() && MoveComp->SlideCameraShakeClass && Manager;
+	if (UCameraShakeBase* Shake = ActiveSlideCameraShake.Get())
+	{
+		const bool bOwnerOrClassChanged = SlideCameraShakeController.Get() != PC
+			|| SlideCameraShakeManager.Get() != Manager || !MoveComp
+			|| Shake->GetClass() != MoveComp->SlideCameraShakeClass.Get();
+		if (!bAlive || bOwnerOrClassChanged || (bSlideCameraShakeStopping && (bWantsShake || Shake->IsFinished())))
+		{
+			StopSlideCameraShake(true);
+		}
+		else if (!bWantsShake && !bSlideCameraShakeStopping)
+		{
+			StopSlideCameraShake(false);
+		}
+	}
+	if (bWantsShake && !ActiveSlideCameraShake)
+	{
+		FAddCameraShakeParams Params;
+		Params.Scale = MoveComp->GetSlideIntensity();
+		// Custom-initialized instances are excluded from the engine's expired
+		// shake pool. Otherwise the same UObject (including its weak serial) can
+		// be reused for an unrelated effect before we release our handle.
+		Params.Initializer.BindLambda([](UCameraShakeBase*) {});
+		ActiveSlideCameraShake = Manager->StartCameraShake(MoveComp->SlideCameraShakeClass, Params);
+		// Retain a finished finite shake until slide exit: GC must not cause a
+		// one-shot authored effect to restart while the same slide is held.
+		SlideCameraShakeManager = Manager;
+		SlideCameraShakeController = PC;
+		bSlideCameraShakeStopping = false;
 	}
 }
 
@@ -244,9 +404,25 @@ void ABwayCharacterWithAbilities::UpdateAppearanceForTeam()
 
 void ABwayCharacterWithAbilities::PossessedBy(AController* NewController)
 {
+	StopSlideCameraShake(true);
 	Super::PossessedBy(NewController);
 	BindTeamAppearanceListener();
 	UpdateAppearanceForTeam();
+}
+
+void ABwayCharacterWithAbilities::UnPossessed()
+{
+	StopSlideCameraShake(true);
+	Super::UnPossessed();
+}
+
+void ABwayCharacterWithAbilities::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+	if (!IsLocallyControlled() || SlideCameraShakeController.Get() != GetController())
+	{
+		StopSlideCameraShake(true);
+	}
 }
 
 void ABwayCharacterWithAbilities::OnRep_PlayerState()
@@ -446,6 +622,9 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 			MainMesh->SetVisibility(true);
 			MainMesh->SetSkeletalMesh(HeroData->HeroMesh);
 			MainMesh->SetRelativeTransform(HeroData->HeroMeshRelativeTransform);
+			// Lyra ignores its hidden driver mesh when spawning character VFX. A
+			// hero-owned visible body must participate in death and other mesh effects.
+			MainMesh->ComponentTags.Remove(FName(TEXT("ignore")));
 		}
 		else
 		{

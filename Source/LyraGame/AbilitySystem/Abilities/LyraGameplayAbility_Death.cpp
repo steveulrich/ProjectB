@@ -32,6 +32,7 @@ ULyraGameplayAbility_Death::ULyraGameplayAbility_Death(const FObjectInitializer&
 void ULyraGameplayAbility_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	check(ActorInfo);
+	DyingAvatar = ActorInfo->AvatarActor;
 
 	ULyraAbilitySystemComponent* LyraASC = CastChecked<ULyraAbilitySystemComponent>(ActorInfo->AbilitySystemComponent.Get());
 
@@ -65,11 +66,26 @@ void ULyraGameplayAbility_Death::EndAbility(const FGameplayAbilitySpecHandle Han
 	FinishDeath();
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	DyingAvatar.Reset();
+}
+
+void ULyraGameplayAbility_Death::OnPawnAvatarSet()
+{
+	if (IsActive() && DyingAvatar != GetAvatarActorFromActorInfo())
+	{
+		// Death cannot be cancelled by normal combat. A replacement avatar is a terminal
+		// lifecycle boundary, even if the old Blueprint delay has not finished yet.
+		UE_LOG(LogLyraAbilitySystem, Log, TEXT("Death ability %s ending for replaced avatar %s -> %s"),
+			*GetNameSafe(this), *GetNameSafe(DyingAvatar.Get()), *GetNameSafe(GetAvatarActorFromActorInfo()));
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo,
+			CurrentActorInfo && CurrentActorInfo->IsNetAuthority(), true);
+	}
+	Super::OnPawnAvatarSet();
 }
 
 void ULyraGameplayAbility_Death::StartDeath()
 {
-	if (ULyraHealthComponent* HealthComponent = ULyraHealthComponent::FindHealthComponent(GetAvatarActorFromActorInfo()))
+	if (ULyraHealthComponent* HealthComponent = ULyraHealthComponent::FindHealthComponent(DyingAvatar.Get()))
 	{
 		if (HealthComponent->GetDeathState() == ELyraDeathState::NotDead)
 		{
@@ -80,7 +96,7 @@ void ULyraGameplayAbility_Death::StartDeath()
 
 void ULyraGameplayAbility_Death::FinishDeath()
 {
-	if (ULyraHealthComponent* HealthComponent = ULyraHealthComponent::FindHealthComponent(GetAvatarActorFromActorInfo()))
+	if (ULyraHealthComponent* HealthComponent = ULyraHealthComponent::FindHealthComponent(DyingAvatar.Get()))
 	{
 		if (HealthComponent->GetDeathState() == ELyraDeathState::DeathStarted)
 		{

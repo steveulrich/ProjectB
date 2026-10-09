@@ -2,6 +2,8 @@
 
 September 8, 2026. This records the body/locomotion integration repair. Ability-specific montages, sockets, effects, physical inputs, final art, and performance still require their own acceptance.
 
+The subsequent [relic carry gate](./RELIC_CARRY_ACCEPTANCE.md) adds the previously missing `relic_r` socket to Manny and Quinn and requires it in all four hero definitions. Reload, validation, and scoped four-world moving attachment checks pass; the new six-asset set still needs cooked evidence.
+
 ## Authoring contract
 
 The four playable `UBwayHeroDataAsset` definitions own their body visuals. Replace these fields together when introducing a new rig:

@@ -59,19 +59,19 @@ We will strictly use UE5's GAS plugin for all character logic.
 - **Loop:**
     - **Overworld:** Visual Novel style dialogue & travel.
     - **Preparation:** Spend "Stardust" to upgrade Hero abilities (modifying GAS AttributeSets).
-    - **The Rite:** 3v3 or 4v4 Match against AI.
+    - **The Rite:** 4v4 Match against AI.
     - **Liberation:** Winner chooses one hero to "Ascend" (leave the party).
 
 ## 5. AI-Assisted Development Workflow
 Instructions for the Agent to assist the Human Developer.
 
-### 5.1 Code Generation (Cursor / Copilot)
+### 5.1 Code Generation
 - **Rule:** Always generate C++ headers (.h) first, then implementation (.cpp).
 - **Standard:** Use `TObjectPtr<>` for all UE5 pointers. Use `UPROPERTY()` macros correctly for replication.
 - **Example Prompt:** "Create a UGameplayAbility for Morgan Le Fay's 'Circle of Spite'. It should spawn a AGameplayAbilityTargetActor_GroundTrace to select a location, then spawn a ABP_HexZone actor that applies a GE_Slow and GE_DamageAmp to overlapping enemies."
 
-### 5.2 Blueprint Assistant (Ludus AI)
-Use Ludus to explain complex Lyra-based interactions if the codebase becomes difficult to trace.
+### 5.2 Blueprint Assistant
+Use the Unreal MCP to explain complex Lyra-based interactions if the codebase becomes difficult to trace.
 
 ### 5.3 Asset Generation
 - **Tripo3D/Meshy:** Use for generating environmental props (statues, pillars, rubble) to populate the "Mythological Arena" quickly.
@@ -82,4 +82,3 @@ Use Ludus to explain complex Lyra-based interactions if the codebase becomes dif
 2. **GAS Foundation:** Set up `AttributeSet_Base` and `Character_Base` with ASC.
 3. **Relic Prototype:** Create `BP_Relic` (Physics Actor) and implement `GA_Pickup`, `GA_Throw`, `GA_Pass`.
 4. **Buildable System:** Create `BP_Buildable_Base` with a Ghost placement mode and a Construct ability.
-5. **Character Alpha:** Implement Spartacus (Melee) and Rawlins (Ranged) to test the Combat vs. Projectile balance.

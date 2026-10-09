@@ -55,6 +55,11 @@ bool ABwayKorrynPrimaryProjectile::HandleDamageHit(const FHitResult& Hit)
 		return false;
 	}
 
+	if (UBwayDamageLibrary::ApplyDamageToEnemyBuildable(InstigatorCharacter, HitActor, DamageAmount, this))
+	{
+		bHasAppliedHit = true;
+		return true;
+	}
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
 	if (!HitCharacter || !InstigatorCharacter)
 	{

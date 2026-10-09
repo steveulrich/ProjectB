@@ -25,7 +25,11 @@ bool UBwayUpgradeEffect::IsSupportedUpgradeEffect() const
 	{
 		// Explicitly exclude health and gold: changing/clamping those values is not reversible.
 		const bool bSupportedAttribute = Modifier.Attribute == UBwayHeroAttributeSet::GetAttackStrengthAttribute()
-			|| Modifier.Attribute == UBwayHeroAttributeSet::GetArmorAttribute();
+			|| Modifier.Attribute == UBwayHeroAttributeSet::GetArmorAttribute()
+			|| Modifier.Attribute == UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute()
+			|| Modifier.Attribute == UBwayHeroAttributeSet::GetCooldownReductionAttribute()
+			|| Modifier.Attribute == UBwayHeroAttributeSet::GetLifeLeechAttribute()
+			|| Modifier.Attribute == UBwayHeroAttributeSet::GetRespawnTimeReductionAttribute();
 		const FSetByCallerFloat& Value = Modifier.ModifierMagnitude.GetSetByCallerFloat();
 		if (!bSupportedAttribute || Modifier.ModifierOp != EGameplayModOp::Additive
 			|| Modifier.ModifierMagnitude.GetMagnitudeCalculationType() != EGameplayEffectMagnitudeCalculation::SetByCaller
@@ -55,6 +59,46 @@ UBwayUpgradeEffect_Armor::UBwayUpgradeEffect_Armor()
 	Value.DataName = MagnitudeName;
 	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
 	Modifier.Attribute = UBwayHeroAttributeSet::GetArmorAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
+}
+
+UBwayUpgradeEffect_MoveSpeed::UBwayUpgradeEffect_MoveSpeed()
+{
+	FSetByCallerFloat Value;
+	Value.DataName = MagnitudeName;
+	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayHeroAttributeSet::GetMoveSpeedMultiplierAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
+}
+
+UBwayUpgradeEffect_CooldownReduction::UBwayUpgradeEffect_CooldownReduction()
+{
+	FSetByCallerFloat Value;
+	Value.DataName = MagnitudeName;
+	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayHeroAttributeSet::GetCooldownReductionAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
+}
+
+UBwayUpgradeEffect_LifeLeech::UBwayUpgradeEffect_LifeLeech()
+{
+	FSetByCallerFloat Value;
+	Value.DataName = MagnitudeName;
+	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayHeroAttributeSet::GetLifeLeechAttribute();
+	Modifier.ModifierOp = EGameplayModOp::Additive;
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
+}
+
+UBwayUpgradeEffect_RespawnTimeReduction::UBwayUpgradeEffect_RespawnTimeReduction()
+{
+	FSetByCallerFloat Value;
+	Value.DataName = MagnitudeName;
+	FGameplayModifierInfo& Modifier = Modifiers.AddDefaulted_GetRef();
+	Modifier.Attribute = UBwayHeroAttributeSet::GetRespawnTimeReductionAttribute();
 	Modifier.ModifierOp = EGameplayModOp::Additive;
 	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(Value);
 }

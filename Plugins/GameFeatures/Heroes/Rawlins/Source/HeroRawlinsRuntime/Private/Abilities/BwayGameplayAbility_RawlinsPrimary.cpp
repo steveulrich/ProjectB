@@ -47,7 +47,8 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 
 	if (!HasAuthority(&ActivationInfo))
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		// The server ends both instances after the last shot. Replicating an immediate
+		// client end here would cancel its burst timer before the second shot.
 		return;
 	}
 

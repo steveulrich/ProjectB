@@ -52,13 +52,10 @@ void UBwayCombatNumberPopComponent::BeginPlay()
 
 void UBwayCombatNumberPopComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UWorld* World = GetWorld())
-	{
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(World);
-		MessageSubsystem.UnregisterListener(IncomingDamageHandle);
-		MessageSubsystem.UnregisterListener(OutgoingDamageHandle);
-		MessageSubsystem.UnregisterListener(IncomingHealHandle);
-	}
+	// Remote controllers never registered these local presentation listeners.
+	IncomingDamageHandle.Unregister();
+	OutgoingDamageHandle.Unregister();
+	IncomingHealHandle.Unregister();
 
 	for (FBwayLiveCombatNumberPop& LivePop : LivePops)
 	{

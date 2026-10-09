@@ -3,9 +3,12 @@
 #include "BwayPlayerController.h"
 #include "UI/BwayUpgradeShopWidget.h"
 #include "Components/InputComponent.h"
+#include "EnhancedInputComponent.h"
+#include "InputAction.h"
 #include "InputCoreTypes.h"
 #include "UI/BwayResultsScreenWidget.h"
 #include "UI/BwayPostRoundSummaryWidget.h"
+#include "UI/BwayRespawnHUDWidget.h"
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
@@ -13,17 +16,113 @@
 #include "Stats/BwayMatchStatsLibrary.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "CommonActivatableWidget.h"
 #include "CommonUIExtensions.h"
 #include "Development/BwayCheatManager.h"
+#include "Development/BwayCombatFixtureAbilities.h"
 #include "Combat/BwayCombatNumberPopComponent.h"
 #include "Combat/BwayNameplatePolicyComponent.h"
 #include "GameplayTagContainer.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
 #include "GameFramework/Pawn.h"
+#include "BwayCharacterWithAbilities.h"
+#include "Character/LyraHealthComponent.h"
+#include "Abilities/BwayGameplayAbility_RelicPass.h"
+#include "AbilitySystem/LyraAbilitySystemComponent.h"
+#include "EngineUtils.h"
+#include "Engine/GameInstance.h"
+#include "TimerManager.h"
+#include "Economy/BwayUpgradeComponent.h"
+#include "Input/CommonUIActionRouterBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayPlayerController)
+
+void ABwayPlayerController::Client_RunCreditDisconnectProbe_Implementation()
+{
+#if !UE_BUILD_SHIPPING
+	if (IsLocalController() && GetWorld() && GetWorld()->GetNetMode() == NM_Client && GetGameInstance())
+	{
+		UE_LOG(LogTemp, Display, TEXT("BwayCreditLifePeer: Disconnect requested=1 id=%d source=GameInstanceReturnToMainMenu"),
+			PlayerState ? PlayerState->GetPlayerId() : INDEX_NONE);
+		GetGameInstance()->ReturnToMainMenu();
+	}
+#endif
+}
+
+void ABwayPlayerController::Client_RunRespawnUpgradePurchase_Implementation(int32 ExpectedRank, int32 AuditStage)
+{
+#if !UE_BUILD_SHIPPING
+	ABwayPlayerState* OwnerState = GetPlayerState<ABwayPlayerState>();
+	ABwayGameState* State = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+	if (!IsLocalController() || !State || GetWorld()->GetNetMode() != NM_Client || !OwnerState
+		|| !OwnerState->UpgradeComponent || ExpectedRank < 0 || ExpectedRank > 3 || AuditStage < 1 || AuditStage > 2) return;
+	const auto Schedule = OwnerState->GetRespawnSchedule();
+	const auto* Health = ULyraHealthComponent::FindHealthComponent(GetPawn());
+	UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Request stage=%d expected=%d id=%d world=%s alive=%d deadline=%.6f serverTime=%.6f"),
+		AuditStage, ExpectedRank, OwnerState->GetPlayerId(), *GetWorld()->GetPathName(),
+		Health && !Health->IsDeadOrDying() && Health->GetHealth() > 0, Schedule.ServerEndTime, State->GetServerWorldTimeSeconds());
+	OwnerState->UpgradeComponent->ServerPurchaseUpgrade(TEXT("RespawnTimeReduction"), ExpectedRank);
+#endif
+}
+
+#if !UE_BUILD_SHIPPING
+namespace
+{
+void TryRemotePassActivation(TWeakObjectPtr<ABwayPlayerController> WeakController, int32 AttemptsRemaining)
+{
+	ABwayPlayerController* Controller = WeakController.Get();
+	ABwayCharacterWithAbilities* LocalCarrier = Controller ? Cast<ABwayCharacterWithAbilities>(Controller->GetPawn()) : nullptr;
+	UWorld* World = Controller ? Controller->GetWorld() : nullptr;
+	if (!Controller || !LocalCarrier || !World || World->GetNetMode() != NM_Client)
+	{
+		return;
+	}
+
+	ABwayPlayerState* PlayerState = LocalCarrier->GetPlayerState<ABwayPlayerState>();
+	ULyraAbilitySystemComponent* ASC = PlayerState ? PlayerState->GetLyraAbilitySystemComponent() : nullptr;
+	if (!ASC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client pass ASC missing carrier=%s"), *GetNameSafe(LocalCarrier));
+		return;
+	}
+
+	for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+	{
+		if (Spec.Ability && Spec.Ability->IsA(UBwayGameplayAbility_RelicPass::StaticClass()))
+		{
+			const bool bActivated = ASC->TryActivateAbility(Spec.Handle, true);
+			UE_LOG(LogTemp, Display, TEXT("BwayTeamCombatRemote: ClientPass carrier=%d ability=%s activated=%d attemptsRemaining=%d"),
+				LocalCarrier->GetPlayerState() ? LocalCarrier->GetPlayerState()->GetPlayerId() : INDEX_NONE,
+				*GetNameSafe(Spec.Ability), bActivated ? 1 : 0, AttemptsRemaining);
+			if (bActivated || AttemptsRemaining <= 0)
+			{
+				return;
+			}
+			break;
+		}
+	}
+
+	if (AttemptsRemaining > 0)
+	{
+		FTimerHandle RetryTimer;
+		World->GetTimerManager().SetTimer(
+			RetryTimer,
+			FTimerDelegate::CreateLambda([WeakController, AttemptsRemaining]()
+			{
+				TryRemotePassActivation(WeakController, AttemptsRemaining - 1);
+			}),
+			0.50f,
+			false);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client pass ability missing carrier=%s"), *GetNameSafe(LocalCarrier));
+	}
+}
+}
+#endif
 
 ABwayPlayerController::ABwayPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -35,6 +134,7 @@ ABwayPlayerController::ABwayPlayerController(const FObjectInitializer& ObjectIni
 
 	CombatNumberPopComponent = CreateDefaultSubobject<UBwayCombatNumberPopComponent>(TEXT("CombatNumberPopComponent"));
 	NameplatePolicyComponent = CreateDefaultSubobject<UBwayNameplatePolicyComponent>(TEXT("NameplatePolicyComponent"));
+	RespawnHUDWidgetClass = UBwayRespawnHUDWidget::StaticClass();
 }
 
 void ABwayPlayerController::ShowHeroSelect()
@@ -50,7 +150,21 @@ void ABwayPlayerController::ShowHeroSelect()
 void ABwayPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
-	if (InputComponent) InputComponent->BindKey(EKeys::B, IE_Pressed, this, &ThisClass::ToggleUpgradeShop);
+	if (UEnhancedInputComponent* PreviousInput = ShopBoundInputComponent.Get())
+	{
+		PreviousInput->RemoveBindingByHandle(ShopInputBindingHandle);
+	}
+	ShopBoundInputComponent.Reset();
+	UpgradeShopInputAction = LoadObject<UInputAction>(nullptr,
+		TEXT("/BreakawayCore/Input/Actions/IA_BW_UpgradeShop.IA_BW_UpgradeShop"));
+	if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent); EnhancedInput && UpgradeShopInputAction)
+	{
+		// Started fires once per press. The shared player UI feature context owns
+		// the mappings and reinstalls them when Lyra rebuilds input on respawn.
+		ShopInputBindingHandle = EnhancedInput->BindAction(UpgradeShopInputAction, ETriggerEvent::Started,
+			this, &ThisClass::ToggleUpgradeShop).GetHandle();
+		ShopBoundInputComponent = EnhancedInput;
+	}
 }
 
 void ABwayPlayerController::ToggleUpgradeShop()
@@ -124,7 +238,11 @@ void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimary
 	{
 		if (!BwayPS->IsHeroLocked())
 		{
-			BwayPS->ServerSetSelectedHeroId(PreSelectedHeroId);
+			// A rejected request must not lock the player's previous selection.
+			if (!BwayPS->TrySetSelectedHeroId(PreSelectedHeroId))
+			{
+				return;
+			}
 
 			if (bLockSelection)
 			{
@@ -147,6 +265,18 @@ void ABwayPlayerController::Server_SubmitPreSelectedHero_Implementation(FPrimary
 			}
 		}
 	}
+}
+
+bool ABwayPlayerController::CanRetryHeroSelectionTravel() const
+{
+	const auto* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+	return GS && GS->HeroSelectionPhaseComponent && GS->HeroSelectionPhaseComponent->CanRetryPostSelectionTravel(this);
+}
+
+bool ABwayPlayerController::RetryHeroSelectionTravel()
+{
+	auto* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+	return GS && GS->HeroSelectionPhaseComponent && GS->HeroSelectionPhaseComponent->RetryPostSelectionTravel(this);
 }
 
 void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftClassPtr<UCommonActivatableWidget>& WidgetClass)
@@ -212,9 +342,49 @@ void ABwayPlayerController::RestoreGameplayInputMode()
 		return;
 	}
 
+	if (UCommonUIActionRouterBase* Router = GetLocalPlayer()->GetSubsystem<UCommonUIActionRouterBase>())
+	{
+		if (Router->GetLeafmostActivatableWidget())
+		{
+			Router->RefreshUIInputConfig();
+			Router->RefreshActiveRootFocus();
+			return;
+		}
+	}
+
 	FInputModeGameOnly InputMode;
 	SetInputMode(InputMode);
 	SetShowMouseCursor(false);
+}
+
+void ABwayPlayerController::ResetIgnoreInputFlags()
+{
+	Super::ResetIgnoreInputFlags();
+
+	// ClientRestart clears the controller's counted locks, even when a menu
+	// opened before possession completed. CommonUI only updates those counts
+	// when its desired config changes; a forced refresh alone cannot repair it.
+	// Reapply the active screen's contribution once after the reset so closing
+	// that screen still balances the counts and restores gameplay.
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	{
+		if (UCommonUIActionRouterBase* Router = LocalPlayer->GetSubsystem<UCommonUIActionRouterBase>())
+		{
+			if (const UCommonActivatableWidget* Leaf = Router->GetLeafmostActivatableWidget())
+			{
+				if (const TOptional<FUIInputConfig> Config = Leaf->GetDesiredInputConfig(); Config.IsSet())
+				{
+					if (Config->bIgnoreMoveInput) SetIgnoreMoveInput(true);
+					if (Config->bIgnoreLookInput) SetIgnoreLookInput(true);
+					if (Config->bIgnoreMoveInput || Config->bIgnoreLookInput)
+					{
+						UE_LOG(LogTemp, Display, TEXT("BwayInput: Restored active UI locks after pawn input reset screen=%s move=%d look=%d"),
+							*GetNameSafe(Leaf), IsMoveInputIgnored(), IsLookInputIgnored());
+					}
+				}
+			}
+		}
+	}
 }
 
 void ABwayPlayerController::BeginPlay()
@@ -224,11 +394,34 @@ void ABwayPlayerController::BeginPlay()
 	if (IsLocalPlayerController())
 	{
 		BindPostRoundSummaryListeners();
+		RefreshRespawnHUD();
 	}
+}
+
+void ABwayPlayerController::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+	RefreshRespawnHUD();
+}
+
+void ABwayPlayerController::RefreshRespawnHUD()
+{
+	if (!HasActorBegunPlay() || !IsLocalPlayerController() || !GetLocalPlayer()) return;
+	if (!RespawnHUDWidget && RespawnHUDWidgetClass)
+	{
+		RespawnHUDWidget = CreateWidget<UBwayRespawnHUDWidget>(this, RespawnHUDWidgetClass);
+		if (RespawnHUDWidget) RespawnHUDWidget->AddToPlayerScreen(20);
+	}
+	if (RespawnHUDWidget) RespawnHUDWidget->RefreshPlayerState();
 }
 
 void ABwayPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (RespawnHUDWidget) RespawnHUDWidget->RemoveFromParent();
+	RespawnHUDWidget = nullptr;
+	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) UpgradeShopWidget->DeactivateWidget();
+	if (UEnhancedInputComponent* BoundInput = ShopBoundInputComponent.Get()) BoundInput->RemoveBindingByHandle(ShopInputBindingHandle);
+	ShopBoundInputComponent.Reset();
 	if (IsLocalPlayerController())
 	{
 		UnbindPostRoundSummaryListeners();
@@ -372,6 +565,7 @@ void ABwayPlayerController::DismissPostRoundSummary()
 void ABwayPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+	RefreshRespawnHUD();
 
 	if (!IsLocalPlayerController() || !InPawn)
 	{
@@ -474,4 +668,186 @@ void ABwayPlayerController::Client_DismissResultsScreen_Implementation()
 	}
 
 	RestoreGameplayInputMode();
+}
+
+void ABwayPlayerController::Client_RunTeamPeerConvergence_Implementation(int32 EnemyPlayerId)
+{
+#if !UE_BUILD_SHIPPING
+	UWorld* World = GetWorld();
+	if (!World || !World->IsGameWorld())
+	{
+		return;
+	}
+
+	ABwayGameState* GameState = World->GetGameState<ABwayGameState>();
+	ABwayCharacterWithAbilities* EnemyCharacter = nullptr;
+	for (TActorIterator<ABwayCharacterWithAbilities> It(World); It; ++It)
+	{
+		ABwayCharacterWithAbilities* Candidate = *It;
+		if (Candidate && Candidate->GetPlayerState() && Candidate->GetPlayerState()->GetPlayerId() == EnemyPlayerId)
+		{
+			EnemyCharacter = Candidate;
+			break;
+		}
+	}
+
+	const ULyraHealthComponent* Health = EnemyCharacter ? ULyraHealthComponent::FindHealthComponent(EnemyCharacter) : nullptr;
+	const float EnemyHealth = Health ? Health->GetHealth() : -1.0f;
+	const int32 EnemyTeam = (GameState && EnemyCharacter && EnemyCharacter->GetPlayerState())
+		? GameState->GetPlayerTeam(EnemyCharacter->GetPlayerState()) : INDEX_NONE;
+	UE_LOG(LogTemp, Display, TEXT("BwayTeamCombatTest: PeerConvergenceClient world=%s netMode=%d local=%d enemy=%d found=%d health=%.1f team=%d"),
+		*GetPathNameSafe(World), static_cast<int32>(World->GetNetMode()), IsLocalController() ? 1 : 0,
+		EnemyPlayerId, EnemyCharacter ? 1 : 0, EnemyHealth, EnemyTeam);
+#else
+	UE_UNUSED(EnemyPlayerId);
+#endif
+}
+
+void ABwayPlayerController::Client_RunTeamRemoteAction_Implementation(int32 TeammatePlayerId, int32 EnemyPlayerId, bool bPassPhase)
+{
+#if !UE_BUILD_SHIPPING
+	UWorld* World = GetWorld();
+	ABwayCharacterWithAbilities* Carrier = Cast<ABwayCharacterWithAbilities>(GetPawn());
+	if (!World || !World->IsGameWorld() || World->GetNetMode() != NM_Client || !Carrier)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client action unavailable world=%s local=%d carrier=%s"),
+			*GetPathNameSafe(World), IsLocalController() ? 1 : 0, *GetNameSafe(Carrier));
+		return;
+	}
+
+	auto FindCharacterByPlayerId = [World](int32 PlayerId) -> ABwayCharacterWithAbilities*
+	{
+		for (TActorIterator<ABwayCharacterWithAbilities> It(World); It; ++It)
+		{
+			ABwayCharacterWithAbilities* Candidate = *It;
+			if (Candidate && Candidate->GetPlayerState() && Candidate->GetPlayerState()->GetPlayerId() == PlayerId)
+			{
+				return Candidate;
+			}
+		}
+		return nullptr;
+	};
+
+	if (!bPassPhase)
+	{
+		ABwayCharacterWithAbilities* Enemy = FindCharacterByPlayerId(EnemyPlayerId);
+		if (!Enemy)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client damage target missing enemy=%d"), EnemyPlayerId);
+			return;
+		}
+
+		const FRotator AimRotation = (Enemy->GetActorLocation() - Carrier->GetActorLocation()).Rotation();
+		Carrier->SetActorRotation(AimRotation);
+		SetControlRotation(AimRotation);
+		TWeakObjectPtr<ABwayPlayerController> WeakController(this);
+		FTimerHandle DamageTimer;
+		World->GetTimerManager().SetTimer(
+			DamageTimer,
+			FTimerDelegate::CreateLambda([WeakController]()
+			{
+				ABwayPlayerController* Controller = WeakController.Get();
+				ABwayCharacterWithAbilities* LocalCarrier = Controller ? Cast<ABwayCharacterWithAbilities>(Controller->GetPawn()) : nullptr;
+				if (!Controller || !LocalCarrier || !Controller->GetWorld() || Controller->GetWorld()->GetNetMode() != NM_Client)
+				{
+					return;
+				}
+
+				ULyraAbilitySystemComponent* ASC = LocalCarrier->GetLyraAbilitySystemComponent();
+				if (!ASC)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client damage ASC missing carrier=%s"), *GetNameSafe(LocalCarrier));
+					return;
+				}
+
+				for (const FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
+				{
+					const FString AbilityName = GetNameSafe(Spec.Ability);
+					if (BwayCombatFixture::IsPrimaryAbility(Spec.Ability))
+					{
+						const bool bActivated = ASC->TryActivateAbility(Spec.Handle, false);
+						UE_LOG(LogTemp, Display, TEXT("BwayTeamCombatRemote: ClientDamage carrier=%d ability=%s activated=%d"),
+							LocalCarrier->GetPlayerState() ? LocalCarrier->GetPlayerState()->GetPlayerId() : INDEX_NONE,
+							*AbilityName, bActivated ? 1 : 0);
+						return;
+					}
+				}
+
+				UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client damage ability missing carrier=%s"), *GetNameSafe(LocalCarrier));
+			}),
+			0.50f,
+			false);
+		return;
+	}
+
+	ABwayCharacterWithAbilities* Teammate = FindCharacterByPlayerId(TeammatePlayerId);
+	if (!Teammate)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BwayTeamCombatRemote: client pass target missing teammate=%d"), TeammatePlayerId);
+		return;
+	}
+
+	const FRotator AimRotation = (Teammate->GetActorLocation() - Carrier->GetActorLocation()).Rotation();
+	Carrier->SetActorRotation(AimRotation);
+	SetControlRotation(AimRotation);
+	Server_SetTeamRemoteAim(AimRotation, TeammatePlayerId);
+	TWeakObjectPtr<ABwayPlayerController> WeakController(this);
+	FTimerHandle PassTimer;
+	World->GetTimerManager().SetTimer(
+		PassTimer,
+		FTimerDelegate::CreateLambda([WeakController]()
+		{
+			TryRemotePassActivation(WeakController, 8);
+		}),
+			1.00f,
+		false);
+#else
+	UE_UNUSED(TeammatePlayerId);
+	UE_UNUSED(EnemyPlayerId);
+		UE_UNUSED(bPassPhase);
+#endif
+}
+
+void ABwayPlayerController::Server_SetTeamRemoteAim_Implementation(FRotator AimRotation, int32 TeammatePlayerId)
+{
+#if !UE_BUILD_SHIPPING
+	if (!HasAuthority() || AimRotation.ContainsNaN())
+	{
+		return;
+	}
+
+	AimRotation.Normalize();
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		for (TActorIterator<ABwayCharacterWithAbilities> It(GetWorld()); It; ++It)
+		{
+			ABwayCharacterWithAbilities* Candidate = *It;
+			if (Candidate && Candidate->GetPlayerState() && Candidate->GetPlayerState()->GetPlayerId() == TeammatePlayerId)
+			{
+				// The fixture positions the intended recipient on the client aim ray
+				// immediately before server-only activation. Reapply that authoritative
+				// placement here so adverse-latency movement correction cannot move the
+				// recipient out of the production pass cone.
+				const FVector AimDirection = AimRotation.Vector().GetSafeNormal2D();
+				if (!AimDirection.IsNearlyZero())
+				{
+					Candidate->SetActorLocation(ControlledPawn->GetActorLocation() + AimDirection * 400.0f, false, nullptr, ETeleportType::TeleportPhysics);
+					Candidate->SetActorRotation(AimRotation);
+				}
+				break;
+			}
+		}
+	}
+	SetControlRotation(AimRotation);
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		ControlledPawn->SetActorRotation(AimRotation);
+	}
+	UE_LOG(LogTemp, Display, TEXT("BwayTeamCombatRemote: ServerAim player=%d pitch=%.1f yaw=%.1f"),
+		GetPlayerState<APlayerState>() ? GetPlayerState<APlayerState>()->GetPlayerId() : INDEX_NONE,
+		AimRotation.Pitch, AimRotation.Yaw);
+#else
+	UE_UNUSED(AimRotation);
+	UE_UNUSED(TeammatePlayerId);
+#endif
 }

@@ -4,6 +4,7 @@
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "Engine/World.h"
 #include "GameFramework/GameModeBase.h"
+#include "Kismet/GameplayStatics.h"
 
 const AGameModeBase* UBwayHeroSelectionFlowLibrary::GetAuthGameMode(const UObject* WorldContextObject)
 {
@@ -27,7 +28,11 @@ bool UBwayHeroSelectionFlowLibrary::HasUrlOption(const UObject* WorldContextObje
 
 bool UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingGameMode(const AGameModeBase* GameMode)
 {
-	return HasUrlOptionForGameMode(GameMode, TEXT("HeroSelectStaging"));
+	// GameMode.OptionsString is the already-augmented URL for the current map.
+	// Do not consult editor AdditionalServerGameOptions here: those settings can
+	// describe the staging map that preceded a seamless match travel and would
+	// incorrectly suppress relic/goal spawning on the destination map.
+	return GameMode && UGameplayStatics::HasOption(GameMode->OptionsString, TEXT("HeroSelectStaging"));
 }
 
 bool UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(const UObject* WorldContextObject)

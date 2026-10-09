@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Engine/NetSerialization.h"
 #include "Relic/RelicSettings.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystem/LyraAbilitySet.h"
@@ -10,6 +11,7 @@
 
 class UAbilitySystemComponent;
 class UStaticMeshComponent;
+class USceneComponent;
 class USphereComponent;
 class URelicSettings;
 class URelicMovementReplicationComponent;
@@ -46,6 +48,7 @@ public:
     //~ AActor Interface
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
     virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
     UFUNCTION()
     virtual void OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -75,8 +78,11 @@ public:
     UFUNCTION()
     virtual void OnRep_CurrentCarrier();
     
-    UPROPERTY(BlueprintReadOnly, Replicated)
+    UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_LastPossessingTeam)
     int32 LastPossessingTeam = -1;
+
+    UFUNCTION()
+    void OnRep_LastPossessingTeam();
 
     UPROPERTY(BlueprintReadOnly, Replicated)
     bool bHasScoredThisRound = false;
@@ -123,10 +129,6 @@ public:
     UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
     void Server_PassRelic(const FVector& PassVelocity);
 
-    // Multicast RPC for cosmetic effects (e.g., throw/pass VFX/SFX)
-    UFUNCTION(NetMulticast, Unreliable)
-    void Multicast_PlayThrowPassFX();
-
     // Client RPC for immediate throw prediction
     UFUNCTION(Client, Unreliable)
     void ClientPredictThrow(const FVector& ThrowVelocity);
@@ -158,6 +160,10 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UStaticMeshComponent> RelicMesh; // Ensure this is the RootComponent for physics replication [1]
 
+    /** Stable local parent keeps cosmetic children out of the replicated mesh's attachment list. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    TObjectPtr<USceneComponent> VisualEffectsRoot;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
@@ -171,6 +177,9 @@ protected:
 
     /** Handle to the ability set granted to the carrier's PlayerState ASC */
     FLyraAbilitySet_GrantedHandles GrantedCarrierSetHandle; // Use the correct Lyra type
+
+    /** Native pass ability granted alongside the authored carrier set. */
+    FGameplayAbilitySpecHandle GrantedPassAbilityHandle;
 
     /** Preloaded pointer to the Relic Ability Set (Server-side) */
     UPROPERTY(Transient) // Transient as it's loaded at runtime from RelicSettings
@@ -225,4 +234,12 @@ protected:
     void DestroyTrailEffect();
     void UpdateTeamColorTinting();
     void PlayStateAudio(ERelicState State);
+
+    // Transient accepted events are not replayed by a state RepNotify or late join.
+    // Carry the resolved asset and event location so delivery does not depend on
+    // settings, carrier, or movement replication arriving in the same frame.
+    UFUNCTION(NetMulticast, Unreliable)
+    void Multicast_PlayStateAudio(ERelicState State, USoundBase* Sound, FVector_NetQuantize Location, uint32 EventId);
+
+    uint32 NextAudioEventId = 0;
 };

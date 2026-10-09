@@ -34,6 +34,7 @@ Breakaway is a Capture-the-Relic vertical slice on Lyra (the current source engi
 | Ordered implementation steps and PIE checklists | [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) |
 | How systems fit together | [Project architecture overview](./project_architecture_overview.md) |
 | C++ class tables, tags, Blueprint hooks | [BreakawayCore systems index](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md) |
+| New to the codebase | [BreakawayCore onboarding tutorial](../Plugins/GameFeatures/BreakawayCore/Docs/BreakawayCore_Onboarding.md) |
 | Hero display names vs plugin folders | [Hero codename map](./HERO_CODENAME_MAP.md) |
 | Ability numbers, cooldowns, buildables | [Breakaway hero stats sheet](./Breakaway_Hero_Stats_Sheet.md) |
 | Design intent (rules, fantasy) | [Breakaway Reborn design spec](./Breakaway_Reborn_Design_Spec.md) |

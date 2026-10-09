@@ -9,8 +9,8 @@
 class ARelicActor;
 
 /**
- * Sudden-death / timer-expiry rules based on relic world X position.
- * Origin (0,0,0) is midfield; Team 1 (index 0) defends -X, Team 2 (index 1) defends +X.
+ * Timer-expiry territory is measured along the horizontal axis from team 0's goal
+ * to team 1's goal, with midfield halfway between the goals.
  */
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayMidfieldRulesLibrary : public UBlueprintFunctionLibrary
@@ -18,7 +18,14 @@ class BREAKAWAYCORERUNTIME_API UBwayMidfieldRulesLibrary : public UBlueprintFunc
 	GENERATED_BODY()
 
 public:
-	/** Team index (0 = Team 1 / -X half, 1 = Team 2 / +X half), or -1 if neutral/unknown. */
+	/** Resolve a unique goal per team; reject missing, duplicate, or coincident goals. */
+	static bool TryGetMidfieldFrame(const UObject* WorldContextObject, FVector& OutCenter, FVector& OutTeamOneDirection);
+
+	/** Classify a world position using the active arena's goal geometry. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Midfield", meta = (WorldContext = "WorldContextObject"))
+	static int32 GetRelicHalfAtWorldLocation(const UObject* WorldContextObject, FVector RelicWorldLocation, float MidfieldTolerance = 1.0f);
+
+	/** Legacy canonical-coordinate helper: X is signed distance along the goal axis, not arena world X. */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Midfield")
 	static int32 GetRelicHalfFromLocation(FVector RelicWorldLocation, float MidfieldTolerance = 1.0f);
 

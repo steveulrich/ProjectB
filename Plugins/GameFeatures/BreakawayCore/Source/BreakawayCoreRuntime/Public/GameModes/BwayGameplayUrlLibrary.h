@@ -35,6 +35,9 @@ public:
 	/** Clear one-match flags from the base used by both relative server-travel parses. */
 	static void ResetMatchTravelOptions(FURL& Url);
 
+	/** Carry host-authored match rules across absolute staging-to-gameplay travel, without staging/input flags. */
+	static void AppendMatchRulesToTravelUrl(FString& TravelUrl, const FString& StagingOptions);
+
 	/** After InitGame, pull options from World URL / PIE context into GameMode::OptionsString. */
 	static void AugmentGameModeOptionsString(AGameModeBase* GameMode);
 

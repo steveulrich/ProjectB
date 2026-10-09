@@ -2,7 +2,7 @@
 
 Current priorities for the Capture-the-Relic vertical slice.
 
-**Last reviewed:** September 5, 2026
+**Last reviewed:** September 15, 2026
 **Scope:** [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)  
 **Step-by-step checklists:** [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)  
 **Doc hub:** [Planning docs](./README.md)
@@ -35,7 +35,7 @@ The C++ match loop, match HUD, four hero kits, and relic fumble-on-damage are in
 | Fumble-on-damage | C++ landed | `UBwayRelicManagerComponent` + `ARelicActor::ForceFumbleFromDamage`; PIE still required |
 | Hero-select staging E2E | Open | Map and routing exist; Step 22 checklist |
 | Dorado parity | Open | `L_BW_Dorado` exists; not gated against DevMap |
-| 200 ms relic latency test | C++ tuned | Snap threshold 600 cm; playtest `Net PktLag=200` remaining |
+| 200 ms relic latency test | Structured packaged remote-owner scope passed | Candidate `LAN-20260915-13` observed production damage, relic pass, opposing-goal overlap, exact team/player score deltas, RoundComplete, cleanup, and three client Results exits at `Net PktLag=200`; physical latency play remains open |
 
 ## Completed
 
@@ -105,7 +105,7 @@ Run if you need confidence that Steps 17–20.5 are actually green in PIE:
 ### 4. Slice polish (after Step 22)
 
 - `L_BW_Dorado` spawn, goal, and relic parity with DevMap
-- Relic latency playtest at 200 ms
+- Relic latency playtest at 200 ms (structured remote-owner score evidence passed; physical presentation check remains)
 - Ability cooldown presentation and remaining HUD art
 - Between-round planning UI (C++ delegate exists)
 - Assist tracking (TODO on `ABwayCharacterWithAbilities`)

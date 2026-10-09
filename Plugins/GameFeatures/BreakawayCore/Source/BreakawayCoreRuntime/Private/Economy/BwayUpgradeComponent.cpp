@@ -128,6 +128,12 @@ bool UBwayUpgradeComponent::TryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRa
 	if (!Owned) Owned = &OwnedUpgrades.AddDefaulted_GetRef();
 	Owned->Id = Id;
 	Owned->Rank = CurrentRank + 1;
+	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		// Read only the committed modifier: rank replacement briefly has both
+		// effects, and a rejected debit must not shorten an existing death timer.
+		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement()) Rounds->RefreshRespawnSchedule(Player);
+	}
 	Player->ForceNetUpdate();
 	OnRep_OwnedUpgrades();
 	return true;
@@ -143,6 +149,10 @@ void UBwayUpgradeComponent::ResetUpgrades()
 	}
 	EffectHandles.Reset();
 	OwnedUpgrades.Reset();
+	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement()) Rounds->RefreshRespawnSchedule(Cast<APlayerState>(GetOwner()));
+	}
 	GetOwner()->ForceNetUpdate();
 	OnRep_OwnedUpgrades();
 }

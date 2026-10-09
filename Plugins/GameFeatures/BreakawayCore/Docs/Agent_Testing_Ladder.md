@@ -11,7 +11,23 @@ Tier 4  CI                     scheduled   PR compile + nightly smoke + step tes
 
 Scripts live in `Scripts/Test/`. Config: `Scripts/Test/BwayTestConfig.psd1`.
 
-**Resume workflow (active vertical-slice implementation):** Read `AI_Planning/SLICE_STATUS.md`, verify current Git status/HEAD, then inspect evidence for one pending gate. `Package-Preflight.ps1` resolves paths and reports the worktree; `-RequireCandidate` additionally checks the staged executable. `New-AcceptanceSummary.ps1` screens each supplied startup log and requires an explicit candidate source revision. A passing summary is not multiplayer or match-completion evidence. See `Scripts/Test/README.md` for the command contract and output limits.
+**Resume workflow (active vertical-slice implementation):** Read `AI_Planning/SLICE_STATUS.md`, then run `Get-ResumeBrief.ps1` once with `-GateContractPath` and the selected `-ContractPhase` so candidate/process facts and the current gate decision arrive together. Inspect evidence for one pending gate. When source provenance is part of the decision, run `New-SourceSnapshot.ps1` once and consume its bounded counts/hashes; the complete patch and untracked manifest remain on disk. `Package-Preflight.ps1` resolves paths and reports the worktree; `-RequireCandidate` additionally checks the staged executable. `New-AcceptanceSummary.ps1` screens each supplied startup log and requires an explicit candidate source revision; use `-SummaryOnly` when per-log rows are not needed in context. A passing summary is not multiplayer or match-completion evidence. For a separate-process replication gate, use `Get-ReplicationGateBrief.ps1` once after readiness and fixture collection; it keeps detailed helper records and raw logs on disk and returns `unverified` for any missing child, marker, sample, or authority comparison. See `Scripts/Test/README.md` for the command contract and output limits.
+
+For adverse-latency checks, issue Unreal's exact `Net PktLag=100` console command after the host
+playing-phase checkpoint. The rejected space form (`Net PktLag 100`) is a command syntax error,
+not a network result, and must not trigger an unchanged relaunch.
+
+When a gate uses staging and destination readiness checkpoints, pass the staging result to the
+destination call with `Wait-SeparateProcessReady.ps1 -BaselineJson`. The helper carries forward
+per-file byte offsets, preventing stale markers in Unreal's reused child logs from becoming a
+false destination-ready result.
+
+For the first checkpoint, load the required staging map through the editor bridge, then run
+`Scripts/Test/New-LogOffsetBaseline.ps1` before `play_in_editor start`; pass its JSON to staging
+readiness. The baseline records offsets only. Use `-RequiredMarker` only for an independent child
+marker that exists before the authority command. For regenerating health, compare each child sample
+with its paired authority sample within a bounded tolerance and require exact team equality instead
+of asserting one fixed health value.
 
 ---
 
@@ -33,6 +49,22 @@ cd "E:\Unreal Projects\ProjectB\Scripts\Test"
 ```
 
 **Agent rule (updated September 5, 2026):** Agents may compile, fix compiler errors, and restart the project editor as part of authorized development. Run Tier 1 after C++ changes and inspect its exit code and logs. Fix relevant errors and rerun until the build succeeds or a concrete external blocker remains. A successful compile does not replace the relevant PIE or multiplayer checks.
+
+**Build scope (September 22, 2026):** Request only `LyraEditor` for editor/PIE work or `LyraGame`
+for packaged-game work through `Tier1-CompileGate.ps1 -Target <target>`. Build only the target
+needed for the current phase. Do not run Visual Studio Build/Rebuild Solution, whole-solution
+MSBuild, all-target builds, or standalone engine test/utility targets. UBT may build dependencies
+required by the selected project target. Continue the required ProjectB automation and multiplayer
+checks; editor-hosted tests do not require rebuilding standalone engine test programs.
+
+If reflected layouts or native defaults used by cooked assets change, `LyraEditor` is also
+required for the cook phase. Verify its affected runtime DLL advanced before cooking, and retain
+the separate `LyraGame` compile record for the staged executable. A stale cooker can emit assets
+that crash on load with the new game layout. Recook a fresh candidate after aligning both targets.
+
+Use `-OutputJson <path>` on `Tier1-CompileGate.ps1` when the result belongs to a gate. The
+record captures the source revision, runner, process ID, exit code, elapsed time, and log paths
+so later briefs do not need to reconstruct compile metadata from console output.
 
 Before building, inspect running editor/build processes. Preserve unsaved work, stop PIE, and close this project's editor gracefully when a full rebuild/restart is needed, especially for reflected header/class changes. Do not force-kill editors or discard unsaved changes. Wait for an existing build instead of starting duplicates. Use asynchronous process handles and report meaningful progress during long builds.
 

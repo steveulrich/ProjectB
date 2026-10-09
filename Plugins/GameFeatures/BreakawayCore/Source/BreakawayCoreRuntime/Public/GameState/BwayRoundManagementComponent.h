@@ -119,6 +119,9 @@ public:
 	/** Respawns a player after death timer. */
 	void RespawnPlayer(AController* Controller);
 
+	/** Recalculate a pending death after a committed shop transaction, preserving elapsed time. */
+	void RefreshRespawnSchedule(APlayerState* Player);
+
 	/** Check if match is over (a team reached the winning score). */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Scoring")
 	bool CheckMatchEnd() const;
@@ -187,8 +190,8 @@ public:
 	// Configuration
 	// ========================================
 
-	/** Points needed to win the match */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
+	/** Authority-resolved win threshold, including hosted rule overrides. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Breakaway|Config")
 	int32 PointsToWin = 3;
 
 	/** Authority-only runtime override from UBwayMatchFlowConfig / URL (11-1+). */
@@ -201,7 +204,7 @@ public:
 
 	/** Duration of each round in seconds (class default; runtime value replicated from authority match-flow resolve). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, ReplicatedUsing = OnRep_RoundDuration, Category = "Breakaway|Config")
-	float RoundDuration = 180.0f;
+	float RoundDuration = 240.0f;
 
 	/** Time to wait before starting a new round after one ends */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
@@ -213,6 +216,14 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
 	float GoldAwardForKill = 50.0f;
+
+	/** Provisional assist tuning; final-public-alpha reference values remain unverified. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy", meta = (ClampMin = "0"))
+	float GoldAwardForAssist = 25.0f;
+
+	/** Recent positive enemy health damage, once per contributor excluding the killer. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Combat", meta = (ClampMin = "0"))
+	float AssistCreditWindowSeconds = 10.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
 	float GoldAwardForGoalScored = 100.0f;
@@ -279,6 +290,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/** Called by ULyraGamePhaseSubsystem when the Playing phase becomes active. */
@@ -347,6 +359,7 @@ protected:
 	bool IsRoundLifecycleActive() const;
 
 	void ClearBetweenRoundTimer();
+	void ClearRespawnTimers();
 
 	bool IsCanonicalRoundManagementInstance() const;
 
@@ -456,8 +469,17 @@ protected:
 	/** Timer handles */
 	FTimerHandle PreRoundTimerHandle;
 
-	/** Per-player respawn timers */
-	TMap<TWeakObjectPtr<AController>, FTimerHandle> RespawnTimers;
+	friend class FBwayRespawnUpgradeTest;
+	struct FPendingRespawn
+	{
+		FTimerHandle Timer;
+		double StartTime = 0.0;
+		float BaseDelay = 0.0f;
+		float AppliedReduction = -1.0f;
+		int32 Round = 0;
+	};
+	/** Preserve the death's original delay and clock when buying or replacing a rank. */
+	TMap<TWeakObjectPtr<AController>, FPendingRespawn> RespawnTimers;
 
 	/** Non-owning: disconnects and bot replacement can destroy players before round cleanup. */
 	TMap<TWeakObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;

@@ -48,11 +48,8 @@ void UBwayRelicManagerComponent::BeginPlay()
 
 void UBwayRelicManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (UWorld* World = GetWorld())
-	{
-		UGameplayMessageSubsystem& MessageSubsystem = UGameplayMessageSubsystem::Get(World);
-		MessageSubsystem.UnregisterListener(DamageListenerHandle);
-	}
+	// Clients do not register the authoritative carrier-damage listener.
+	DamageListenerHandle.Unregister();
 
 	Super::EndPlay(EndPlayReason);
 }
@@ -227,14 +224,15 @@ void UBwayRelicManagerComponent::ResetRelic()
 		return;
 	}
 
-	ActiveRelic->BeginResettingState();
-	ActiveRelic->ClearScoringFlag();
-
 	if (CachedSpawnPointManager)
 	{
 		ABwaySpawnPoint* RelicSpawn = CachedSpawnPointManager->GetRandomSpawnPoint(RelicSpawnTag);
 		if (RelicSpawn)
 		{
+			// Resolve a destination before mutating the relic. A failed reset must
+			// not strand it in Resetting or announce a respawn that never happened.
+			ActiveRelic->BeginResettingState();
+			ActiveRelic->ClearScoringFlag();
 			ActiveRelic->SetActorLocation(RelicSpawn->GetActorLocation());
 			ActiveRelic->SetActorRotation(RelicSpawn->GetActorRotation());
 			ActiveRelic->OnDropped();

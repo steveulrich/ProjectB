@@ -87,7 +87,7 @@ int32 UBwayBuildableRegistryComponent::GetBuildableCountForPlayer(APlayerState* 
 	int32 Count = 0;
 	for (const TObjectPtr<ABuildableActor>& Buildable : RegisteredBuildables)
 	{
-		if (IsValid(Buildable) && Buildable->GetOwner() == PlayerState->GetOwner())
+        if (IsValid(Buildable) && Buildable->GetPlacingPlayerState() == PlayerState)
 		{
 			++Count;
 		}
@@ -97,7 +97,9 @@ int32 UBwayBuildableRegistryComponent::GetBuildableCountForPlayer(APlayerState* 
 
 void UBwayBuildableRegistryComponent::OnRep_RegisteredBuildables()
 {
-	PruneInvalidEntries();
+	// Actor references can arrive before their actor channels. Keep unresolved slots
+	// intact so replication can fix them up; getters already filter invalid entries.
+	// Only authority may prune the canonical array.
 }
 
 void UBwayBuildableRegistryComponent::PruneInvalidEntries()

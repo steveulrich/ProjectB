@@ -26,6 +26,7 @@ class ULyraGameplayAbility_Death : public ULyraGameplayAbility
 public:
 
 	ULyraGameplayAbility_Death(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual void OnPawnAvatarSet() override;
 
 protected:
 
@@ -45,4 +46,7 @@ protected:
 	// If enabled, the ability will automatically call StartDeath.  FinishDeath is always called when the ability ends if the death was started.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lyra|Death")
 	bool bAutoStartDeath;
+
+	// PlayerState-owned ASCs survive respawn. Delayed death work belongs to this avatar only.
+	TWeakObjectPtr<AActor> DyingAvatar;
 };
