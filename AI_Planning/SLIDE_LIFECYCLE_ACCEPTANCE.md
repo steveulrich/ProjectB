@@ -560,3 +560,32 @@ until a ground-versus-air policy is explicitly reviewed. See the immutable evide
 The editor closed normally with no dirty content or maps. The closed-editor PIE settings were
 restored and verified in `editor12-closed-ini-restored.json`. Candidate53 remains a frozen
 pre-repair package reference; no fresh package or final-alpha parity claim is made.
+
+### Diagnostic-only ground/air observer and proxy lifecycle fix
+
+Compile17 rebuilt the current source with no UBT failure signals, and `automation11-slide.json`
+passed all 20 focused Slide tests with zero test errors or warnings. The source change is limited to
+the development observer: it adds a replicated `GroundAirDiagnostic` mode and a separate
+`BwaySlideGroundAirDiagnostic` log namespace. The production support test, its 15 cm criterion,
+and its normal acceptance path are unchanged.
+
+The fixed observer was exercised by
+`bway.Test.SlideGroundAirDiagnosticPIE ground-air-diag-20261009-13` in four same-process listen
+PIE worlds. `cadence13.json` records 60 authority samples at 30 Hz with median and p95 game/world
+delta of `0.0333335` seconds and a passing wall-clock rate. The run used the fixture's 100 ms packet
+lag, completed all four cases, and wrote one terminal lifecycle record per case and peer. A proxy
+peer now initializes its diagnostic lifecycle at execute time and receives a bounded terminal
+`ObservationEnd` even when it cannot own the ability; this prevents missing proxy records without
+granting the proxy normal acceptance. The analyzer reports
+`diagnostic-nonacceptance-cleanup-proved` in `ground-air-diagnostic13-analysis.json` with 4,356
+events, 633 contact-near-ground classifications, 1,003 invalid-state classifications, and no
+bounded-air classification in this capture. Cleanup, restoration, and final barriers pass for all
+four peers. The only log errors are two known Pixel Streaming `GEngine is not valid` target-window
+warnings.
+
+This evidence confirms the observer and replication lifecycle are complete at the requested cadence;
+it does not establish a production ground/air policy, full route acceptance, packaged LAN transport,
+physical feel, or final-public-alpha parity. Keep the 15 cm support criterion and normal acceptance
+barrier unchanged until the case2 ramp transition is reviewed against the ground-versus-air policy.
+The editor exited normally, the closed-editor PIE settings were restored, and the generated
+ShooterCTF module metadata was returned to its tracked BuildId (`editor16-cleanup.json`).

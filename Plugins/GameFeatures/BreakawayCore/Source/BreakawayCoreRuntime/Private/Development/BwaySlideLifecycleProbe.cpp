@@ -31,7 +31,7 @@
 
 bool FBwaySlideLifecycleFrame::NetSerialize(FArchive& Ar, UPackageMap*, bool& bOutSuccess)
 {
-	Ar << Serial << Phase << Case << Peer << Source << Passed << Trajectory << SupportDiagnostic << Token << AuthoredMinSpeed << Position << Rotation << Direction << RestoreScale << RestoreVelocity << RestoreMode << RestoreCustom;
+	Ar << Serial << Phase << Case << Peer << Source << Passed << Trajectory << SupportDiagnostic << GroundAirDiagnostic << Token << AuthoredMinSpeed << Position << Rotation << Direction << RestoreScale << RestoreVelocity << RestoreMode << RestoreCustom;
 	bOutSuccess = !Ar.IsError();
 	return true;
 }
@@ -41,6 +41,9 @@ namespace BwaySlidePackaged
 {
 enum EPhase { Baseline = 1, Relocated, Armed, RunUp, Execute, ReleaseHeld, Settled, Stop, Restored, Complete };
 constexpr double SupportDiagnosticSeconds = 1.0;
+// This is an observation deadline only. It is intentionally not an acceptance
+// threshold and it does not widen the normal 15 cm trajectory support rule.
+constexpr double GroundAirDiagnosticSeconds = 4.0;
 const TCHAR* CaseName(int32 Case, bool bTrajectory = false)
 {
 	if (bTrajectory) return Case == 0 ? TEXT("FlatRelease") : Case == 1 ? TEXT("FlatJump") : Case == 2 ? TEXT("RampRouteRelease") : TEXT("RampRouteJump");
@@ -226,6 +229,12 @@ struct FBwaySlideLifecycleProbeState
 	double SupportRejectedAt = 0;
 	int32 GeometryMask = 0, TrajectorySamples = 0, OriginalCorrections = 0, EventSequence = 0, ApproachInputFrames = 0;
 	bool bTerminalIssued = false, bAirborne = false, bLanded = false, bMovementBound = false, bCorrectionsSaved = false;
+	FString GroundAirExpectedComponent;
+	double GroundAirStartedAt = 0, GroundAirLastGroundTimestamp = -1, GroundAirReturnAt = 0;
+	FVector GroundAirLastGroundPosition = FVector::ZeroVector;
+	double GroundAirGroundTravel = 0;
+	int32 GroundAirCoverageMask = 0, GroundAirGroundSamples = 0, GroundAirAirSamples = 0, GroundAirInvalidSamples = 0;
+	bool bGroundAirSawAir = false, bGroundAirSawReturn = false, bGroundAirGroundContiguous = false, bGroundAirObservationEnded = false;
 };
 #else
 struct FBwaySlideLifecycleProbeState {};
@@ -287,9 +296,10 @@ void ABwaySlideLifecycleProbe::EndPlay(const EEndPlayReason::Type Reason)
 }
 
 #if !UE_BUILD_SHIPPING && DO_ENABLE_NET_TEST
-bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, const FString& Token, bool bSupportDiagnostic)
+bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, const FString& Token, bool bSupportDiagnostic, bool bGroundAirDiagnostic)
 {
-	if (bSupportDiagnostic && (!bTrajectory || !World || World->WorldType != EWorldType::PIE)) return false;
+	if ((bSupportDiagnostic || bGroundAirDiagnostic) && (!bTrajectory || !World || World->WorldType != EWorldType::PIE)) return false;
+	if (bSupportDiagnostic && bGroundAirDiagnostic) return false;
 	if (!World || World->GetNetMode() != NM_ListenServer || !World->GetMapName().Contains(TEXT("L_BW_Dorado")) || !Playing(World)) return false;
 	for (TActorIterator<ABwaySlideLifecycleProbe> It(World); It; ++It) return true;
 	const auto* GS = World->GetGameState<ABwayGameState>();
@@ -314,7 +324,7 @@ bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, con
 	if (!Root) return false;
 	Root->Coordinator = Root; Root->State->bCoordinator = true;
 	Root->Frame.Trajectory = bTrajectory; Root->Frame.Token = Token;
-	Root->Frame.SupportDiagnostic = bSupportDiagnostic;
+	Root->Frame.SupportDiagnostic = bSupportDiagnostic; Root->Frame.GroundAirDiagnostic = bGroundAirDiagnostic;
 	Root->Frame.Source = Controllers[1]->PlayerState->GetPlayerId();
 	Root->Frame.AuthoredMinSpeed = FindPawn(World, Root->Frame.Source)->GetBwayCharacterMovement()->MinSlideSpeed;
 	Root->State->Relays.Add(Root);
@@ -329,12 +339,13 @@ bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, con
 	Root->Publish(Baseline);
 	UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: START player=%d peers=4 sourcePeer=1 timeoutSeconds=180 physicalInput=0 trajectoryParity=0"), Root->Frame.Source);
 	if (bSupportDiagnostic) UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: SupportDiagnosticScope token=%s acceptance=0 finalPassed=0 continuationSeconds=%.1f"), *Token, SupportDiagnosticSeconds);
+	if (bGroundAirDiagnostic) UE_LOG(LogTemp, Display, TEXT("BwaySlideGroundAirDiagnostic: Scope token=%s diagnosticOnly=1 acceptance=0 finalPassed=0 continuationSeconds=%.1f"), *Token, GroundAirDiagnosticSeconds);
 	return true;
 }
 
 void ABwaySlideLifecycleProbe::Publish(int32 Phase)
 {
-	Frame.Phase = Phase; ++Frame.Serial; Frame.Passed = !State->bFailed && !Frame.SupportDiagnostic;
+	Frame.Phase = Phase; ++Frame.Serial; Frame.Passed = !State->bFailed && !Frame.SupportDiagnostic && !Frame.GroundAirDiagnostic;
 	State->Acks.Init(false, 4); State->Published = FPlatformTime::Seconds();
 	for (int32 Index = 0; Index < State->Relays.Num(); ++Index)
 		if (auto* Relay = State->Relays[Index].Get()) { Relay->Frame = Frame; Relay->Frame.Peer = Index; Relay->ForceNetUpdate(); }
@@ -540,6 +551,10 @@ void ABwaySlideLifecycleProbe::Observe()
 				State->SlideSeconds = 0; State->FirstSlideTimestamp = -1; State->LastSlideTimestamp = -1;
 				State->LastMoveTimestamp = -1; State->GeometryMask = 0; State->TrajectorySamples = 0; State->ApproachInputFrames = 0;
 				State->bTerminalIssued = false; State->bAirborne = false; State->bLanded = false;
+				State->GroundAirExpectedComponent.Reset(); State->GroundAirStartedAt = 0; State->GroundAirLastGroundTimestamp = -1;
+				State->GroundAirReturnAt = 0; State->GroundAirLastGroundPosition = FVector::ZeroVector; State->GroundAirGroundTravel = 0;
+				State->GroundAirCoverageMask = 0; State->GroundAirGroundSamples = 0; State->GroundAirAirSamples = 0; State->GroundAirInvalidSamples = 0;
+				State->bGroundAirSawAir = false; State->bGroundAirSawReturn = false; State->bGroundAirGroundContiguous = false; State->bGroundAirObservationEnded = false;
 				TrajectoryRecord(TEXT("Tuning"), FString::Printf(TEXT("\"phase\":\"before\",\"tuning\":\"%s\",\"unchanged\":%d"), *SlideTuning(State->Pawn->GetBwayCharacterMovement()), State->AuthoredTuning == SlideTuning(State->Pawn->GetBwayCharacterMovement())));
 			}
 		}
@@ -583,7 +598,12 @@ void ABwaySlideLifecycleProbe::Observe()
 	if (!State->Pawn.IsValid() || !State->ASC.IsValid() || FindPawn(GetWorld(), Frame.Source) != State->Pawn.Get()) { Fail(TEXT("setup"), TEXT("source-avatar-changed")); return; }
 	if (Frame.Phase < Stop && !Playing(GetWorld())) { Fail(TEXT("setup"), TEXT("playing-phase-changed")); return; }
 	if (State->bFailed && Frame.Phase < Stop) return;
-	if (Frame.Trajectory && Frame.Phase >= Armed && Frame.Phase <= Settled) { ObserveTrajectory(); return; }
+	if (Frame.Trajectory && Frame.Phase >= Armed && Frame.Phase <= Settled)
+	{
+		if (Frame.GroundAirDiagnostic) ObserveGroundAirDiagnostic();
+		else ObserveTrajectory();
+		return;
+	}
 	auto* Move = State->Pawn->GetBwayCharacterMovement();
 	const bool bClean = !Move->IsSliding() && !Active(State->ASC.Get(), State->Slide) && !State->ASC->HasMatchingGameplayTag(State->SlidingTag);
 	const bool bExpectedDestination = Frame.Case == 3 ? (Move->IsFalling() || Move->MovementMode == MOVE_Walking) : Move->MovementMode == MOVE_Walking;
@@ -739,7 +759,21 @@ void ABwaySlideLifecycleProbe::Observe()
 void ABwaySlideLifecycleProbe::TrajectoryRecord(const TCHAR* Event, const FString& Fields) const
 {
 	if (!Frame.Trajectory || !State) return;
+	if (Frame.GroundAirDiagnostic)
+	{
+		GroundAirRecord(Event, Fields);
+		return;
+	}
 	UE_LOG(LogTemp, Display, TEXT("BwaySlideTrajectory: {\"schema\":1,\"token\":\"%s\",\"event\":\"%s\",\"serial\":%d,\"phaseId\":%d,\"seq\":%d,\"wallSeconds\":%.6f,\"case\":%d,\"caseName\":\"%s\",\"peer\":%d,\"player\":%d,\"role\":\"%s\",%s}"),
+		*Frame.Token.ReplaceCharWithEscapedChar(), Event, Frame.Serial, Frame.Phase, ++State->EventSequence, FPlatformTime::Seconds() - State->Started,
+		Frame.Case, CaseName(Frame.Case, true), Frame.Peer, Frame.Source,
+		HasAuthority() ? TEXT("authority") : State->bOwner ? TEXT("owner") : TEXT("proxy"), *Fields);
+}
+
+void ABwaySlideLifecycleProbe::GroundAirRecord(const TCHAR* Event, const FString& Fields) const
+{
+	if (!Frame.GroundAirDiagnostic || !State) return;
+	UE_LOG(LogTemp, Display, TEXT("BwaySlideGroundAirDiagnostic: {\"schema\":1,\"token\":\"%s\",\"event\":\"%s\",\"serial\":%d,\"phaseId\":%d,\"seq\":%d,\"wallSeconds\":%.6f,\"case\":%d,\"caseName\":\"%s\",\"peer\":%d,\"player\":%d,\"role\":\"%s\",\"diagnosticOnly\":1,\"acceptancePassed\":0,%s}"),
 		*Frame.Token.ReplaceCharWithEscapedChar(), Event, Frame.Serial, Frame.Phase, ++State->EventSequence, FPlatformTime::Seconds() - State->Started,
 		Frame.Case, CaseName(Frame.Case, true), Frame.Peer, Frame.Source,
 		HasAuthority() ? TEXT("authority") : State->bOwner ? TEXT("owner") : TEXT("proxy"), *Fields);
@@ -772,6 +806,23 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 	const bool bWithinRoute = Frame.Case < 2 ? Location.X >= -710.f && Location.X <= 710.f && FMath::Abs(Location.Y - 2000.f) <= 25.f
 		: Location.Y >= -3710.f && Location.Y <= -1490.f && FMath::Abs(Location.X) <= 25.f;
 	if (!bWithinRoute) { Fail(TEXT("setup"), TEXT("trajectory-left-verified-route-envelope")); return; }
+	const FString FloorComponent = GetPathNameSafe(Floor.HitResult.GetComponent());
+	if (Frame.GroundAirDiagnostic && State->GroundAirExpectedComponent.IsEmpty() && Floor.HitResult.GetComponent())
+		State->GroundAirExpectedComponent = FloorComponent;
+	const bool bGroundAirFloorValid = Floor.bBlockingHit && Floor.HitResult.IsValidBlockingHit() && Floor.HitResult.GetComponent()
+		&& FMath::IsFinite(Floor.GetDistanceToFloor());
+	const bool bGroundAirStateActive = Move->IsSliding() && Active(State->ASC.Get(), State->Slide)
+		&& State->ASC->GetTagCount(State->SlidingTag) > 0;
+	const bool bGroundAirComponentMatches = bGroundAirFloorValid && !State->GroundAirExpectedComponent.IsEmpty()
+		&& FloorComponent == State->GroundAirExpectedComponent;
+	const bool bGroundAirContactNearGround = bGroundAirFloorValid && !bPenetrating
+		&& Floor.GetDistanceToFloor() <= UCharacterMovementComponent::MAX_FLOOR_DIST;
+	const bool bGroundAirGroundCoverage = Frame.GroundAirDiagnostic && bGroundAirContactNearGround && bCustomSupport
+		&& bGroundAirComponentMatches && bWithinRoute && bGroundAirStateActive;
+	const bool bGroundAirBoundedAir = Frame.GroundAirDiagnostic && bGroundAirFloorValid && !bGroundAirContactNearGround
+		&& bGroundAirComponentMatches && !bPenetrating && bWithinRoute && bGroundAirStateActive;
+	const bool bGroundAirInvalid = Frame.GroundAirDiagnostic && (!bGroundAirFloorValid || !bGroundAirComponentMatches
+		|| bPenetrating || !bWithinRoute || !bGroundAirStateActive);
 	if (bAdvanced)
 	{
 		State->LastMoveTimestamp = Timestamp;
@@ -793,9 +844,9 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 				const bool bDistanceOnly = Frame.Case >= 2 && !bPenetrating && Floor.bBlockingHit && Floor.HitResult.IsValidBlockingHit()
 					&& Floor.HitResult.GetComponent() && Floor.HitResult.ImpactNormal.Z >= 0.80f
 					&& FMath::IsFinite(Floor.GetDistanceToFloor()) && Floor.GetDistanceToFloor() > 15.f;
-				if (!Frame.SupportDiagnostic || !bDistanceOnly)
+				if ((!Frame.SupportDiagnostic && !Frame.GroundAirDiagnostic) || !bDistanceOnly)
 				{ Fail(TEXT("gameplay"), TEXT("held-slide-lost-real-support")); return; }
-				if (State->SupportRejectedAt == 0)
+				if (Frame.SupportDiagnostic && State->SupportRejectedAt == 0)
 				{
 					State->SupportRejectedAt = Now;
 					UE_LOG(LogTemp, Error, TEXT("BwaySlidePackaged: FAIL peer=%d case=%d phase=%d player=%d category=diagnostic reason=held-slide-lost-real-support token=%s failureLatched=1 acceptance=0 continuationSeconds=%.1f wallSeconds=%.6f"),
@@ -813,6 +864,40 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 				if (FCString::Strcmp(Geometry, TEXT("middle")) == 0 && (State->GeometryMask & 1)) State->GeometryMask |= 2;
 				if (FCString::Strcmp(Geometry, TEXT("ramp2")) == 0 && (State->GeometryMask & 2)) State->GeometryMask |= 4;
 			}
+		}
+		if (Frame.GroundAirDiagnostic && Frame.Phase == Execute)
+		{
+			if (bGroundAirStateActive && State->GroundAirStartedAt == 0) State->GroundAirStartedAt = Now;
+			if (bGroundAirGroundCoverage)
+			{
+				if (State->bGroundAirGroundContiguous && State->GroundAirLastGroundTimestamp >= 0 && Timestamp > State->GroundAirLastGroundTimestamp)
+				{
+					++State->GroundAirGroundSamples;
+					State->GroundAirGroundTravel += FVector::Dist2D(Location, State->GroundAirLastGroundPosition);
+				}
+				else
+				{
+					State->GroundAirGroundSamples = 1;
+					State->GroundAirGroundTravel = 0;
+				}
+				State->bGroundAirGroundContiguous = true;
+				State->GroundAirLastGroundTimestamp = Timestamp;
+				State->GroundAirLastGroundPosition = Location;
+				if (FCString::Strcmp(Geometry, TEXT("ramp1")) == 0) State->GroundAirCoverageMask |= 1;
+				if (FCString::Strcmp(Geometry, TEXT("middle")) == 0 && (State->GroundAirCoverageMask & 1)) State->GroundAirCoverageMask |= 2;
+				if (FCString::Strcmp(Geometry, TEXT("ramp2")) == 0 && (State->GroundAirCoverageMask & 2)) State->GroundAirCoverageMask |= 4;
+			}
+			else
+			{
+				State->bGroundAirGroundContiguous = false;
+				State->GroundAirLastGroundTimestamp = -1;
+			}
+			if (bGroundAirBoundedAir) { State->bGroundAirSawAir = true; ++State->GroundAirAirSamples; }
+			if (bGroundAirGroundCoverage && State->bGroundAirSawAir && !State->bGroundAirSawReturn)
+			{
+				State->bGroundAirSawReturn = true; State->GroundAirReturnAt = Now;
+			}
+			if (bGroundAirInvalid) ++State->GroundAirInvalidSamples;
 		}
 	}
 	FString ContactDiagnostic;
@@ -840,13 +925,23 @@ void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector 
 			*JsonVector(Center), bMatchesCapsule, *ContactCapsuleQueryJson(Capsule, Query, Responses), *ContactFloorJson(Center, Capsule, Floor), *ContactBoundsJson(Move),
 			bSweepPerformed, bSweepBlocking, *(bOldStateFinite ? JsonVector(OldPosition) : TEXT("null")), *JsonVector(Center), *ContactHitJson(IndependentHit));
 	}
-	TrajectoryRecord(TEXT("Sample"), FString::Printf(TEXT("\"ts\":%.6f,\"dt\":%.7f,\"replay\":%d,\"timestampValid\":%d,\"sampleIndex\":%d,\"moveTimestampAdvanced\":%d,\"slideSeconds\":%.6f,\"position\":%s,\"velocity\":%s,\"floorNormal\":%s,\"floorComponent\":\"%s\",\"geometryPhase\":\"%s\",\"mode\":%d,\"custom\":%d,\"sliding\":%d,\"active\":%d,\"tagCount\":%d,\"slideJump\":%d,\"supported\":%d,\"walkable\":%d,\"floorBlocking\":%d,\"floorDistance\":%.6f,\"customSupport\":%d,\"penetrating\":%d,\"capsuleOverlap\":%d,\"frameId\":%llu,\"frameDt\":%.7f%s"),
+	FString GroundAirFields;
+	if (Frame.GroundAirDiagnostic)
+	{
+		const TCHAR* Classification = bGroundAirInvalid ? TEXT("invalidState") : bGroundAirContactNearGround ? TEXT("contactNearGround") : TEXT("boundedSeparatedTraversal");
+		GroundAirFields = FString::Printf(TEXT(",\"groundAirClass\":\"%s\",\"contactNearGround\":%d,\"boundedSeparatedTraversal\":%d,\"invalidState\":%d,\"expectedComponent\":\"%s\",\"componentMatches\":%d,\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d"),
+			Classification, bGroundAirGroundCoverage, bGroundAirBoundedAir, bGroundAirInvalid,
+			*State->GroundAirExpectedComponent.ReplaceCharWithEscapedChar(), bGroundAirComponentMatches,
+			State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel,
+			State->GroundAirAirSamples, State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn);
+	}
+	TrajectoryRecord(TEXT("Sample"), FString::Printf(TEXT("\"ts\":%.6f,\"dt\":%.7f,\"replay\":%d,\"timestampValid\":%d,\"sampleIndex\":%d,\"moveTimestampAdvanced\":%d,\"slideSeconds\":%.6f,\"position\":%s,\"velocity\":%s,\"floorNormal\":%s,\"floorComponent\":\"%s\",\"geometryPhase\":\"%s\",\"mode\":%d,\"custom\":%d,\"sliding\":%d,\"active\":%d,\"tagCount\":%d,\"slideJump\":%d,\"supported\":%d,\"walkable\":%d,\"floorBlocking\":%d,\"floorDistance\":%.6f,\"customSupport\":%d,\"penetrating\":%d,\"capsuleOverlap\":%d,\"frameId\":%llu,\"frameDt\":%.7f%s%s"),
 		Timestamp, DeltaSeconds, bReplay, Timestamp > 0.f && !bReplay, State->TrajectorySamples, bAdvanced, State->SlideSeconds,
 		*JsonVector(Pawn->GetActorLocation()), *JsonVector(Move->Velocity), *JsonVector(Floor.HitResult.ImpactNormal),
-		*GetPathNameSafe(Floor.HitResult.GetComponent()).ReplaceCharWithEscapedChar(), Geometry, int32(Move->MovementMode), Move->CustomMovementMode, Move->IsSliding(),
+		*FloorComponent.ReplaceCharWithEscapedChar(), Geometry, int32(Move->MovementMode), Move->CustomMovementMode, Move->IsSliding(),
 		Active(State->ASC.Get(), State->Slide), State->ASC->GetTagCount(State->SlidingTag), Move->IsSlideJumping(), Floor.IsWalkableFloor(), Floor.IsWalkableFloor(),
 		Floor.bBlockingHit, Floor.GetDistanceToFloor(), bCustomSupport, bPenetrating, bCapsuleOverlap,
-		GFrameCounter, GetWorld()->GetDeltaSeconds(), *ContactDiagnostic));
+		GFrameCounter, GetWorld()->GetDeltaSeconds(), *ContactDiagnostic, *GroundAirFields));
 }
 
 bool ABwaySlideLifecycleProbe::ValidateTrajectoryGeometry(FVector& OutStart, FVector& OutDirection) const
@@ -1041,6 +1136,19 @@ void ABwaySlideLifecycleProbe::ObserveTrajectory()
 	}
 	else if (Frame.Phase == ReleaseHeld)
 	{
+		// A relay can enter terminal release before its local observation clock
+		// reaches the nominal window.  Close that peer's diagnostic interval at
+		// the terminal boundary so the four-peer record remains complete without
+		// turning the bounded observation into an acceptance requirement.
+		if (Frame.GroundAirDiagnostic && !State->bGroundAirObservationEnded)
+		{
+			State->bGroundAirObservationEnded = true;
+			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d,\"terminalBoundary\":1"),
+				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples,
+				State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn,
+				Frame.Case >= 2 && State->GroundAirCoverageMask != 7));
+			if (bExecutor && State->Entries > 0) Report(true, TEXT("ground-air-observation-terminal-boundary"));
+		}
 		if (State->bOwner && !State->bTerminalIssued)
 		{
 			State->bTerminalIssued = true;
@@ -1109,6 +1217,138 @@ void ABwaySlideLifecycleProbe::ObserveTrajectory()
 		else State->StableSince = 0;
 	}
 	if (Now - State->PhaseStarted > 12.0 && !State->bAckSent) Fail(TEXT("gameplay"), TEXT("trajectory-phase-timeout"));
+}
+
+void ABwaySlideLifecycleProbe::ObserveGroundAirDiagnostic()
+{
+	const double Now = FPlatformTime::Seconds();
+	auto* Pawn = State->Pawn.Get(); auto* Move = Pawn->GetBwayCharacterMovement();
+	if (SlideTuning(Move) != State->AuthoredTuning || !State->Driver.IsValid() || State->Driver->PacketSimulationSettings.PktLag != 100)
+	{ Fail(TEXT("setup"), TEXT("authored-tuning-or-packet-settings-changed")); return; }
+	const bool bExecutor = HasAuthority() || State->bOwner;
+	const bool bJump = (Frame.Case % 2) == 1;
+	const bool bClean = !Move->IsSliding() && !Active(State->ASC.Get(), State->Slide) && !State->ASC->HasMatchingGameplayTag(State->SlidingTag);
+
+	if (Frame.Phase == Armed)
+	{
+		if (State->bAckSent) return;
+		FVector Start, Direction;
+		if (!ValidateTrajectoryGeometry(Start, Direction)) { Fail(TEXT("setup"), TEXT("peer-route-collision-mismatch")); return; }
+		if (State->GroundAirExpectedComponent.IsEmpty() && Move->CurrentFloor.HitResult.GetComponent())
+			State->GroundAirExpectedComponent = GetPathNameSafe(Move->CurrentFloor.HitResult.GetComponent());
+		TrajectoryRecord(TEXT("ObserverArmed"), FString::Printf(TEXT("\"expectedComponent\":\"%s\",\"observationSeconds\":%.1f,\"acceptancePolicyChanged\":0"),
+			*State->GroundAirExpectedComponent.ReplaceCharWithEscapedChar(), GroundAirDiagnosticSeconds));
+		Report(true, TEXT("ground-air-observer-armed"));
+	}
+	else if (Frame.Phase == RunUp && State->bOwner)
+	{
+		if (!Move->IsMovingOnGround()) { Fail(TEXT("setup"), TEXT("ground-air-run-up-left-ground")); return; }
+		Pawn->AddMovementInput(Frame.Direction, 1.f);
+		++State->ApproachInputFrames;
+		if (Move->Velocity.Size2D() >= 300.f) Report(true, TEXT("ground-air-owner-speed-ready"));
+	}
+	else if (Frame.Phase == Execute)
+	{
+		// Every relay owns its own observation clock.  Authority and owner peers
+		// drive the fixture state machine, while proxies still emit a complete
+		// diagnostic record for the same bounded window.
+		if (State->GroundAirStartedAt == 0) State->GroundAirStartedAt = Now;
+		if (State->bOwner && !State->bExecuted)
+		{
+			State->bExecuted = true; State->bSlidePressed = true; Input(false, true);
+			TrajectoryRecord(TEXT("Execute"), FString::Printf(TEXT("\"inputPath\":\"AbilityInputTagPressed\",\"groundAirDeadlineSeconds\":%.1f"), GroundAirDiagnosticSeconds));
+			if (!Move->IsSliding() || !Active(State->ASC.Get(), State->Slide)) { Fail(TEXT("gameplay"), TEXT("ground-air-slide-did-not-activate")); return; }
+			return;
+		}
+		bool bExecutorObservationComplete = false;
+		if (bExecutor && State->Entries > 0)
+		{
+			if (!Move->IsSliding() || !Active(State->ASC.Get(), State->Slide) || !State->ASC->HasMatchingGameplayTag(State->SlidingTag))
+			{ Fail(TEXT("diagnostic"), TEXT("ground-air-slide-ended-before-observation")); return; }
+			const double HeldDistance = FVector::Dist2D(Pawn->GetActorLocation(), State->TrajectoryEntryPosition);
+			bExecutorObservationComplete = Frame.Case < 2 && State->SlideSeconds >= 0.5 && HeldDistance >= 20.0;
+		}
+		const bool bProxyObservationComplete = !bExecutor && State->TrajectorySamples > 0 && Now - State->GroundAirStartedAt >= (Frame.Case < 2 ? 0.5 : GroundAirDiagnosticSeconds);
+		const bool bRampObservationComplete = Frame.Case >= 2 && State->TrajectorySamples > 0
+			&& (State->GroundAirCoverageMask == 7 || Now - State->GroundAirStartedAt >= GroundAirDiagnosticSeconds);
+		if (!State->bGroundAirObservationEnded && (bExecutorObservationComplete || bProxyObservationComplete || bRampObservationComplete))
+		{
+			State->bGroundAirObservationEnded = true;
+			TrajectoryRecord(TEXT("ObservationEnd"), FString::Printf(TEXT("\"groundCoverageMask\":%d,\"groundSamples\":%d,\"groundTangentTravel\":%.6f,\"airSamples\":%d,\"invalidSamples\":%d,\"sawAir\":%d,\"sawReturn\":%d,\"deadlineReached\":%d"),
+				State->GroundAirCoverageMask, State->GroundAirGroundSamples, State->GroundAirGroundTravel, State->GroundAirAirSamples,
+				State->GroundAirInvalidSamples, State->bGroundAirSawAir, State->bGroundAirSawReturn,
+				Frame.Case >= 2 && State->GroundAirCoverageMask != 7));
+			if (bExecutor && State->Entries > 0) Report(true, TEXT("ground-air-observation-complete"));
+		}
+	}
+	else if (Frame.Phase == ReleaseHeld)
+	{
+		if (State->bOwner && !State->bTerminalIssued)
+		{
+			State->bTerminalIssued = true;
+			if (bJump) { State->bJumpPressed = true; Input(true, true); }
+			else { Input(false, false); State->bSlidePressed = false; }
+			TrajectoryRecord(TEXT("Terminal"), FString::Printf(TEXT("\"action\":\"%s\",\"position\":%s,\"geometryPhase\":\"%s\",\"groundCoverageMask\":%d"),
+				bJump ? TEXT("jump") : TEXT("release"), *JsonVector(Pawn->GetActorLocation()), GeometryPhase(Frame.Case, Move->CurrentFloor), State->GroundAirCoverageMask));
+			return;
+		}
+		if (bExecutor && bJump && !State->bAirborne && Move->IsFalling())
+		{
+			State->bAirborne = true;
+			TrajectoryRecord(TEXT("Airborne"), FString::Printf(TEXT("\"slideJump\":%d,\"clean\":%d,\"position\":%s,\"velocity\":%s"),
+				Move->IsSlideJumping(), bClean, *JsonVector(Pawn->GetActorLocation()), *JsonVector(Move->Velocity)));
+			if (!Move->IsSlideJumping() || !bClean) { Fail(TEXT("gameplay"), TEXT("ground-air-jump-destination-or-cleanup")); return; }
+			if (State->bOwner)
+			{
+				if (State->bJumpPressed) { Input(true, false); State->bJumpPressed = false; }
+				if (State->bSlidePressed) { Input(false, false); State->bSlidePressed = false; }
+			}
+		}
+		if (bExecutor && bJump && State->bAirborne && !State->bLanded && Move->MovementMode == MOVE_Walking)
+		{
+			State->bLanded = true;
+			const bool bOverlap = CapsulePenetrating(Pawn);
+			const bool bPenetrating = Move->CurrentFloor.HitResult.bStartPenetrating || bOverlap;
+			TrajectoryRecord(TEXT("Landed"), FString::Printf(TEXT("\"clean\":%d,\"supported\":%d,\"walkable\":%d,\"floorBlocking\":%d,\"floorDistance\":%.6f,\"floorNormal\":%s,\"mode\":%d,\"custom\":%d,\"penetrating\":%d,\"capsuleOverlap\":%d,\"position\":%s"),
+				bClean, Move->CurrentFloor.IsWalkableFloor(), Move->CurrentFloor.IsWalkableFloor(), Move->CurrentFloor.bBlockingHit,
+				Move->CurrentFloor.GetDistanceToFloor(), *JsonVector(Move->CurrentFloor.HitResult.ImpactNormal), int32(Move->MovementMode), Move->CustomMovementMode,
+				bPenetrating, bOverlap, *JsonVector(Pawn->GetActorLocation())));
+			if (!bClean || !Move->CurrentFloor.IsWalkableFloor() || bPenetrating) { Fail(TEXT("gameplay"), TEXT("ground-air-invalid-landing")); return; }
+		}
+		const bool bDone = bExecutor && bClean && Move->MovementMode == MOVE_Walking && Move->Velocity.Size() <= 10.f
+			&& Move->CurrentFloor.IsWalkableFloor() && !Move->CurrentFloor.HitResult.bStartPenetrating && !CapsulePenetrating(Pawn)
+			&& (!bJump || State->bAirborne && State->bLanded) && State->Activations == 1 && State->Ends == 1 && State->Entries == 1;
+		if (bDone)
+		{
+			if (State->StableSince == 0) State->StableSince = Now;
+			if (Now - State->StableSince >= 0.5) Report(true, TEXT("ground-air-terminal-and-landing-clean"));
+		}
+		else State->StableSince = 0;
+	}
+	else if (Frame.Phase == Settled)
+	{
+		const auto& Floor = Move->CurrentFloor;
+		const bool bOverlap = CapsulePenetrating(Pawn);
+		const bool bPenetrating = Floor.HitResult.bStartPenetrating || bOverlap;
+		const bool bConverged = bClean && Move->MovementMode == MOVE_Walking && Floor.IsWalkableFloor() && !bPenetrating
+			&& Move->Velocity.Size() <= 10.f && FVector::Dist(Pawn->GetActorLocation(), Frame.Position) <= 10.f;
+		if (bConverged)
+		{
+			if (State->StableSince == 0) State->StableSince = Now;
+			if (!State->bAckSent && Now - State->StableSince >= 0.5)
+			{
+				TrajectoryRecord(TEXT("Settled"), FString::Printf(TEXT("\"position\":%s,\"targetPosition\":%s,\"velocity\":%s,\"clean\":1,\"mode\":%d,\"custom\":%d,\"supported\":%d,\"walkable\":%d,\"floorBlocking\":%d,\"floorDistance\":%.6f,\"floorNormal\":%s,\"penetrating\":%d,\"capsuleOverlap\":%d,\"activations\":%d,\"ends\":%d,\"entries\":%d"),
+					*JsonVector(Pawn->GetActorLocation()), *JsonVector(Frame.Position), *JsonVector(Move->Velocity), int32(Move->MovementMode), Move->CustomMovementMode,
+					Floor.IsWalkableFloor(), Floor.IsWalkableFloor(), Floor.bBlockingHit, Floor.GetDistanceToFloor(), *JsonVector(Floor.HitResult.ImpactNormal),
+					bPenetrating, bOverlap, State->Activations, State->Ends, State->Entries));
+				TrajectoryRecord(TEXT("Tuning"), FString::Printf(TEXT("\"phase\":\"after\",\"tuning\":\"%s\",\"unchanged\":1"), *SlideTuning(Move)));
+				++State->CompletedCases;
+				Report(true, TEXT("ground-air-settled-clean"));
+			}
+		}
+		else State->StableSince = 0;
+	}
+	if (Now - State->PhaseStarted > 16.0 && !State->bAckSent) Fail(TEXT("diagnostic"), TEXT("ground-air-phase-timeout"));
 }
 
 void ABwaySlideLifecycleProbe::AuthorityTick()
@@ -1313,7 +1553,7 @@ namespace BwaySlidePackaged
 {
 bool bStarting = false;
 bool bClientStarting = false;
-void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagnostic = false)
+void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagnostic = false, bool bGroundAirDiagnostic = false)
 {
 	bool bValid = Args.Num() == 1 && !Args[0].IsEmpty() && Args[0].Len() <= 48;
 	if (bValid) for (const TCHAR C : Args[0]) if (!((C >= 'a' && C <= 'z') || (C >= '0' && C <= '9') || C == '-')) bValid = false;
@@ -1335,7 +1575,7 @@ void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagno
 	// pending startup callback may survive PIE stop and mutate a later play session.
 	if (bPIE)
 	{
-		if (!ABwaySlideLifecycleProbe::StartInWorld(StartingWorld, true, Token, bSupportDiagnostic))
+		if (!ABwaySlideLifecycleProbe::StartInWorld(StartingWorld, true, Token, bSupportDiagnostic, bGroundAirDiagnostic))
 			UE_LOG(LogTemp, Error, TEXT("BwaySlidePackaged: FAIL category=setup reason=trajectory-pie-gameplay-not-ready token=%s"), *Token);
 		return;
 	}
@@ -1384,6 +1624,9 @@ FAutoConsoleCommand TrajectoryPIECommand(TEXT("bway.Test.SlideTrajectoryPIE"),
 FAutoConsoleCommand SupportDiagnosticPIECommand(TEXT("bway.Test.SlideSupportDiagnosticPIE"),
 	TEXT("Development PIE only: observe at most one second after a rejected ramp support gap; always fails acceptance and restores through fixture cleanup. Requires ready Dorado and a fresh token."),
 	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, true, true); }));
+FAutoConsoleCommand GroundAirDiagnosticPIECommand(TEXT("bway.Test.SlideGroundAirDiagnosticPIE"),
+	TEXT("Development PIE only: observe contact-near-ground and bounded separated slide traversal; always fails acceptance and restores through fixture cleanup. Requires ready Dorado and a fresh token."),
+	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, true, false, true); }));
 FAutoConsoleCommand HostCommand(TEXT("bway.Test.SlideLifecycleHost"),
 	TEXT("Development four-process slide lifecycle probe. Waits for four joined humans, locks via production selection manager, then observes Dorado Playing. Synthetic setup only."),
 	FConsoleCommandDelegate::CreateLambda([]
@@ -1447,6 +1690,6 @@ FAutoConsoleCommand ClientCommand(TEXT("bway.Test.SlideLifecycleClient"),
 	}));
 }
 #else
-bool ABwaySlideLifecycleProbe::StartInWorld(UWorld*, bool, const FString&, bool) { return false; }
+bool ABwaySlideLifecycleProbe::StartInWorld(UWorld*, bool, const FString&, bool, bool) { return false; }
 void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float, FVector, FVector) {}
 #endif

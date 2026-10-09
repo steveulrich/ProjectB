@@ -19,6 +19,8 @@ struct FBwaySlideLifecycleFrame
 	UPROPERTY() bool Passed = true;
 	UPROPERTY() bool Trajectory = false;
 	UPROPERTY() bool SupportDiagnostic = false;
+	/** Ground/air observation is deliberately diagnostic-only and can never pass the trajectory gate. */
+	UPROPERTY() bool GroundAirDiagnostic = false;
 	UPROPERTY() FString Token;
 	UPROPERTY() float AuthoredMinSpeed = 0.f;
 	UPROPERTY() FVector Position = FVector::ZeroVector;
@@ -49,7 +51,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void EndPlay(const EEndPlayReason::Type Reason) override;
-	static bool StartInWorld(UWorld* World, bool bTrajectory = false, const FString& Token = FString(), bool bSupportDiagnostic = false);
+	static bool StartInWorld(UWorld* World, bool bTrajectory = false, const FString& Token = FString(), bool bSupportDiagnostic = false, bool bGroundAirDiagnostic = false);
 
 private:
 	UPROPERTY(Replicated) FBwaySlideLifecycleFrame Frame;
@@ -72,7 +74,9 @@ private:
 	void DestroyRelays();
 	UFUNCTION() void OnTrajectoryMovement(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
 	void TrajectoryRecord(const TCHAR* Event, const FString& Fields) const;
+	void GroundAirRecord(const TCHAR* Event, const FString& Fields) const;
 	void ObserveTrajectory();
+	void ObserveGroundAirDiagnostic();
 	bool PrepareTrajectoryCase();
 	bool ValidateTrajectoryGeometry(FVector& OutStart, FVector& OutDirection) const;
 };
