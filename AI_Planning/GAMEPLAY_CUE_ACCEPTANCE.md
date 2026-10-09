@@ -63,7 +63,9 @@ Evidence is in `Saved/Logs/buildable-authority-20260927/`.
 - `cue-alona-graph03.json` proves the Alona ability Blueprint inherits the native primary and
   contains only unconnected events. The base/native primary did not dispatch its fire cue.
 - `cue-alona-properties03.json` records the existing Alona placeholder audio, camera shake and
-  haptics. Its burst has no Blueprint execution graph. These effects are preserved.
+  haptics. Its EventGraph is empty, but the live October 9 inspection found an `OnBurst`
+  function with shooter audio and weapon-dependent calls. An empty EventGraph does not prove
+  that a cue has no executable Blueprint functions. These effects are preserved.
 
 `BwayGameplayCueTags` now registers the three existing semantic tags and the dedicated
 `GameplayCue.Breakaway.Weapon.AlonaPrimary.Fire` tag from the primary game module. The three
