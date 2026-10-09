@@ -121,10 +121,12 @@ function Get-SourceSnapshotFreshness {
             $diffExit = $LASTEXITCODE
             $statusLines = @(& git -C $root status --porcelain=v1 --untracked-files=all 2>$null)
             $statusExit = $LASTEXITCODE
-            $statusLines | Set-Content -LiteralPath $statusPath -Encoding UTF8
+            $statusText = if ($statusLines.Count -gt 0) { $statusLines -join [Environment]::NewLine } else { '' }
+            [System.IO.File]::WriteAllText($statusPath, $statusText, [System.Text.UTF8Encoding]::new($true))
             $untrackedLines = @(& git -C $root ls-files --others --exclude-standard 2>$null)
             $untrackedExit = $LASTEXITCODE
-            $untrackedLines | Set-Content -LiteralPath $untrackedPath -Encoding UTF8
+            $untrackedText = if ($untrackedLines.Count -gt 0) { $untrackedLines -join [Environment]::NewLine } else { '' }
+            [System.IO.File]::WriteAllText($untrackedPath, $untrackedText, [System.Text.UTF8Encoding]::new($true))
             $currentHead = (& git -C $root rev-parse HEAD 2>$null).Trim()
             $headExit = $LASTEXITCODE
         } finally {

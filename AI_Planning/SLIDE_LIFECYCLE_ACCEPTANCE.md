@@ -526,3 +526,37 @@ Gate totals are 14 editor builds, eight automation runs, ten editor lifecycles, 
 and no new package. `ground-air-next-gate-proposal02.json` contains proposed ground/air coverage
 criteria only; none have been adopted as acceptance. Final two-ramp, packaged, physical, and
 reference-parity proofs remain open.
+
+### Measured support diagnostic09
+
+Current-source compile15b passed after the development cheat manager's local `Heroes` arrays were
+renamed to avoid a global-name collision. The focused `Breakaway.CombatPolish.Slide` suite passed
+20/20 with zero test errors or warnings. The first compile15 attempt remains preserved as an
+unrelated C4459 failure in `compile-editor15.json`; it did not change gameplay behavior.
+
+The structured editor launch used `-Unattended`, four listen-server PIE worlds, Rawlins on player
+257, and `t.MaxFPS 30` after Dorado readiness. `cadence12b.json` records 60 samples per peer with
+median `dt=0.0333335` and p95 `dt` no higher than `0.0337106`. The authority dispatched
+`bway.Test.SlideSupportDiagnosticPIE support-diag-20261009-09` with the fixture's 100 ms packet lag.
+
+Diagnostic09 reached case2 and rejected the unchanged support assertion at `ts=151.3423`. The
+selected floor was blocking and valid, but its distance was `18.275570` cm and the ramp normal
+was `Z=0.90631`. The gap peaked at `38.746784` cm and recovered after `0.267014` movement
+seconds. The owner and authority stayed in custom slide with the slide ability and tag active.
+They remained synchronized without a measured post-rejection correction, penetration, or capsule
+overlap. The four peer frame-rate bands, cleanup acknowledgments, transform restoration, and final
+barrier passed. The analyzer therefore reports `diagnostic-nonacceptance-cleanup-proved` with
+`acceptancePassed=false`.
+
+This run rules out the earlier correction, saved-move, and GAS teardown hypothesis for the measured
+interval. It records a geometry or bounded-air classification issue at the ramp-to-flat transition.
+The production movement component already applies gravity and steering without ground forces when
+the selected floor is outside `MAX_FLOOR_DIST`, so no production movement change is justified by
+this capture alone. Keep the 15 cm support criterion and the nonaccepting diagnostic unchanged
+until a ground-versus-air policy is explicitly reviewed. See the immutable evidence in
+`Saved/Logs/slide-physics-shake-20261009/` and the current gate contract at
+`Saved/Logs/slide-physics-shake-20261009/gate-contract.json`.
+
+The editor closed normally with no dirty content or maps. The closed-editor PIE settings were
+restored and verified in `editor12-closed-ini-restored.json`. Candidate53 remains a frozen
+pre-repair package reference; no fresh package or final-alpha parity claim is made.

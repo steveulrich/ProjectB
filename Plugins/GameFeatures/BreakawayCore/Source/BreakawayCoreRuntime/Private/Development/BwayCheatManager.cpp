@@ -266,16 +266,16 @@ void UBwayCheatManager::ListHeroes()
 		return;
 	}
 
-	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> Heroes = Registry->GetAllHeroSoftObjects();
+	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> HeroAssets = Registry->GetAllHeroSoftObjects();
 	
-	if (Heroes.Num() == 0)
+	if (HeroAssets.Num() == 0)
 	{
 		CheatOutputText(TEXT("No heroes found. Create BwayHeroDataAsset assets in your content."));
 		return;
 	}
 
 	int32 Index = 1;
-	for (const TSoftObjectPtr<UBwayHeroDataAsset>& SoftHero : Heroes)
+	for (const TSoftObjectPtr<UBwayHeroDataAsset>& SoftHero : HeroAssets)
 	{
 		// Try to load the hero to get its display name
 		if (UBwayHeroDataAsset* Hero = Registry->LoadHeroSync(SoftHero))
@@ -344,9 +344,9 @@ UBwayHeroDataAsset* UBwayCheatManager::FindHeroByName(const FString& HeroName) c
 	}
 
 	FString SearchName = HeroName.ToLower();
-	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> Heroes = Registry->GetAllHeroSoftObjects();
+	TArray<TSoftObjectPtr<UBwayHeroDataAsset>> HeroAssets = Registry->GetAllHeroSoftObjects();
 	
-	for (const TSoftObjectPtr<UBwayHeroDataAsset>& SoftHero : Heroes)
+	for (const TSoftObjectPtr<UBwayHeroDataAsset>& SoftHero : HeroAssets)
 	{
 		if (UBwayHeroDataAsset* Hero = Registry->LoadHeroSync(SoftHero))
 		{

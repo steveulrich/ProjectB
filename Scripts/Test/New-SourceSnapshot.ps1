@@ -51,11 +51,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Cannot capture the tracked source patch.' }
 
 $statusLines = @(& git -C $root status --porcelain=v1 --untracked-files=all)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot capture the source status.' }
-$statusLines | Set-Content -LiteralPath $paths.status -Encoding UTF8
+$statusText = if ($statusLines.Count -gt 0) { $statusLines -join [Environment]::NewLine } else { '' }
+[System.IO.File]::WriteAllText($paths.status, $statusText, [System.Text.UTF8Encoding]::new($true))
 
 $untrackedLines = @(& git -C $root ls-files --others --exclude-standard)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot capture the untracked-file manifest.' }
-$untrackedLines | Set-Content -LiteralPath $paths.untracked -Encoding UTF8
+$untrackedText = if ($untrackedLines.Count -gt 0) { $untrackedLines -join [Environment]::NewLine } else { '' }
+[System.IO.File]::WriteAllText($paths.untracked, $untrackedText, [System.Text.UTF8Encoding]::new($true))
 
 $trackedChanged = @(& git -C $root diff HEAD --name-only -- .)
 if ($LASTEXITCODE -ne 0) { throw 'Cannot count tracked source changes.' }
