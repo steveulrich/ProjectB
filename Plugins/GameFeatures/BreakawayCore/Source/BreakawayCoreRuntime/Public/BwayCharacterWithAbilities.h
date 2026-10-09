@@ -9,6 +9,8 @@
 #include "BwayCharacterWithAbilities.generated.h"
 
 class UCameraShakeBase;
+class UAnimInstance;
+class UAnimMontage;
 class APlayerCameraManager;
 class APlayerController;
 class UBwayRelicRequestIndicatorComponent;
@@ -44,6 +46,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void InitializeHeroData(const UBwayHeroDataAsset* HeroData);
+
+	/** Cosmetic one-shot playback for an already delivered cue; the caller supplies its replaceable montage asset. */
+	UFUNCTION(BlueprintCallable, Category = "Combat|Presentation")
+	bool PlayPrimaryActionMontage(UAnimMontage* Montage, float PlayRate = 1.0f);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Data")
 	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsset;
@@ -116,6 +122,17 @@ protected:
 	virtual void OnAbilitySystemUninitialized() override;
 
 private:
+	void StopPrimaryActionMontage(bool bImmediately, const TCHAR* Reason);
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAnimInstance> PrimaryActionAnimInstance;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAnimMontage> PrimaryActionMontage;
+
+	int32 PrimaryActionMontageInstanceId = INDEX_NONE;
+	bool bStartingPrimaryActionMontage = false;
+
 	void UpdateSlideCameraShake();
 	void StopSlideCameraShake(bool bImmediately);
 

@@ -10,6 +10,7 @@
 #include "BwayCharacterMovementComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "Relic/BwayRelicRequestIndicatorComponent.h"
@@ -26,6 +27,7 @@
 #include "HeroSystems/BwayHeroStatsLibrary.h"
 #include "Movement/BwayMovementFeelConfig.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "Player/LyraPlayerState.h"
 #include "Teams/LyraTeamDisplayAsset.h"
 #include "Teams/LyraTeamSubsystem.h"
@@ -77,6 +79,7 @@ void ABwayCharacterWithAbilities::OnAbilitySystemInitialized()
 
 void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 {
+	StopPrimaryActionMontage(true, TEXT("ability-system-uninitialized"));
 	UnbindCombatHealth();
 	CombatContributors.Reset();
 	LastDamagePlayerState.Reset();
@@ -123,6 +126,7 @@ void ABwayCharacterWithAbilities::GetLifetimeReplicatedProps(TArray<FLifetimePro
 
 void ABwayCharacterWithAbilities::OnDeathStarted(AActor* OwningActor)
 {
+	StopPrimaryActionMontage(true, TEXT("death"));
 	StopSlideCameraShake(true);
 	Super::OnDeathStarted(OwningActor);
 	ClearRelicRequestForCurrentPawn();
@@ -155,9 +159,118 @@ void ABwayCharacterWithAbilities::UnbindCombatHealth()
 
 void ABwayCharacterWithAbilities::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	StopPrimaryActionMontage(true, TEXT("end-play"));
 	StopSlideCameraShake(true);
 	UnbindCombatHealth();
 	Super::EndPlay(EndPlayReason);
+}
+
+bool ABwayCharacterWithAbilities::PlayPrimaryActionMontage(UAnimMontage* Montage, float PlayRate)
+{
+	const auto Reject = [this, Montage](const TCHAR* Reason)
+	{
+#if !UE_BUILD_SHIPPING
+		const APlayerState* State = GetPlayerState();
+		UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Rejected player=%d net=%d montage=%s reason=%s"),
+			State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *GetNameSafe(Montage), Reason);
+#else
+		UE_UNUSED(Reason);
+#endif
+		return false;
+	};
+	if (bStartingPrimaryActionMontage) return Reject(TEXT("reentrant-playback"));
+	TGuardValue<bool> StartingGuard(bStartingPrimaryActionMontage, true);
+
+	const auto IsLiveAvatar = [this]()
+	{
+		const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(this);
+		const ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
+		return IsValid(this) && GetWorld() && GetWorld()->IsGameWorld() && GetNetMode() != NM_DedicatedServer
+			&& Health && !Health->IsDeadOrDying() && FMath::IsFinite(Health->GetHealth()) && Health->GetHealth() > 0.0f
+			&& ASC && ASC->GetAvatarActor() == this;
+	};
+	if (!IsLiveAvatar()) return Reject(TEXT("invalid-or-dead-avatar"));
+	if (!IsValid(Montage) || !FMath::IsFinite(PlayRate) || PlayRate <= 0.0f
+		|| !FMath::IsFinite(Montage->RateScale) || Montage->RateScale <= 0.0f
+		|| !FMath::IsFinite(Montage->GetPlayLength()) || Montage->GetPlayLength() <= 0.0f
+		|| Montage->SlotAnimTracks.IsEmpty() || !Montage->bEnableAutoBlendOut)
+	{
+		return Reject(TEXT("invalid-montage-or-rate"));
+	}
+	if (Montage->HasRootMotion() || Montage->bEnableRootMotionTranslation || Montage->bEnableRootMotionRotation)
+	{
+		return Reject(TEXT("root-motion-not-cosmetic"));
+	}
+	USkeletalMeshComponent* ActionMesh = GetMesh();
+	UAnimInstance* Anim = ActionMesh ? ActionMesh->GetAnimInstance() : nullptr;
+	if (!IsValid(Anim) || ActionMesh->IsSimulatingPhysics()) return Reject(TEXT("animation-unavailable"));
+
+	const FName Group = Montage->GetGroupName();
+	const auto HasForeignMontageInGroup = [this, Group](const UAnimInstance* CandidateAnim)
+	{
+		for (const FAnimMontageInstance* Instance : CandidateAnim->MontageInstances)
+		{
+			if (!Instance || !Instance->IsActive() || !Instance->Montage || Instance->Montage->GetGroupName() != Group) continue;
+			const bool bOwnedInstance = CandidateAnim == PrimaryActionAnimInstance.Get()
+				&& Instance->Montage == PrimaryActionMontage.Get() && Instance->GetInstanceID() == PrimaryActionMontageInstanceId;
+			if (!bOwnedInstance) return true;
+		}
+		return false;
+	};
+	if (HasForeignMontageInGroup(Anim)) return Reject(TEXT("montage-group-in-use"));
+
+	const TWeakObjectPtr<UAnimInstance> WeakAnim(Anim);
+	StopPrimaryActionMontage(false, TEXT("replaced"));
+	// Stopping a montage can invoke arbitrary blend-out callbacks, including avatar teardown.
+	if (!IsLiveAvatar() || !WeakAnim.IsValid() || !GetMesh() || GetMesh()->GetAnimInstance() != WeakAnim.Get())
+	{
+		return Reject(TEXT("avatar-changed-during-stop"));
+	}
+	Anim = WeakAnim.Get();
+	if (HasForeignMontageInGroup(Anim)) return Reject(TEXT("montage-group-changed-during-stop"));
+	const float Duration = Anim->Montage_Play(Montage, PlayRate, EMontagePlayReturnType::Duration, 0.0f, false);
+	if (Duration <= 0.0f || !WeakAnim.IsValid()) return Reject(TEXT("montage-play-failed"));
+	FAnimMontageInstance* Instance = WeakAnim->GetActiveInstanceForMontage(Montage);
+	if (!Instance) return Reject(TEXT("montage-ended-during-start"));
+	PrimaryActionAnimInstance = WeakAnim;
+	PrimaryActionMontage = Montage;
+	PrimaryActionMontageInstanceId = Instance->GetInstanceID();
+	if (!IsLiveAvatar() || !GetMesh() || GetMesh()->GetAnimInstance() != WeakAnim.Get())
+	{
+		StopPrimaryActionMontage(true, TEXT("avatar-changed-during-start"));
+		return Reject(TEXT("avatar-changed-during-start"));
+	}
+#if !UE_BUILD_SHIPPING
+	const APlayerState* State = GetPlayerState();
+	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Played player=%d net=%d local=%d montage=%s group=%s instance=%d rate=%.3f duration=%.3f"),
+		State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), IsLocallyControlled(),
+		*Montage->GetPathName(), *Group.ToString(), PrimaryActionMontageInstanceId, PlayRate, Duration);
+#endif
+	return true;
+}
+
+void ABwayCharacterWithAbilities::StopPrimaryActionMontage(bool bImmediately, const TCHAR* Reason)
+{
+	TGuardValue<bool> StartingGuard(bStartingPrimaryActionMontage, true);
+	UAnimInstance* Anim = PrimaryActionAnimInstance.Get();
+	UAnimMontage* Montage = PrimaryActionMontage.Get();
+	const int32 InstanceId = PrimaryActionMontageInstanceId;
+	PrimaryActionAnimInstance.Reset();
+	PrimaryActionMontage.Reset();
+	PrimaryActionMontageInstanceId = INDEX_NONE;
+	FAnimMontageInstance* Instance = Anim ? Anim->GetMontageInstanceForID(InstanceId) : nullptr;
+	if (!Instance || !Montage || Instance->Montage != Montage) return;
+#if !UE_BUILD_SHIPPING
+	const APlayerState* State = GetPlayerState();
+	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Stopped player=%d net=%d montage=%s instance=%d immediate=%d reason=%s"),
+		State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *Montage->GetPathName(), InstanceId, bImmediately, Reason);
+#else
+	UE_UNUSED(Reason);
+#endif
+	FAlphaBlend BlendOut = Montage->BlendOut;
+	if (bImmediately) BlendOut.SetBlendTime(0.0f);
+	// Address the owned instance ID, so a newer use of the same montage is never stopped.
+	Instance->Stop(BlendOut);
 }
 
 void ABwayCharacterWithAbilities::HandleCombatHealthChanged(AActor* DamageInstigator, AActor* Causer,

@@ -44,7 +44,7 @@ The editor process exited, destroying its callbacks. No asset edits occurred. Th
 PIE settings match their original values, and the temporary ShooterCTF module manifest was
 restored byte for byte. See `editor01-failure-cleanup.json`.
 
-## Queued native diagnostic compile
+## Queued native diagnostic and missing action
 
 `bway.Test.PrimaryAnimation <PlayerId>` queues one owning-client primary activation on the
 normal game tick. It waits up to five seconds for Playing, a live owned pawn, matching ASC
@@ -53,8 +53,64 @@ pending request. The helper is excluded from Shipping builds and leaves gameplay
 
 `compile-editor01.json` records a successful `LyraEditor` build in 17.95 seconds, with exit
 code 0 and no failure signals. The runtime DLL timestamp advanced to October 9, 2026,
-20:53:36 UTC. Runtime dispatch and owner/remote animation observation remain pending.
+20:53:36 UTC. `baseline03.json` then recorded three accepted attacks and three projectiles
+on every peer. All 122 samples per peer had no firing tag, hip-fire weight, or montage.
 
-Gate overhead so far: one compile, one editor lifecycle, two incomplete observer attempts,
-and no packages. The next attempt must use native queued dispatch and retain read-only
-Python observation; it must not repeat direct Python client ability activation.
+## Replaceable action implementation
+
+The existing Alona fire cue now derives from `BwayGameplayCueNotify_PrimaryAction`. Its
+`PrimaryActionMontage` and `PrimaryActionPlayRate` defaults provide the replacement interface.
+The existing cue tag, spawn conditions, placement, effects, and 26-node `OnBurst` graph remain.
+The native primary ability, damage, projectile, and prediction transport are unchanged.
+
+`AM_BW_Alona_Primary_Placeholder` uses the existing nonadditive `MM_Pistol_Melee` sequence,
+without notifies or root motion. It plays at rate 2 through the evaluated `UpperBody` slot
+and existing upper/lower-body mask. Replacement art must retain the compatible skeleton,
+evaluated slot, finite playback, no root motion, and no gameplay notifies.
+
+The pawn owns cosmetic playback independently of the ability's immediate end. It replaces
+only its own montage instance, preserves unrelated montage groups, rejects dead avatars,
+and stops that exact instance on death, ASC teardown, and EndPlay.
+
+`compile-editor04.json` passed with empty failure signals in 7.86 seconds. The two intervening
+builds found local-name shadowing and an unexported engine function; both were corrected.
+The cue Blueprint validates with zero errors or warnings.
+
+## Evaluated pose and lifecycle evidence
+
+`normal02-verification.json` proves three attacks across four peers: 12 plays, no duplicates,
+and no rejected actions. Each peer has 123 samples, its feminine linked layer remains present,
+and the upper-body slot reaches weight 1 then returns to 0. Active hand excursions measure
+81.4–83.6 cm against 12.0–16.7 cm idle variation; actor displacement remains zero.
+
+The first `fixed-*-01` observer used `set_editor_property` to force bone refresh. That editor
+notification re-registered the mesh and removed its dynamic linked animation layer, invalidating
+pose acceptance. The corrected observer assigns the Blueprint-writable runtime property directly
+and restores it the same way. Preserve the failed measurement; do not repair production animation
+in response to that fixture side effect.
+
+The corrected death run proves two pawn lifetimes per peer, immediate primary-action cleanup,
+and renewed action playback after respawn. Death and hit-react montages are separate from the
+primary montage and must not be counted as leaked primary playback.
+
+`rapid-death02-verification.json` retains an unresolved rapid-delivery result: peer 2 missed the
+middle action in a three-attack burst. The inherited editor Average profile enables 30–60 ms
+incoming/outgoing latency and 1% packet loss. Packet loss is a possible cause, not a confirmed
+diagnosis. The controlled no-loss repeat below separates this result from the current acceptance evidence.
+
+`controlled04-verification.json` passes the explicit-network and moving checks in four-world,
+same-process listen-server PIE. The moving attack fires at 600 cm/s with zero configured lag
+or loss. All four peers retain their linked animation layers and show primary playback,
+movement, and lower-body foot motion together. Input stops and every peer later returns to
+zero velocity and inactive primary playback.
+
+The rapid repeat uses an observed 100 ms lag and zero packet loss on all four drivers.
+Three accepted attacks produce 12 plays and eight replacements, with three starts per peer.
+Both controlled runs restore all four tick settings and remove their callbacks, with no
+bounded errors or rejected actions. `editor04-cleanup.json` records editor exit and restored
+PIE, network, and module-manifest settings.
+
+`compile-editor05.json` and `compile-game01.json` both pass with exit code 0 and empty failure
+signals. Packaged transport, physical input, and final appearance remain open. The bridge
+screenshot captured the editor viewport rather than a gameplay window and supplies no
+action-appearance proof. The next acceptance step is a fresh package containing this change.
