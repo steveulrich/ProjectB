@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_MeleePrimary.h"
 
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameplayTags.h"
 #include "Engine/World.h"
@@ -38,7 +39,21 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 	StoredSpecHandle = Handle;
 
 	ABwayCharacterWithAbilities* Character = GetBwayCharacterFromActorInfo();
-	if (!Character || !HasAuthority(&ActivationInfo))
+	if (!Character)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
+	// Present the swing even when it misses. GAS predicts this for the owner
+	// and suppresses that owner's authoritative multicast duplicate.
+	FGameplayCueParameters Parameters;
+	Parameters.Instigator = Character;
+	Parameters.EffectCauser = Character;
+	Parameters.Location = Character->GetActorLocation();
+	K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::ArgusPrimaryAttack, Parameters);
+
+	if (!HasAuthority(&ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;

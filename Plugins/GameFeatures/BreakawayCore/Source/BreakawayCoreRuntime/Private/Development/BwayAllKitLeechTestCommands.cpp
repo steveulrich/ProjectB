@@ -45,6 +45,7 @@ struct FRestore
 };
 struct FProbe
 {
+	bool bRemoteArgus = false;
 	bool bClient = false, bConnected = false, bSelected = false, bSetup = false, bPurchased = false;
 	bool bBaseline = false, bActivated = false, bAfter = false, bPlanned = false;
 	int32 Index = 0, Source = INDEX_NONE, Victim = INDEX_NONE, ExpectedHits = 0, DamageEvents = 0, HealEvents = 0;
@@ -199,6 +200,15 @@ bool Tick(const TSharedPtr<FProbe>& Probe)
 		TArray<ABwayPlayerState*> Players;
 		for (APlayerState* State : GS->PlayerArray) { ABwayPlayerState* Player = Cast<ABwayPlayerState>(State); if (!Player || Player->IsABot()) return Finish(Probe, TEXT("invalid-selection-roster")); Players.Add(Player); }
 		Players.Sort([](const ABwayPlayerState& A, const ABwayPlayerState& B) { return A.GetPlayerId() < B.GetPlayerId(); });
+		if (Probe->bRemoteArgus)
+		{
+			if (World->GetNetMode() != NM_ListenServer || !PC->IsLocalController() || !Players.Contains(Local)) return Finish(Probe, TEXT("remote-argus-requires-local-listen-host"));
+			const int32 RemoteIndex = Players.IndexOfByPredicate([Local](const ABwayPlayerState* Player) { return Player != Local; });
+			if (RemoteIndex == INDEX_NONE) return Finish(Probe, TEXT("remote-argus-player-missing"));
+			if (Players[0] == Local) Players.Swap(0, RemoteIndex);
+			UE_LOG(LogTemp, Display, TEXT("BwayAllKitLeech: RoleOrder variant=remote-argus host=%d argus=%d argusRemote=1 order=%d,%d,%d,%d"),
+				Local->GetPlayerId(), Players[0]->GetPlayerId(), Players[0]->GetPlayerId(), Players[1]->GetPlayerId(), Players[2]->GetPlayerId(), Players[3]->GetPlayerId());
+		}
 		Probe->bSelected = true;
 		for (int32 Index = 0; Index < 4; ++Index)
 		{
@@ -330,14 +340,15 @@ bool Tick(const TSharedPtr<FProbe>& Probe)
 	if (!Probe->bClient && Probe->bPlanned && Now - Probe->StageStarted > 20) return Finish(Probe, TEXT("primary-damage-timeout"));
 	return true;
 }
-void Start(bool bClient)
+void Start(bool bClient, bool bRemoteArgus = false)
 {
 	if (Active) return;
-	Active = MakeShared<FProbe>(); Active->bClient = bClient;
+	Active = MakeShared<FProbe>(); Active->bClient = bClient; Active->bRemoteArgus = bRemoteArgus;
 	const TSharedPtr<FProbe> Probe = Active;
 	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Probe](float) { return Tick(Probe); }), 0.1f);
 }
 FAutoConsoleCommand Host(TEXT("bway.Test.AllKitLeechHost"), TEXT("Development mixed-roster primary activation and life-leech fixture; launch in hero-selection staging."), FConsoleCommandDelegate::CreateLambda([] { Start(false); }));
+FAutoConsoleCommand HostRemoteArgus(TEXT("bway.Test.AllKitLeechHostRemoteArgus"), TEXT("Development mixed-roster life-leech fixture with a remote Argus owner; launch listen host in hero-selection staging."), FConsoleCommandDelegate::CreateLambda([] { Start(false, true); }));
 FAutoConsoleCommand Client(TEXT("bway.Test.AllKitLeechClient"), TEXT("Development owning-client primary activation and all-peer life-leech observer."), FConsoleCommandDelegate::CreateLambda([] { Start(true); }));
 }
 #endif

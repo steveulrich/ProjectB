@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayAbility_KorrynPrimary.h"
 
 #include "Abilities/BwayGameplayEffect_KorrynEffects.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "BwayGameplayTags.h"
 #include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
@@ -46,8 +47,28 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 		return;
 	}
 
+	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * SpawnForwardOffset;
+	FRotator SpawnRotation = CachedCharacter->GetActorRotation();
+	if (const AController* Controller = CachedCharacter->GetController())
+	{
+		FVector ViewLoc;
+		FRotator ViewRot;
+		Controller->GetPlayerViewPoint(ViewLoc, ViewRot);
+		SpawnRotation = ViewRot;
+		SpawnLocation = CachedCharacter->GetActorLocation() + ViewRot.Vector() * SpawnForwardOffset;
+	}
+
+	auto PlayFireCue = [this, &SpawnLocation]()
+	{
+		FGameplayCueParameters Parameters;
+		Parameters.Instigator = CachedCharacter;
+		Parameters.EffectCauser = CachedCharacter;
+		Parameters.Location = SpawnLocation;
+		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::KorrynPrimaryFire, Parameters);
+	};
 	if (!HasAuthority(&ActivationInfo))
 	{
+		PlayFireCue();
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
@@ -73,17 +94,6 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 		PresentationSoft = Config->PrimaryProjectilePresentation;
 	}
 
-	FVector SpawnLocation = CachedCharacter->GetActorLocation() + CachedCharacter->GetActorForwardVector() * SpawnForwardOffset;
-	FRotator SpawnRotation = CachedCharacter->GetActorRotation();
-	if (const AController* Controller = CachedCharacter->GetController())
-	{
-		FVector ViewLoc;
-		FRotator ViewRot;
-		Controller->GetPlayerViewPoint(ViewLoc, ViewRot);
-		SpawnRotation = ViewRot;
-		SpawnLocation = CachedCharacter->GetActorLocation() + ViewRot.Vector() * SpawnForwardOffset;
-	}
-
 	const FTransform SpawnTransform(SpawnRotation, SpawnLocation);
 	ABwayKorrynPrimaryProjectile* Projectile = World->SpawnActorDeferred<ABwayKorrynPrimaryProjectile>(
 		ProjectileClass,
@@ -105,6 +115,10 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 	}
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, LocalSpeed, LocalLife, ArmorShredEffectClass);
 	Projectile->FinishSpawning(SpawnTransform);
+
+	// GAS plays this immediately for the predicting owner and suppresses that
+	// owner's multicast duplicate. Authority publishes only after a real launch.
+	PlayFireCue();
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

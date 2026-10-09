@@ -98,6 +98,44 @@ On the hero data asset, enable what you need:
 
 Run **Data Validation** on the asset / folder before check-in.
 
+## Primary action animation replacement
+
+Alona, Korryn, and Argus expose primary-action animation through a Gameplay Cue Blueprint
+derived from `BwayGameplayCueNotify_PrimaryAction`. Open the cue's class defaults and change
+`PrimaryActionMontage` to a compatible final montage. `PrimaryActionPlayRate` controls the
+playback multiplier; it combines with the montage's RateScale. These properties change
+presentation, not attack cadence, hit detection, damage, or the ability's lifetime.
+
+| Hero | Cue under `/BreakawayCore/GameplayCues/` | Current montage under `/BreakawayCore/Animations/` |
+| --- | --- | --- |
+| Alona | `GCN_BW_Weapon_AlonaPrimary_Fire` | `AM_BW_Alona_Primary_Placeholder` |
+| Korryn | `GCN_BW_Weapon_KorrynPrimary_Fire` | `AM_BW_Korryn_Primary_Placeholder` |
+| Argus | `GCN_BW_Weapon_ArgusPrimary_Attack` | `AM_BW_Argus_Primary_Placeholder` |
+
+Keep the cue's registered tag and native parent. Preserve any existing Blueprint burst
+effects or audio when replacing only the montage. Rawlins's primary presentation is a
+separate pending audit and is not covered by this interface table.
+
+For a compatible montage replacement:
+
+1. Retarget the sequence to a skeleton compatible with the hero's current mesh and AnimBP.
+   The current placeholders use the shared mannequin `MM_Pistol_Melee` sequence.
+2. Preserve the evaluated `UpperBody` slot and its group, so locomotion can continue underneath.
+   Use a nonadditive sequence unless the evaluated animation graph is deliberately changed
+   and revalidated for an additive replacement.
+3. Keep positive finite duration and playback rates, automatic blend-out, finite section
+   links, and no root motion. The cosmetic playback helper rejects root-motion montages.
+4. Keep gameplay damage, costs, and authoritative events in the ability implementation.
+   The placeholder montage needs no gameplay notifies or weapon socket to perform its action.
+   Optional final VFX attachments must use sockets documented on the hero data asset.
+5. Verify normal and rapid attacks, attacks while moving, death during playback, and an attack
+   after respawn on the owner and observing peers. The pawn owns replacement and cleanup of
+   the exact primary montage instance; do not add competing playback calls to the ability.
+
+Same-slot foreign montages can reject a primary action while their group is occupied. Check
+the intended action priority when adding other animation systems. Replaceable assets do not
+make arbitrary skeletons, slot graphs, root-motion policies, or gameplay notifies compatible.
+
 ## Multiplayer validation
 
 After any mesh swap:

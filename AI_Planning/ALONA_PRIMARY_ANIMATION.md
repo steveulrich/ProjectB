@@ -114,3 +114,35 @@ PIE, network, and module-manifest settings.
 signals. Packaged transport, physical input, and final appearance remain open. The bridge
 screenshot captured the editor viewport rather than a gameplay window and supplies no
 action-appearance proof. The next acceptance step is a fresh package containing this change.
+
+## Packaged primary delivery
+
+Candidate `LAN-20261009-03` contains commit `0592b324`. `compile-game02.json` refreshes the
+passing LyraGame record at that commit. Cook/Stage/Pak completed successfully, and
+`artifact-verification03-tracked-output.json` verifies all 131 staged hashes and compiled inputs.
+AutomationTool rewrote the generated chunk-layer text after CreatePaks; its complete contents
+match the frozen commit after line-ending normalization. The original failed timestamp check
+remains in `artifact-verification03.json`; 16 corruption controls verify the narrow exception.
+The temporary ShooterCTF module manifest was restored byte for byte after packaging.
+
+`package03-delivery-verification.json` passes the rendered, same-PC four-process delivery scope.
+The existing all-kit leech fixture selected remote Alona player 258 and activated the real primary.
+Each process recorded exactly one matching placeholder montage with positive duration through
+the existing fire cue. The authority recorded successful damage, restored four players and both
+bases, and removed its listeners. All client fixtures passed and exited with code 0 before owned
+host teardown. All four logs contain zero runtime error or critical lines. The runner requested
+200 ms packet lag; this record does not substitute for the earlier native driver readbacks.
+
+The verifier rejects 21 corrupted evidence variants, including missing or duplicate playback,
+wrong assets or players, command-line spoofing, missing cleanup, and failed client exits. The
+runner result is `packaged-LAN-20261009-03-alona-primary01-result.json` in this gate's evidence
+directory. Gate totals are seven build attempts, one package, four editor lifecycles, and twelve
+runtime attempts. The seventh build refreshed admission after the source commit; no gameplay
+source changed for this packaged check.
+
+The fixture freezes and repositions players, so it proves cooked cue-to-montage delivery only.
+Packaged evaluated movement, finite montage completion, death cleanup, physical input, final
+appearance, and second-PC LAN remain separate proof gaps. The subsequent Korryn source,
+evaluated PIE lifecycle, and candidate04 delivery evidence is recorded in
+[Korryn primary animation acceptance](./KORRYN_PRIMARY_ANIMATION.md). Continue the all-kit
+action audit with Argus's remote-owner primary presentation baseline.
