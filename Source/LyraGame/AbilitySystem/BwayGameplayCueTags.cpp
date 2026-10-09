@@ -9,4 +9,5 @@ namespace BwayGameplayCueTags
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(ArgusPrimaryAttack, "GameplayCue.Breakaway.Weapon.ArgusPrimary.Attack", "Argus primary melee swing feedback, including missed attacks.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(AlonaPrimaryFire, "GameplayCue.Breakaway.Weapon.AlonaPrimary.Fire", "Alona primary attack launch feedback.");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(KorrynPrimaryFire, "GameplayCue.Breakaway.Weapon.KorrynPrimary.Fire", "Korryn primary attack launch feedback.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(RawlinsPrimaryFire, "GameplayCue.Breakaway.Weapon.RawlinsPrimary.Fire", "Rawlins primary per-shot firing feedback.");
 }

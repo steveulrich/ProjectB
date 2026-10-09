@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_RawlinsPrimary.h"
 
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "BwayGameplayTags.h"
 #include "Combat/BwayProjectilePresentationData.h"
 #include "Engine/World.h"
@@ -47,6 +48,11 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 
 	if (!HasAuthority(&ActivationInfo))
 	{
+		FGameplayCueParameters Parameters;
+		Parameters.Instigator = CachedCharacter;
+		Parameters.EffectCauser = CachedCharacter;
+		Parameters.Location = CachedCharacter->GetActorLocation();
+		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsPrimaryFire, Parameters);
 		// The server ends both instances after the last shot. Replicating an immediate
 		// client end here would cancel its burst timer before the second shot.
 		return;
@@ -167,6 +173,14 @@ void UBwayGameplayAbility_RawlinsPrimary::SpawnShot()
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, ActiveProjectileSpeed, ActiveProjectileLifeSpan);
 	Projectile->FinishSpawning(SpawnTransform);
 	++ShotsFired;
+
+	FGameplayCueParameters Parameters;
+	Parameters.Instigator = CachedCharacter;
+	Parameters.EffectCauser = CachedCharacter;
+	Parameters.Location = SpawnLocation;
+	// The first shot shares the activation prediction key with its owner. Later
+	// timer shots use the current ASC scope, so their cues also reach that owner.
+	K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsPrimaryFire, Parameters);
 }
 
 void UBwayGameplayAbility_RawlinsPrimary::EndAbility(

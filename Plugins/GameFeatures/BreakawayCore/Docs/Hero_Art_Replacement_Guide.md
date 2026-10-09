@@ -100,7 +100,7 @@ Run **Data Validation** on the asset / folder before check-in.
 
 ## Primary action animation replacement
 
-Alona, Korryn, and Argus expose primary-action animation through a Gameplay Cue Blueprint
+Alona, Korryn, Argus, and Rawlins expose primary-action animation through a Gameplay Cue Blueprint
 derived from `BwayGameplayCueNotify_PrimaryAction`. Open the cue's class defaults and change
 `PrimaryActionMontage` to a compatible final montage. `PrimaryActionPlayRate` controls the
 playback multiplier; it combines with the montage's RateScale. These properties change
@@ -111,15 +111,29 @@ presentation, not attack cadence, hit detection, damage, or the ability's lifeti
 | Alona | `GCN_BW_Weapon_AlonaPrimary_Fire` | `AM_BW_Alona_Primary_Placeholder` |
 | Korryn | `GCN_BW_Weapon_KorrynPrimary_Fire` | `AM_BW_Korryn_Primary_Placeholder` |
 | Argus | `GCN_BW_Weapon_ArgusPrimary_Attack` | `AM_BW_Argus_Primary_Placeholder` |
+| Rawlins | `GCN_BW_Weapon_RawlinsPrimary_Fire` | `AM_BW_Rawlins_Primary_Placeholder` |
 
 Keep the cue's registered tag and native parent. Preserve any existing Blueprint burst
-effects or audio when replacing only the montage. Rawlins's primary presentation is a
-separate pending audit and is not covered by this interface table.
+effects or audio when replacing only the montage.
 
-For a compatible montage replacement:
+Rawlins uses one montage start or restart per shot. The predicting owner presents the first
+shot immediately; authority delivers the timer-driven second shot back to that owner.
+For a completed two-shot burst, expect two recoil starts on every peer, or six starts for
+three accepted input requests. The second shot replaces the first recoil's remaining playback.
+Replacing these assets must preserve the loaded two-shot gameplay timing and keep the client
+ability active until authority finishes the burst.
+
+Rawlins's montage uses `A_BW_Rawlins_PrimaryFire_Placeholder` under
+`/BreakawayCore/Animations/`, a project-owned copy of `MM_Pistol_Fire`. The original sequence
+is preserved. The copy sets `AdditiveAnimType` to `AAT_NONE` and clears its additive reference
+pose. An `ALWAYS` property-change notification triggers `PostEditChange` and recompression
+before saving; a silent property assignment alone does not establish the evaluated format.
+
+To replace a compatible montage, follow these steps:
 
 1. Retarget the sequence to a skeleton compatible with the hero's current mesh and AnimBP.
-   The current placeholders use the shared mannequin `MM_Pistol_Melee` sequence.
+   Alona, Korryn, and Argus use the shared mannequin `MM_Pistol_Melee` placeholder.
+   Rawlins uses the nonadditive pistol-fire copy described here.
 2. Preserve the evaluated `UpperBody` slot and its group, so locomotion can continue underneath.
    Use a nonadditive sequence unless the evaluated animation graph is deliberately changed
    and revalidated for an additive replacement.
@@ -131,6 +145,8 @@ For a compatible montage replacement:
 5. Verify normal and rapid attacks, attacks while moving, death during playback, and an attack
    after respawn on the owner and observing peers. The pawn owns replacement and cleanup of
    the exact primary montage instance; do not add competing playback calls to the ability.
+   For Rawlins, count both shot recoil starts in each completed burst and verify that gameplay
+   still produces two shots. Keep physical input and final appearance as separate checks.
 
 Same-slot foreign montages can reject a primary action while their group is occupied. Check
 the intended action priority when adding other animation systems. Replaceable assets do not
