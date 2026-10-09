@@ -2,7 +2,8 @@
 
 October 9, 2026. Rawlins's primary now passes normal, moving, rapid, and death/respawn
 presentation checks on four same-process PIE peers. Candidate06 also passes remote-owner
-two-shot delivery across four packaged processes. Both project targets compile successfully.
+two-shot delivery across four packaged processes. A later native PIE fixture proves cancellation
+after shot one and before shot two. Recorded editor and game compile gates pass.
 Physical input, final appearance, and expanded packaged lifecycle checks remain unverified.
 
 This gate continues the replaceable placeholder presentation required by
@@ -17,7 +18,8 @@ observing peers. Preserve linked locomotion layers and eventual ability inactivi
 
 Two shots are expected within each activation; they are not duplicate input. Moving bursts,
 rapid bursts with measured latency, death/respawn, and packaged delivery use separate captures.
-Cancellation before the second shot, physical input, and final appearance remain open.
+Native synthetic cancellation before the second shot also passes. Natural combat interruption,
+physical input, and final appearance remain open.
 
 ## Effective configuration
 
@@ -137,6 +139,56 @@ exited, the ShooterCTF module manifest was restored byte for byte, and closed-ed
 settings match their originals. The corresponding settings-cleanup records confirm restored
 network settings, no remaining PIE worlds, stopped observers, and no dirty maps or content.
 
+## Native cancellation before shot two
+
+`cancel03-independent-verification.json` passes all 50 checks for one remote-owner burst
+cancelled before its second shot. `compile-editor02.json` records the additional LyraEditor
+build: 20.88 seconds, exit code 0, and empty `failureSignals`. The added development fixture
+queues gameplay work on a native ticker; it does not change the production primary ability.
+
+Use `bway.Test.PrimaryAnimationCancelBurst <PlayerId>` in the owned four-world PIE session.
+The five-second fixture validates the exact owner and authority controllers, their cheat
+managers, the unchanged two-shot kit, and one newly spawned authority bullet. It requires
+both ability instances to remain active before dispatching the owner's server cancellation
+with `GAllowActorScriptExecutionInEditor=0`. The Python observer queues this command and
+collects state; it never invokes `Cheat` or `ServerCheat` itself.
+
+The actual `ServerCheat` marker follows the first authoritative shot by 47 milliseconds.
+That leaves 73 milliseconds before the loaded 120-millisecond second-shot deadline.
+The bounded native log records one accepted owner activation, one authority activation,
+one shot, one cancellation command, and four exact recoil plays. There is no second shot
+or replacement recoil. Each peer supplies 107 samples, one montage start, 25 weighted
+UpperBody samples, and one distinct bullet actor. Authority and owner become inactive
+and remain inactive; all four exact montages finish.
+
+All four native network-driver readbacks report zero lag and loss. The observer finishes
+in 2.344 seconds, removes its callback, and restores four mesh tick settings. Editor05 log
+lines 4594–4621 contain zero errors and one expected `ServerCheat` warning, with no unknown
+warnings. Two earlier Pixel Streaming errors remain recorded separately.
+
+`cancel03-verifier-controls.json` rejects 19 corrupted proofs and passes four positive
+controls. Native active-state and shot evidence can cover transitions between Python samples.
+Missing bullet samples supply no peer-actor delivery claim; actual second shots, missing
+recoil, late cancellation, runtime errors, and incomplete cleanup still reject acceptance.
+This proves synthetic native cancellation in same-process PIE. It does not prove natural
+combat interruption, death before shot two, or packaged cancellation.
+
+Two earlier attempts remain part of the evidence:
+
+- `cancel01.json` stopped during preflight because the controller wrapper has no `get_pawn()`.
+  The reflected `Pawn` property is protected. `cancel-controller-capability01.json` verifies
+  `get_controlled_pawn()` and both cheat managers. These accessor checks activated no ability.
+- `cancel02.json` and its independent verification preserve the failed Python cheat route.
+  Calling `Cheat CancelActivatedAbilities` through the exact owner still executed under
+  Python's editor guard. `CheatManager.cpp:127` raised an ensure requiring that guard to be
+  false. The call stalled for about 3.39 seconds, both shots occurred, and the observer timed
+  out at five seconds. This supplies no cancellation acceptance or production-defect verdict.
+  `rawlins_cancel_probe-python-route.py` preserves the retired helper.
+
+Never invoke `Cheat` from editor Python, including through a specific player's console route.
+Use the native queued fixture. `bway.Test.PrimaryAnimationCancel` only stops the diagnostic
+ticker; it does not cancel an active GAS ability.
+
 ## Packaged primary delivery
 
 `compile-game01.json` records a passing LyraGame build in 35.14 seconds with empty
@@ -177,22 +229,21 @@ there is no direct cue-route/readiness assertion. Actual ability/damage events a
 montage plays establish delivery. Requested command-line lag is 200 ms; this run does not
 observe effective packet simulation settings or replace the measured PIE latency evidence.
 
-Gate totals are two passing builds, three editor lifecycles, one package, and six runtime
-attempts. The third editor lifecycle ended before the cancellation probe when the Git
-publication request took priority. `editor03-cleanup.json` records editor exit, restored
-settings, and byte-exact module restoration. No build, package, or fixed runtime retry was needed.
+Gate totals are three passing builds, five editor lifecycles, one package, and eight runtime
+attempts: six earlier attempts plus the failed Python cancellation and passing native
+cancellation. Accessor-only setup checks add no runtime activation attempt. The third editor
+lifecycle ended before cancellation testing when the Git publication request took priority.
+`editor03-cleanup.json` and `editor04-cleanup.json` record those editors' exits, restored settings,
+and byte-exact module restoration. Editor05, PID 38688, was reused for the Blazing Barrage
+baseline, then closed normally. `editor05-cleanup.json` confirms exit, restored settings,
+and byte-exact module restoration.
+The added cancellation fixture required one editor build. Candidate06's earlier packaged
+delivery scope is unchanged; no package or accepted fixed-run repetition was required.
 
 ## Next acceptance work
 
-`next-gate-audit.json` identifies an existing source-supported route for primary interruption:
-issue `Cheat CancelActivatedAbilities` through the exact remote owner after the first
-authoritative projectile and before the loaded second-shot deadline. Confirm the owner/server
-cheat managers, observed zero lag, and active primary before dispatch. The expected result is
-one authoritative shot, both ability instances inactive, and no second shot or recoil start.
-This route remains runtime-unverified. `PrimaryAnimationCancel` stops only the diagnostic
-ticker, and the 0.2-second death fixture cannot prove cancellation before shot two.
-
-After that check, inspect the effective Blazing Barrage Blueprint/CDO and loaded
+The native cancellation result supersedes the unverified Python cheat proposal in
+`next-gate-audit.json`. Continue with the effective Blazing Barrage Blueprint/CDO and loaded
 `BarrageProjectilePresentation` before declaring an animation defect. Its next baseline must
 cover configured shots, damage/juggle, movement lock with aim, owner/proxy presentation, and
 channel/tag/timer cleanup. The source audit also identifies a health-interruption hypothesis:

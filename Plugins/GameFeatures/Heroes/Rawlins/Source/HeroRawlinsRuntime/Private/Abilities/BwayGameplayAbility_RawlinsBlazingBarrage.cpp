@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayAbility_RawlinsBlazingBarrage.h"
 
 #include "Abilities/BwayGameplayEffect_RawlinsCooldowns.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "Character/LyraHealthComponent.h"
 #include "Combat/BwayProjectilePresentationData.h"
@@ -93,15 +94,18 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::ActivateAbility(
 
 	ShotsFired = 0;
 
-	if (HasAuthority(&ActivationInfo))
+	if (!HasAuthority(&ActivationInfo))
 	{
-		SpawnShot();
+		FGameplayCueParameters Parameters;
+		Parameters.Instigator = CachedCharacter;
+		Parameters.EffectCauser = CachedCharacter;
+		Parameters.Location = CachedCharacter->GetActorLocation();
+		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsBarrageFire, Parameters);
+		// Authority ends both instances after the final shot. A separate predicted
+		// completion timer can end the server channel before that shot is fired.
+		return;
 	}
-	else
-	{
-		// Keep predicted client channel duration aligned with authority (first shot is immediate).
-		++ShotsFired;
-	}
+	SpawnShot();
 
 	if (ShotsFired >= ActiveShotCount)
 	{
@@ -127,7 +131,7 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::ActivateAbility(
 
 void UBwayGameplayAbility_RawlinsBlazingBarrage::FireNextShot()
 {
-	if (!IsActive() || !CachedCharacter)
+	if (!IsActive() || !CachedCharacter || !HasAuthority(&CurrentActivationInfo))
 	{
 		if (UWorld* World = GetWorld())
 		{
@@ -136,14 +140,7 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::FireNextShot()
 		return;
 	}
 
-	if (HasAuthority(&CurrentActivationInfo))
-	{
-		SpawnShot();
-	}
-	else
-	{
-		++ShotsFired;
-	}
+	SpawnShot();
 
 	if (ShotsFired >= ActiveShotCount)
 	{
@@ -197,6 +194,14 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::SpawnShot()
 	Projectile->ConfigureProjectile(CachedCharacter, Damage, ActiveProjectileSpeed, ActiveProjectileLifeSpan, JuggleImpulse);
 	Projectile->FinishSpawning(SpawnTransform);
 	++ShotsFired;
+
+	FGameplayCueParameters Parameters;
+	Parameters.Instigator = CachedCharacter;
+	Parameters.EffectCauser = CachedCharacter;
+	Parameters.Location = SpawnLocation;
+	// Activation prediction suppresses the owner's duplicate first recoil. Timer
+	// shots use the current ASC scope and deliver their cues to the owner as well.
+	K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsBarrageFire, Parameters);
 }
 
 void UBwayGameplayAbility_RawlinsBlazingBarrage::HandleHealthChanged(

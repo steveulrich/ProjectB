@@ -152,6 +152,25 @@ Same-slot foreign montages can reject a primary action while their group is occu
 the intended action priority when adding other animation systems. Replaceable assets do not
 make arbitrary skeletons, slot graphs, root-motion policies, or gameplay notifies compatible.
 
+## Rawlins Blazing Barrage animation replacement
+
+`GCN_BW_Weapon_RawlinsBarrage_Fire` exposes `PrimaryActionMontage` and
+`PrimaryActionPlayRate` through the same shared cue parent. Its dedicated montage is
+`AM_BW_Rawlins_Barrage_Placeholder`; it uses the existing nonadditive Rawlins firing
+sequence in the UpperBody slot. Keep its registered tag,
+`GameplayCue.Breakaway.Weapon.RawlinsBarrage.Fire`.
+
+The montage starts once per actual shot. A completed loaded channel requires 12 shots
+and 12 recoil starts on each peer. The owner predicts the first cue; authority owns
+the remaining shots and natural completion. Replacing the art must preserve that
+authority-controlled lifetime, finite recoil recovery, compatible skeleton/slot,
+and the absence of root motion or gameplay notifies. Check the same-group action
+priority when combining this montage with other hero actions.
+
+Verify complete and interrupted channels, movement lock with aim, and owner/proxy
+presentation under latency. Treat physical appearance and cooked delivery as separate
+checks; the existence of replacement assets does not establish those results.
+
 ## Multiplayer validation
 
 After any mesh swap:

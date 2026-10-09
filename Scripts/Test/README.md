@@ -151,6 +151,15 @@ uses `ReplicatedConfirmSubmit`, `ReplicatedConfirmResult`, `ReplicatedConfirm Pe
 
 Unreal's `AActor::GetFunctionCallspace` returns local execution while `GAllowActorScriptExecutionInEditor` is true. Editor Python sets this guard; it affects RPCs called indirectly by native widget handlers as well as direct RPC calls. A client-side Python call returning a success/rejection is therefore not proof of network transport.
 
+Never invoke `Cheat` from editor Python, including through a specific player's console route.
+The Rawlins cancellation attempt reached `ServerCheat` but triggered the native cheat manager's
+execution-guard ensure. Use `bway.Test.PrimaryAnimationCancelBurst <PlayerId>` instead: its
+five-second native queue validates the owner and authority, waits for the first Rawlins bullet,
+and dispatches cancellation outside the Python guard. Require actual server ordering before
+the loaded second-shot deadline, one shot, peer recoil, inactivity, and cleanup. The separate
+`bway.Test.PrimaryAnimationCancel` command stops only the diagnostic ticker; it does not cancel
+an active ability. See `AI_Planning/RAWLINS_PRIMARY_ANIMATION.md` for scope and retained failures.
+
 For the upgrade shop, open the owning client's screen, then execute `bway.Test.ShopBuySelected` in that client's game world. The development-only command queues the normal widget purchase handler on a game timer and refuses execution if the guard remains active. Check its log for `authority=0 scriptguard=0`, then compare server and owning-client ranks, balances, effects, and response UI. Run fresh sessions after any direct authority test purchases. Same-process PIE still requires separate-process and packaged LAN follow-up.
 
 ## Engine resolution
