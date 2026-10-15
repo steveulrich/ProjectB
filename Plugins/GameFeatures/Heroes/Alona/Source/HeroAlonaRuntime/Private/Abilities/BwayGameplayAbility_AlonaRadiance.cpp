@@ -3,6 +3,7 @@
 #include "Abilities/BwayGameplayEffect_AlonaCooldowns.h"
 #include "AbilitySystem/Attributes/LyraCombatSet.h"
 #include "AbilitySystemComponent.h"
+#include "Attributes/BwayHeroAttributeSet.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
 #include "TimerManager.h"
@@ -209,7 +210,11 @@ float UBwayGameplayAbility_AlonaRadiance::CalculateScaledHealPerTick(
 	OutAttackStrength = 0.f;
 	if (const UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
 	{
-		if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
+		if (const UBwayHeroAttributeSet* HeroSet = ASC->GetSet<UBwayHeroAttributeSet>())
+		{
+			OutAttackStrength = HeroSet->GetAttackStrength();
+		}
+		else if (const ULyraCombatSet* CombatSet = ASC->GetSet<ULyraCombatSet>())
 		{
 			OutAttackStrength = CombatSet->GetBaseDamage();
 		}

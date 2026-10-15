@@ -13,8 +13,8 @@
 #include "GameState/BwayBotCreationComponent.h"
 #include "SpawnSystem/BwaySpawnPointManagerComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
-#include "GameState/BwayMidfieldDividerComponent.h"
 #include "Relic/RelicActor.h"
+#include "GameState/BwayMidfieldDividerComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameFramework/PlayerController.h"
@@ -22,13 +22,104 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameplayTagsManager.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
-#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "Character/LyraPawnExtensionComponent.h"
+#include "Misc/CommandLine.h"
+#include "Misc/Parse.h"
 #include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogBreakawayGame);
+
+#if !UE_BUILD_SHIPPING
+namespace BwayBarrageTransportStarts
+{
+// This opt-in fixture selects existing starts before the ordinary pawn spawn.
+// It never teleports a pawn or changes the player's view to create a safe lane.
+struct FReservation
+{
+	const TCHAR* Hero;
+	FVector Location;
+	ABwayPlayerState* Player = nullptr;
+	APlayerStart* Start = nullptr;
+	int32 Team = INDEX_NONE;
+};
+
+void Fail(AController* Controller, const FString& Reason)
+{
+	UE_LOG(LogTemp, Error, TEXT("BwayBarrageTransport: FAIL reason=deterministic-start-%s request=%d"),
+		*Reason, Controller && Controller->PlayerState ? Controller->PlayerState->GetPlayerId() : INDEX_NONE);
+}
+
+bool Resolve(UWorld* World, ABwayGameState* GameState, AController* Controller,
+	FName Team1Tag, FName Team2Tag, TArray<FReservation>& Reservations, int32& Selected, FString& Reason)
+{
+	Selected = INDEX_NONE;
+	Reservations = {
+		{ TEXT("Argus"), FVector(100., 3500., 362.) },
+		{ TEXT("Rawlins"), FVector(-180., -3610., 362.) },
+		{ TEXT("Alona"), FVector(100., 3650., 362.) },
+		{ TEXT("Korryn"), FVector(190., -3610., 362.) }
+	};
+	auto Reject = [&Reason](const TCHAR* Error) { Reason = Error; return false; };
+	if (!World || World->GetNetMode() != NM_ListenServer
+		|| World->GetOutermost()->GetName() != TEXT("/BreakawayCore/Maps/L_BW_Dorado"))
+		return Reject(TEXT("wrong-world-or-topology"));
+	if (!GameState || GameState->PlayerArray.Num() != 4 || !Controller || !Controller->PlayerState)
+		return Reject(TEXT("four-player-roster-required"));
+	if (Controller->GetPawn()) return Reject(TEXT("controller-already-possessed"));
+	TSet<int32> PlayerIds;
+	int32 LocalControllers = 0;
+	for (APlayerState* Entry : GameState->PlayerArray)
+	{
+		auto* Player = Cast<ABwayPlayerState>(Entry);
+		auto* PC = Player ? Cast<APlayerController>(Player->GetOwner()) : nullptr;
+		if (!Player || Player->IsABot() || !Player->IsHeroLocked() || !PC || PC->PlayerState != Player
+			|| PC->GetWorld() != World || PlayerIds.Contains(Player->GetPlayerId()))
+			return Reject(TEXT("invalid-human-controller-or-hero-lock"));
+		PlayerIds.Add(Player->GetPlayerId());
+		LocalControllers += PC->IsLocalController() ? 1 : 0;
+		const int32 Role = Reservations.IndexOfByPredicate([Player](const FReservation& Item)
+		{
+			const FPrimaryAssetId Expected = UBwayHeroRegistry::ResolveHeroIdByName(Item.Hero);
+			return Expected.IsValid() && Player->GetSelectedHeroId() == Expected;
+		});
+		if (Role == INDEX_NONE || Reservations[Role].Player) return Reject(TEXT("missing-or-duplicate-fixture-hero"));
+		auto& Item = Reservations[Role];
+		Item.Player = Player; Item.Team = GameState->GetPlayerTeam(Player);
+		if (Item.Team != 0 && Item.Team != 1) return Reject(TEXT("invalid-fixture-team"));
+		if (PC == Controller) Selected = Role;
+		if (Role == 1 && PC->IsLocalController()) return Reject(TEXT("rawlins-must-be-remote"));
+	}
+	if (Selected == INDEX_NONE || LocalControllers != 1) return Reject(TEXT("listen-controller-roster-mismatch"));
+	if (Reservations[0].Team != Reservations[2].Team || Reservations[1].Team != Reservations[3].Team
+		|| Reservations[0].Team == Reservations[1].Team) return Reject(TEXT("fixture-team-pairing-mismatch"));
+	TSet<APlayerStart*> ReservedStarts;
+	for (auto& Item : Reservations)
+	{
+		const FName Tag = Item.Team == 0 ? Team1Tag : Team2Tag;
+		for (TActorIterator<APlayerStart> It(World); It; ++It)
+		{
+			if (It->PlayerStartTag != Tag || !It->GetActorLocation().Equals(Item.Location, .25)) continue;
+			if (Item.Start || It->GetActorRotation().ContainsNaN()) return Reject(TEXT("ambiguous-or-invalid-tagged-start"));
+			Item.Start = *It;
+		}
+		if (!Item.Start || ReservedStarts.Contains(Item.Start)) return Reject(TEXT("missing-or-duplicate-tagged-start"));
+		ReservedStarts.Add(Item.Start);
+	}
+	return true;
+}
+
+void LogReservation(const TCHAR* Event, int32 Request, const FReservation& Item, const TCHAR* Suffix = TEXT(""))
+{
+	const FVector Position = Item.Start->GetActorLocation();
+	const FRotator Rotation = Item.Start->GetActorRotation();
+	UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: %s request=%d hero=%s player=%d team=%d start=%s tag=%s x=%.6f y=%.6f z=%.6f pitch=%.6f yaw=%.6f roll=%.6f%s"),
+		Event, Request, Item.Hero, Item.Player->GetPlayerId(), Item.Team, *Item.Start->GetPathName(),
+		*Item.Start->PlayerStartTag.ToString(), Position.X, Position.Y, Position.Z, Rotation.Pitch, Rotation.Yaw, Rotation.Roll, Suffix);
+}
+}
+#endif
 
 ABreakawayGameMode::ABreakawayGameMode()
 {
@@ -74,6 +165,35 @@ void ABreakawayGameMode::InitGameState()
 		}
 
 		UE_LOG(LogBreakawayGame, Log, TEXT("Breakaway Game State initialized"));
+	}
+}
+
+void ABreakawayGameMode::GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>& ActorList)
+{
+	Super::GetSeamlessTravelActorList(bToTransition, ActorList);
+
+	// Keep outgoing PlayerStates in ActorList so APlayerController::SeamlessTravelFrom(OldPC)
+	// copies SelectedHeroId, bHeroLocked, PlayerNum, and GenericTeamId onto the fresh
+	// destination PlayerState before destroying the outgoing instance. Quiesce replication on
+	// the outgoing staging PlayerStates prior to NotifyActorIsTraveling so ServerReplicateActors
+	// in the destination world never reopens an ActorChannel for a slower client's outgoing
+	// PlayerState after client PostSeamlessTravelGarbageCollect marks its NetGUID read-only.
+	UWorld* World = GetWorld();
+	if (GameState && World)
+	{
+		int32 QuiescedCount = 0;
+		for (APlayerState* PS : GameState->PlayerArray)
+		{
+			if (IsValid(PS))
+			{
+				PS->SetReplicates(false);
+				World->RemoveNetworkActor(PS);
+				++QuiescedCount;
+			}
+		}
+		UE_LOG(LogBreakawayGame, Log,
+			TEXT("GetSeamlessTravelActorList: Quiesced %d outgoing PlayerStates for seamless travel (bToTransition=%s)"),
+			QuiescedCount, bToTransition ? TEXT("true") : TEXT("false"));
 	}
 }
 
@@ -365,6 +485,21 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 	if (!IsValid(NewPlayer) || NewPlayer->GetWorld() != GetWorld()) return;
 	if (APlayerController* PC = Cast<APlayerController>(NewPlayer))
 	{
+		// Seamless travel retains replaced remote controllers until client acknowledgment.
+		// Match-flow restart iteration can still see them; CanRestartPlayer rejects them too.
+		if (PC->PendingSwapConnection != nullptr)
+		{
+			CancelPlayerRestart(PC);
+#if !UE_BUILD_SHIPPING
+			if (FParse::Param(FCommandLine::Get(), TEXT("BwayBarrageTransportDeterministicStarts")))
+			{
+				UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: SpawnSkipped reason=obsolete-seamless-travel-controller controller=%s request=%d playerState=%s pawn=%s pendingSwap=1"),
+					*GetPathNameSafe(PC), PC->PlayerState ? PC->PlayerState->GetPlayerId() : INDEX_NONE,
+					*GetPathNameSafe(PC->PlayerState), *GetPathNameSafe(PC->GetPawn()));
+			}
+#endif
+			return;
+		}
 		PreparePlayerHeroSelection(PC);
 		ShowPendingHeroSelection(PC);
 	}
@@ -402,8 +537,53 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 		}
 	}
 
-	// Call base implementation to spawn the pawn
-	Super::RestartPlayer(NewPlayer);
+	// Only the explicitly opted-in transport fixture bypasses random start selection.
+	// A null ChoosePlayerStart result is not fail-closed: engine FindPlayerStart can
+	// substitute WorldSettings or a previous StartSpot, so validate before dispatch.
+#if !UE_BUILD_SHIPPING
+	TArray<BwayBarrageTransportStarts::FReservation> BarrageReservations;
+	int32 BarrageSelected = INDEX_NONE;
+	TWeakObjectPtr<APawn> BarrageSpawnedPawn;
+	if (FParse::Param(FCommandLine::Get(), TEXT("BwayBarrageTransportDeterministicStarts")))
+	{
+		FString Reason;
+		if (!BwayBarrageTransportStarts::Resolve(GetWorld(), GetBreakawayGameState(), NewPlayer,
+			Team1SpawnPointTag, Team2SpawnPointTag, BarrageReservations, BarrageSelected, Reason))
+		{
+			CancelPlayerRestart(NewPlayer);
+			BwayBarrageTransportStarts::Fail(NewPlayer, Reason);
+			return;
+		}
+		const auto& Selected = BarrageReservations[BarrageSelected];
+		const int32 Request = NewPlayer->PlayerState->GetPlayerId();
+		for (const auto& Item : BarrageReservations)
+			BwayBarrageTransportStarts::LogReservation(TEXT("SpawnReservation"), Request, Item);
+		UClass* PawnClass = GetDefaultPawnClassForController(NewPlayer);
+		APawn* PawnToFit = PawnClass ? PawnClass->GetDefaultObject<APawn>() : nullptr;
+		// Only the requested reservation must be empty. Previously spawned teammates
+		// already occupy their own distinct reservations, independent of restart order.
+		if (!PawnToFit || GetWorld()->EncroachingBlockingGeometry(PawnToFit,
+			Selected.Start->GetActorLocation(), Selected.Start->GetActorRotation()))
+		{
+			CancelPlayerRestart(NewPlayer);
+			BwayBarrageTransportStarts::Fail(NewPlayer, TEXT("reserved-start-not-clear"));
+			return;
+		}
+		BwayBarrageTransportStarts::LogReservation(TEXT("SpawnSelected"), Request, Selected, TEXT(" clear=1 pawnBefore=0"));
+		RestartPlayerAtPlayerStart(NewPlayer, Selected.Start);
+		BarrageSpawnedPawn = NewPlayer->GetPawn();
+		if (!BarrageSpawnedPawn.IsValid())
+		{
+			CancelPlayerRestart(NewPlayer);
+			BwayBarrageTransportStarts::Fail(NewPlayer, TEXT("exact-start-spawn-failed"));
+			return;
+		}
+	}
+	else
+#endif
+	{
+		Super::RestartPlayer(NewPlayer);
+	}
 	if (!NewPlayer->GetPawn())
 	{
 		// No available start can return without FailedToRestartPlayer being called.
@@ -452,6 +632,34 @@ void ABreakawayGameMode::RestartPlayer(AController* NewPlayer)
 		// the individual death timer. Recount after hero health is initialized.
 		GS->OnPlayerRespawned(NewPlayer->PlayerState);
 	}
+
+#if !UE_BUILD_SHIPPING
+	if (BarrageSelected != INDEX_NONE)
+	{
+		const auto& Selected = BarrageReservations[BarrageSelected];
+		auto* PC = Cast<APlayerController>(NewPlayer);
+		APawn* Pawn = NewPlayer->GetPawn();
+		const bool SamePawn = PC && Pawn && Pawn == BarrageSpawnedPawn.Get()
+			&& Pawn->GetController() == NewPlayer && Pawn->GetPlayerState() == Selected.Player;
+		const FVector Position = Pawn ? Pawn->GetActorLocation() : FVector::ZeroVector;
+		const FRotator Rotation = Pawn ? Pawn->GetActorRotation() : FRotator::ZeroRotator;
+		const FRotator Control = NewPlayer->GetControlRotation();
+		FVector ViewLocation; FRotator View = FRotator::ZeroRotator;
+		if (PC) PC->GetPlayerViewPoint(ViewLocation, View);
+		const bool ExactXY = Pawn && !Position.ContainsNaN()
+			&& FVector::DistSquaredXY(Position, Selected.Start->GetActorLocation()) <= 1.;
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: SpawnActual request=%d hero=%s player=%d team=%d start=%s pawn=%s x=%.6f y=%.6f z=%.6f pawnPitch=%.6f pawnYaw=%.6f pawnRoll=%.6f controlPitch=%.6f controlYaw=%.6f controlRoll=%.6f viewPitch=%.6f viewYaw=%.6f viewRoll=%.6f exactXY=%d samePawn=%d"),
+			Selected.Player->GetPlayerId(), Selected.Hero, Selected.Player->GetPlayerId(), Selected.Team,
+			*Selected.Start->GetPathName(), *GetPathNameSafe(Pawn), Position.X, Position.Y, Position.Z,
+			Rotation.Pitch, Rotation.Yaw, Rotation.Roll, Control.Pitch, Control.Yaw, Control.Roll,
+			View.Pitch, View.Yaw, View.Roll, ExactXY, SamePawn);
+		if (!SamePawn || !ExactXY || Rotation.ContainsNaN() || Control.ContainsNaN() || View.ContainsNaN())
+		{
+			BwayBarrageTransportStarts::Fail(NewPlayer, TEXT("post-spawn-readback-mismatch"));
+			return;
+		}
+	}
+#endif
 
 	UE_LOG(LogBreakawayGame, Log, TEXT("RestartPlayer: END for %s"), *GetNameSafe(NewPlayer));
 }

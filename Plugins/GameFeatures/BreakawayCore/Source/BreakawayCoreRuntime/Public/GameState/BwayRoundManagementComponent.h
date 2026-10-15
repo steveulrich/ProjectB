@@ -84,13 +84,25 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
 	void StartRound();
 
+	/** Alias for StartRound() used by round-boundary callers and tests. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
+	void StartNewRound();
+
 	/** End the current round with a specific win condition. */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
 	void EndRound(int32 WinningTeam, EBwayWinCondition WinCondition);
 
-	/** Reset round state (relic, players, buildables). */
+	/** Reset round state (relic, players, buildables, and round-scoped respawn escalation when enabled). */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
 	void ResetRoundState();
+
+	/** Reset per-player within-round death counts to 0 (called on round start when bResetRespawnEscalationEachRound is true, and on match reset). */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
+	void ResetRoundRespawnEscalation();
+
+	/** Reset round/respawn escalation and timers for a new match. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Round")
+	void ResetForNextMatch();
 
 	// ========================================
 	// Win Condition Checks
@@ -121,6 +133,22 @@ public:
 
 	/** Recalculate a pending death after a committed shop transaction, preserving elapsed time. */
 	void RefreshRespawnSchedule(APlayerState* Player);
+
+	/** Get number of deaths recorded for PlayerState in the current round. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Player")
+	int32 GetPlayerDeathsInCurrentRound(const APlayerState* PlayerState) const;
+
+	/** Resolve configured base respawn delay, honoring direct RespawnDelay overrides from legacy probes. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Player")
+	float GetConfiguredBaseRespawnDelaySeconds() const;
+
+	/** Compute escalated base respawn delay for PriorDeathsInRound (0 = 1st death -> BaseRespawnDelaySeconds, clamped to MaxRespawnDelaySeconds). */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Player")
+	float ComputeEscalatedRespawnBaseDelay(int32 PriorDeathsInRound) const;
+
+	/** Compute effective respawn delay for PlayerState given PriorDeathsInRound and their current RespawnTimeReduction attribute. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Player")
+	float ComputeEffectiveRespawnDelayForPlayer(const APlayerState* PlayerState, int32 PriorDeathsInRound) const;
 
 	/** Check if match is over (a team reached the winning score). */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Scoring")
@@ -202,6 +230,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
 	void SetRoundDuration(float InRoundDuration);
 
+	/** Authority-only runtime override for escalating respawn delay progression from UBwayMatchFlowConfig / URL. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Breakaway|Config")
+	void SetRespawnProgressionRules(
+		float InBaseRespawnDelaySeconds,
+		float InPerDeathRespawnIncrementSeconds,
+		float InMaxRespawnDelaySeconds,
+		bool bInResetEachRound);
+
 	/** Duration of each round in seconds (class default; runtime value replicated from authority match-flow resolve). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, ReplicatedUsing = OnRep_RoundDuration, Category = "Breakaway|Config")
 	float RoundDuration = 240.0f;
@@ -210,9 +246,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
 	float RoundEndDelay = 5.0f;
 
-	/** Delay before respawning a player after death */
+	/** Base delay in seconds before respawning a player on their first death of the round (Sept 7, 2017 GameSpot evidence: 10.0s). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Breakaway|Config|Respawn", meta = (ClampMin = "0.05"))
+	float BaseRespawnDelaySeconds = 10.0f;
+
+	/** Additional respawn delay in seconds added per prior death within the current round (5.0s -> 10s, 15s, 20s, 25s). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Breakaway|Config|Respawn", meta = (ClampMin = "0.0"))
+	float PerDeathRespawnIncrementSeconds = 5.0f;
+
+	/** Maximum escalated base respawn delay in seconds before RespawnTimeReduction is applied (25.0s cap). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Breakaway|Config|Respawn", meta = (ClampMin = "0.05"))
+	float MaxRespawnDelaySeconds = 25.0f;
+
+	/** When true, per-player within-round death escalation resets to 0 at each round boundary. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Breakaway|Config|Respawn")
+	bool bResetRespawnEscalationEachRound = true;
+
+	/** Synchronized base respawn delay alias retained for legacy probes. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Config")
-	float RespawnDelay = 3.0f;
+	float RespawnDelay = 10.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Economy")
 	float GoldAwardForKill = 50.0f;
@@ -470,6 +522,7 @@ protected:
 	FTimerHandle PreRoundTimerHandle;
 
 	friend class FBwayRespawnUpgradeTest;
+	friend class FBwayRespawnEscalatingProgressionTest;
 	struct FPendingRespawn
 	{
 		FTimerHandle Timer;
@@ -480,6 +533,9 @@ protected:
 	};
 	/** Preserve the death's original delay and clock when buying or replacing a rank. */
 	TMap<TWeakObjectPtr<AController>, FPendingRespawn> RespawnTimers;
+
+	/** Authoritative per-player death count within the current round for escalating respawn delay progression. */
+	TMap<TWeakObjectPtr<APlayerState>, int32> PlayerRoundDeathCounts;
 
 	/** Non-owning: disconnects and bot replacement can destroy players before round cleanup. */
 	TMap<TWeakObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;

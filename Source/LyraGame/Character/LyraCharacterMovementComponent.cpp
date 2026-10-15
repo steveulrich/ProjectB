@@ -129,3 +129,17 @@ float ULyraCharacterMovementComponent::GetMaxSpeed() const
 
 	return Super::GetMaxSpeed();
 }
+
+float ULyraCharacterMovementComponent::GetMinAnalogSpeed() const
+{
+	if (UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner()))
+	{
+		if (ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped))
+		{
+			// CalcVelocity applies this floor after GetMaxSpeed, including when that speed is zero.
+			return 0.f;
+		}
+	}
+
+	return Super::GetMinAnalogSpeed();
+}

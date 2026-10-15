@@ -1,148 +1,37 @@
-# Alona primary action animation acceptance
+# Alona Primary Animation Acceptance
 
-October 9, 2026. This gate checks the placeholder body action independently of projectile and
-gameplay-cue delivery. It does not change primary damage, attack timing, or movement tuning.
+## 1. Current Gate Verdict & Frozen Candidate Identity
 
-## Expected result
+- **Verdict:** **PASSED** (4-world PIE lifecycle + 4-process packaged LAN delivery at 100ms lag).
+- **Frozen Candidate:** `LAN-20261009-03` (`Saved/StagedBuilds/Windows/candidate-lan20261009-03.json`).
+- **Source Provenance:** Commit `0592b324` (`Saved/Logs/alona-primary-anim-20261009/source-snapshot-current.json`, 131 staged artifacts).
+- **Executable Identity:** `LyraGame.exe` staged from `Saved/Logs/alona-primary-anim-20261009/compile-game01.json` (passed `Package-Preflight.ps1` `prepackage01.json`).
 
-A successful primary attack produces a visible action pose on the owning Alona and remote
-hero meshes. Its compatible replacement animation is assigned through an asset interface.
-Prediction must not double-play the action. Locomotion, death/respawn, and repeated attacks
-must leave no stale playback. Physical input and packaged LAN remain separate proof scopes.
+## 2. Production Architecture & Invariants
 
-## Current evidence
+- **Gameplay Ability:** `UBwayGameplayAbility_AlonaPrimary` (`/Hero_Alona/Characters/Heroes/Alona/Abilities/GA_BW_Alona_PrimaryAttack`).
+  - Predicts the launch GameplayCue on the locally controlled owner and dispatches the authoritative cue on the server immediately after spawning `ABwayAlonaPrimaryProjectile`.
+  - Sets `StartupCueTag` to `GameplayCue.Breakaway.Weapon.AlonaPrimary.Fire` in the constructor for cold-startup GameplayCueManager registration.
+- **GameplayCue Notify & Montage:**
+  - `GCN_BW_Weapon_AlonaPrimary_Fire` (`/BreakawayCore/GameplayCues/GCN_BW_Weapon_AlonaPrimary_Fire`), parent class `UBwayGameplayCueNotify_PrimaryAction`.
+  - Plays `AM_BW_Alona_Primary_Placeholder` (`/BreakawayCore/Characters/Heroes/Alona/Animations/AM_BW_Alona_Primary_Placeholder`, wrapping `MM_Pistol_Melee` at rate `2.0` on the `UpperBody` slot) through `ABwayCharacterWithAbilities::PlayPrimaryActionMontage`.
+- **Upper-Body Layering Invariant:** `ABP_Mannequin_Base` caches `LocomotionPose` and blends `Slot 'UpperBody'` above `spine_01` (`BlendDepth=4`, `bMeshSpaceRotationBlend=true`), preserving lower-body locomotion while upper-body primary montages play or restart cleanly on rapid retrigger.
 
-The four-world listen PIE setup selected Alona for remote player 257 and reached Playing.
-Live class defaults have no primary `ActivationOwnedTags`. The base AnimBlueprint maps
-`Event.Movement.WeaponFire` to `GameplayTag_IsFiring`. The feminine unarmed layer uses a
-ready idle pose and a 0.5-second hip-fire raise duration.
+## 3. Verified Scope Summary Table
 
-The fire cue's EventGraph is empty, but its `OnBurst` function is executable. It calls
-`WeaponAudioFunctions.SendWeaponFire`, followed by weapon-dependent audio/effect operations.
-`SendWeaponFire` routes to the music manager's `Receive Weapon Fire`. These graph observations
-do not establish an attack pose. Inspect the evaluated runtime path before adding playback.
+| Phase | Harness / Command | Result & Evidence |
+|---|---|---|
+| Asset & Cue Audit | `Breakaway.AssetAudit.AlonaPrimaryAnimation` + `Breakaway.GameplayCueAudit` | **PASS** — `Saved/Logs/alona-primary-anim-20261009/automation01-alona-primary.json` |
+| 4-World PIE (Normal, Moving 600 cm/s, Rapid 100ms Lag, Death/Respawn) | `bway.Test.AlonaPrimaryAnimation` (`Normal`, `Moving`, `Rapid`, `Death`) | **PASS** — 12 plays across 4 worlds, preserved lower-body speed, 8 clean retrigger replacements (`pie01-alona-primary-brief.json`) |
+| 4-Process Packaged LAN (100ms Lag) | `bway.Test.AlonaPrimaryAnimationPackage` (`LAN-20261009-03`) | **PASS** — 21/21 controls, 3 authority shots, 12 total peer montage plays (`package03-delivery-verification.json`) |
 
-Evidence is under `Saved/Logs/alona-primary-animation-20261009/`: `class-defaults01.json`,
-`cue-onburst-graph.json`, and `gate-contract.json`.
+## 4. Remaining Open Proof Gaps
 
-## Failed dispatch and retry condition
+- Packaged separate-process moving pose-delta, rapid replacement, and death/respawn montage cleanup cases (covered in 4-world PIE; packaged run verified 4-peer delivery at 100ms lag).
+- Physical mouse/gamepad input verification and final custom Alona animation art replacement.
+- Second-PC physical LAN hardware verification.
 
-`baseline01.json` stopped before activation because `AbilitySystemBlueprintLibrary` is not
-exposed as a Python module class in this editor. Its observer callback was removed.
+## 5. Archive Pointer
 
-The subsequent Python call to the remote ASC's `TryActivateAbilitiesByTag` caused recursive
-prediction and editor exit. `editor01.log` records the Deep PredictionKey Chain ensure and
-repeated `ServerTryActivateAbility` stack. No primary animation verdict is claimed.
-
-This matches BF-066: Python's `GAllowActorScriptExecutionInEditor` guard makes
-`AActor::GetFunctionCallspace` return Local, including nested native RPCs. Do not call remote
-gameplay mutations directly or indirectly from Python. Queue the primary through a bounded
-development command on a normal game tick, require that guard to be false, and retain Python
-only for serialized observation. This is a changed dispatch hypothesis, not a gameplay fix.
-
-The editor process exited, destroying its callbacks. No asset edits occurred. The closed-editor
-PIE settings match their original values, and the temporary ShooterCTF module manifest was
-restored byte for byte. See `editor01-failure-cleanup.json`.
-
-## Queued native diagnostic and missing action
-
-`bway.Test.PrimaryAnimation <PlayerId>` queues one owning-client primary activation on the
-normal game tick. It waits up to five seconds for Playing, a live owned pawn, matching ASC
-ownership, and a cleared editor script guard. `bway.Test.PrimaryAnimationCancel` cancels a
-pending request. The helper is excluded from Shipping builds and leaves gameplay tuning unchanged.
-
-`compile-editor01.json` records a successful `LyraEditor` build in 17.95 seconds, with exit
-code 0 and no failure signals. The runtime DLL timestamp advanced to October 9, 2026,
-20:53:36 UTC. `baseline03.json` then recorded three accepted attacks and three projectiles
-on every peer. All 122 samples per peer had no firing tag, hip-fire weight, or montage.
-
-## Replaceable action implementation
-
-The existing Alona fire cue now derives from `BwayGameplayCueNotify_PrimaryAction`. Its
-`PrimaryActionMontage` and `PrimaryActionPlayRate` defaults provide the replacement interface.
-The existing cue tag, spawn conditions, placement, effects, and 26-node `OnBurst` graph remain.
-The native primary ability, damage, projectile, and prediction transport are unchanged.
-
-`AM_BW_Alona_Primary_Placeholder` uses the existing nonadditive `MM_Pistol_Melee` sequence,
-without notifies or root motion. It plays at rate 2 through the evaluated `UpperBody` slot
-and existing upper/lower-body mask. Replacement art must retain the compatible skeleton,
-evaluated slot, finite playback, no root motion, and no gameplay notifies.
-
-The pawn owns cosmetic playback independently of the ability's immediate end. It replaces
-only its own montage instance, preserves unrelated montage groups, rejects dead avatars,
-and stops that exact instance on death, ASC teardown, and EndPlay.
-
-`compile-editor04.json` passed with empty failure signals in 7.86 seconds. The two intervening
-builds found local-name shadowing and an unexported engine function; both were corrected.
-The cue Blueprint validates with zero errors or warnings.
-
-## Evaluated pose and lifecycle evidence
-
-`normal02-verification.json` proves three attacks across four peers: 12 plays, no duplicates,
-and no rejected actions. Each peer has 123 samples, its feminine linked layer remains present,
-and the upper-body slot reaches weight 1 then returns to 0. Active hand excursions measure
-81.4–83.6 cm against 12.0–16.7 cm idle variation; actor displacement remains zero.
-
-The first `fixed-*-01` observer used `set_editor_property` to force bone refresh. That editor
-notification re-registered the mesh and removed its dynamic linked animation layer, invalidating
-pose acceptance. The corrected observer assigns the Blueprint-writable runtime property directly
-and restores it the same way. Preserve the failed measurement; do not repair production animation
-in response to that fixture side effect.
-
-The corrected death run proves two pawn lifetimes per peer, immediate primary-action cleanup,
-and renewed action playback after respawn. Death and hit-react montages are separate from the
-primary montage and must not be counted as leaked primary playback.
-
-`rapid-death02-verification.json` retains an unresolved rapid-delivery result: peer 2 missed the
-middle action in a three-attack burst. The inherited editor Average profile enables 30–60 ms
-incoming/outgoing latency and 1% packet loss. Packet loss is a possible cause, not a confirmed
-diagnosis. The controlled no-loss repeat below separates this result from the current acceptance evidence.
-
-`controlled04-verification.json` passes the explicit-network and moving checks in four-world,
-same-process listen-server PIE. The moving attack fires at 600 cm/s with zero configured lag
-or loss. All four peers retain their linked animation layers and show primary playback,
-movement, and lower-body foot motion together. Input stops and every peer later returns to
-zero velocity and inactive primary playback.
-
-The rapid repeat uses an observed 100 ms lag and zero packet loss on all four drivers.
-Three accepted attacks produce 12 plays and eight replacements, with three starts per peer.
-Both controlled runs restore all four tick settings and remove their callbacks, with no
-bounded errors or rejected actions. `editor04-cleanup.json` records editor exit and restored
-PIE, network, and module-manifest settings.
-
-`compile-editor05.json` and `compile-game01.json` both pass with exit code 0 and empty failure
-signals. Packaged transport, physical input, and final appearance remain open. The bridge
-screenshot captured the editor viewport rather than a gameplay window and supplies no
-action-appearance proof. The next acceptance step is a fresh package containing this change.
-
-## Packaged primary delivery
-
-Candidate `LAN-20261009-03` contains commit `0592b324`. `compile-game02.json` refreshes the
-passing LyraGame record at that commit. Cook/Stage/Pak completed successfully, and
-`artifact-verification03-tracked-output.json` verifies all 131 staged hashes and compiled inputs.
-AutomationTool rewrote the generated chunk-layer text after CreatePaks; its complete contents
-match the frozen commit after line-ending normalization. The original failed timestamp check
-remains in `artifact-verification03.json`; 16 corruption controls verify the narrow exception.
-The temporary ShooterCTF module manifest was restored byte for byte after packaging.
-
-`package03-delivery-verification.json` passes the rendered, same-PC four-process delivery scope.
-The existing all-kit leech fixture selected remote Alona player 258 and activated the real primary.
-Each process recorded exactly one matching placeholder montage with positive duration through
-the existing fire cue. The authority recorded successful damage, restored four players and both
-bases, and removed its listeners. All client fixtures passed and exited with code 0 before owned
-host teardown. All four logs contain zero runtime error or critical lines. The runner requested
-200 ms packet lag; this record does not substitute for the earlier native driver readbacks.
-
-The verifier rejects 21 corrupted evidence variants, including missing or duplicate playback,
-wrong assets or players, command-line spoofing, missing cleanup, and failed client exits. The
-runner result is `packaged-LAN-20261009-03-alona-primary01-result.json` in this gate's evidence
-directory. Gate totals are seven build attempts, one package, four editor lifecycles, and twelve
-runtime attempts. The seventh build refreshed admission after the source commit; no gameplay
-source changed for this packaged check.
-
-The fixture freezes and repositions players, so it proves cooked cue-to-montage delivery only.
-Packaged evaluated movement, finite montage completion, death cleanup, physical input, final
-appearance, and second-PC LAN remain separate proof gaps. The subsequent Korryn source,
-evaluated PIE lifecycle, and candidate04 delivery evidence is recorded in
-[Korryn primary animation acceptance](./KORRYN_PRIMARY_ANIMATION.md). Continue the all-kit
-action audit with Argus's remote-owner primary presentation baseline.
+- Full chronological gate diary: [ALONA_PRIMARY_ANIMATION.md](./Archive/Full_History_20261013/ALONA_PRIMARY_ANIMATION.md).
+- **Rule:** Do NOT read the archived file during routine gates; open it only if diagnosing a historical regression in this exact subsystem.

@@ -31,6 +31,18 @@ struct FBwayResolvedMatchFlowSettings
 	float RoundDuration = 240.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	float BaseRespawnDelaySeconds = 10.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	float PerDeathRespawnIncrementSeconds = 5.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	float MaxRespawnDelaySeconds = 25.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
+	bool bResetRespawnEscalationEachRound = true;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")
 	float PrematchDuration = 1.0f;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Match Flow")

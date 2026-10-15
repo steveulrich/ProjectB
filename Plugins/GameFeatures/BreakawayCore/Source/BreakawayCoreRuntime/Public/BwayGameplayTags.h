@@ -25,4 +25,10 @@ namespace BwayGameplayTags
 
 	/** Encaged by Rawlins Jail — movement locked; abilities remain usable. */
 	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Status_Jailed);
+
+	/** RMB prepared catch window — allows clean reception/interception of high-velocity Relic flights. */
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Relic_PreparingCatch);
+
+	/** Active Relic carrier state tag. */
+	BREAKAWAYCORERUNTIME_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(State_Relic_Carrying);
 }

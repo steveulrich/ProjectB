@@ -8,7 +8,6 @@
 #include "GameplayTagContainer.h"
 #include "BreakawayGameMode.generated.h"
 
-class ARelicActor;
 class ABwayCharacterWithAbilities;
 class ABwayPlayerState;
 class UBwaySpawnPointManagerComponent;
@@ -43,6 +42,7 @@ public:
 	//~AGameModeBase interface
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void InitGameState() override;
+	virtual void GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>& ActorList) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
 	virtual void BeginPlay() override;

@@ -31,7 +31,8 @@ enum class ERelicState : uint8
     BeingPassed		UMETA(DisplayName = "BeingPassed"), // Moving via physics after a pass
     PendingRequest	UMETA(DisplayName = "PendingRequest"), // Optional: Waiting for a specific requester
     Scoring			UMETA(DisplayName = "Scoring"), // In a score zone
-    Resetting		UMETA(DisplayName = "Resetting") // After scoring, before respawn
+    Resetting		UMETA(DisplayName = "Resetting"), // After scoring, before respawn
+    Passed			UMETA(DisplayName = "Passed") // Alias for pass-in-flight state
 };
 
 /**
@@ -84,6 +85,14 @@ public:
     UFUNCTION()
     void OnRep_LastPossessingTeam();
 
+    /** True while the Relic is in flight from a teammate pass (BeingPassed / Passed). */
+    UPROPERTY(BlueprintReadOnly, Replicated, Category = "Relic|State")
+    bool bIsPassInFlight = false;
+
+    /** Team index (0 or 1) that initiated the currently in-flight pass, or INDEX_NONE. */
+    UPROPERTY(BlueprintReadOnly, Replicated, Category = "Relic|State")
+    int32 PassingTeamIndex = INDEX_NONE;
+
     UPROPERTY(BlueprintReadOnly, Replicated)
     bool bHasScoredThisRound = false;
 
@@ -102,12 +111,49 @@ public:
     virtual void OnDropped();
 
     /**
-     * Server-only: drop the relic because the carrier took damage.
+     * Server-only: drop the relic with an explicit or default fumble impulse and optional attacker attribution.
+     */
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Relic|Interaction")
+    void DropRelic(const FVector& ImpulseVelocity = FVector::ZeroVector, AActor* InstigatorActor = nullptr, bool bIsForcedFumble = true);
+
+    /**
+     * Server-only: accumulate carrier damage and force a fumble once FumbleDamageThreshold (50.0) is reached.
+     */
+    UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Relic|Interaction")
+    bool HandleCarrierDamage(float DamageAmount, AActor* InstigatorActor = nullptr);
+
+    /**
+     * Server-only: drop the relic because the carrier took damage or hard CC.
      * Increments ABwayPlayerState::ForcedFumbles and knocks the relic off the carrier.
      * No-op if not currently Carried.
      */
     UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Relic|Interaction")
     void ForceFumbleFromDamage();
+
+    void ForceFumbleFromDamageWithInstigator(AActor* InstigatorActor);
+
+    /** Compute charged ballistic throw velocity for a given aim direction and charge duration. */
+    UFUNCTION(BlueprintPure, Category = "Relic|Ballistics")
+    FVector ComputeChargedThrowVelocity(const FVector& AimDirection, float ChargeTimeSeconds) const;
+
+    /** Compute directed pass velocity toward TargetLocation using PassSpeed (1500). */
+    UFUNCTION(BlueprintPure, Category = "Relic|Ballistics")
+    FVector ComputeDirectedPassVelocity(const FVector& TargetLocation) const;
+
+    /** Execute a charged throw using ComputeChargedThrowVelocity. */
+    UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
+    void ThrowRelicCharged(float ChargeTimeSeconds, const FVector& AimDirection = FVector::ZeroVector);
+
+    /** True while PickupCooldownAfterDrop (0.5s) blocks the dropping/fumbling carrier from re-acquiring the Relic. */
+    UFUNCTION(BlueprintPure, Category = "Relic|Interaction")
+    bool IsDropPickupCooldownActiveFor(const ABwayCharacterWithAbilities* Character) const;
+
+    /** Resolve canonical Breakaway team index (0 or 1, or INDEX_NONE) for a character. */
+    int32 ResolveCharacterTeamIndex(const ABwayCharacterWithAbilities* Character) const;
+
+    /** Cumulative carrier damage since current possession began. */
+    UFUNCTION(BlueprintPure, Category = "Relic|State")
+    float GetAccumulatedCarrierDamage() const { return AccumulatedCarrierDamage; }
 
     // Called when relic enters a goal volume (server only)
     UFUNCTION(BlueprintCallable, Category = "Relic|Interaction")
@@ -152,6 +198,26 @@ protected:
     /** Non-owning identity; reset at the round boundary and never sent to clients. */
     UPROPERTY(Transient)
     TWeakObjectPtr<ABwayPlayerState> LastPossessingPlayerState;
+
+    /** Carrier who most recently dropped/fumbled/released the Relic, used for PickupCooldownAfterDrop. */
+    UPROPERTY(Transient)
+    TWeakObjectPtr<ABwayCharacterWithAbilities> LastDroppedCarrier;
+
+    double LastDropWorldTime = -1000.0;
+
+    float AccumulatedCarrierDamage = 0.0f;
+
+    UPROPERTY(Transient)
+    TWeakObjectPtr<ABwayPlayerState> LastCarrierDamageInstigatorPS;
+
+    UPROPERTY(Transient)
+    TWeakObjectPtr<UAbilitySystemComponent> BoundCarrierASC;
+
+    FDelegateHandle CarrierTagEventHandle;
+
+    void BindCarrierCCTagListener(ABwayCharacterWithAbilities* Carrier);
+    void UnbindCarrierCCTagListener();
+    void HandleCarrierGameplayTagChanged(const FGameplayTag Tag, int32 NewCount);
 
     // --- Components ---
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -198,9 +264,10 @@ protected:
     /**
      * Shared drop path used by OnDropped (voluntary / reset) and ForceFumbleFromDamage.
      * @param InitialVelocity Optional velocity change applied after physics is enabled.
-     * @param bRecordForcedFumble When true, increments ForcedFumbles on the current carrier.
+     * @param bRecordForcedFumble When true, increments ForcedFumbles on the attacker and/or current carrier.
+     * @param InstigatorActor Optional attacker actor that caused the forced fumble.
      */
-    void DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble);
+    void DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble, AActor* InstigatorActor = nullptr);
 
     //Helper to apply visual/audio configuration from settings
     void ApplyRelicConfiguration();

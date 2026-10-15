@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_RelicRequest.h"
 
+#include "AbilitySystemComponent.h"
 #include "BwayGameState.h"
 #include "BwayGameplayTags.h"
 #include "GameState/BwayRelicManagerComponent.h"
@@ -52,14 +53,28 @@ void UBwayGameplayAbility_RelicRequest::ActivateAbility(
 		return;
 	}
 
+	if (UAbilitySystemComponent* ASC = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : nullptr)
+	{
+		if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid())
+		{
+			const EGameplayTagReplicationState RepState = HasAuthority(&ActivationInfo)
+				? EGameplayTagReplicationState::TagAndCountToAll
+				: EGameplayTagReplicationState::None;
+			if (ASC->GetTagCount(BwayGameplayTags::State_Relic_PreparingCatch) <= 0)
+			{
+				ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, RepState);
+			}
+		}
+	}
+
 	const URelicSettings* Settings = ResolveRelicSettings();
 	const TSubclassOf<UGameplayEffect> RequestEffectClass = Settings ? Settings->RequestingGameplayEffectClass : nullptr;
 	if (!RequestEffectClass)
 	{
 		UE_LOG(LogBwayRelicRequest, Warning,
-			TEXT("RelicRequest: no RequestingGameplayEffectClass (RelicSettings=%s). Wire it on the match RelicSettings asset."),
+			TEXT("RelicRequest: no RequestingGameplayEffectClass (RelicSettings=%s). Using State.Relic.PreparingCatch loose tag."),
 			*GetNameSafe(Settings));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 

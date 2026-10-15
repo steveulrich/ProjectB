@@ -1,85 +1,55 @@
-# Breakaway planning docs
+# Breakaway Planning & Architecture Hub
 
-Hub for slice scope, current status, and where detailed docs live.
+**Last Reviewed:** October 13, 2026
+**Engine:** Unreal Engine `5.8.1` Source Build (`LyraEditor` / `LyraGame`)
 
-**Last reviewed:** September 5, 2026
+Use this index to navigate the active `AI_Planning/` working set. Historical narratives, superseded gate docs, and reference Lua files are isolated in `AI_Planning/Archive/` and must **never** be read during routine gates.
 
-Use this page to pick the right document. Do not treat older roadmaps, the HTML asset map, or May 2026 editor audits as live status.
+---
 
-A larger project plan is expected later. Until that lands, treat the following documents as the working set.
+## 1. Executive Status Snapshot (October 2026)
 
-## Status snapshot
+| Track | Current Status | Primary Evidence / Reference |
+|---|---|---|
+| **Core 4v4 Relic Loop & 240s Demo Rules** | **PASSED** (Bo5 / First-to-3, Goal, Elimination, Territory Tiebreaker, Ownership at 200ms) | [DEMO_MATCH_RULES.md](./DEMO_MATCH_RULES.md) · [RELIC_PICKUP_OWNERSHIP.md](./RELIC_PICKUP_OWNERSHIP.md) |
+| **Packaged LAN Transport & Rematch/Return** | **PASSED** (4-process Host/Join, Late-Arrival, Rejected-Travel Retry, Rematch, Connected Return at 200ms) | [PACKAGED_LAN_ACCEPTANCE.md](./PACKAGED_LAN_ACCEPTANCE.md) · [LATE_ARRIVAL_SELECTION_ACCEPTANCE.md](./LATE_ARRIVAL_SELECTION_ACCEPTANCE.md) |
+| **Match Economy & 6-Item Upgrade Shop** | **PASSED** (50g Kill / 25g Assist credit, 4-slot cap, Attack, Armor, MoveSpeed, CDR, LifeLeech, RespawnReduction at 200ms) | [COMBAT_CREDIT_ACCEPTANCE.md](./COMBAT_CREDIT_ACCEPTANCE.md) · [SHOP_INPUT_ACCEPTANCE.md](./SHOP_INPUT_ACCEPTANCE.md) · [COOLDOWN_UPGRADE_ACCEPTANCE.md](./COOLDOWN_UPGRADE_ACCEPTANCE.md) · [LIFE_LEECH_ACCEPTANCE.md](./LIFE_LEECH_ACCEPTANCE.md) · [RESPAWN_UPGRADE_ACCEPTANCE.md](./RESPAWN_UPGRADE_ACCEPTANCE.md) |
+| **Persistent Buildables (4 Heroes)** | **PASSED** (Shared `FBwayPlacementQuery`, obstruction recovery, 3-round persistence, active caps, Jail trap immunity at 200ms) | [BUILDABLE_AUTHORITY_ACCEPTANCE.md](./BUILDABLE_AUTHORITY_ACCEPTANCE.md) |
+| **Slide Physics & Lifecycle** | **PASSED** (4-process packaged at 100ms + 20/20 Oct 1–9 gravity/wall/ramp/camera-shake repairs) | [SLIDE_LIFECYCLE_ACCEPTANCE.md](./SLIDE_LIFECYCLE_ACCEPTANCE.md) |
+| **4-Hero Primary & Barrage Animations** | **PASSED / PARTIAL** (Alona, Argus, Korryn, Rawlins primaries passed packaged 100ms; Rawlins Barrage normal 0/100ms passed, changing-aim 1 host frame spike open) | [ALONA_PRIMARY_ANIMATION.md](./ALONA_PRIMARY_ANIMATION.md) · [ARGUS_PRIMARY_ANIMATION.md](./ARGUS_PRIMARY_ANIMATION.md) · [KORRYN_PRIMARY_ANIMATION.md](./KORRYN_PRIMARY_ANIMATION.md) · [RAWLINS_PRIMARY_ANIMATION.md](./RAWLINS_PRIMARY_ANIMATION.md) · [RAWLINS_BARRAGE_ACCEPTANCE.md](./RAWLINS_BARRAGE_ACCEPTANCE.md) |
+| **Remaining Parity Queue (Goals 1–6)** | **QUEUED** (All-16 ability combat effects, Relic catch/intercept/base-shop, escalating respawn & NetGUID fix, human playtest, 7 expansion heroes) | [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md) · [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) |
 
-Breakaway is a Capture-the-Relic vertical slice on Lyra (the current source engine is Unreal Engine 5.8). Gameplay lives in the `BreakawayCore` Game Feature plugin plus four hero plugins. The owner's final-public-alpha parity bar supersedes earlier scope exclusions.
+---
 
-| Track | Status |
-|-------|--------|
-| Humanoid relic loop | Implemented; actual scoring and latency acceptance still open |
-| Match HUD and results | Implemented; controlled results persistence, focus, and local return verified; full input/presentation coverage open |
-| LAN and match flow | Real browser join and two-human staging travel verified; four-human end-to-end and packaged acceptance open |
-| Section 3 — Four heroes (Steps 17–21) | C++ kits landed; Step 21 passed; leftover editor 3/3 PIE folded into Step 22 |
-| Step 22 — Section 3 capstone | **C++ landed** (fumble); editor PIE next |
-| Dorado map parity and packaged demo | Open |
-| Match upgrade shop | Missing from the implementation found so far; required by September alpha evidence |
+## 2. Which Document to Open
 
-**Next work:** Recover upgrade catalog/tuning and implement the match shop while closing the four-human LAN, scoring, return, and packaged gates. See [Final-alpha evidence](./FINAL_ALPHA_PARITY.md), [runtime verification](../Plugins/GameFeatures/BreakawayCore/Docs/LAN_FrontEnd_Verification.md), and the [core loop checklists](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md). Controlled fixtures do not prove player-driven end-to-end completion.
+| Need | Authoritative Document |
+|---|---|
+| **Active gate state & current candidate** | [SLICE_STATUS.md](./SLICE_STATUS.md) |
+| **Copy-pasteable `/goal` execution prompts** | [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md) |
+| **Remaining milestones & priorities** | [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) |
+| **Agent operating rules & circuit breakers** | [WORKFLOW_EFFICIENCY.md](./WORKFLOW_EFFICIENCY.md) |
+| **Locked vertical-slice scope** | [Vertical Slice Definition](./VERTICAL_SLICE_DEFINITION.md) |
+| **Game design rules & formulas (1:1 Alpha)** | [Breakaway Reborn Design Spec](./Breakaway_Reborn_Design_Spec.md) |
+| **Dated September 2017 reference evidence** | [Final Public Alpha Parity](./FINAL_ALPHA_PARITY.md) |
+| **UE 5.8 C++ & plugin architecture** | [Project Architecture Overview](./project_architecture_overview.md) |
+| **UE 5.8 C++/GAS/Net best practices** | [Unreal Engine Best Practices Bible](./UNREAL_ENGINE_BEST_PRACTICES_BIBLE.md) |
+| **All 11 heroes' stats, scaling & buildables** | [Breakaway Hero Stats Sheet](./Breakaway_Hero_Stats_Sheet.md) |
+| **Hero display names vs plugin folders** | [Hero Codename Map](./HERO_CODENAME_MAP.md) |
+| **Lyra base classes vs Breakaway overrides** | [Lyra Base Reference](./Lyra_Base_Reference.md) |
+| **Demo & DevMap match rules** | [Demo Match Rules](./DEMO_MATCH_RULES.md) |
+| **Staging-to-Dorado NetGUID investigation** | [Travel GUID Investigation](./TRAVEL_GUID_INVESTIGATION.md) |
 
-## Which document to use
+---
 
-| If you need | Open |
-|-------------|------|
-| Current priorities and remaining work | [Project roadmap](./PROJECT_ROADMAP.md) |
-| Locked slice scope (in / out) | [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md) |
-| Original-game evidence and unresolved parity rules | [Final public alpha parity](./FINAL_ALPHA_PARITY.md) |
-| Ordered implementation steps and PIE checklists | [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md) |
-| How systems fit together | [Project architecture overview](./project_architecture_overview.md) |
-| C++ class tables, tags, Blueprint hooks | [BreakawayCore systems index](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md) |
-| New to the codebase | [BreakawayCore onboarding tutorial](../Plugins/GameFeatures/BreakawayCore/Docs/BreakawayCore_Onboarding.md) |
-| Hero display names vs plugin folders | [Hero codename map](./HERO_CODENAME_MAP.md) |
-| Ability numbers, cooldowns, buildables | [Breakaway hero stats sheet](./Breakaway_Hero_Stats_Sheet.md) |
-| Design intent (rules, fantasy) | [Breakaway Reborn design spec](./Breakaway_Reborn_Design_Spec.md) |
-| Lyra versus Breakaway ownership | [Lyra base reference](./Lyra_Base_Reference.md) |
-| DevMap smoke test | [DevMap playtest guide](./DEVMAP_PLAYTEST_GUIDE.md) |
-| Optional interactive flow graph | [Gameplay flow map](../Docs/GameplayFlowMap/README.md) |
+## 3. Directory Organization & Archive Policy
 
-## Living vs historical
-
-**Living** (update when status changes):
-
-- This hub
-- [Project roadmap](./PROJECT_ROADMAP.md)
-- [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)
-- [Vertical slice roadmap](./Vertical_Slice_Roadmap.md)
-- [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)
-- [Project architecture overview](./project_architecture_overview.md)
-- [BreakawayCore systems index](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)
-- [Heroes README](../Plugins/GameFeatures/Heroes/README.md)
-
-**Historical or editor- lagging** (read with a date check):
-
-| Document | Why it lags |
-|----------|-------------|
-| [Blueprint asset audit](./BLUEPRINT_ASSET_AUDIT.md) | Last Editor-verified May 25, 2026. Hero plugins and HUD assets landed after that audit. |
-| [Asset map README](./ASSET_MAP_README.md) and `VerticalSlice_AssetMap.html` | November 2025 visualization. Roster, phases, and buildable counts are obsolete. |
-| Per-hero `*_Editor_Setup.md` files under BreakawayCore/Docs | Checklists for a single step. Status belongs in the core loop plan, not in each setup file. |
-
-## Roster (Section 3)
-
-Official UI names differ from plugin and folder names. For paths, see [Hero codename map](./HERO_CODENAME_MAP.md).
-
-| Display name | Plugin | Folder | Buildable (one per hero) |
-|--------------|--------|--------|--------------------------|
-| Argus | `Hero_Spartacus` | Argus | Siege Engine |
-| Alona | `Hero_Alona` | Alona | Sun Shrine |
-| Korryn | `Hero_Morgan` | Hexweaver | Cursed Ward |
-| Rawlins | `Hero_Rawlins` | Gunslinger | Jail |
-
-## Doc locations
-
-| Purpose | Path |
-|---------|------|
-| Planning, scope, and this hub | `AI_Planning/` |
-| Runtime system reference and editor checklists | `Plugins/GameFeatures/BreakawayCore/Docs/` |
-| Per-hero plugin setup | `Plugins/GameFeatures/Heroes/<Name>/CONTENT_SETUP.md` |
-
-Keep facts in one place: system behavior in BreakawayCore docs; priority and schedule in `AI_Planning/`. Cross-link; do not copy long checklists into both trees.
+- **`AI_Planning/` (Active Working Set):**
+  - Core specifications, roadmap, `SLICE_STATUS.md`, `WORKFLOW_EFFICIENCY.md` (`<= 120` lines), `MASTER_GOAL_QUEUE.md`, and condensed `*_ACCEPTANCE.md` / `*_ANIMATION.md` gate summaries (`<= 100` lines each).
+- **`AI_Planning/Archive/` (Cold Storage — Do NOT Read During Routine Gates):**
+  - `Archive/Full_History_20261013/`: Unabridged pre-condensation gate diaries and the 565-line historical workflow narrative.
+  - `Archive/Superseded_Gates/`: Early milestone gates superseded by later consolidated multi-upgrade/transport gates.
+  - `Archive/Workflow_Artifacts/`: Historical token audits and one-off step logs.
+  - `Archive/Lumberyard_Lua_Reference/`: Reference Lumberyard Lua character state scripts (`basecharacter_state*.lua`).
+- **`Plugins/GameFeatures/BreakawayCore/Docs/`:**
+  - Deep-dive C++ class tables ([SYSTEMS_INDEX.md](../Plugins/GameFeatures/BreakawayCore/Docs/SYSTEMS_INDEX.md)), onboarding ([BreakawayCore_Onboarding.md](../Plugins/GameFeatures/BreakawayCore/Docs/BreakawayCore_Onboarding.md)), and LAN frontend verification notes.

@@ -2,6 +2,7 @@
 
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
+#include "BwayGameplayTags.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Economy/BwayGoldAttributeSet.h"
@@ -83,6 +84,10 @@ void ABwayPlayerState::ApplyRelicCarrierTag(bool bCarrier, EGameplayTagReplicati
 	}
 
 	ASC->SetLooseGameplayTagCount(RelicCarrierTag, bCarrier ? 1 : 0, ReplicationState);
+	if (BwayGameplayTags::State_Relic_Carrying.GetTag().IsValid())
+	{
+		ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_Carrying, bCarrier ? 1 : 0, ReplicationState);
+	}
 }
 
 void ABwayPlayerState::OnRep_HasRelic()
@@ -235,7 +240,25 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, MatchGoldEarned);
 	DOREPLIFETIME(ABwayPlayerState, LastRoundStats);
 	DOREPLIFETIME(ABwayPlayerState, RespawnSchedule);
+	DOREPLIFETIME(ABwayPlayerState, DeathsInCurrentRound);
 	DOREPLIFETIME_CONDITION(ABwayPlayerState, bHasPlacedBuildableThisRound, COND_OwnerOnly);
+}
+
+void ABwayPlayerState::SetDeathsInCurrentRound(int32 NewCount)
+{
+	if (!HasAuthority()) return;
+	const int32 ClampedCount = FMath::Max(0, NewCount);
+	if (DeathsInCurrentRound == ClampedCount) return;
+	DeathsInCurrentRound = ClampedCount;
+	ForceNetUpdate();
+}
+
+int32 ABwayPlayerState::IncrementDeathsInCurrentRound()
+{
+	if (!HasAuthority()) return DeathsInCurrentRound;
+	DeathsInCurrentRound = FMath::Max(0, DeathsInCurrentRound) + 1;
+	ForceNetUpdate();
+	return DeathsInCurrentRound;
 }
 
 void ABwayPlayerState::SetRespawnSchedule(double ServerEndTime, int32 RoundNumber)
@@ -339,11 +362,35 @@ void ABwayPlayerState::AddForcedFumble()
 	}
 }
 
+void ABwayPlayerState::AddInterception()
+{
+	if (HasAuthority())
+	{
+		Interceptions++;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded interception (total: %d)"), *GetPlayerName(), Interceptions);
+	}
+}
+
+void ABwayPlayerState::SetInHealingZone(bool bInZone, int32 ZoneTeamIndex)
+{
+	if (UpgradeComponent)
+	{
+		UpgradeComponent->SetInHealingZone(bInZone, ZoneTeamIndex);
+	}
+}
+
+bool ABwayPlayerState::IsPlayerInHealingZone() const
+{
+	return UpgradeComponent ? UpgradeComponent->IsPlayerInHealingZone() : false;
+}
+
 void ABwayPlayerState::ResetMatchStats()
 {
 	if (HasAuthority())
 	{
 		SetRespawnSchedule(0.0, 0);
+		DeathsInCurrentRound = 0;
 		Kills = 0;
 		Deaths = 0;
 		Assists = 0;

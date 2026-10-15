@@ -152,7 +152,7 @@ void ABwayRelicIndicatorProbe::Tick(float DeltaSeconds)
 		UUserWidget* UI = WC ? WC->GetUserWidgetObject() : nullptr;
 		const bool IsRequester = Peer->GetPlayerId() == Frame.Requester;
 		const bool TagActive = Active(Peer);
-		const bool Dead = ASC(Peer) && ASC(Peer)->HasMatchingGameplayTag(LyraGameplayTags::Status_Death);
+		const bool Dead = BwayRelicIndicatorTest::ASC(Peer) && BwayRelicIndicatorTest::ASC(Peer)->HasMatchingGameplayTag(LyraGameplayTags::Status_Death);
 		const bool Expected = IsRequester && Frame.Active && !Dead && Peer != Viewer && Team >= 0 && Team == GS->GetPlayerTeam(Viewer);
 		const bool Visible = WC && WC->IsVisible();
 		const bool Screen = WC && WC->GetWidgetSpace() == EWidgetSpace::Screen;

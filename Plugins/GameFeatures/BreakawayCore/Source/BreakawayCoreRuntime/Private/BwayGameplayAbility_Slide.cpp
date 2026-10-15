@@ -192,7 +192,7 @@ void UBwayGameplayAbility_Slide::OnMovementModeChanged(ACharacter* Character, EM
 		&& PreviousMovementMode == MOVE_Custom && PreviousCustomMode == uint8(ECustomMovementMode::CMOVE_Slide)
 		&& !CachedBwayMoveComp->IsSliding())
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 	}
 }
 

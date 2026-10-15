@@ -109,8 +109,8 @@ void ABwayRelicOwnershipProbe::Tick(float DeltaSeconds)
     const double Now = FPlatformTime::Seconds();
     if (ReleaseAt > 0 && Now >= ReleaseAt)
     {
-        ASC(Viewer)->AbilityInputTagReleased(ReleaseTag);
-        ASC(Viewer)->ProcessAbilityInput(DeltaSeconds, false);
+        BwayRelicOwnershipTest::ASC(Viewer)->AbilityInputTagReleased(ReleaseTag);
+        BwayRelicOwnershipTest::ASC(Viewer)->ProcessAbilityInput(DeltaSeconds, false);
         ReleaseAt = 0;
     }
     if (Frame.Stage < 0 || SubmittedStage == Frame.Stage) return;
@@ -133,7 +133,7 @@ void ABwayRelicOwnershipProbe::Tick(float DeltaSeconds)
                 FGameplayTag InputTag;
                 for (const FGameplayTag& Tag : Spec->GetDynamicSpecSourceTags())
                     if (Tag.ToString().StartsWith(TEXT("InputTag."))) { InputTag = Tag; break; }
-                Activated = ASC(Viewer)->TryActivateAbility(Handle);
+                Activated = BwayRelicOwnershipTest::ASC(Viewer)->TryActivateAbility(Handle);
                 if (Activated && InputTag.IsValid()) { ReleaseTag = InputTag; ReleaseAt = Now + 0.4; }
             }
             ++Actions;
@@ -157,7 +157,7 @@ void ABwayRelicOwnershipProbe::Tick(float DeltaSeconds)
     {
         const bool Owns = Peer->GetPlayerId() == Frame.Carrier;
         Flags &= Peer->bHasRelic == Owns;
-        TagsAgree &= ASC(Peer) && ASC(Peer)->GetTagCount(Tag) == (Owns ? 1 : 0);
+        TagsAgree &= BwayRelicOwnershipTest::ASC(Peer) && BwayRelicOwnershipTest::ASC(Peer)->GetTagCount(Tag) == (Owns ? 1 : 0);
         if (HasAuthority()) Counts &= Grants(Peer, Relic) == (Owns ? Frame.AbilityCount : 0);
         if (Peer->GetPlayerId() == Frame.ScorePlayer) Score &= Peer->GetObjectiveScore() == Frame.ObjectiveScore;
     }

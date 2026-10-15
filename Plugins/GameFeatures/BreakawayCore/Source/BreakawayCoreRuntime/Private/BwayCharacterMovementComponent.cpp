@@ -117,6 +117,7 @@ void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previo
 	{
 		DefaultWalkableFloorAngle = GetWalkableFloorAngle();
 		DefaultRotationRate = RotationRate;
+		bPreSlideOrientRotationToMovement = bOrientRotationToMovement;
 
 		SetWalkableFloorAngle(SlideWalkableFloorAngle);
 		bOrientRotationToMovement = true;
@@ -128,7 +129,13 @@ void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previo
 	{
 		SetWalkableFloorAngle(DefaultWalkableFloorAngle);
 		RotationRate = DefaultRotationRate;
-		bOrientRotationToMovement = (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking);
+		bOrientRotationToMovement = (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking)
+			&& bPreSlideOrientRotationToMovement;
+
+		if (CharacterOwner && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy && MovementMode == MOVE_Falling)
+		{
+			bIsSlideJumping = true;
+		}
 
 		EndSlide();
 	}
@@ -138,7 +145,8 @@ void UBwayCharacterMovementComponent::OnMovementModeChanged(EMovementMode Previo
 	if (bIsSlideJumping && PreviousMovementMode == MOVE_Falling && MovementMode != MOVE_Falling)
 	{
 		const bool bLandedOnGround = (MovementMode == MOVE_Walking || MovementMode == MOVE_NavWalking);
-		if (!bPreserveSlideJumpUntilLanding || !bLandedOnGround)
+		const bool bIsSimProxy = CharacterOwner && CharacterOwner->GetLocalRole() == ROLE_SimulatedProxy;
+		if (!bPreserveSlideJumpUntilLanding || !bLandedOnGround || bIsSimProxy)
 		{
 			ClearSlideJumpState();
 		}
@@ -182,6 +190,11 @@ bool UBwayCharacterMovementComponent::CheckShouldEndSlide()
 // --- Speed and Braking Overrides ---
 float UBwayCharacterMovementComponent::GetMaxSpeed() const
 {
+	const AActor* OwnerActor = GetOwner();
+	const UAbilitySystemComponent* ASC = OwnerActor ? UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerActor) : nullptr;
+	// Sliding computes its own speed instead of calling the Lyra implementation.
+	if (ASC && ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped)) return 0.f;
+
 	float BaseMaxSpeed = 0.f;
 	if (IsSliding())
 	{
@@ -195,14 +208,11 @@ float UBwayCharacterMovementComponent::GetMaxSpeed() const
 	}
 
 	float SpeedMultiplier = 1.f;
-	if (const AActor* OwnerActor = GetOwner())
+	if (ASC)
 	{
-		if (const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwnerActor))
+		if (const UBwayHeroAttributeSet* HeroSet = ASC->GetSet<UBwayHeroAttributeSet>())
 		{
-			if (const UBwayHeroAttributeSet* HeroSet = ASC->GetSet<UBwayHeroAttributeSet>())
-			{
-				SpeedMultiplier = HeroSet->GetMoveSpeedMultiplier();
-			}
+			SpeedMultiplier = HeroSet->GetMoveSpeedMultiplier();
 		}
 	}
 
@@ -274,7 +284,20 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	const float FloorDistance = CurrentFloor.GetDistanceToFloor();
 	const bool bHasSlideGroundContact = CurrentFloor.HitResult.IsValidBlockingHit()
 		&& FMath::IsFinite(FloorDistance) && FloorDistance <= MAX_FLOOR_DIST;
+	constexpr float MinSlideFloorZ = 0.80f;
+	const FVector StartFloorNormal = CurrentFloor.HitResult.ImpactNormal;
 	const FVector InputAccelDir = Acceleration.GetSafeNormal();
+
+	if (bHasSlideGroundContact && StartFloorNormal.Z >= MinSlideFloorZ
+		&& FVector::DotProduct(Velocity, StartFloorNormal) > KINDA_SMALL_NUMBER)
+	{
+		const float PreTangentSpeed = Velocity.Size();
+		const FVector TangentDir = FVector::VectorPlaneProject(Velocity, StartFloorNormal).GetSafeNormal();
+		if (!TangentDir.IsNearlyZero())
+		{
+			Velocity = TangentDir * PreTangentSpeed;
+		}
+	}
 
 	Acceleration = FVector::ZeroVector;
 
@@ -295,6 +318,10 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	Velocity = Velocity.GetClampedToMaxSize(GetMaxSpeed());
 
+	const float PreMoveSurfaceSpeed = (bHasSlideGroundContact && StartFloorNormal.Z >= MinSlideFloorZ)
+		? FVector::VectorPlaneProject(Velocity, StartFloorNormal).Size()
+		: Velocity.Size2D();
+
 	bJustTeleported = false;
 	const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 	FHitResult Hit(1.f);
@@ -306,15 +333,57 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		FBwaySlideContactContext Contacts;
 		Contacts.StepSeconds = deltaTime;
 		TGuardValue<FBwaySlideContactContext*> ContactScope(SlideContactContext, &Contacts);
+		const float FirstRemaining = 1.f - Hit.Time;
+		const FVector FirstFloorNormal = Hit.ImpactNormal;
 		HandleImpact(Hit, deltaTime, Adjusted);
-		SlideAlongSurface(Adjusted, (1.f - Hit.Time), Hit.Normal, Hit, true);
+		SlideAlongSurface(Adjusted, FirstRemaining, Hit.Normal, Hit, true);
 		if (!HasValidData()) return;
+
+		bool bConcaveFloorTransition = false;
+		FVector ConcaveFloorNormal = FVector::ZeroVector;
+		if (Hit.bBlockingHit && Hit.Time < 1.f && Contacts.FrontalWallSeconds <= 0.f
+			&& FirstFloorNormal.Z >= MinSlideFloorZ && Hit.ImpactNormal.Z >= MinSlideFloorZ
+			&& FVector::DotProduct(FirstFloorNormal, Hit.ImpactNormal) < 0.999f)
+		{
+			bConcaveFloorTransition = true;
+			ConcaveFloorNormal = Hit.ImpactNormal;
+			const float SecondRemaining = FirstRemaining * (1.f - Hit.Time);
+			const FVector SecondTangentDir = FVector::VectorPlaneProject(Velocity, ConcaveFloorNormal).GetSafeNormal();
+			if (!SecondTangentDir.IsNearlyZero() && SecondRemaining > KINDA_SMALL_NUMBER)
+			{
+				FHitResult SecondHit(1.f);
+				const FVector SecondDelta = SecondTangentDir * (PreMoveSurfaceSpeed * deltaTime);
+				SafeMoveUpdatedComponent(SecondDelta * SecondRemaining, UpdatedComponent->GetComponentQuat(), true, SecondHit);
+				if (SecondHit.Time < 1.f)
+				{
+					HandleImpact(SecondHit, deltaTime * SecondRemaining, SecondDelta);
+					SlideAlongSurface(SecondDelta, SecondRemaining * (1.f - SecondHit.Time), SecondHit.Normal, SecondHit, true);
+					if (!HasValidData()) return;
+				}
+			}
+		}
+		else if (bHasSlideGroundContact && Contacts.FrontalWallSeconds <= 0.f
+			&& StartFloorNormal.Z >= MinSlideFloorZ && FirstFloorNormal.Z >= MinSlideFloorZ
+			&& FVector::DotProduct(StartFloorNormal, FirstFloorNormal) < 0.999f)
+		{
+			bConcaveFloorTransition = true;
+			ConcaveFloorNormal = FirstFloorNormal;
+		}
+
 		if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())
 		{
 			// SlideAlongSurface resolves displacement through every contact, but does
 			// not update Velocity. Retaining inward gravity makes a later floor hit
 			// look like a frontal wall and repeatedly brakes horizontal motion.
 			Velocity = (UpdatedComponent->GetComponentLocation() - OldLocation) / deltaTime;
+			if (bConcaveFloorTransition && Contacts.FrontalWallSeconds <= 0.f)
+			{
+				const FVector TransitionTangentDir = FVector::VectorPlaneProject(Velocity, ConcaveFloorNormal).GetSafeNormal();
+				if (!TransitionTangentDir.IsNearlyZero())
+				{
+					Velocity = TransitionTangentDir * FMath::Max(Velocity.Size(), PreMoveSurfaceSpeed);
+				}
+			}
 		}
 		if (Contacts.FrontalWallSeconds > 0.f)
 		{
@@ -324,6 +393,32 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		}
 	}
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+	if (bHasSlideGroundContact && !bJustTeleported && CurrentFloor.bBlockingHit
+		&& CurrentFloor.HitResult.IsValidBlockingHit() && !CurrentFloor.HitResult.bStartPenetrating
+		&& CurrentFloor.HitResult.ImpactNormal.Z >= MinSlideFloorZ)
+	{
+		const float PostFloorDist = CurrentFloor.GetDistanceToFloor();
+		bool bSteppedDown = false;
+		if (FMath::IsFinite(PostFloorDist) && PostFloorDist > MAX_FLOOR_DIST && PostFloorDist <= MaxStepHeight)
+		{
+			FHitResult StepDownHit(1.f);
+			const float StepDownDrop = FMath::Max(0.f, PostFloorDist - MIN_FLOOR_DIST);
+			SafeMoveUpdatedComponent(FVector(0.f, 0.f, -StepDownDrop), UpdatedComponent->GetComponentQuat(), true, StepDownHit);
+			FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+			bSteppedDown = true;
+		}
+		if (CurrentFloor.bBlockingHit && CurrentFloor.HitResult.IsValidBlockingHit()
+			&& !CurrentFloor.HitResult.bStartPenetrating && CurrentFloor.HitResult.ImpactNormal.Z >= MinSlideFloorZ
+			&& (bSteppedDown || FVector::DotProduct(Velocity, CurrentFloor.HitResult.ImpactNormal) > KINDA_SMALL_NUMBER))
+		{
+			const float CurrentSpeed = FMath::Max(Velocity.Size(), PreMoveSurfaceSpeed);
+			const FVector TangentDir = FVector::VectorPlaneProject(Velocity, CurrentFloor.HitResult.ImpactNormal).GetSafeNormal();
+			if (!TangentDir.IsNearlyZero())
+			{
+				Velocity = TangentDir * CurrentSpeed;
+			}
+		}
+	}
 	if (!CurrentFloor.bBlockingHit)
 	{
 		SetMovementMode(MOVE_Falling);
@@ -469,7 +564,7 @@ bool UBwayCharacterMovementComponent::CanAttemptJump() const
 
 bool UBwayCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
-	const bool bJumpingFromSlide = IsSliding();
+	const bool bJumpingFromSlide = IsSliding() || bIsSlideJumping;
 
 	if (!Super::DoJump(bReplayingMoves, DeltaTime))
 	{

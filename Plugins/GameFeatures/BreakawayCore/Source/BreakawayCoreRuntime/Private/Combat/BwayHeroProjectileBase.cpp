@@ -93,6 +93,9 @@ void ABwayHeroProjectileBase::ConfigureMovement(float InSpeed, float InLifeSpan,
 		ProjectileMovement->InitialSpeed = InSpeed;
 		ProjectileMovement->MaxSpeed = InSpeed;
 		ProjectileMovement->ProjectileGravityScale = InGravityScale;
+		// Actor forward is already in world space, including before FinishSpawning.
+		// Component initialization must not rotate this direction a second time.
+		ProjectileMovement->bInitialVelocityInLocalSpace = false;
 		ProjectileMovement->Velocity = GetActorForwardVector() * InSpeed;
 	}
 
@@ -371,6 +374,7 @@ void ABwayHeroProjectileBase::ApplyPresentationInternal(const UBwayProjectilePre
 		ProjectileMovement->ProjectileGravityScale = Data->GravityScale;
 		if (ProjectileMovement->Velocity.IsNearlyZero())
 		{
+			ProjectileMovement->bInitialVelocityInLocalSpace = false;
 			ProjectileMovement->Velocity = GetActorForwardVector() * Data->InitialSpeed;
 		}
 	}

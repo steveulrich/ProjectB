@@ -189,12 +189,27 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void AddHealingDone(int32 Amount);
 
-	/** Server-only: Record a forced fumble (relic dropped because the carrier took damage) */
+	/** Server-only: Record a forced fumble (relic dropped because the carrier took damage or CC) */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
 	void AddForcedFumble();
 
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	int32 GetForcedFumbles() const { return ForcedFumbles; }
+
+	/** Server-only: Record a mid-air pass interception */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddInterception();
+
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetInterceptions() const { return Interceptions; }
+
+	/** Set or clear explicit base healing zone presence on this player's upgrade component. */
+	UFUNCTION(BlueprintCallable, Category = "Economy|Base")
+	void SetInHealingZone(bool bInZone, int32 ZoneTeamIndex = -1);
+
+	/** True when this player is alive inside their friendly team's base healing zone. */
+	UFUNCTION(BlueprintPure, Category = "Economy|Base")
+	bool IsPlayerInHealingZone() const;
 
 	/** Get damage dealt this match */
 	UFUNCTION(BlueprintPure, Category = "Stats")
@@ -248,6 +263,16 @@ public:
 	/** Authority only. Called by the timer owner, never by presentation. */
 	void SetRespawnSchedule(double ServerEndTime, int32 RoundNumber);
 
+	/** Get number of deaths recorded for this player in the current round. */
+	UFUNCTION(BlueprintPure, Category = "Respawn")
+	int32 GetDeathsInCurrentRound() const { return DeathsInCurrentRound; }
+
+	/** Authority only: set within-round death count (used by round/match escalation resets). */
+	void SetDeathsInCurrentRound(int32 NewCount);
+
+	/** Authority only: increment within-round death count and return the new count. */
+	int32 IncrementDeathsInCurrentRound();
+
 	UPROPERTY(BlueprintAssignable, Category = "Respawn")
 	FOnRespawnScheduleChanged OnRespawnScheduleChanged;
 
@@ -267,6 +292,9 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_RespawnSchedule)
 	FBwayRespawnSchedule RespawnSchedule;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Respawn")
+	int32 DeathsInCurrentRound = 0;
 
 	UFUNCTION()
 	void OnRep_RespawnSchedule();

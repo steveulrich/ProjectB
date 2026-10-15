@@ -226,6 +226,7 @@ protected:
 	// Cached default values restored when exiting slide
 	float DefaultWalkableFloorAngle;
 	FRotator DefaultRotationRate;
+	bool bPreSlideOrientRotationToMovement = false;
 	float DefaultGravityScale;
 
 	/** Predicted slide-jump aerial state (carried via compressed move flags). */

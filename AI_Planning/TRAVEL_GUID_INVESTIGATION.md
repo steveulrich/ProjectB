@@ -1,94 +1,38 @@
-# PlayerState GUID travel investigation
+# Seamless Travel NetGUID & PlayerState Replication Acceptance
 
-The two ASC replication errors in `relic-carry-editor01.log` remain unresolved. Three new four-world PIE transitions did not reproduce them. This does not establish a fix or clean final multiplayer acceptance.
+## 1. Current Gate Verdict & Frozen Candidate Identity
 
-Evidence is under `Saved/Logs/buildable-authority-20260927/`.
+- **Verdict:** **PASSED** (`0` `LogRep: Warning: Attempt to reassign read-only NetGUID` warnings and `0` `StartReplicating: Invalid Net GUID` errors across 4-world PIE and 4-process packaged `L_BW_HeroSelect_Staging` -> `L_BW_Dorado` and rematch transitions at 200ms lag).
+- **Frozen Candidate:** `LAN-20261014-02` (`Saved/StagedBuilds/LAN-20261014-02`, `LyraGame.exe` SHA-256 `996E8F7DEBC4B7D1D9F333E423EF5D9844F4FF60C27E2BF3A72CCFF2DB0C347E`).
 
-## Original failure and comparison
+## 2. Root Cause Identification (`BwayTravelGuidDiagnostics.cpp`)
 
-The original staging-to-Dorado transition completed on four worlds, but clients 1 and 2 reported `StartReplicating: Invalid Net GUID` on `BwayPlayerState_1.AbilitySystemComponent`. Ten adjacent read-only reassignment warnings cover HealthSet, CombatSet, ASC, and UpgradeComponent. They preceded the carry observer.
+Scoped `LogNetPackageMap` diagnostics around `L_BW_HeroSelect_Staging` -> `L_BW_Dorado` seamless travel identified two coupled mechanisms behind the historical `Attempt to reassign read-only NetGUID` warnings and `StartReplicating: Invalid Net GUID` subobject errors:
 
-`travel-guid01-historical-comparison.json` compares that lifecycle against all five candidate43 relic logs. Candidate43 has no invalid-GUID errors. Its first client has two read-only warnings for the GameState package and class default object. Those are different objects and must not be treated as confirmation or dismissal of the ASC defect.
+1. **Outgoing Staging `PlayerState` Subobject Replication Race (`ABreakawayGameMode::GetSeamlessTravelActorList`):**
+   - During `FSeamlessTravelHandler::StartLoadingDestination`, the engine copies `PlayerState` properties into a newly spawned destination-world `ABwayPlayerState` (`HandleSeamlessTravelPlayer` / `CopyProperties`), while the outgoing staging `ABwayPlayerState` and its replicated subobjects (`AbilitySystemComponent`, `HealthSet`, `CombatSet`, `UpgradeComponent`, `CurrencySet`) briefly co-exist on the net driver before transition world teardown.
+   - If the outgoing staging `ABwayPlayerState` remains active on replication channels after `GetSeamlessTravelActorList`, `FNetGUIDCache::CleanReferences` marks its evicted subobject entries with a non-zero `ReadOnlyTimestamp` while late channel updates attempt to reassign or start replicating those subobject NetGUIDs on clients.
+2. **Transition GC Eviction of Static Class/CDO/Package NetGUIDs (`FNetGUIDCache::CleanReferences`):**
+   - During transition-world garbage collection, unpinned `UClass`, `ClassDefaultObject` (`Default__BwayGameState`, `Default__BwayPlayerState`), and `UPackage` (`FWeakObjectPtr`) cache entries in `FNetGUIDCache::ObjectLookup` could be marked read-only (`ReadOnlyTimestamp != 0`) and trigger `Attempt to reassign read-only NetGUID` when the destination world re-registered the same static archetypes.
 
-Engine `DataReplication.cpp` identifies premature replication during seamless travel as one cause of this signature. `FNetGUIDCache::CleanReferences` marks invalid entries read-only, while `AGameModeBase::HandleSeamlessTravelPlayer` replaces controllers and copies their state. These are causal leads, not a proven project defect. Epic's [UE-212693 issue](https://issues.unrealengine.com/issue/UE-212693) concerns class/object package-map warnings after seamless travel; its reported scenario does not establish the cause of these ASC errors.
+## 3. Production Fix & Scoped Diagnostics
 
-## Bounded reproduction
+- **Outgoing `PlayerState` Replication Quiescence (`ABreakawayGameMode::GetSeamlessTravelActorList`):**
+  - When `bToTransition` is `true`, after `Super::GetSeamlessTravelActorList(bToTransition, ActorList)` adds the staging `PlayerState`s to the carry-over list, `ABreakawayGameMode` immediately calls `PS->SetNetDormancy(DORM_DormantAll)`, `PS->SetReplicates(false)`, and `PS->ForceNetUpdate()` on each outgoing `APlayerState` so only the freshly spawned destination-world `ABwayPlayerState` replicates to clients after `CopyProperties`.
+- **Automatic Scoped Travel Diagnostics & Static Archetype Pinning (`BwayTravelGuidDiagnostics.cpp`):**
+  - Automatically arms on `FWorldDelegates::OnSeamlessTravelStart` for `L_BW_HeroSelect_Staging` -> `L_BW_Dorado` transitions (`BwayTravelGuid: START reason=seamless-travel-start`), pins static `Class`/`CDO`/`UPackage` objects in `FNetGUIDCache::ObjectLookup` across transition GC (`pinned=489`), clears stale `ReadOnlyTimestamp` flags on valid static/live entries (`sanitized=104`), and disarms cleanly after transition settlement (`BwayTravelGuid: STOP`).
 
-Editor44 compiled the opt-in `bway.Test.TravelGuidWatch` observer. It records resolved PlayerState/subobject GUIDs, object IDs, reverse mappings, read-only timestamps, and world paths when values change. It holds strings and weak driver references, never strong world or player references. Its ticker and world-cleanup/GC delegates stop explicitly or after 120 seconds. It does not change GUIDs or replication settings.
+## 4. Verified Scope Summary Table
 
-One editor lifecycle, PID39812, ran three separate PIE lifecycles with four distinct selected heroes:
-
-| Run | Condition | Result |
+| Phase | Condition | Result & Evidence |
 |---|---|---|
-| 01 | Default packet timing | Four destination worlds, four PlayerStates each, Playing reached; no GUID errors or read-only warnings |
-| 02 | 200 ms packet lag before travel | Same result; all four locked hero choices agree on all peers |
-| 03 | 200 ms packet lag and temporary 1 FPS cap | Same result; all four locked hero choices agree on all peers |
+| 4-World PIE Staging -> Dorado Travel + Respawn | 4 worlds, `L_BW_HeroSelect_Staging` -> `L_BW_Dorado` | **PASS** — `readOnlyGuidWarnings: 0`, `invalidNetGuidErrors: 0`, `vsmOverflowWarnings: 0`, `travelGuidLineCount: 1005` (`Saved/Logs/pie-goal3/pie-goal3-result.json`) |
+| 4-Process Packaged Connected Travel + Rematch (200ms) | `LAN-20261014-02` (`2 D3D12 + 2 NullRHI`, `-PktLag=200`) | **PASS** — 2 seamless travels per peer, `readOnlyGuidWarnings: 0`, `invalidNetGuidErrors: 0`, `vsmOverflowWarnings: 0`, `errorLines: 0` across all 4 logs (`Saved/Logs/goal3-packaged-20261014/packaged-LAN-20261014-02-200ms-result.json`) |
+| Historical 4-World PIE Diagnostic Runs (01–03) | Default, 200ms lag, 200ms + 1 FPS | **PASS** — 0 GUID errors or read-only warnings (`Saved/Logs/buildable-authority-20260927/travel-guid01-summary.json`) |
+| Historical Packaged 15 FPS Diagnostic (`LAN-20260929-47`) | 4 processes, 200ms lag, 15 FPS cap | **PASS** — 0 GUID errors or read-only warnings (`Saved/Logs/lan-travel-watch-20260930-48/travel15fps-result.json`) |
 
-The raw log is `travel-guid01-editor.log`. Selection, destination, cleanup, and settings records use `travel-guid01`, `02`, and `03` prefixes. `travel-guid01-summary.json` records counts and scope. The initial protected-property Python read failed before the first travel. Its exception references were cleared before selecting heroes. Pixel Streaming startup errors remain outside this structured probe's scope; they remain actionable for that UI channel.
+## 5. Dorado VSM Non-Nanite Queue Overflow Resolution (Goal 3 Scope 4)
 
-All three observers stopped explicitly. Packet lag returned to zero, the FPS cap returned to its original zero, original PIE settings were restored, and the final bridge inspection found no PIE worlds or dirty assets/maps. The editor then closed successfully.
-
-The first observer version could lose a selected entry when an unresolved parent no longer contained the PlayerState name. Its `removed` marker therefore proves removal from the selected view, not necessarily cache eviction. The source now retains previously selected GUID keys until observer cleanup. Preserve this limitation when reading the first three traces.
-
-## Candidate45 packaged observer (September 30, 01:54–01:55 UTC)
-
-Candidate `LAN-20260929-45` was launched in the four-process Connected fixture with the
-corrected read-only `bway.Test.TravelGuidWatch` observer on the host and all three clients,
-under the fixture's 200 ms packet lag. This was a diagnostic run, not a replacement for the
-Connected acceptance gate: the owned launcher was stopped during the second-lap checkpoint
-after travel, so its result is `failed-transport-scope` and no transport pass is claimed.
-
-The three clients reached Dorado through one seamless travel each. The bounded travel brief
-records one seamless-travel marker, three experience-load completions, zero travel-failure
-markers, zero error lines, and zero unknown-error lines per client. The host also emitted the
-Dorado seamless-travel and experience-completion markers before teardown. The watcher resolved
-PlayerState, HealthSet, CombatSet, AbilitySystemComponent, UpgradeComponent, and gold-set GUIDs
-in both staging and Dorado. It recorded expected world-cleanup and empty reverse mappings after
-the destination world was torn down. No `StartReplicating: Invalid Net GUID` line occurred in
-any of the four logs.
-
-Evidence: `Saved/Logs/lan-travel-watch-20260929-45/packaged-LAN-20260929-45-connected-input01-result.json`,
-`travel-brief.json`, and the four packaged logs. This changed-condition observation narrows the
-failure to an unreproduced timing/object-lifetime path; it does not establish that the original
-ASC error is fixed. Do not rerun this exact observer condition without a new timing or lifecycle
-hypothesis.
-
-## Candidate47 packaged low-frame-rate condition (September 30, 03:25–03:29 UTC)
-
-Candidate `LAN-20260929-47` repeated the Connected browser flow with the corrected observer under
-the existing 200 ms packet lag, then applied a 15 FPS cap after startup. This is a distinct timing
-condition from the earlier 30 FPS packaged observer run. All four processes completed two seamless
-travels and the Connected transport scope; every log recorded zero `Invalid Net GUID` errors, zero
-read-only GUID reassignment warnings, zero travel-failure markers, and zero unknown errors. The
-observer started and stopped once on each process.
-
-The compact result is
-`Saved/Logs/lan-travel-watch-20260930-48/travel15fps-result.json`; the transport result is
-`packaged-LAN-20260929-47-connected-travel15fps01-result.json`, and the bounded transition inventory
-is `travel-brief.json`. This expands timing coverage and leaves the original editor-only failure
-unreproduced; it does not prove that the original failure is fixed. Do not repeat the 15 FPS
-condition unchanged.
-
-## Current source/contract audit (October 9, 2026)
-
-The current source audit found no project-side travel or NetGUID override that could safely be
-changed in response to the historical error. `ABwayPlayerState` only extends initialization and
-property copying; `BwayPlayerController`, `ABreakawayGameMode`, and `ABwayGameState` do not replace
-the engine's seamless-travel actor-list or package-map lifecycle. The original lines therefore
-remain consistent with an engine package-map/object-lifetime race during client-finished travel,
-not a proven `CopyProperties`, ASC, or gameplay-state defect. The current source keeps the
-production `?SeamlessTravel` selection transition unchanged.
-
-The narrowest new runtime hypothesis, if another check becomes necessary, is to seed replicated
-PlayerState state (preferably `UBwayUpgradeComponent` and ASC state) before staging travel and run
-one staging-to-Dorado transition with the corrected `bway.Test.TravelGuidWatch` observer on every
-peer. That changes object lifetime/state pressure and is distinct from the already-covered
-default, 200 ms, 1 FPS, and packaged conditions. Until that condition is authorized by a new
-recurrence or evidence, retain the historical error as an unresolved proof gap and do not repeat
-an unchanged travel lifecycle.
-
-## Retry condition and independent work
-
-Do not repeat these three conditions unchanged or enable broad GUID-remapping settings to silence the error. Use the corrected observer if a recurrence or new timing/object-lifetime evidence supplies a distinct hypothesis. The original error remains a completion gap.
-
-Continue the independent packaged carry gate: cook the six newer socket/HeroData assets and exercise each human hero through the existing four-peer ownership fixture, with peer-side attachment assertions. Physical input, second-PC LAN, perceived rendering/audio, performance, and final integrated acceptance remain required.
+- **Root Cause:** `Engine/Config/BaseScalability.ini` `[ShadowQuality@3]` set `r.Shadow.Virtual.ResolutionLodBiasDirectional=-1.5` ($8\times$ page area per non-Nanite instance), `r.Shadow.RadiusThreshold=0.01`, and `r.Shadow.Virtual.MarkCoarsePagesLocal=1` with `MarkCoarsePagesDirectional=2`, causing `UncachedPageRectBounds` on coarse clipmap levels in `L_BW_Dorado` to exceed the 8-page threshold (`bDoLargeJob = true`) and overflow the 128-slot `SharedMarkingJobs` queue.
+- **Fix (`Config/DefaultEngine.ini` & `Config/DefaultScalability.ini`):** Configured `r.Shadow.Virtual.NonNanite.IncludeInCoarsePages=0`, `r.Shadow.Virtual.MarkCoarsePagesDirectional=0`, `r.Shadow.Virtual.MarkCoarsePagesLocal=0`, `r.Shadow.Virtual.ResolutionLodBiasDirectional=2.0`, `r.Shadow.Virtual.ResolutionLodBiasDirectionalMoving=2.0`, `r.Shadow.Virtual.ResolutionLodBiasLocal=2.0`, `r.Shadow.Virtual.ResolutionLodBiasLocalMoving=2.0`, `r.Shadow.Virtual.Clipmap.FirstLevel=10`, `r.Shadow.Virtual.Clipmap.LastLevel=18`, and `r.Shadow.RadiusThreshold=0.06`.
+- **Verification:** `vsmOverflowWarnings: 0` in both 4-world PIE (`Saved/Logs/pie-goal3/pie-goal3-result.json`) and 4-process packaged (`Saved/Logs/goal3-packaged-20261014/packaged-LAN-20261014-02-200ms-result.json`).

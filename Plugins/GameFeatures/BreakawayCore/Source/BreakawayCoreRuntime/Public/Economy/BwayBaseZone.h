@@ -28,6 +28,9 @@ public:
 	/** Uses current pawn position and canonical Breakaway team membership on every query. */
 	UFUNCTION(BlueprintPure, Category="Base")
 	bool CanUseBase(const APlayerState* Player) const;
+	/** Alias for CanUseBase — true when Player is alive inside this friendly base healing volume. */
+	UFUNCTION(BlueprintPure, Category="Base")
+	bool IsPlayerInHealingZone(const APlayerState* Player) const { return CanUseBase(Player); }
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Base")
 	TObjectPtr<UBoxComponent> Bounds;
 	/** Breakaway indices: 0 and 1. Invalid indices disable the base. */

@@ -86,6 +86,35 @@ public:
     
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "0.0", ClampMax = "90.0"))
     float ThrowAngle = 30.0f;
+
+    /** Minimum ballistic throw speed (cm/s) for an uncharged throw (0s charge). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Ballistics", meta = (ClampMin = "0.0", ClampMax = "5000.0"))
+    float MinThrowSpeed = 800.0f;
+
+    /** Maximum ballistic throw speed (cm/s) at full charge (MaxChargeTime). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Ballistics", meta = (ClampMin = "0.0", ClampMax = "5000.0"))
+    float MaxThrowSpeed = 2000.0f;
+
+    /** Charge duration (seconds) required to reach MaxThrowSpeed. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Ballistics", meta = (ClampMin = "0.01", ClampMax = "10.0", Units = "s"))
+    float MaxChargeTime = 1.5f;
+
+    /** Directed teammate pass launch speed (cm/s). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Ballistics", meta = (ClampMin = "0.0", ClampMax = "5000.0"))
+    float PassSpeed = 1500.0f;
+
+    /** Cooldown (seconds) preventing a dropping/fumbling carrier from immediately re-acquiring the Relic. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Pickup", meta = (ClampMin = "0.0", ClampMax = "10.0", Units = "s"))
+    float PickupCooldownAfterDrop = 0.5f;
+
+    /** Compute interpolated ballistic throw speed for a given charge duration. */
+    UFUNCTION(BlueprintPure, Category = "Gameplay|Ballistics")
+    float ComputeChargedThrowSpeed(float ChargeTimeSeconds) const
+    {
+        const float EffectiveMaxCharge = FMath::Max(MaxChargeTime, KINDA_SMALL_NUMBER);
+        const float Alpha = FMath::Clamp(ChargeTimeSeconds / EffectiveMaxCharge, 0.0f, 1.0f);
+        return FMath::Lerp(MinThrowSpeed, MaxThrowSpeed, Alpha);
+    }
     
     // How much to modify carrier's movement speed (multiplicative)
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay", meta = (ClampMin = "0.0", ClampMax = "1.0"))
@@ -128,11 +157,23 @@ public:
     bool bAutoPickup = true;
 
     /**
-     * When true, any effective health damage on the carrier immediately drops the relic
-     * (server-authoritative). Death after a fumble is a no-op.
+     * When true, effective health damage meeting FumbleDamageThreshold (or hard CC) on the carrier
+     * immediately drops the relic (server-authoritative). Death after a fumble is a no-op.
      */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble")
     bool bFumbleOnDamage = true;
+
+    /**
+     * Single-hit or cumulative carrier damage threshold required to trigger a forced fumble.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleDamageThreshold = 50.0f;
+
+    /**
+     * Impulse strength (cm/s) applied to knock the Relic free when forced to fumble.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Gameplay|Fumble", meta = (ClampMin = "0.0", EditCondition = "bFumbleOnDamage"))
+    float FumbleImpulseStrength = 600.0f;
 
     /**
      * Horizontal speed (cm/s) toward the relic spawn point when fumbling at or beyond

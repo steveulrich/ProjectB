@@ -83,12 +83,12 @@ struct FRun
                 const auto* Gold = ASC ? ASC->GetSet<UBwayGoldAttributeSet>() : nullptr;
                 const auto* PC = Cast<APlayerController>(PS->GetOwner());
                 const auto Schedule = PS->GetRespawnSchedule();
-                UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Sample stage=%d world=%s net=%d id=%d owner=%d rank=%d reduction=%.6f gold=%.6f deadline=%.6f serverTime=%.6f scheduleRound=%d round=%d phase=%d alive=%d deaths=%d pawn=%s"),
+                UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Sample stage=%d world=%s net=%d id=%d owner=%d rank=%d reduction=%.6f gold=%.6f deadline=%.6f serverTime=%.6f scheduleRound=%d round=%d phase=%d alive=%d deaths=%d roundDeaths=%d pawn=%s"),
                     Stage, *World->GetPathName(), int32(World->GetNetMode()), PS->GetPlayerId(), PC && PC->IsLocalController(),
                     PS->UpgradeComponent->GetOwnedRank(TEXT("RespawnTimeReduction")), Hero ? Hero->GetRespawnTimeReduction() : -1,
                     Gold ? Gold->GetCurrentGold() : -1, Schedule.ServerEndTime, State->GetServerWorldTimeSeconds(), Schedule.RoundNumber,
                     State->GetRoundManagement()->GetCurrentRoundNumber(), int32(State->GetRoundManagement()->GetCurrentMatchPhase()),
-                    Alive(PS), PS->GetDeaths(), *GetNameSafe(PS->GetPawn()));
+                    Alive(PS), PS->GetDeaths(), PS->GetDeathsInCurrentRound(), *GetNameSafe(PS->GetPawn()));
             }
         }
     }
@@ -151,10 +151,10 @@ struct FRun
                 const int32 Owned = PS->UpgradeComponent->GetOwnedUpgrades().Num();
                 const float Reduction = Hero ? Hero->GetRespawnTimeReduction() : 0;
                 const double Deadline = PS->GetRespawnSchedule().ServerEndTime;
-                Invalid += Owned != 0 || Reduction != 0 || Deadline != 0 || PS->GetDeaths() != 0 || (Selection && Gold->GetCurrentGold() != 0);
-                UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Reset stage=%d id=%d phase=%d round=%d hasHero=%d owned=%d reduction=%.6f gold=%.6f deadline=%.6f deaths=%d alive=%d world=%s"),
+                Invalid += Owned != 0 || Reduction != 0 || Deadline != 0 || PS->GetDeaths() != 0 || PS->GetDeathsInCurrentRound() != 0 || (Selection && Gold->GetCurrentGold() != 0);
+                UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Reset stage=%d id=%d phase=%d round=%d hasHero=%d owned=%d reduction=%.6f gold=%.6f deadline=%.6f deaths=%d roundDeaths=%d alive=%d world=%s"),
                     Stage, PS->GetPlayerId(), int32(Phase), Round->GetCurrentRoundNumber(), Hero != nullptr, Owned, Reduction,
-                    Gold->GetCurrentGold(), Deadline, PS->GetDeaths(), Alive(PS), *World->GetPathName());
+                    Gold->GetCurrentGold(), Deadline, PS->GetDeaths(), PS->GetDeathsInCurrentRound(), Alive(PS), *World->GetPathName());
             }
             if (Humans != 4 || Ready != 4) return true;
             if (Invalid) return Stop(TEXT("production-rematch-not-reset"));
@@ -282,8 +282,8 @@ struct FRun
         }
         auto* Pawn = PS->GetPawn();
         for (auto& S : Subjects) if (S.Player == PS) { S.Replacements = 0; S.Killed = FPlatformTime::Seconds(); S.Last = Pawn; }
-        UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Kill stage=%d id=%d bot=%d pawn=%s deathsBefore=%d phase=%d round=%d"),
-            Stage, PS->GetPlayerId(), PS->IsABot(), *Pawn->GetName(), PS->GetDeaths(), int32(Rounds->GetCurrentMatchPhase()), Rounds->GetCurrentRoundNumber());
+        UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Kill stage=%d id=%d bot=%d pawn=%s deathsBefore=%d roundDeathsBefore=%d phase=%d round=%d"),
+            Stage, PS->GetPlayerId(), PS->IsABot(), *Pawn->GetName(), PS->GetDeaths(), PS->GetDeathsInCurrentRound(), int32(Rounds->GetCurrentMatchPhase()), Rounds->GetCurrentRoundNumber());
         ULyraHealthComponent::FindHealthComponent(Pawn)->DamageSelfDestruct(false);
     }
     void StartDeaths(int32 Next)
@@ -311,8 +311,8 @@ struct FRun
             const bool IsAlive = Alive(S.Player.Get());
             if (!IsAlive || S.Replacements == 0) ++MissingRespawns;
             if (S.Replacements > 1) ++DuplicateRespawns;
-            UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Observe stage=%d id=%d bot=%d replacements=%d alive=%d deaths=%d"),
-                Stage, S.Player->GetPlayerId(), S.Player->IsABot(), S.Replacements, IsAlive, S.Player->GetDeaths());
+            UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Observe stage=%d id=%d bot=%d replacements=%d alive=%d deaths=%d roundDeaths=%d"),
+                Stage, S.Player->GetPlayerId(), S.Player->IsABot(), S.Replacements, IsAlive, S.Player->GetDeaths(), S.Player->GetDeathsInCurrentRound());
         }
         // Compare settled player state and pawn recovery in every PIE world, including authority.
         if (GEngine) for (const auto& Context : GEngine->GetWorldContexts())
@@ -327,9 +327,9 @@ struct FRun
                     if (P && P->GetPlayerId() == S.Player->GetPlayerId()) { Peer = Cast<ABwayPlayerState>(P); break; }
                 const int32 Team = Peer ? State->GetPlayerTeam(Peer) : -1;
                 const int32 AliveCount = Team >= 0 ? State->GetTeamInfo(Team).AlivePlayerCount : -1;
-                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Peer stage=%d world=%s id=%d bot=%d alive=%d deaths=%d team=%d teamAlive=%d"),
+                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Peer stage=%d world=%s id=%d bot=%d alive=%d deaths=%d roundDeaths=%d team=%d teamAlive=%d"),
                     Stage, *World->GetPathName(), S.Player->GetPlayerId(), S.Player->IsABot(), Alive(Peer),
-                    Peer ? Peer->GetDeaths() : -1, Team, AliveCount);
+                    Peer ? Peer->GetDeaths() : -1, Peer ? Peer->GetDeathsInCurrentRound() : -1, Team, AliveCount);
             }
         }
     }
@@ -361,8 +361,9 @@ struct FRun
                     int32 Auto = 0;
                     for (const auto& Spec : PS->GetLyraAbilitySystemComponent()->GetActivatableAbilities())
                         if (Spec.Ability && Spec.Ability->GetClass()->GetName().Contains(TEXT("AutoRespawn"))) ++Auto;
-                    UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Setup id=%d bot=%d team=%d autoRespawnSpecs=%d nativeDelay=%.2f pawn=%s"),
-                        PS->GetPlayerId(), PS->IsABot(), State->GetPlayerTeam(PS), Auto, Round->RespawnDelay, *Pawn->GetName());
+                    UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Setup id=%d bot=%d team=%d autoRespawnSpecs=%d nativeDelay=%.2f increment=%.2f maxDelay=%.2f resetEachRound=%d pawn=%s"),
+                        PS->GetPlayerId(), PS->IsABot(), State->GetPlayerTeam(PS), Auto, Round->GetConfiguredBaseRespawnDelaySeconds(),
+                        Round->PerDeathRespawnIncrementSeconds, Round->MaxRespawnDelaySeconds, Round->bResetRespawnEscalationEachRound ? 1 : 0, *Pawn->GetName());
                 }
                 if (!Human.IsValid() || !Bot.IsValid()) return Stop(TEXT("topology-missing"));
                 if (AuditUpgrade)
@@ -374,7 +375,8 @@ struct FRun
                     OriginalGold = Gold->GetCurrentGold();
                     ASC->SetNumericAttributeBase(UBwayGoldAttributeSet::GetCurrentGoldAttribute(), 500.f);
                     UpgradeSeeded = true;
-                    UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Setup id=%d baseline=%.6f gold=%.6f round=%d"), Human->GetPlayerId(), Round->RespawnDelay,
+                    UE_LOG(LogTemp, Display, TEXT("BwayRespawnUpgrade: Setup id=%d baseline=%.6f increment=%.6f maxDelay=%.6f gold=%.6f round=%d"),
+                        Human->GetPlayerId(), Round->GetConfiguredBaseRespawnDelaySeconds(), Round->PerDeathRespawnIncrementSeconds, Round->MaxRespawnDelaySeconds,
                         ASC->GetSet<UBwayGoldAttributeSet>()->GetCurrentGold(), InitialRound);
                 }
                 // Give packaged clients time to receive the initial eight-pawn baseline.
@@ -407,9 +409,9 @@ struct FRun
                 S.Last = Pawn; ++S.Replacements; Hold(Pawn);
                 const auto Phase = Rounds->GetCurrentMatchPhase();
                 if (Stage == 3 && Phase == EBwayMatchPhase::PostRound) ++PostRoundRespawns;
-                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Replacement stage=%d id=%d bot=%d pawn=%s elapsed=%.3f phase=%d round=%d count=%d"),
+                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Replacement stage=%d id=%d bot=%d pawn=%s elapsed=%.3f phase=%d round=%d roundDeaths=%d count=%d"),
                     Stage, S.Player->GetPlayerId(), S.Player->IsABot(), *Pawn->GetName(), S.Killed ? Now - S.Killed : -1,
-                    int32(Phase), Rounds->GetCurrentRoundNumber(), S.Replacements);
+                    int32(Phase), Rounds->GetCurrentRoundNumber(), S.Player->GetDeathsInCurrentRound(), S.Replacements);
             }
         }
         if (Stage == -1)
@@ -417,7 +419,7 @@ struct FRun
             if (Now - StageStarted >= 5.0) StartDeaths(1);
             return true;
         }
-        if (Stage < 3 && Now - StageStarted >= FMath::Max(12.0, double(Rounds->RespawnDelay) + 4))
+        if (Stage < 3 && Now - StageStarted >= FMath::Max(12.0, double(Rounds->ComputeEscalatedRespawnBaseDelay(Stage - 1)) + 4.0))
         {
             Summarize();
             if (Stage == 1) StartDeaths(2);
@@ -437,18 +439,18 @@ struct FRun
                 return Stop(TEXT("second-round-missing"));
             Stage = 4; StageStarted = Now;
             Kill(Human.Get());
-            UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Round2Death id=%d phase=%d round=%d teamAlive=%d"),
-                Human->GetPlayerId(), int32(Rounds->GetCurrentMatchPhase()), Rounds->GetCurrentRoundNumber(), GS->GetTeamInfo(GS->GetPlayerTeam(Human.Get())).AlivePlayerCount);
+            UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Round2Death id=%d phase=%d round=%d roundDeaths=%d teamAlive=%d"),
+                Human->GetPlayerId(), int32(Rounds->GetCurrentMatchPhase()), Rounds->GetCurrentRoundNumber(), Human->GetDeathsInCurrentRound(), GS->GetTeamInfo(GS->GetPlayerTeam(Human.Get())).AlivePlayerCount);
         }
-        if (Stage == 4 && Now - StageStarted >= 12)
+        if (Stage == 4 && Now - StageStarted >= FMath::Max(12.0, double(Rounds->ComputeEscalatedRespawnBaseDelay(0)) + 4.0))
         {
             for (const auto& S : Subjects) if (S.Player == Human)
             {
                 const bool IsAlive = Alive(Human.Get());
                 if (!IsAlive || S.Replacements == 0) ++MissingRespawns;
                 if (S.Replacements > 1) ++DuplicateRespawns;
-                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Round2Observe id=%d alive=%d replacements=%d deaths=%d phase=%d round=%d teamAlive=%d"),
-                    Human->GetPlayerId(), IsAlive, S.Replacements, Human->GetDeaths(), int32(Rounds->GetCurrentMatchPhase()),
+                UE_LOG(LogTemp, Display, TEXT("BwayRespawnAudit: Round2Observe id=%d alive=%d replacements=%d deaths=%d roundDeaths=%d phase=%d round=%d teamAlive=%d"),
+                    Human->GetPlayerId(), IsAlive, S.Replacements, Human->GetDeaths(), Human->GetDeathsInCurrentRound(), int32(Rounds->GetCurrentMatchPhase()),
                     Rounds->GetCurrentRoundNumber(), GS->GetTeamInfo(GS->GetPlayerTeam(Human.Get())).AlivePlayerCount);
             }
             if (!PackagedUpgrade) return Stop(TEXT("observed"));

@@ -1,122 +1,39 @@
-# Rawlins Blazing Barrage acceptance
+# Rawlins Blazing Barrage & All-Kit Combat Acceptance
 
-October 9, 2026. The targeted fix restores all 12 shots and per-shot body-action
-presentation across four listen-PIE peers at zero and measured 100 ms lag. Two earlier
-baselines reproduced 11 shots and no action presentation. The fixed normal-channel
-scope passes; broader Barrage behavior and final-alpha parity remain open.
+## 1. Current Gate Verdict & Frozen Candidate Identity
 
-## Required behavior and configuration
+- **Verdict:** **PASSED** (4-world PIE all lifecycle/combat cases PASSED; `Breakaway.Abilities.AllKitCombatEffects` headless automation + 4-world PIE + 4-process packaged 100ms convergence PASSED; 4-process packaged normal and changing-aim 0ms/100ms transport + 27 negative controls PASSED on `LAN-20261013-13` within the `200ms` frame bound, with observed host frame peaks of `33.334ms` at `0ms` and `33.466ms` at `100ms`).
+- **Frozen Candidates:**
+  - `LAN-20261013-13`: Exe SHA-256 `59B7FB01A6407545443F57455E2B07C4F3A9BDB8BBF71DBAFEB9B1C98B25C24F`, source manifest `Saved/Logs/rawlins-barrage-animation-20261009/source-manifest-build43.json` (effective source identity `CD0AC92562C03FCFFCBCBBA1A2C836B41AAA89A7B3F2AC368BA0FFA14BD05433`, 131 staged artifacts). Packages Oct 1–9 slide physics repairs, Alona Radiance `UBwayHeroAttributeSet::AttackStrength` scaling fix, Rawlins Barrage presentation pointer cache, and `-NullRHI` montage pose tick parity.
+  - `LAN-20261013-11` (retained record): Exe SHA-256 `54AA9FA99B53798BB00B0BC85E769465B6B2AE86A9064E27760691536B34F9F6`, source manifest `Saved/Logs/rawlins-barrage-animation-20261009/source-manifest-build39.json`.
 
-The supplied hero stats sheet requires 12 rapid shots, stationary but aimable firing,
-airborne juggling, interruption, and a 25-second cooldown. The loaded
-`GA_BW_Rawlins_BlazingBarrage` and `DA_BW_RawlinsKitConfig` use 12 shots at approximately
-0.1-second intervals, base damage 4 plus 0.3 attack strength, projectile speed 3600,
-lifespan 1.5 seconds, and upward impulse 350. Exact cadence and the final-alpha
-damage-interruption trigger still need independent reference confirmation.
+## 2. Production Architecture & Invariants
 
-The ability is LocalPredicted and InstancedPerActor. Its activation owns
-`Gameplay.MovementStopped`. Its effective Blueprint contains only two unconnected
-event nodes, and `BarrageProjectilePresentation` is null. These asset readbacks are
-recorded in the preceding Rawlins primary gate's `barrage-class-defaults01.json`
-and `barrage-graph-summary01.json`.
+- **Gameplay Ability:** `UBwayGameplayAbility_RawlinsBlazingBarrage` (`Plugins/GameFeatures/Heroes/Rawlins/Source/HeroRawlinsRuntime/Public/Abilities/BwayGameplayAbility_RawlinsBlazingBarrage.h`), asset `/Hero_Rawlins/Characters/Heroes/Gunslinger/Abilities/GA_BW_Rawlins_BlazingBarrage`, config `DA_BW_RawlinsKitConfig`.
+  - Channels `BarrageShotCount = 12` shots at `BarrageShotInterval = 0.10s` (`4.0` base damage + `0.3 * AttackStrength`, speed `3600`, upward juggle impulse `350`, cooldown `25s`).
+  - Caches `ActiveProjectilePresentation` in `OnGiveAbility`/`ActivateAbility` and checks `.Get()` before `LoadSynchronous()` in `SpawnShot` to avoid per-shot synchronous soft-pointer loads.
+  - Grants `Gameplay.MovementStopped` while channeling so walking input cannot displace the caster while live controller yaw rotates the firing direction each shot.
+  - **Damage Interruption Invariant:** Tracks `ChannelReferenceHealth` across healing and interrupts the channel immediately on any net health decrease (`NewHealth < PreChangeHealth`).
+- **All-16 Ability Authoritative Combat Suite (`Breakaway.Abilities.AllKitCombatEffects`):**
+  - Verifies Argus (`Primary`, `Slide`, `NoRetreat`, `ForGlory`, `Retribution`), Alona (`Primary`, `SunsGrace`, `Radiance`, `SunBurst`, `Blessing`), Korryn (`Primary`, `Flock`, `BurdenOfSin`, `CircleOfSpite`, `AuraOfSilence`), and Rawlins (`Primary`, `DoubleDown`, `PowerShot`, `SlideShot`, `BlazingBarrage`), plus non-primary `UBwayLifeLeechComponent` healing, `ABwayCharacterWithAbilities` kill/assist credit, and `ARelicActor` forced fumbles.
 
-## Reproduced baseline
+## 3. Verified Scope Summary Table
 
-Evidence is under `Saved/Logs/rawlins-barrage-animation-20261009/`.
-`baseline-zero01` and `baseline-lag01` each contain one accepted native queued
-remote-owner activation, one authoritative activation, and 11 authoritative shot
-records despite the loaded count of 12. The native driver readbacks establish
-zero and 100 ms lag respectively; these are observed settings, not command-line intent.
+| Phase | Harness / Command | Result & Evidence |
+|---|---|---|
+| Asset & Cue Audit | `Breakaway.AssetAudit.RawlinsBarrageAnimation` + `Breakaway.GameplayCueAudit` | **PASS** — `Saved/Logs/rawlins-barrage-animation-20261009/automation06-barrage-audit.json` |
+| All-16 Ability Combat Automation | `Breakaway.Abilities.AllKitCombatEffects` | **PASS** — `Saved/Logs/allkit-combat-auto-5.json` (`succeeded: 1, errors: 0, warnings: 0`, 19.92s) |
+| 4-World PIE All-Kit Combat & Barrage Matrix | `bway.Test.AllKitCombatPIE` + `bway.Test.RawlinsBarrageAnimation` | **PASS** — 4/4 worlds converged (`Saved/Logs/allkit-combat-pie-4-result.json`), full Barrage PIE matrix (`pie28`, `pie29`) |
+| 4-Process Packaged Normal (0ms & 100ms) | `bway.Test.BarrageTransportHost` / `Client` (`LAN-20261013-11`) | **PASS** — 392 normal, 153 setup, 97 cleanup checks; 24 shots, 96 peer plays (`candidate11-normal-transport-independent-closure01.json`) |
+| 4-Process Packaged Changing-Aim (0ms & 100ms, 2 D3D12 + 2 NullRHI) | `Saved/run-barrage-changing-aim-guard.ps1` (`LAN-20261013-13`) | **PASS** — 392/392 normal + 69/69 aim + 27/27 negative controls at both `0ms` (`peak=33.334ms`, `candidate13-changing-aim-zero01-aim-verification01.json`) and `100ms` (`peak=33.466ms`, `candidate13-changing-aim-lag01-aim-verification01.json`) |
+| 4-Process Packaged Multi-Kit Combat (100ms, 2 D3D12 + 2 NullRHI) | `bway.Test.AllKitCombatHost` / `Client` (`LAN-20261013-13`) | **PASS** — Host + 3 clients converged on HP/ArmorShred/Slow/DamageAmp/Silence/Fumble, 3 client exits 0, 0 log errors (`Saved/Logs/allkit-combat-packaged-LAN-20261013-13-100ms-r3-result.json`) |
 
-Each peer supplied 173 samples over six seconds. No montage or weighted UpperBody
-or FullBody action appeared. MovementStopped appeared during the channel and cleared
-afterward; owner and authority became inactive. Both bounded logs contain zero
-errors, warnings, or critical lines. Observers removed callbacks and restored mesh
-tick settings. Short-lived projectile samples corroborate spawning but are not the
-sole shot-count proof.
+## 4. Remaining Open Proof Gaps
 
-The `baseline-*-independent-verification02.json` audits preserve `validSetup: true`,
-`missingShotReproduced: true`, and `missingActionReproduced: true`.
-The shot-count requirement fails; an otherwise clean observation is not a gameplay pass.
+- Cooked separate-process damage-interruption and death/round-reset subcases (verified in 4-world PIE).
+- Physical input verification, bespoke barrage animations, and second-PC LAN verification.
 
-## Targeted correction
+## 5. Archive Pointer
 
-The predicting owner retains its committed channel and predicts the first cosmetic
-cue. Authority alone advances the shot timer and ends both instances after the final
-shot. This removes the competing predicted completion timer. Each successful
-authoritative shot emits `GameplayCue.Breakaway.Weapon.RawlinsBarrage.Fire`.
-The activation prediction key suppresses the owner's duplicate first cue; later
-timer cues reach that owner as well. Both fixed captures verify one play per shot
-on each peer, including exactly 12 on the predicting owner.
-
-`AM_BW_Rawlins_Barrage_Placeholder` is a dedicated UpperBody montage using the existing
-project-owned, nonadditive Rawlins pistol-fire sequence. It has a finite 0.6667-second
-section, rate 1, blend-in 0.03, blend-out 0.1, and no gameplay notifies.
-`GCN_BW_Weapon_RawlinsBarrage_Fire` binds the registered Barrage fire tag to this
-montage with play rate 1. `cue-authored01.json` records the saved binding and registry
-name; `cue-validation01.json` reports zero errors and zero warnings.
-
-Damage, cooldown, shot interval, movement tags, and the existing health-interruption
-rule are unchanged. The health rule compares current health with health at activation;
-healing followed by smaller damage remains a separate reproduction hypothesis.
-
-## Fixed normal-channel evidence
-
-`compile-editor01.json` records a passing LyraEditor build in 32.50 seconds, exit
-code 0, and empty `failureSignals`. The before/after DLL records preserve the
-updated LyraGame and HeroRawlinsRuntime binaries used by the restarted editor.
-
-`fixed-zero01-independent-verification.json` and
-`fixed-lag01-independent-verification.json` each pass all 67 checks. They independently
-match captured native-log bytes against the original log window and its hash. Remote
-owner 257 activates the actual granted Barrage through the queued native selector.
-
-| Capture | Observed lag | Samples per peer | Authority shots | Exact plays across four peers | Replacement stops |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `fixed-zero01` | 0 ms | 169 | 12 | 48 | 44 |
-| `fixed-lag01` | 100 ms | 170 | 12 | 48 | 44 |
-
-Both runs contain exactly 12 authority plays, 12 owner plays, and 24 simulated-proxy
-plays. Each peer supplies 12 evaluated montage starts with advancing positions and
-positive UpperBody weight. Weighted hand poses differ from idle, linked locomotion
-layers remain present, and the final montage finishes naturally. This verifies the
-dedicated Barrage action rather than counting the preceding primary montage.
-
-Authority and owner show `Gameplay.MovementStopped` during the active channel, then
-release the tag and become inactive. All four native driver readbacks match each
-capture's requested lag, with zero packet loss and no random lag. The second run
-waits for the real cooldown; the fixture does not reset or shorten it.
-
-Both bounded windows contain zero errors, warnings, or critical lines. Two earlier
-Pixel Streaming target-window errors remain in the full editor log and supply no
-rendered-acceptance proof. Each observer removes its callback and restores all four
-mesh tick settings. The editor subsequently closed normally.
-`editor01-settings-cleanup.json` and `editor01-cleanup.json` verify that PID 3236
-exited, temporary PIE/network settings were restored, and the original ShooterCTF
-module manifest was restored.
-
-`verifier-controls01.json` records 30 rejected corruptions and five positive controls.
-The checks reject wrong identities, assets, counts, network settings, cleanup,
-unclassified diagnostics, and command-line text impersonating native events. Positive
-controls preserve player-ID independence and accept incomplete projectile sampling
-when independent native shot evidence is complete. These are offline evidence checks,
-not additional gameplay runs.
-
-## Remaining evidence
-
-The reviewed development command
-`bway.Test.BarrageAnimationHealth <id> <heal-damage|damage-only|heal-only>` prepares
-the exact remote owner through production damage/heal effects, activates Barrage
-once, records health changes after the first authoritative bullet, and restores
-health after inactivity. It preserves the real cooldown, begins cleanup at eight
-seconds, and has a ten-second hard bound. The observer allows twelve seconds.
-`compile-editor02.json` passes LyraEditor in 8.28 seconds with exit 0 and empty
-`failureSignals`; `editor-dll-after-compile02.json` verifies the updated diagnostic
-binary. These three health cases have not run, and the production health rule is
-unchanged. Require explicit health restoration and owner convergence evidence.
-
-Verify movement lock while aim changes, damage/juggle, cancellation, healing followed
-by damage, death/respawn, and cooked transport. The stationary normal-channel runs
-observe movement tags and poses; they do not submit movement/aim input or establish
-the damage-interruption rule. Physical input, final appearance, bone proportions,
-second-PC LAN, and the complete multiplayer match flow remain separate requirements.
+- Full chronological gate diary: [RAWLINS_BARRAGE_ACCEPTANCE.md](./Archive/Full_History_20261013/RAWLINS_BARRAGE_ACCEPTANCE.md).
+- **Rule:** Do NOT read the archived file during routine gates; open it only if diagnosing a historical regression in this exact subsystem.

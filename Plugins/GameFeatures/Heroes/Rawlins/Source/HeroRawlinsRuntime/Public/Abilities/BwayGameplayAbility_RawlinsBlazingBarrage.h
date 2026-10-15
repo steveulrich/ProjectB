@@ -73,7 +73,6 @@ private:
 	FTimerHandle ShotTimerHandle;
 	int32 ShotsFired = 0;
 	bool bBoundToHealth = false;
-	float HealthAtActivation = 0.f;
 
 	UPROPERTY(Transient)
 	TObjectPtr<ULyraHealthComponent> BoundHealthComponent;

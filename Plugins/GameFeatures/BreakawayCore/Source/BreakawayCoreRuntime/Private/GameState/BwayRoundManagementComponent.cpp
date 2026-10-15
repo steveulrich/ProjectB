@@ -54,10 +54,10 @@ void TraceRespawnTimer(UWorld* World, AController* Controller, const FTimerHandl
 	const auto* Player = Cast<ABwayPlayerState>(Controller->PlayerState);
 	if (!State || !Player) return;
 	const auto& Manager = World->GetTimerManager();
-	UE_LOG(LogTemp, Display, TEXT("BwayRespawnTimer: event=%s id=%d world=%s serverTime=%.6f wall=%.6f remaining=%.6f elapsed=%.6f rate=%.6f deadline=%.6f round=%d"),
+	UE_LOG(LogTemp, Display, TEXT("BwayRespawnTimer: event=%s id=%d world=%s serverTime=%.6f wall=%.6f remaining=%.6f elapsed=%.6f rate=%.6f deadline=%.6f round=%d roundDeaths=%d"),
 		Event, Player->GetPlayerId(), *World->GetPathName(), State->GetServerWorldTimeSeconds(), FPlatformTime::Seconds(),
 		Manager.GetTimerRemaining(Timer), Manager.GetTimerElapsed(Timer), Manager.GetTimerRate(Timer),
-		Player->GetRespawnSchedule().ServerEndTime, Player->GetRespawnSchedule().RoundNumber);
+		Player->GetRespawnSchedule().ServerEndTime, Player->GetRespawnSchedule().RoundNumber, Player->GetDeathsInCurrentRound());
 }
 #endif
 
@@ -86,6 +86,10 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundState);
 	DOREPLIFETIME(UBwayRoundManagementComponent, PointsToWin);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundDuration);
+	DOREPLIFETIME(UBwayRoundManagementComponent, BaseRespawnDelaySeconds);
+	DOREPLIFETIME(UBwayRoundManagementComponent, PerDeathRespawnIncrementSeconds);
+	DOREPLIFETIME(UBwayRoundManagementComponent, MaxRespawnDelaySeconds);
+	DOREPLIFETIME(UBwayRoundManagementComponent, bResetRespawnEscalationEachRound);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentMatchPhase);
@@ -960,6 +964,24 @@ void UBwayRoundManagementComponent::SetRoundDuration(float InRoundDuration)
 	}
 }
 
+void UBwayRoundManagementComponent::SetRespawnProgressionRules(
+	float InBaseRespawnDelaySeconds,
+	float InPerDeathRespawnIncrementSeconds,
+	float InMaxRespawnDelaySeconds,
+	bool bInResetEachRound)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	BaseRespawnDelaySeconds = FMath::Max(0.05f, InBaseRespawnDelaySeconds);
+	PerDeathRespawnIncrementSeconds = FMath::Max(0.0f, InPerDeathRespawnIncrementSeconds);
+	MaxRespawnDelaySeconds = FMath::Max(BaseRespawnDelaySeconds, InMaxRespawnDelaySeconds);
+	bResetRespawnEscalationEachRound = bInResetEachRound;
+	RespawnDelay = BaseRespawnDelaySeconds;
+}
+
 void UBwayRoundManagementComponent::OnRep_RoundDuration()
 {
 	if (GetOwnerRole() == ROLE_Authority)
@@ -1020,13 +1042,8 @@ void UBwayRoundManagementComponent::HandleExperienceLoadedForMatchRules(const UL
 	ResolvedMatchFlowSettings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, Experience);
 	UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(ResolvedMatchFlowSettings);
 
-	// BotCreation applies full match rules on its own OnExperienceLoaded (after this high-priority hook).
-	// Here we only ensure playing FSM settings are set early if BotCreation is absent.
-	ABwayGameState* BwayGS = GetBwayGameState();
-	if (!BwayGS || !BwayGS->FindComponentByClass<UBwayBotCreationComponent>())
-	{
-		UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, ResolvedMatchFlowSettings, this, nullptr);
-	}
+	// Apply PointsToWin, RoundDuration, and RespawnProgressionRules immediately on high-priority experience load.
+	UBwayMatchFlowLibrary::ApplyMatchRulesOnly(this, ResolvedMatchFlowSettings, this, nullptr);
 
 	if (ResolvedMatchFlowSettings.bOrchestrateMatchFlow)
 	{
@@ -1241,6 +1258,15 @@ void UBwayRoundManagementComponent::StartRound()
 	BeginRoundStatTrackingForAllPlayers();
 }
 
+void UBwayRoundManagementComponent::StartNewRound()
+{
+	if (GetOwnerRole() == ROLE_Authority && CurrentRoundState == ERoundState::RoundActive)
+	{
+		CurrentRoundState = ERoundState::RoundComplete;
+	}
+	StartRound();
+}
+
 void UBwayRoundManagementComponent::BeginRoundStatTrackingForAllPlayers()
 {
 	if (GetOwnerRole() != ROLE_Authority)
@@ -1409,6 +1435,10 @@ void UBwayRoundManagementComponent::ResetRoundState()
 		return;
 	}
 	ClearRespawnTimers();
+	if (bResetRespawnEscalationEachRound)
+	{
+		ResetRoundRespawnEscalation();
+	}
 	// Remove buildables that should not persist between rounds before respawning players.
 	for (TActorIterator<ABuildableActor> It(GetWorld()); It; ++It)
 	{
@@ -1470,6 +1500,48 @@ void UBwayRoundManagementComponent::ResetRoundState()
 			BwayGS->ForceNetUpdate();
 		}
 	}
+}
+
+void UBwayRoundManagementComponent::ResetRoundRespawnEscalation()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	for (auto& Pair : PlayerRoundDeathCounts)
+	{
+		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Pair.Key.Get()))
+		{
+			BwayPS->SetDeathsInCurrentRound(0);
+		}
+	}
+	PlayerRoundDeathCounts.Empty();
+
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		for (APlayerState* PlayerState : BwayGS->PlayerArray)
+		{
+			if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+			{
+				BwayPS->SetDeathsInCurrentRound(0);
+			}
+		}
+	}
+}
+
+void UBwayRoundManagementComponent::ResetForNextMatch()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	ClearBetweenRoundTimer();
+	ClearRespawnTimers();
+	ResetRoundRespawnEscalation();
+	CurrentRoundNumber = 0;
+	bSuddenDeathWarningBroadcastThisRound = false;
 }
 
 // ========================================
@@ -1596,6 +1668,70 @@ int32 UBwayRoundManagementComponent::DetermineRelicPossessionTeam() const
 // Player Death/Respawn
 // ========================================
 
+int32 UBwayRoundManagementComponent::GetPlayerDeathsInCurrentRound(const APlayerState* PlayerState) const
+{
+	if (!PlayerState)
+	{
+		return 0;
+	}
+
+	if (const int32* TrackedCount = PlayerRoundDeathCounts.Find(PlayerState))
+	{
+		return FMath::Max(0, *TrackedCount);
+	}
+
+	if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState))
+	{
+		return FMath::Max(0, BwayPS->GetDeathsInCurrentRound());
+	}
+
+	return 0;
+}
+
+float UBwayRoundManagementComponent::GetConfiguredBaseRespawnDelaySeconds() const
+{
+	constexpr float MinimumDelay = 0.05f;
+	const float ConfiguredBase = FMath::IsFinite(BaseRespawnDelaySeconds) ? BaseRespawnDelaySeconds : 10.0f;
+	const float LegacyAlias = FMath::IsFinite(RespawnDelay) ? RespawnDelay : ConfiguredBase;
+	if (!FMath::IsNearlyEqual(ConfiguredBase, 10.0f))
+	{
+		return FMath::Max(MinimumDelay, ConfiguredBase);
+	}
+	if (!FMath::IsNearlyEqual(LegacyAlias, 10.0f))
+	{
+		return FMath::Max(MinimumDelay, LegacyAlias);
+	}
+	return FMath::Max(MinimumDelay, ConfiguredBase);
+}
+
+float UBwayRoundManagementComponent::ComputeEscalatedRespawnBaseDelay(int32 PriorDeathsInRound) const
+{
+	constexpr float MinimumDelay = 0.05f;
+	const float Base = GetConfiguredBaseRespawnDelaySeconds();
+	const float Increment = FMath::IsFinite(PerDeathRespawnIncrementSeconds)
+		? FMath::Max(0.0f, PerDeathRespawnIncrementSeconds)
+		: 0.0f;
+	const float MaxDelay = FMath::IsFinite(MaxRespawnDelaySeconds)
+		? FMath::Max(Base, MaxRespawnDelaySeconds)
+		: Base;
+	const int32 ClampedPriorDeaths = FMath::Max(0, PriorDeathsInRound);
+	const float UnclampedDelay = Base + static_cast<float>(ClampedPriorDeaths) * Increment;
+	return FMath::Max(MinimumDelay, FMath::Clamp(UnclampedDelay, Base, MaxDelay));
+}
+
+float UBwayRoundManagementComponent::ComputeEffectiveRespawnDelayForPlayer(const APlayerState* PlayerState, int32 PriorDeathsInRound) const
+{
+	constexpr float MinimumDelay = 0.05f;
+	const float EscalatedBaseDelay = ComputeEscalatedRespawnBaseDelay(PriorDeathsInRound);
+	const UAbilitySystemComponent* ASC = PlayerState
+		? UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState, true)
+		: nullptr;
+	const UBwayHeroAttributeSet* Hero = ASC ? ASC->GetSet<UBwayHeroAttributeSet>() : nullptr;
+	const float RawReduction = Hero ? Hero->GetRespawnTimeReduction() : 0.0f;
+	const float ClampedReduction = FMath::IsFinite(RawReduction) ? FMath::Clamp(RawReduction, 0.0f, 1.0f) : 0.0f;
+	return FMath::Max(MinimumDelay, EscalatedBaseDelay * (1.0f - ClampedReduction));
+}
+
 void UBwayRoundManagementComponent::OnPlayerDied(AController* VictimController, AController* KillerController)
 {
 	ABwayGameState* BwayGS = GetBwayGameState();
@@ -1642,9 +1778,15 @@ void UBwayRoundManagementComponent::OnPlayerDied(AController* VictimController, 
 		return;
 	}
 
+	const int32 PriorDeathsInRound = GetPlayerDeathsInCurrentRound(Victim);
+	const int32 NewDeathsInRound = PriorDeathsInRound + 1;
+	PlayerRoundDeathCounts.Add(Victim, NewDeathsInRound);
+	Victim->SetDeathsInCurrentRound(NewDeathsInRound);
+
+	const float EscalatedBaseDelay = ComputeEscalatedRespawnBaseDelay(PriorDeathsInRound);
 	FPendingRespawn& Pending = RespawnTimers.FindOrAdd(VictimController);
 	Pending.StartTime = BwayGS->GetServerWorldTimeSeconds();
-	Pending.BaseDelay = RespawnDelay;
+	Pending.BaseDelay = EscalatedBaseDelay;
 	Pending.Round = CurrentRoundNumber;
 	Pending.AppliedReduction = -1.0f;
 	RefreshRespawnSchedule(Victim);
@@ -1671,9 +1813,10 @@ void UBwayRoundManagementComponent::RefreshRespawnSchedule(APlayerState* PlayerS
 	// already elapsed deadline asynchronous and positive, outside the shop transaction.
 	constexpr float MinimumDelay = 0.05f;
 	const float BaseDelay = FMath::IsFinite(Pending->BaseDelay) ? FMath::Max(MinimumDelay, Pending->BaseDelay) : MinimumDelay;
+	const float EffectiveDelay = BaseDelay * (1.0f - Reduction);
 	const double Now = BwayGS->GetServerWorldTimeSeconds();
 	const double Elapsed = FMath::Max(0.0, Now - Pending->StartTime);
-	const float RemainingDelay = static_cast<float>(FMath::Max(static_cast<double>(MinimumDelay), BaseDelay * (1.0f - Reduction) - Elapsed));
+	const float RemainingDelay = static_cast<float>(FMath::Max(static_cast<double>(MinimumDelay), EffectiveDelay - Elapsed));
 	const TWeakObjectPtr<AController> WeakVictim(Controller);
 	const int32 DeathRound = Pending->Round;
 	FTimerHandle& RespawnTimer = Pending->Timer;
@@ -1692,6 +1835,9 @@ void UBwayRoundManagementComponent::RefreshRespawnSchedule(APlayerState* PlayerS
 		RemainingDelay, false);
 	const float Remaining = GetWorld()->GetTimerManager().GetTimerRemaining(RespawnTimer);
 	Player->SetRespawnSchedule(Remaining > 0.0f ? Now + Remaining : 0.0, DeathRound);
+	UE_LOG(LogTemp, Log,
+		TEXT("BwayRoundManagement: Scheduled respawn for %s (round=%d roundDeaths=%d baseDelay=%.2fs reduction=%.2f effectiveDelay=%.2fs remaining=%.2fs)"),
+		*Player->GetPlayerName(), DeathRound, GetPlayerDeathsInCurrentRound(Player), BaseDelay, Reduction, EffectiveDelay, Remaining);
 #if !UE_BUILD_SHIPPING
 	BwayRoundManagement::TraceRespawnTimer(GetWorld(), Controller, RespawnTimer, TEXT("schedule"));
 #endif

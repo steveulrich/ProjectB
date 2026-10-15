@@ -1,143 +1,48 @@
-# Breakaway project roadmap
+# Breakaway Project Roadmap
 
-Current priorities for the Capture-the-Relic vertical slice.
+**Last Reviewed:** October 15, 2026  
+**Active Gate Ledger:** [SLICE_STATUS.md](./SLICE_STATUS.md)  
+**Execution Queue:** [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md)  
+**Operating Contract:** [WORKFLOW_EFFICIENCY.md](./WORKFLOW_EFFICIENCY.md)
 
-**Last reviewed:** September 15, 2026
-**Scope:** [Vertical slice definition](./VERTICAL_SLICE_DEFINITION.md)  
-**Step-by-step checklists:** [Core loop implementation plan](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md)  
-**Doc hub:** [Planning docs](./README.md)
+This roadmap tracks proven engineering milestones through October 2026 and sequences the **Vertical Slice 1.0 Mechanics & Full Game Polish Track (Goals 1–9)** ahead of **11-Hero Roster Expansion (Goals 10–11)**.
 
-This file is the status and priority list. The core loop plan is the implementation checklist. A larger project plan is expected later; until then, use this page for “what next.”
+---
 
-## September 5 priority update
+## 1. Completed Milestones (Proven Through October 2026)
 
-The owner requires original Breakaway system parity with fully integrated placeholder art, LAN sessions, and a complete front-end flow. See the updated slice definition for accepted direction and unresolved historical scope conflicts. Older “complete” labels below describe prior implementation milestones, not proof of the expanded completion bar.
+| Subsystem | Verified Scope | Gate Acceptance Record |
+|---|---|---|
+| **Demo Match Rules & Scoring** | 240s rounds, First-to-3 Bo5, Goal, Simultaneous Elimination, Midfield Territory Tiebreaker across 4 packaged processes (`LAN-20260926-05`) | [DEMO_MATCH_RULES.md](./DEMO_MATCH_RULES.md) |
+| **Relic Pickup Ownership & Release** | Single `AS_BW_BallAbilities` grant, duplicate/competing pickup rejection, pass/throw/drop/goal cleanup across 4 packaged processes (`LAN-20260926-07`) | [RELIC_PICKUP_OWNERSHIP.md](./RELIC_PICKUP_OWNERSHIP.md) |
+| **Call-for-Relic 2D Indicator** | Friendly-only `72x72` screen-space hand widget, 3s expiry, late-join visibility, team-change filtering, death cleanup (`LAN-20260926-01`) | [RELIC_REQUEST_INDICATOR.md](./RELIC_REQUEST_INDICATOR.md) |
+| **Combat Credit & Gold Economy** | Authoritative damage ledger, 50g Kill + 25g Assist (10s window), disconnect safety, rematch reset (`LAN-20260927-05`) | [COMBAT_CREDIT_ACCEPTANCE.md](./COMBAT_CREDIT_ACCEPTANCE.md) |
+| **6-Item, 4-Slot Match Upgrade Shop** | Server-validated purchases (`AttackStrength`, `Armor`, `MoveSpeed`, `CooldownReduction`, `LifeLeech`, `RespawnTimeReduction`), B-key/D-pad UI, death/round persistence, rematch reset (`LAN-20260920-15`, `LAN-20260922-11`, `LAN-20260922-14`, `LAN-20260927-06`) | [SHOP_INPUT_ACCEPTANCE.md](./SHOP_INPUT_ACCEPTANCE.md) · [COOLDOWN_UPGRADE_ACCEPTANCE.md](./COOLDOWN_UPGRADE_ACCEPTANCE.md) · [LIFE_LEECH_ACCEPTANCE.md](./LIFE_LEECH_ACCEPTANCE.md) · [RESPAWN_UPGRADE_ACCEPTANCE.md](./RESPAWN_UPGRADE_ACCEPTANCE.md) |
+| **Respawn Countdown HUD** | Server-deadline replication (`FBwayRespawnSchedule`), `UBwayRespawnHUDWidget`, menu occlusion, late-join self-dismissal (`LAN-20260926-10`, `LAN-20260926-12`) | [RESPAWN_COUNTDOWN_ACCEPTANCE.md](./RESPAWN_COUNTDOWN_ACCEPTANCE.md) |
+| **Persistent Buildables (4 Heroes)** | Shared `FBwayPlacementQuery`, obstructed recovery, 3-round persistence, active caps (`Siege=1`, `Shrine/Ward/Jail=3`), client Jail trap immunity (`LAN-20260927-30`, `LAN-20260927-33`) | [BUILDABLE_AUTHORITY_ACCEPTANCE.md](./BUILDABLE_AUTHORITY_ACCEPTANCE.md) |
+| **GameplayCue & Feedback Routing** | Startup cue registration, empty-prediction-key `HitConfirm`, local-only camera shake, Relic state audio multicast (`LAN-20260927-35`..`40`, `LAN-20260930-49`) | [GAMEPLAY_CUE_ACCEPTANCE.md](./GAMEPLAY_CUE_ACCEPTANCE.md) |
+| **Packaged LAN & Late-Arrival Flow** | 4-process Connected, Rediscovery, SelectionEdges, 5s settle-window newcomer cancellation, and rejected-travel host retry (`LAN-20260930-51`, `LAN-20260930-53`, `LAN-20261009-02`) | [PACKAGED_LAN_ACCEPTANCE.md](./PACKAGED_LAN_ACCEPTANCE.md) · [LATE_ARRIVAL_SELECTION_ACCEPTANCE.md](./LATE_ARRIVAL_SELECTION_ACCEPTANCE.md) |
+| **Slide Physics & Lifecycle** | 4-process packaged slide at 100ms (`LAN-20260930-50`) + 20/20 Oct 1–9 single-timestep gravity, wall-brake, ground-support, and camera-shake repairs | [SLIDE_LIFECYCLE_ACCEPTANCE.md](./SLIDE_LIFECYCLE_ACCEPTANCE.md) |
+| **Single-GPU Performance Isolation** | 2-Rendered D3D12 + 2-NullRHI split (`7.2 GiB` VRAM, `<10ms` frame) + 1080p single-process baseline (`5.56ms`) + `-csvNoProcessingThread` clean exit | [RENDER_PERFORMANCE_ACCEPTANCE.md](./RENDER_PERFORMANCE_ACCEPTANCE.md) |
+| **4-Hero Primary Attack Animations** | UpperBody montage layering & 4-process 100ms delivery for Alona (`LAN-20261009-03`), Korryn (`04`), Argus (`05`), and Rawlins 2-shot burst (`06`) | [ALONA_PRIMARY_ANIMATION.md](./ALONA_PRIMARY_ANIMATION.md) · [ARGUS_PRIMARY_ANIMATION.md](./ARGUS_PRIMARY_ANIMATION.md) · [KORRYN_PRIMARY_ANIMATION.md](./KORRYN_PRIMARY_ANIMATION.md) · [RAWLINS_PRIMARY_ANIMATION.md](./RAWLINS_PRIMARY_ANIMATION.md) |
 
-1. Implement the missing match-upgrade economy after recovering its catalog and tuning. [Final-alpha evidence](./FINAL_ALPHA_PARITY.md) establishes purchasing in September builds; earn-only gold is insufficient. Continue the wider system inventory and keep unresolved rules explicit.
-2. Verify the compiled passive-gold and placement lifecycle fixes on the owner's four-player listen-server setup (one PIE player plus three separate clients).
-3. Verify real LAN host/find/join and selection → match → results → front-end flow. The current LyraMatchmakingSubsystem includes mock queue behavior; that is not evidence of real LAN discovery/join completion.
-4. Audit presentation integration: animation, hit/death feedback, effects, audio, HUD, buildable visibility, and documented asset replacement contracts. Placeholder art does not excuse unfinished integration.
-5. Close the remaining capstone, Dorado, latency, and packaged LAN gates with runtime evidence.
+---
 
-The owner identified the other task as “Vertical Slice Implementation” and authorized treating its existing changes as complete and committing them. Agent-driven compile/error repair/editor restart is now authorized and documented in Agent_Testing_Ladder.md. LyraEditor Win64 Development compiled successfully on September 5; that build does not establish gameplay parity.
+## 2. Sequenced `/goal` Queue (See [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md))
 
-## Current status
+### Phase 1 — Core Vertical-Slice Mechanics & Tech Debt Closure (Goals 1–3)
+1. **Goal 1 — Vertical Slice All-Kit Combat & Ability Effect Verification Gate:** Verify combat math, buffs/debuffs, heals, silences, knockbacks, invulnerability, Life Leech, combat credit, and carrier fumbles across all 16 abilities (`Argus`, `Alona`, `Korryn`, `Rawlins`) + close the Rawlins `Blazing Barrage` changing-aim frame spike + package Oct 1–9 slide physics repairs.
+2. **Goal 2 — Relic Ballistics, Prepared Catch, Interceptions & Base Healing/Shop Gate:** Verify RMB prepared catching (`State.Relic.PreparingCatch`), mid-air pass interception (`Interceptions` stat), combat fumble thresholds (`ForcedFumbles`), and `ABwayBaseZone` healing + live Shop purchase eligibility at base.
+3. **Goal 3 — Respawn Delay Progression, Travel NetGUID Fix & Dorado VSM Polish Gate:** Implement data-driven escalating respawn progression (`10s` base + within-round death scaling, resetting each round), fix staging-to-Dorado `LogRep` read-only NetGUID warnings, remove legacy `ABreakawayGameMode` duplicate methods, and fix Dorado VSM non-Nanite queue overflows.
 
-The C++ match loop, match HUD, four hero kits, and relic fumble-on-damage are in the repo. **Section 3 Step 22** still needs editor PIE (staging E2E, four-hero HUD, 4v4 mini-match). Leftover 3/3 checklists from Steps 17–20.5 have no matching `core-loop: step N passed` commit — close them in the same PIE session as Step 22.
+### Phase 2 — Full Vertical Slice 1.0 Game Polish Track (Goals 4–9 — Before Roster Expansion)
+4. **Goal 4 — "Game Feel": Movement, Slide-Jump, Camera, Hit Feedback & Combat Readability Gate:** Tune `UBwayMovementFeelConfig` (`SlideJump`), smooth Dorado's ramp-to-flat slide transition (`SlideGroundAirDiagnostic` Case 2), polish floating damage/heal numbers (`UBwayCombatNumberPopComponent`), directional hit-confirm/camera-shake/haptics (`UGCN_BwayCombatFeedback`), projectile trails/impacts (`UBwayProjectilePresentationData`), and nameplate LOS/scaling (`UBwayNameplatePolicyComponent`).
+5. **Goal 5 — Front End, Server Browser, Pause Menu & Staging Hero Select Polish Gate:** Remove leftover Lyra sample menus, polish the LAN Server Browser & `UBwayPauseMenuWidget`, and upgrade `UBwayHeroSelectWidget` (`WBP_BW_HeroSelect`) with live 4v4 team pick/lock sidebars, class badges, 6-ability + Signature Buildable preview cards, hero stat bars, and full KBM/Gamepad navigation.
+6. **Goal 6 — In-Game Match HUD, Team Portrait Timers, Round Banners & Results Polish Gate:** Add live per-player respawn countdown timers to top-bar `UBwayTeamPortraitSlotWidget` portraits, polish `UBwayCaptureTheRelicScoreWidget` Bo5 pips & territory indicator, add Silence/Relic-Carrier/Buildable state overlays to `UBwayMatchAbilitySlotWidget`, replace green wireframe PostRound placeholders with clean phase banners, and polish `UBwayScoreboardWidget` & `UBwayResultsScreenWidget`.
+7. **Goal 7 — Buffs, Debuffs & Status Effect Visual/HUD Readability Gate:** Add a local player **Active Buff/Debuff Status Bar** with duration sweeps (`Silenced`, `Jailed`, `ArmorShred`, `DamageAmplified`, `Slowed`, `ForGlory`, `Blessing`, `SunShrine`, `Ethereal`, `DoubleDown`, `BaseHealing`), overhead nameplate status badges, and clean world status GameplayCues.
+8. **Goal 8 — Upgrade Shop Items, 6-Card/4-Slot UI Overhaul & Economy UX Polish Gate:** Upgrade `UBwayUpgradeShopWidget` from the `UComboBoxString` test harness to a full **6-Item Upgrade Card Grid + 4-Slot Equipped Loadout Tray** with bespoke icons, 4-rank pips, stat-delta tooltips, live purchase-window banner (`Prematch` / `Dead` / `Base Healing Zone`), live hero stat totals, and KBM hotkeys + Gamepad navigation while preserving `bway.Test.ShopOpenAndBuy` compatibility.
+9. **Goal 9 — Vertical Slice 1.0 Capstone Human-in-the-Loop Playtest & 1080p Sign-Off Gate:** Full-flow `1920x1080` verification from Front End through Rematch (`>120 FPS` target) and structured physical KBM/Gamepad sign-off before unlocking roster expansion.
 
-| Area | Status | Evidence |
-|------|--------|----------|
-| Humanoid relic loop | Complete | Core loop Steps 0–10 |
-| Match HUD (scores, relic, health, portraits, post-round, post-match) | Complete | Steps 12–16 plus Step 19.5 |
-| In-match phase FSM | Complete | Steps 11-1–11-7 and 11b |
-| Front-end queue E2E | Deferred | Step `11-8`; matchmaking C++ (`11-MM-1`–`11-MM-4`) landed |
-| Argus, Alona, Korryn, Rawlins kits + one buildable each | C++ landed | Steps 18–21; Step 21 has a formal pass commit |
-| Fumble-on-damage | C++ landed | `UBwayRelicManagerComponent` + `ARelicActor::ForceFumbleFromDamage`; PIE still required |
-| Hero-select staging E2E | Open | Map and routing exist; Step 22 checklist |
-| Dorado parity | Open | `L_BW_Dorado` exists; not gated against DevMap |
-| 200 ms relic latency test | Structured packaged remote-owner scope passed | Candidate `LAN-20260915-13` observed production damage, relic pass, opposing-goal overlap, exact team/player score deltas, RoundComplete, cleanup, and three client Results exits at `Net PktLag=200`; physical latency play remains open |
-
-## Completed
-
-### Match loop
-
-- Round-based Capture-the-Relic with goal, elimination, and timer win conditions
-- Sudden death at 0:00 with midfield divider
-- Relic pickup, throw, pass, walk-in score, and throw-in score
-- Relic bot AI (pickup and walk-in scoring)
-- Bot backfill to eight players
-- Match-flow config (`UBwayMatchFlowConfig`) driving `UBwayRoundManagementComponent`
-
-### HUD and results
-
-- Score, relic status, health, and team portrait slots
-- Ability bar, gold counter, and relic-mode slot swap (Step 19.5)
-- Post-round summary and post-match stats / MVP
-
-### Heroes and buildables
-
-- Four Game Feature plugins with kit configs
-- One buildable per hero: Siege Engine, Sun Shrine, Cursed Ward, Jail
-- Once-per-round free placement; persist between rounds
-- Relic carrier blocks combat abilities; slide, Request Relic, and PlaceBuildable stay allowed
-
-### Entry and routing (C++)
-
-- `ForceHumanoid`, `Hero=` URL, skip-select-without-skip-apply
-- Direct PIE hero UI and round-management hero-lock gate
-- Hero-select staging map and playlist routing
-- Matchmaking goal definitions and mock queue travel (`11-MM-1`–`11-MM-4`)
-
-## Next work
-
-Tackle in this order unless a new project plan says otherwise.
-
-### 1. Section 3 capstone PIE (Step 22)
-
-C++ for 22-1 and 200 ms snap is landed. Remaining work is editor verification.
-
-| ID | Task |
-|----|------|
-| 22-1 | Fumble-on-damage — **C++ landed**; prove on listen server |
-| 22-2 | Enable all four hero plugins — run `node Scripts/setup-step22-capstone.mjs` |
-| 22-3 | Staging E2E: front-end tile → `L_BW_HeroSelect_Staging` → lock → match |
-| 22-4 | Step 19.5 HUD regression on all four heroes |
-| 22-5 | Four-hero 4v4 listen-server mini-match |
-| 22-6 | `ForceHumanoid=1` Section 1 relic regression |
-| 22-7 | Design-spec wording — already slice-correct in §2.2 |
-
-Also close leftover **17 / 19c / 20c / 20.5** 3/3 gates in the same session (URLs in the [core loop plan, Step 22](../Plugins/GameFeatures/BreakawayCore/Docs/CoreLoop_Implementation_Plan.md#step-22--section-3-capstone)).
-
-### 2. Editor verification (optional before 22)
-
-Run if you need confidence that Steps 17–20.5 are actually green in PIE:
-
-- Step 17: `ForceHumanoid`, `Hero=`, staging travel, once-per-round buildable
-- Alona 19c parity vs the stats sheet
-- Korryn 20c parity vs the stats sheet
-- Step 20.5 kit DAs resolve for Argus and Alona
-
-### 3. Match entry
-
-- Finish editor checklists for `11-MM-1`–`11-MM-4`
-- Step `11-8`: front-end → match → results → menu (3/3 cold starts)
-
-### 4. Slice polish (after Step 22)
-
-- `L_BW_Dorado` spawn, goal, and relic parity with DevMap
-- Relic latency playtest at 200 ms (structured remote-owner score evidence passed; physical presentation check remains)
-- Ability cooldown presentation and remaining HUD art
-- Between-round planning UI (C++ delegate exists)
-- Assist tracking (TODO on `ABwayCharacterWithAbilities`)
-- Packaged Windows build
-
-## Explicitly deferred
-
-Do not pull these into the current slice unless the upcoming project plan says so:
-
-- Ascension Rites campaign
-- SaveGame / meta gold
-- Gold spend on stat enhancers or items (earn-only in slice)
-- Second buildable per hero (slice is **one** per hero)
-- Dedicated-server hardening
-- Production mythological art pass
-- Full 11-hero roster
-
-## Tech debt (non-blocking)
-
-- Duplicate team / score / relic state on `ABwayGameState` versus GameState components
-- `PlayingPhaseTag` still defaults to `ShooterGame.GamePhase.Playing`
-- ShooterCTF spawn-tag coupling
-- Slide net steering under latency
-
-## Success bar (slice)
-
-From the [vertical slice definition](./VERTICAL_SLICE_DEFINITION.md):
-
-- 4v4 listen server with bots filling to eight
-- Four distinct heroes, duplicate-hero rule per team
-- Best-of-5, three win conditions
-- Relic pass, throw, score, and fumble
-- Gold earned in-match (no spend)
-- One persistable buildable per hero
-- Results return to the Lyra front-end
+### Phase 3 — Full 11-Hero Final Public Alpha Roster Expansion (Goals 10–11)
+10. **Goal 10 — Roster Expansion Batch A (Thorgrim, Kyra, Merrick, Jarra):** Implement C++ kits, DataAssets, full HUD/Buff/Shop polish integration, and persistent buildables (*Wall*, *Ballista*, *Spike Trap*, *Snap Trap*).
+11. **Goal 11 — Roster Expansion Batch B (Sai, Greyven, Gallion):** Implement C++ kits, DataAssets, full HUD/Buff/Shop polish integration, and persistent buildables (*Conduit*, *Dragonspire*, *Star Light*) to complete the 11-hero roster.

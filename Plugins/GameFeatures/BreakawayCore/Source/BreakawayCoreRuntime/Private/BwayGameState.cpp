@@ -603,6 +603,10 @@ void ABwayGameState::RestartMatchFromResults()
 	// after travel is accepted so a retained state cannot carry upgrades or
 	// statistics into the next match. Keeping this after ServerTravel avoids
 	// destroying state when the engine rejects the request.
+	if (RoundManagementComponent)
+	{
+		RoundManagementComponent->ResetForNextMatch();
+	}
 	for (APlayerState* PlayerState : PlayerArray)
 	{
 		if (ABwayPlayerState* BwayPlayerState = Cast<ABwayPlayerState>(PlayerState))

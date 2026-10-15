@@ -21,4 +21,9 @@ namespace BwayGameplayTags
 		"IncomingDamageMultiplier increased (Circle of Spite).");
 	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Status_Jailed, "State.Status.Jailed",
 		"Encaged by Rawlins Jail: Gameplay.MovementStopped while abilities remain usable.");
+
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Relic_PreparingCatch, "State.Relic.PreparingCatch",
+		"Character is holding RMB prepared catch to cleanly receive or intercept in-flight Relic passes/throws.");
+	UE_DEFINE_GAMEPLAY_TAG_COMMENT(State_Relic_Carrying, "State.Relic.Carrying",
+		"Character is currently carrying the Relic.");
 }

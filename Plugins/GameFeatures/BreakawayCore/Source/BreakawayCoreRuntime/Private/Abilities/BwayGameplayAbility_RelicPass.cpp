@@ -134,15 +134,19 @@ void UBwayGameplayAbility_RelicPass::ActivateAbility(
 	}
 
 	const URelicSettings* Settings = Relic->GetRelicSettings();
-	if (!BestTeammate || !Settings || Settings->ThrowVelocity <= 0.0f)
+	const float EffectivePassSpeed = (Settings && Settings->PassSpeed > 0.0f)
+		? Settings->PassSpeed
+		: (Settings ? Settings->ThrowVelocity : 1500.0f);
+	if (!BestTeammate || EffectivePassSpeed <= 0.0f)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
 	FVector ToTeammate = BestTeammate->GetActorLocation() - Character->GetActorLocation();
-	ToTeammate.Z += FMath::Tan(FMath::DegreesToRadians(Settings->ThrowAngle)) * ToTeammate.Size2D();
-	Relic->Server_PassRelic(ToTeammate.GetSafeNormal() * Settings->ThrowVelocity);
+	const float EffectiveThrowAngle = Settings ? Settings->ThrowAngle : 30.0f;
+	ToTeammate.Z += FMath::Tan(FMath::DegreesToRadians(EffectiveThrowAngle)) * ToTeammate.Size2D();
+	Relic->Server_PassRelic(ToTeammate.GetSafeNormal() * EffectivePassSpeed);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, false, false);
 }

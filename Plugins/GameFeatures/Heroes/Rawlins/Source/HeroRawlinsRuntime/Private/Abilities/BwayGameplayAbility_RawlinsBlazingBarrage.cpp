@@ -87,7 +87,6 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::ActivateAbility(
 	if (ULyraHealthComponent* HealthComp = ULyraHealthComponent::FindHealthComponent(CachedCharacter))
 	{
 		BoundHealthComponent = HealthComp;
-		HealthAtActivation = HealthComp->GetHealth();
 		HealthComp->OnHealthChanged.AddDynamic(this, &UBwayGameplayAbility_RawlinsBlazingBarrage::HandleHealthChanged);
 		bBoundToHealth = true;
 	}
@@ -187,7 +186,9 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::SpawnShot()
 
 	const float Damage = CalculateScaledDamage(ActiveBaseDamage, ActiveDamageScaling);
 	const FVector JuggleImpulse(0.f, 0.f, ActiveJuggleUpward);
-	if (UBwayProjectilePresentationData* Presentation = ActiveProjectilePresentation.LoadSynchronous())
+	if (UBwayProjectilePresentationData* Presentation = ActiveProjectilePresentation.Get()
+		? ActiveProjectilePresentation.Get()
+		: ActiveProjectilePresentation.LoadSynchronous())
 	{
 		Projectile->ApplyPresentation(Presentation);
 	}
@@ -211,7 +212,6 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::HandleHealthChanged(
 	AActor* Instigator)
 {
 	(void)HealthComp;
-	(void)OldValue;
 	(void)Instigator;
 
 	if (!IsActive())
@@ -219,8 +219,8 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::HandleHealthChanged(
 		return;
 	}
 
-	// Interrupt when health decreases from the value at activation (took damage).
-	if (NewValue < HealthAtActivation - KINDA_SMALL_NUMBER)
+	// Compare this change so healing during the channel cannot mask later health loss.
+	if (NewValue < OldValue - KINDA_SMALL_NUMBER)
 	{
 		CancelAbility(StoredSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 	}
@@ -234,7 +234,6 @@ void UBwayGameplayAbility_RawlinsBlazingBarrage::UnbindHealthInterrupt()
 	}
 	bBoundToHealth = false;
 	BoundHealthComponent = nullptr;
-	HealthAtActivation = 0.f;
 }
 
 void UBwayGameplayAbility_RawlinsBlazingBarrage::EndAbility(

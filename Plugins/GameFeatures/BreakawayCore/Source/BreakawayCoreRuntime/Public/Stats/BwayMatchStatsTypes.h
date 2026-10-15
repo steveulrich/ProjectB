@@ -204,3 +204,5 @@ struct BREAKAWAYCORERUNTIME_API FBwayPostMatchSummaryData
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	FText MVPHeroName;
 };
+
+using FBwayMatchSummary = FBwayPostMatchSummaryData;

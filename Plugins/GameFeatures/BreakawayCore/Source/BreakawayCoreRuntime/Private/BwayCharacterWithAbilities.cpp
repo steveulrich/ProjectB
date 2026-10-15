@@ -2,6 +2,7 @@
 
 
 #include "BwayCharacterWithAbilities.h"
+#include "BwayGameplayTags.h"
 #include "Camera/LyraCameraComponent.h"
 #include "Camera/CameraShakeBase.h"
 #include "Camera/CameraModifier_CameraShake.h"
@@ -109,10 +110,18 @@ void ABwayCharacterWithAbilities::ClearRelicRequestForCurrentPawn()
 	{
 		ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
 		const FGameplayTag RequestTag = UBwayRelicRequestIndicatorComponent::ResolveRequestTag(this);
-		if (ASC && ASC->GetAvatarActor() == this && RequestTag.IsValid())
+		if (ASC && ASC->GetAvatarActor() == this)
 		{
-			// The PlayerState ASC survives this pawn. A new avatar must make its own request.
-			ASC->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(RequestTag));
+			if (RequestTag.IsValid())
+			{
+				// The PlayerState ASC survives this pawn. A new avatar must make its own request.
+				ASC->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(RequestTag));
+			}
+			if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid() &&
+				ASC->GetTagCount(BwayGameplayTags::State_Relic_PreparingCatch) > 0)
+			{
+				ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::TagAndCountToAll);
+			}
 		}
 	}
 }
@@ -171,8 +180,8 @@ bool ABwayCharacterWithAbilities::PlayPrimaryActionMontage(UAnimMontage* Montage
 	{
 #if !UE_BUILD_SHIPPING
 		const APlayerState* State = GetPlayerState();
-		UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Rejected player=%d net=%d montage=%s reason=%s"),
-			State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *GetNameSafe(Montage), Reason);
+		UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Rejected player=%d net=%d montage=%s reason=%s pawn=%s"),
+			State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *GetNameSafe(Montage), Reason, *GetPathName());
 #else
 		UE_UNUSED(Reason);
 #endif
@@ -202,6 +211,10 @@ bool ABwayCharacterWithAbilities::PlayPrimaryActionMontage(UAnimMontage* Montage
 		return Reject(TEXT("root-motion-not-cosmetic"));
 	}
 	USkeletalMeshComponent* ActionMesh = GetMesh();
+	if (ActionMesh && ActionMesh->VisibilityBasedAnimTickOption > EVisibilityBasedAnimTickOption::AlwaysTickPose)
+	{
+		ActionMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+	}
 	UAnimInstance* Anim = ActionMesh ? ActionMesh->GetAnimInstance() : nullptr;
 	if (!IsValid(Anim) || ActionMesh->IsSimulatingPhysics()) return Reject(TEXT("animation-unavailable"));
 
@@ -242,9 +255,9 @@ bool ABwayCharacterWithAbilities::PlayPrimaryActionMontage(UAnimMontage* Montage
 	}
 #if !UE_BUILD_SHIPPING
 	const APlayerState* State = GetPlayerState();
-	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Played player=%d net=%d local=%d montage=%s group=%s instance=%d rate=%.3f duration=%.3f"),
+	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Played player=%d net=%d local=%d montage=%s group=%s instance=%d rate=%.3f duration=%.3f pawn=%s"),
 		State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), IsLocallyControlled(),
-		*Montage->GetPathName(), *Group.ToString(), PrimaryActionMontageInstanceId, PlayRate, Duration);
+		*Montage->GetPathName(), *Group.ToString(), PrimaryActionMontageInstanceId, PlayRate, Duration, *GetPathName());
 #endif
 	return true;
 }
@@ -262,8 +275,8 @@ void ABwayCharacterWithAbilities::StopPrimaryActionMontage(bool bImmediately, co
 	if (!Instance || !Montage || Instance->Montage != Montage) return;
 #if !UE_BUILD_SHIPPING
 	const APlayerState* State = GetPlayerState();
-	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Stopped player=%d net=%d montage=%s instance=%d immediate=%d reason=%s"),
-		State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *Montage->GetPathName(), InstanceId, bImmediately, Reason);
+	UE_LOG(LogTemp, Display, TEXT("BwayPrimaryAction: Stopped player=%d net=%d montage=%s instance=%d immediate=%d reason=%s pawn=%s"),
+		State ? State->GetPlayerId() : INDEX_NONE, int32(GetNetMode()), *Montage->GetPathName(), InstanceId, bImmediately, Reason, *GetPathName());
 #else
 	UE_UNUSED(Reason);
 #endif
@@ -728,6 +741,11 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 
 	if (MainMesh)
 	{
+		if (MainMesh->VisibilityBasedAnimTickOption > EVisibilityBasedAnimTickOption::AlwaysTickPose)
+		{
+			MainMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPose;
+		}
+
 		if (HeroData->HeroMesh)
 		{
 			UE_LOG(LogTemp, Log, TEXT("ApplyHeroVisuals: Setting HeroMesh = %s on %s"), *GetNameSafe(HeroData->HeroMesh), *GetName());

@@ -1,6 +1,9 @@
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
+#include "BwayGameplayTags.h"
 #include "BwayPlayerState.h"
+#include "LyraGameplayTags.h"
+#include "Messages/LyraVerbMessageHelpers.h"
 #include "Relic/RelicSettings.h"
 #include "Relic/RelicMovementReplicationComponent.h"
 #include "Components/SphereComponent.h"
@@ -16,12 +19,14 @@
 #include "Engine/AssetManager.h"
 #include "Engine/StreamableManager.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/Controller.h"
 #include "GameFramework/PlayerState.h" // Include necessary header for APlayerState
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "HAL/IConsoleManager.h"
+#include "TimerManager.h"
 
 #if !UE_BUILD_SHIPPING
 static TAutoConsoleVariable<int32> CVarBwayRelicDebugFeedback(
@@ -35,7 +40,12 @@ bool IsRelicPickupState(ERelicState State)
 {
     return State == ERelicState::Neutral || State == ERelicState::Dropped ||
         State == ERelicState::Thrown || State == ERelicState::BeingPassed ||
-        State == ERelicState::PendingRequest;
+        State == ERelicState::Passed || State == ERelicState::PendingRequest;
+}
+
+bool IsRelicPassFlightState(ERelicState State)
+{
+    return State == ERelicState::BeingPassed || State == ERelicState::Passed;
 }
 
 FVector ComputeSpawnDirectedFumbleVelocity(const FVector& CarrierLocation, const FVector& SpawnLocation, const URelicSettings* RelicSettings)
@@ -46,6 +56,7 @@ FVector ComputeSpawnDirectedFumbleVelocity(const FVector& CarrierLocation, const
 	const float MaxUp = RelicSettings ? RelicSettings->FumbleDropUpSpeed : 250.0f;
 	const float MinUp = RelicSettings ? RelicSettings->FumbleMinUpTowardSpawn : 80.0f;
 	const float RefDistance = RelicSettings ? FMath::Max(RelicSettings->FumbleSpawnReferenceDistance, 1.0f) : 4000.0f;
+	const float MinFumbleStrength = RelicSettings ? RelicSettings->FumbleImpulseStrength : 600.0f;
 
 	FVector ToSpawnHorizontal = SpawnLocation - CarrierLocation;
 	ToSpawnHorizontal.Z = 0.0f;
@@ -61,7 +72,14 @@ FVector ComputeSpawnDirectedFumbleVelocity(const FVector& CarrierLocation, const
 	const float HorizontalSpeed = FMath::Lerp(MinHorizontal, MaxHorizontal, DistanceAlpha);
 	const float UpSpeed = FMath::Lerp(MaxUp, MinUp, DistanceAlpha);
 
-	return (HorizontalDir * HorizontalSpeed + FVector(0.0f, 0.0f, UpSpeed)) * ImpulseScale;
+	FVector Result = (HorizontalDir * HorizontalSpeed + FVector(0.0f, 0.0f, UpSpeed)) * ImpulseScale;
+	const float TargetStrength = MinFumbleStrength * ImpulseScale;
+	if (TargetStrength > 0.0f && Result.Size() < TargetStrength)
+	{
+		const FVector Dir = Result.IsNearlyZero() ? FVector(0.0f, 0.0f, 1.0f) : Result.GetSafeNormal();
+		Result = Dir * TargetStrength;
+	}
+	return Result;
 }
 
 FGameplayTag ResolvePickupEventTag(const URelicSettings* RelicSettings)
@@ -74,27 +92,98 @@ FGameplayTag ResolvePickupEventTag(const URelicSettings* RelicSettings)
     return FGameplayTag::RequestGameplayTag(FName("Event.Interaction.PickupRelic"), /*ErrorIfNotFound*/ false);
 }
 
-bool    IsCharacterRequestingRelic(const ABwayCharacterWithAbilities* Character, const URelicSettings* RelicSettings)
+bool HasTagOnCharacterOrPlayerState(const ABwayCharacterWithAbilities* Character, const FGameplayTag& Tag)
+{
+    if (!Character || !Tag.IsValid())
+    {
+        return false;
+    }
+    if (Character->HasMatchingGameplayTag(Tag))
+    {
+        return true;
+    }
+    if (const APlayerState* PS = Character->GetPlayerState())
+    {
+        if (const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PS))
+        {
+            return ASC->HasMatchingGameplayTag(Tag);
+        }
+    }
+    return false;
+}
+
+bool IsCharacterRequestingRelic(const ABwayCharacterWithAbilities* Character, const URelicSettings* RelicSettings)
 {
     if (!Character)
     {
         return false;
     }
 
-    if (RelicSettings && RelicSettings->RequestingTag.IsValid())
+    if (HasTagOnCharacterOrPlayerState(Character, BwayGameplayTags::State_Relic_PreparingCatch))
     {
-        return Character->HasMatchingGameplayTag(RelicSettings->RequestingTag);
+        return true;
     }
 
-    // Backward-compatible fallback while data assets are corrected.
+    if (RelicSettings && RelicSettings->RequestingTag.IsValid() &&
+        HasTagOnCharacterOrPlayerState(Character, RelicSettings->RequestingTag))
+    {
+        return true;
+    }
+
+    const FGameplayTag GameplayRequestingTag = FGameplayTag::RequestGameplayTag(FName("Gameplay.Relic.Requesting"), /*ErrorIfNotFound*/ false);
+    if (HasTagOnCharacterOrPlayerState(Character, GameplayRequestingTag))
+    {
+        return true;
+    }
+
     const FGameplayTag RequestingTag = FGameplayTag::RequestGameplayTag(FName("State.RequestingRelic"), /*ErrorIfNotFound*/ false);
-    if (RequestingTag.IsValid() && Character->HasMatchingGameplayTag(RequestingTag))
+    if (HasTagOnCharacterOrPlayerState(Character, RequestingTag))
     {
         return true;
     }
 
     const FGameplayTag RequestingMessageTag = FGameplayTag::RequestGameplayTag(FName("State.RequestingRelic.Message"), /*ErrorIfNotFound*/ false);
-    return RequestingMessageTag.IsValid() && Character->HasMatchingGameplayTag(RequestingMessageTag);
+    if (HasTagOnCharacterOrPlayerState(Character, RequestingMessageTag))
+    {
+        return true;
+    }
+
+    if (const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Character->GetPlayerState()))
+    {
+        if (BwayPS->bHasCalledForRelic)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+ABwayPlayerState* ResolvePlayerStateFromActor(AActor* Actor)
+{
+    if (!Actor)
+    {
+        return nullptr;
+    }
+    if (ABwayPlayerState* DirectPS = Cast<ABwayPlayerState>(Actor))
+    {
+        return DirectPS;
+    }
+    if (const APawn* Pawn = Cast<APawn>(Actor))
+    {
+        if (ABwayPlayerState* PawnPS = Pawn->GetPlayerState<ABwayPlayerState>())
+        {
+            return PawnPS;
+        }
+    }
+    if (const AController* Controller = Cast<AController>(Actor))
+    {
+        if (ABwayPlayerState* CtrlPS = Controller->GetPlayerState<ABwayPlayerState>())
+        {
+            return CtrlPS;
+        }
+    }
+    return Cast<ABwayPlayerState>(ULyraVerbMessageHelpers::GetPlayerStateFromObject(Actor));
 }
 }
 
@@ -113,6 +202,8 @@ ARelicActor::ARelicActor()
     RelicMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("RelicMesh"));
     SetRootComponent(RelicMesh);
     RelicMesh->SetIsReplicated(true); // Replicate the component itself if needed
+    RelicMesh->SetUseCCD(true);
+    RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
     // SceneComponent replicates AttachChildren. Only this stable default subobject
     // belongs in the mesh's networked list; each peer owns its Niagara children.
@@ -144,6 +235,8 @@ void ARelicActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
     DOREPLIFETIME(ARelicActor, CurrentCarrier);
     DOREPLIFETIME(ARelicActor, CurrentState);
     DOREPLIFETIME(ARelicActor, LastPossessingTeam);
+    DOREPLIFETIME(ARelicActor, bIsPassInFlight);
+    DOREPLIFETIME(ARelicActor, PassingTeamIndex);
     DOREPLIFETIME(ARelicActor, bHasScoredThisRound);
 }
 
@@ -230,6 +323,7 @@ void ARelicActor::BeginPlay()
 
 void ARelicActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    UnbindCarrierCCTagListener();
     for (ERelicState State : {ERelicState::Neutral, ERelicState::Carried, ERelicState::Dropped, ERelicState::Scoring})
     {
         CleanupStateVFX(State);
@@ -293,6 +387,8 @@ void ARelicActor::ApplyRelicConfiguration()
         RelicMesh->SetMassOverrideInKg(NAME_None, RelicSettings->RelicMass, true);
         RelicMesh->SetLinearDamping(RelicSettings->LinearDamping);
         RelicMesh->SetAngularDamping(RelicSettings->AngularDamping);
+        RelicMesh->SetUseCCD(true);
+        RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
     }
 
     // Apply interaction radius
@@ -320,6 +416,59 @@ void ARelicActor::ApplyRelicConfiguration()
     }
 
     UE_LOG(LogTemp, Log, TEXT("Relic configuration applied successfully"));
+}
+
+int32 ARelicActor::ResolveCharacterTeamIndex(const ABwayCharacterWithAbilities* Character) const
+{
+    if (!Character)
+    {
+        return INDEX_NONE;
+    }
+
+    if (const APlayerState* PS = Character->GetPlayerState())
+    {
+        if (const ABwayGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+        {
+            const int32 TeamIdx = GameState->GetPlayerTeam(PS);
+            if (TeamIdx != INDEX_NONE)
+            {
+                return TeamIdx;
+            }
+        }
+        if (const IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(PS))
+        {
+            const uint8 RawId = TeamAgent->GetGenericTeamId().GetId();
+            if (RawId == 1 || RawId == 2)
+            {
+                return static_cast<int32>(RawId) - 1;
+            }
+        }
+    }
+
+    const uint8 PawnTeamId = Character->GetGenericTeamId().GetId();
+    if (PawnTeamId == 1 || PawnTeamId == 2)
+    {
+        return static_cast<int32>(PawnTeamId) - 1;
+    }
+
+    return INDEX_NONE;
+}
+
+bool ARelicActor::IsDropPickupCooldownActiveFor(const ABwayCharacterWithAbilities* Character) const
+{
+    if (!Character || !LastDroppedCarrier.IsValid() || Character != LastDroppedCarrier.Get())
+    {
+        return false;
+    }
+
+    const float Cooldown = RelicSettings ? RelicSettings->PickupCooldownAfterDrop : 0.5f;
+    if (Cooldown <= 0.0f || !GetWorld())
+    {
+        return false;
+    }
+
+    const double Elapsed = GetWorld()->GetTimeSeconds() - LastDropWorldTime;
+    return Elapsed >= 0.0 && Elapsed < static_cast<double>(Cooldown);
 }
 
 void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -364,21 +513,53 @@ void ARelicActor::OnInteractionSphereOverlap(UPrimitiveComponent* OverlappedComp
         {
              UE_LOG(LogTemp, Warning, TEXT("Server: Overlapping character %s has no PlayerState."), *GetNameSafe(OverlappingCharacter));
         }
+
+        // Direct authoritative catch/interception fallback when no Blueprint pickup listener consumed the overlap.
+        // OnPickedUp is idempotent and guarded by CurrentCarrier, preventing duplicate ability grants.
+        if (!CurrentCarrier && CanBePickedUpBy(OverlappingCharacter))
+        {
+            OnPickedUp(OverlappingCharacter);
+        }
     }
 }
 
 bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
 {
-    UE_LOG(LogTemp, Log, TEXT("Relic current state is %d"), CurrentState);
+    UE_LOG(LogTemp, Verbose, TEXT("Relic current state is %d"), CurrentState);
 
-    if (!Character || !RelicSettings)
+    if (!Character || CurrentCarrier || bHasScoredThisRound || !IsRelicPickupState(CurrentState))
     {
         return false;
     }
 
-    // Server-side check: Is the relic in a pickup-able state AND is the character requesting it?
-    return !CurrentCarrier && !bHasScoredThisRound && IsRelicPickupState(CurrentState) &&
-        IsCharacterRequestingRelic(Character, RelicSettings);
+    if (IsDropPickupCooldownActiveFor(Character))
+    {
+        return false;
+    }
+
+    if (HasTagOnCharacterOrPlayerState(Character, LyraGameplayTags::Status_Death) ||
+        HasTagOnCharacterOrPlayerState(Character, LyraGameplayTags::Status_Death_Dying))
+    {
+        return false;
+    }
+
+    if (IsCharacterRequestingRelic(Character, RelicSettings))
+    {
+        return true;
+    }
+
+    // Opposing defenders overlapping an in-flight pass can intercept it mid-air.
+    if (bIsPassInFlight || IsRelicPassFlightState(CurrentState))
+    {
+        const int32 EffectivePassingTeam = (PassingTeamIndex != INDEX_NONE) ? PassingTeamIndex : LastPossessingTeam;
+        const int32 CatcherTeam = ResolveCharacterTeamIndex(Character);
+        if (EffectivePassingTeam != INDEX_NONE && CatcherTeam != INDEX_NONE && EffectivePassingTeam != CatcherTeam)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const
@@ -399,12 +580,17 @@ void ARelicActor::OnRep_CurrentState()
             CurrentState == ERelicState::Neutral ||
             CurrentState == ERelicState::Dropped ||
             CurrentState == ERelicState::Thrown ||
-            CurrentState == ERelicState::BeingPassed;
+            CurrentState == ERelicState::BeingPassed ||
+            CurrentState == ERelicState::Passed;
 
         // Clients simulate only so the custom movement replication component can
         // smooth loose-ball movement. The server still owns authoritative state.
         RelicMesh->SetSimulatePhysics(bShouldSimulateForSmoothing);
         RelicMesh->SetCollisionEnabled(bShouldSimulateForSmoothing ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+        if (bShouldSimulateForSmoothing)
+        {
+            RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+        }
     }
 
     UE_LOG(LogTemp, Verbose, TEXT("Relic %s changed state to %d on client"), *GetNameSafe(this), static_cast<int32>(CurrentState));
@@ -448,6 +634,16 @@ void ARelicActor::SetRelicState(ERelicState NewState)
 {
     if (HasAuthority()) // Only server changes the state authoritatively
     {
+        bIsPassInFlight = IsRelicPassFlightState(NewState);
+        if (bIsPassInFlight && PassingTeamIndex == INDEX_NONE)
+        {
+            PassingTeamIndex = LastPossessingTeam;
+        }
+        else if (!bIsPassInFlight && NewState != ERelicState::Carried)
+        {
+            PassingTeamIndex = INDEX_NONE;
+        }
+
         if (CurrentState!= NewState)
         {
             ERelicState OldState = CurrentState;
@@ -472,6 +668,8 @@ void ARelicActor::SetRelicState(ERelicState NewState)
             case ERelicState::Dropped:
                 RelicMesh->SetSimulatePhysics(true); // Enable physics simulation on server
                 RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+                RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+                RelicMesh->SetUseCCD(true);
                 // Enable smooth replication for physics-based movement
                 if (MovementReplicationComponent)
                 {
@@ -480,8 +678,11 @@ void ARelicActor::SetRelicState(ERelicState NewState)
                 break;
             case ERelicState::Thrown:
             case ERelicState::BeingPassed:
+            case ERelicState::Passed:
                 RelicMesh->SetSimulatePhysics(true); // Enable physics simulation on server
                 RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+                RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+                RelicMesh->SetUseCCD(true);
                 // Enable smooth replication for physics-based movement
                 if (MovementReplicationComponent)
                 {
@@ -521,21 +722,33 @@ ABwayPlayerState* ARelicActor::GetLastPossessingPlayerState() const
 void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 {
     if (!HasAuthority() || !IsValid(NewCarrier) || CurrentCarrier ||
-        bHasScoredThisRound || !IsRelicPickupState(CurrentState))
+        bHasScoredThisRound || !IsRelicPickupState(CurrentState) ||
+        IsDropPickupCooldownActiveFor(NewCarrier))
     {
         return;
     }
 
+    const bool bWasPassInFlight = bIsPassInFlight || IsRelicPassFlightState(CurrentState);
+    const int32 PreviousPassingTeam = (PassingTeamIndex != INDEX_NONE) ? PassingTeamIndex : LastPossessingTeam;
+    const int32 CatcherTeamIndex = ResolveCharacterTeamIndex(NewCarrier);
+
+    // Clear drop cooldown and damage accumulation once a valid pickup occurs.
+    LastDroppedCarrier.Reset();
+    LastDropWorldTime = -1000.0;
+    AccumulatedCarrierDamage = 0.0f;
+    LastCarrierDamageInstigatorPS.Reset();
+    bIsPassInFlight = false;
+    PassingTeamIndex = INDEX_NONE;
+
     // Keep player identity after CurrentCarrier is cleared by release or scoring.
-    LastPossessingPlayerState = Cast<ABwayPlayerState>(NewCarrier->GetPlayerState());
-    LastPossessingTeam = INDEX_NONE;
-    // Track which team picked up the relic (using GameState for consistency)
-    if (NewCarrier->GetPlayerState())
+    ABwayPlayerState* CatcherPS = Cast<ABwayPlayerState>(NewCarrier->GetPlayerState());
+    LastPossessingPlayerState = CatcherPS;
+    LastPossessingTeam = CatcherTeamIndex;
+
+    if (bWasPassInFlight && PreviousPassingTeam != INDEX_NONE && CatcherTeamIndex != INDEX_NONE &&
+        PreviousPassingTeam != CatcherTeamIndex && CatcherPS)
     {
-        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
-        {
-            LastPossessingTeam = GameState->GetPlayerTeam(NewCarrier->GetPlayerState());
-        }
+        CatcherPS->AddInterception();
     }
 
     // Commit ownership before callbacks or attachment can synchronously produce
@@ -561,10 +774,75 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 
 void ARelicActor::OnDropped()
 {
-    DropFromCarrierInternal(/*InitialVelocity=*/ nullptr, /*bRecordForcedFumble=*/ false);
+    DropFromCarrierInternal(/*InitialVelocity=*/ nullptr, /*bRecordForcedFumble=*/ false, /*InstigatorActor=*/ nullptr);
+}
+
+void ARelicActor::DropRelic(const FVector& ImpulseVelocity, AActor* InstigatorActor, bool bIsForcedFumble)
+{
+    if (!HasAuthority() || CurrentState != ERelicState::Carried || !CurrentCarrier)
+    {
+        return;
+    }
+
+    FVector EffectiveVelocity = ImpulseVelocity;
+    if (EffectiveVelocity.IsNearlyZero() && bIsForcedFumble)
+    {
+        const FVector CarrierLocation = CurrentCarrier->GetActorLocation();
+        FVector SpawnLocation = CarrierLocation;
+        if (ABwayGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+        {
+            if (UBwayRelicManagerComponent* RelicManager = GameState->FindComponentByClass<UBwayRelicManagerComponent>())
+            {
+                RelicManager->GetRelicSpawnLocationForPosition(CarrierLocation, SpawnLocation);
+            }
+        }
+        EffectiveVelocity = ComputeSpawnDirectedFumbleVelocity(CarrierLocation, SpawnLocation, RelicSettings);
+    }
+
+    const FVector* VelocityPtr = EffectiveVelocity.IsNearlyZero() ? nullptr : &EffectiveVelocity;
+    DropFromCarrierInternal(VelocityPtr, bIsForcedFumble, InstigatorActor);
+}
+
+bool ARelicActor::HandleCarrierDamage(float DamageAmount, AActor* InstigatorActor)
+{
+    if (!HasAuthority() || CurrentState != ERelicState::Carried || !CurrentCarrier || DamageAmount <= 0.0f)
+    {
+        return false;
+    }
+
+    if (RelicSettings && !RelicSettings->bFumbleOnDamage)
+    {
+        return false;
+    }
+
+    if (ABwayPlayerState* InstigatorPS = ResolvePlayerStateFromActor(InstigatorActor))
+    {
+        LastCarrierDamageInstigatorPS = InstigatorPS;
+    }
+
+    AccumulatedCarrierDamage += DamageAmount;
+    const float FumbleThreshold = RelicSettings ? RelicSettings->FumbleDamageThreshold : 50.0f;
+
+    const bool bHasHardCCTag =
+        HasTagOnCharacterOrPlayerState(CurrentCarrier, BwayGameplayTags::State_Status_Silenced) ||
+        HasTagOnCharacterOrPlayerState(CurrentCarrier, BwayGameplayTags::State_Status_Jailed) ||
+        HasTagOnCharacterOrPlayerState(CurrentCarrier, FGameplayTag::RequestGameplayTag(FName("State.Stunned"), false));
+
+    if (AccumulatedCarrierDamage + KINDA_SMALL_NUMBER >= FumbleThreshold || bHasHardCCTag)
+    {
+        ForceFumbleFromDamageWithInstigator(InstigatorActor);
+        return true;
+    }
+
+    return false;
 }
 
 void ARelicActor::ForceFumbleFromDamage()
+{
+    ForceFumbleFromDamageWithInstigator(LastCarrierDamageInstigatorPS.Get());
+}
+
+void ARelicActor::ForceFumbleFromDamageWithInstigator(AActor* InstigatorActor)
 {
     if (!HasAuthority())
     {
@@ -590,33 +868,77 @@ void ARelicActor::ForceFumbleFromDamage()
 
     const FVector DropVelocity = ComputeSpawnDirectedFumbleVelocity(CarrierLocation, SpawnLocation, RelicSettings);
 
-    DropFromCarrierInternal(&DropVelocity, /*bRecordForcedFumble=*/ true);
+    DropFromCarrierInternal(&DropVelocity, /*bRecordForcedFumble=*/ true, InstigatorActor);
 
     UE_LOG(LogTemp, Log, TEXT("Relic %s force-fumbled off %s"), *GetNameSafe(this), *GetNameSafe(FumblingCarrier));
 }
 
-void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble)
+void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble, AActor* InstigatorActor)
 {
     if (!HasAuthority())
     {
         return;
     }
 
+    const bool bCompletingReset = CurrentState == ERelicState::Resetting;
+
     if (bRecordForcedFumble && CurrentCarrier)
     {
-        if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(CurrentCarrier->GetPlayerState()))
+        ABwayPlayerState* CarrierPS = Cast<ABwayPlayerState>(CurrentCarrier->GetPlayerState());
+        ABwayPlayerState* AttackerPS = ResolvePlayerStateFromActor(InstigatorActor);
+        if (!AttackerPS)
         {
-            BwayPS->AddForcedFumble();
+            AttackerPS = LastCarrierDamageInstigatorPS.Get();
+        }
+
+        if (AttackerPS && AttackerPS != CarrierPS)
+        {
+            AttackerPS->AddForcedFumble();
+        }
+        if (CarrierPS)
+        {
+            CarrierPS->AddForcedFumble();
         }
     }
 
-    if (CurrentState != ERelicState::Resetting && CurrentCarrier && CurrentCarrier->GetPlayerState())
+    if (!bCompletingReset && CurrentCarrier)
     {
-        if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+        LastDroppedCarrier = CurrentCarrier;
+        LastDropWorldTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+        const int32 TeamIdx = ResolveCharacterTeamIndex(CurrentCarrier);
+        if (TeamIdx != INDEX_NONE)
         {
-            LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
+            LastPossessingTeam = TeamIdx;
+        }
+
+        if (UWorld* World = GetWorld())
+        {
+            const float Cooldown = RelicSettings ? RelicSettings->PickupCooldownAfterDrop : 0.5f;
+            if (Cooldown > 0.0f)
+            {
+                TWeakObjectPtr<ARelicActor> WeakThis(this);
+                TWeakObjectPtr<ABwayCharacterWithAbilities> DroppedCarrierWeak = LastDroppedCarrier;
+                const double RecordedDropTime = LastDropWorldTime;
+                FTimerHandle CooldownHandle;
+                World->GetTimerManager().SetTimer(CooldownHandle, [WeakThis, DroppedCarrierWeak, RecordedDropTime]()
+                {
+                    if (ARelicActor* Self = WeakThis.Get())
+                    {
+                        if (Self->LastDroppedCarrier == DroppedCarrierWeak && FMath::IsNearlyEqual(Self->LastDropWorldTime, RecordedDropTime))
+                        {
+                            Self->LastDroppedCarrier.Reset();
+                            Self->LastDropWorldTime = -1000.0;
+                        }
+                    }
+                }, Cooldown, false);
+            }
         }
     }
+
+    AccumulatedCarrierDamage = 0.0f;
+    LastCarrierDamageInstigatorPS.Reset();
+    bIsPassInFlight = false;
+    PassingTeamIndex = INDEX_NONE;
 
     // Notify relic manager component carrier is gone (do this first while CurrentCarrier is still valid)
     if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
@@ -634,7 +956,6 @@ void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool b
     CurrentCarrier = nullptr;
 
     const bool bChangedState = CurrentState != ERelicState::Dropped;
-    const bool bCompletingReset = CurrentState == ERelicState::Resetting;
     // Set state (LastPossessingTeam is maintained - don't reset it)
     SetRelicState(ERelicState::Dropped);
 
@@ -708,6 +1029,8 @@ void ARelicActor::ClearScoringFlag()
     }
 
     bHasScoredThisRound = false;
+    LastDroppedCarrier.Reset();
+    LastDropWorldTime = -1000.0;
     UE_LOG(LogTemp, Verbose, TEXT("Relic scoring flag cleared for new round"));
 }
 
@@ -720,31 +1043,95 @@ void ARelicActor::BeginResettingState()
 
     LastPossessingPlayerState.Reset();
     LastPossessingTeam = INDEX_NONE;
+    LastDroppedCarrier.Reset();
+    LastDropWorldTime = -1000.0;
+    AccumulatedCarrierDamage = 0.0f;
+    LastCarrierDamageInstigatorPS.Reset();
+    bIsPassInFlight = false;
+    PassingTeamIndex = INDEX_NONE;
     SetRelicState(ERelicState::Resetting);
     // The completed reset emits audio after relocation through OnDropped.
+}
+
+FVector ARelicActor::ComputeChargedThrowVelocity(const FVector& AimDirection, float ChargeTimeSeconds) const
+{
+    const float MinSpeed = RelicSettings ? RelicSettings->MinThrowSpeed : 800.0f;
+    const float MaxSpeed = RelicSettings ? RelicSettings->MaxThrowSpeed : 2000.0f;
+    const float MaxCharge = RelicSettings ? FMath::Max(RelicSettings->MaxChargeTime, KINDA_SMALL_NUMBER) : 1.5f;
+    const float Alpha = FMath::Clamp(ChargeTimeSeconds / MaxCharge, 0.0f, 1.0f);
+    const float Speed = FMath::Lerp(MinSpeed, MaxSpeed, Alpha);
+
+    FVector Direction = AimDirection.GetSafeNormal();
+    if (Direction.IsNearlyZero())
+    {
+        if (CurrentCarrier)
+        {
+            Direction = CurrentCarrier->GetActorForwardVector().GetSafeNormal();
+        }
+        else
+        {
+            Direction = GetActorForwardVector().GetSafeNormal();
+        }
+    }
+    if (Direction.IsNearlyZero())
+    {
+        Direction = FVector::ForwardVector;
+    }
+
+    return Direction * Speed;
+}
+
+FVector ARelicActor::ComputeDirectedPassVelocity(const FVector& TargetLocation) const
+{
+    const float Speed = (RelicSettings && RelicSettings->PassSpeed > 0.0f)
+        ? RelicSettings->PassSpeed
+        : (RelicSettings ? RelicSettings->ThrowVelocity : 1500.0f);
+    const FVector Origin = CurrentCarrier ? CurrentCarrier->GetActorLocation() : GetActorLocation();
+    FVector Direction = (TargetLocation - Origin).GetSafeNormal();
+    if (Direction.IsNearlyZero())
+    {
+        Direction = CurrentCarrier ? CurrentCarrier->GetActorForwardVector().GetSafeNormal() : FVector::ForwardVector;
+    }
+    return Direction * Speed;
+}
+
+void ARelicActor::ThrowRelicCharged(float ChargeTimeSeconds, const FVector& AimDirection)
+{
+    const FVector Velocity = ComputeChargedThrowVelocity(AimDirection, ChargeTimeSeconds);
+    if (HasAuthority())
+    {
+        Server_ThrowRelic_Implementation(Velocity);
+    }
+    else
+    {
+        Server_ThrowRelic(Velocity);
+    }
 }
 
 // --- Throw/Pass RPCs ---
 
 bool ARelicActor::Server_ThrowRelic_Validate(const FVector& ThrowVelocity)
 {
-    const float MaxThrowSpeed = RelicSettings ? FMath::Max(RelicSettings->ThrowVelocity * 1.5f, RelicSettings->ThrowVelocity + 250.0f) : 3000.0f;
+    const float BaseMaxThrow = RelicSettings ? FMath::Max(RelicSettings->MaxThrowSpeed, RelicSettings->ThrowVelocity) : 2000.0f;
+    const float MaxAllowedSpeed = FMath::Max(BaseMaxThrow * 1.5f, BaseMaxThrow + 500.0f);
     return CurrentState == ERelicState::Carried &&
         CurrentCarrier != nullptr &&
         !ThrowVelocity.ContainsNaN() &&
-        ThrowVelocity.SizeSquared() <= FMath::Square(MaxThrowSpeed);
+        ThrowVelocity.SizeSquared() <= FMath::Square(MaxAllowedSpeed);
 }
 void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
 {
     if (HasAuthority() && CurrentState == ERelicState::Carried && CurrentCarrier!= nullptr)
     {
-        if (CurrentCarrier->GetPlayerState())
+        const int32 CarrierTeam = ResolveCharacterTeamIndex(CurrentCarrier);
+        if (CarrierTeam != INDEX_NONE)
         {
-            if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
-            {
-                LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
-            }
+            LastPossessingTeam = CarrierTeam;
         }
+        LastDroppedCarrier = CurrentCarrier;
+        LastDropWorldTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+        bIsPassInFlight = false;
+        PassingTeamIndex = INDEX_NONE;
 
         // Send client prediction RPC to the throwing client for immediate feedback
         if (APlayerController* CarrierPC = CurrentCarrier->GetController<APlayerController>())
@@ -761,29 +1148,118 @@ void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
 
 bool ARelicActor::Server_PassRelic_Validate(const FVector& PassVelocity)
 {
-    const float MaxPassSpeed = RelicSettings ? FMath::Max(RelicSettings->ThrowVelocity * 1.5f, RelicSettings->ThrowVelocity + 250.0f) : 3000.0f;
+    const float BaseMaxPass = RelicSettings ? FMath::Max(RelicSettings->PassSpeed, RelicSettings->ThrowVelocity) : 1500.0f;
+    const float MaxAllowedSpeed = FMath::Max(BaseMaxPass * 1.5f, BaseMaxPass + 500.0f);
     return CurrentState == ERelicState::Carried &&
         CurrentCarrier != nullptr &&
         !PassVelocity.ContainsNaN() &&
-        PassVelocity.SizeSquared() <= FMath::Square(MaxPassSpeed);
+        PassVelocity.SizeSquared() <= FMath::Square(MaxAllowedSpeed);
 }
 void ARelicActor::Server_PassRelic_Implementation(const FVector& PassVelocity)
 {
     if (HasAuthority() && CurrentState == ERelicState::Carried && CurrentCarrier!= nullptr)
     {
-        if (CurrentCarrier->GetPlayerState())
+        const int32 CarrierTeam = ResolveCharacterTeamIndex(CurrentCarrier);
+        if (CarrierTeam != INDEX_NONE)
         {
-            if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
-            {
-                LastPossessingTeam = GameState->GetPlayerTeam(CurrentCarrier->GetPlayerState());
-            }
+            LastPossessingTeam = CarrierTeam;
         }
+        LastDroppedCarrier = CurrentCarrier;
+        LastDropWorldTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+        PassingTeamIndex = LastPossessingTeam;
+        bIsPassInFlight = true;
 
         DetachFromCarrier(&PassVelocity); // Detaches and applies impulse
         CurrentCarrier = nullptr;
 
         SetRelicState(ERelicState::BeingPassed);
     }
+}
+
+void ARelicActor::BindCarrierCCTagListener(ABwayCharacterWithAbilities* Carrier)
+{
+    UnbindCarrierCCTagListener();
+    if (!HasAuthority() || !Carrier)
+    {
+        return;
+    }
+
+    UAbilitySystemComponent* ASC = nullptr;
+    if (APlayerState* CarrierPS = Carrier->GetPlayerState())
+    {
+        ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CarrierPS);
+    }
+    if (!ASC)
+    {
+        ASC = Carrier->GetAbilitySystemComponent();
+    }
+    if (!ASC)
+    {
+        return;
+    }
+
+    BoundCarrierASC = ASC;
+    CarrierTagEventHandle = ASC->RegisterGenericGameplayTagEvent().AddUObject(
+        this, &ARelicActor::HandleCarrierGameplayTagChanged);
+}
+
+void ARelicActor::UnbindCarrierCCTagListener()
+{
+    if (BoundCarrierASC.IsValid() && CarrierTagEventHandle.IsValid())
+    {
+        BoundCarrierASC->RegisterGenericGameplayTagEvent().Remove(CarrierTagEventHandle);
+    }
+    CarrierTagEventHandle.Reset();
+    BoundCarrierASC.Reset();
+}
+
+void ARelicActor::HandleCarrierGameplayTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+    if (!HasAuthority() || NewCount <= 0 || CurrentState != ERelicState::Carried || !CurrentCarrier)
+    {
+        return;
+    }
+
+    if (RelicSettings && !RelicSettings->bFumbleOnDamage)
+    {
+        return;
+    }
+
+    const FGameplayTag StunnedTag = FGameplayTag::RequestGameplayTag(FName("State.Stunned"), /*ErrorIfNotFound*/ false);
+    const bool bIsHardCCTag =
+        (Tag == BwayGameplayTags::State_Status_Silenced) ||
+        (Tag == BwayGameplayTags::State_Status_Jailed) ||
+        (StunnedTag.IsValid() && Tag.MatchesTag(StunnedTag));
+
+    if (!bIsHardCCTag)
+    {
+        return;
+    }
+
+    AActor* InstigatorActor = LastCarrierDamageInstigatorPS.Get();
+    if (!InstigatorActor && BoundCarrierASC.IsValid())
+    {
+        FGameplayEffectQuery Query;
+        TArray<FActiveGameplayEffectHandle> ActiveHandles = BoundCarrierASC->GetActiveEffects(Query);
+        for (const FActiveGameplayEffectHandle& Handle : ActiveHandles)
+        {
+            if (const FActiveGameplayEffect* ActiveGE = BoundCarrierASC->GetActiveGameplayEffect(Handle))
+            {
+                FGameplayTagContainer GrantedTags;
+                ActiveGE->Spec.GetAllGrantedTags(GrantedTags);
+                if (GrantedTags.HasTag(Tag))
+                {
+                    if (AActor* EffectInstigator = ActiveGE->Spec.GetEffectContext().GetInstigator())
+                    {
+                        InstigatorActor = EffectInstigator;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    ForceFumbleFromDamageWithInstigator(InstigatorActor);
 }
 
 // --- Attachment/Detachment Helpers ---
@@ -795,7 +1271,12 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
     // Use settings for socket name
     FName AttachSocketName = RelicSettings ? FName(RelicSettings->RelicSocket) : NAME_None;
 
-    // Ensure physics is off before attaching
+    // Zero velocity and disable physics before attaching
+    if (RelicMesh->IsSimulatingPhysics())
+    {
+        RelicMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        RelicMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+    }
     RelicMesh->SetSimulatePhysics(false);
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -807,6 +1288,8 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
 
     if (HasAuthority())
     {
+        BindCarrierCCTagListener(Carrier);
+
         // --- Grant Ability Set ---
         if (APlayerState* CarrierPlayerState = Carrier->GetPlayerState())
         {
@@ -861,11 +1344,18 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
 
 void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
 {
+    if (HasAuthority())
+    {
+        UnbindCarrierCCTagListener();
+    }
+
     // Detach from parent FIRST visually
     DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-    // Re-enable collision
+    // Re-enable collision while keeping Pawn channel overlap so catches do not bounce off capsules
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    RelicMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+    RelicMesh->SetUseCCD(true);
 
     if (HasAuthority())
     {
@@ -900,6 +1390,8 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
         RelicMesh->SetSimulatePhysics(true);
         if (InitialVelocity)
         {
+            RelicMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+            RelicMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
             RelicMesh->AddImpulse(*InitialVelocity, NAME_None, true); // true for velocity change
         }
     }
@@ -909,7 +1401,8 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
             CurrentState == ERelicState::Neutral ||
             CurrentState == ERelicState::Dropped ||
             CurrentState == ERelicState::Thrown ||
-            CurrentState == ERelicState::BeingPassed;
+            CurrentState == ERelicState::BeingPassed ||
+            CurrentState == ERelicState::Passed;
         RelicMesh->SetSimulatePhysics(bShouldSimulateForSmoothing);
     }
 }
@@ -961,7 +1454,7 @@ void ARelicActor::UpdateStateVFX(ERelicState NewState)
             EffectToSpawn, VisualEffectsRoot, NAME_None, FVector::ZeroVector, FRotator::ZeroRotator,
             EAttachLocation::KeepRelativeOffset, false, true, ENCPoolMethod::None, false);
     }
-    if (bCanRender && (NewState == ERelicState::Thrown || NewState == ERelicState::BeingPassed))
+    if (bCanRender && (NewState == ERelicState::Thrown || NewState == ERelicState::BeingPassed || NewState == ERelicState::Passed))
     {
         SpawnTrailEffect();
     }

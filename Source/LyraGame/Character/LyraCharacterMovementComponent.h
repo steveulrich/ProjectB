@@ -66,6 +66,7 @@ public:
 	//~UMovementComponent interface
 	UE_API virtual FRotator GetDeltaRotation(float DeltaTime) const override;
 	UE_API virtual float GetMaxSpeed() const override;
+	UE_API virtual float GetMinAnalogSpeed() const override;
 	//~End of UMovementComponent interface
 
 protected:

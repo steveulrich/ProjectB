@@ -1,5 +1,38 @@
 # Connected frontend return
 
+## Current candidate regression — October 12, 2026
+
+Candidate `LAN-20261011-06` passed the Connected fixture with four rendered
+processes and 200 ms packet lag. Three clients joined through actual browser
+entries. All peers reached an eight-player match, displayed an eight-column
+results screen, returned together to the frontend, and entered the next match.
+The fixture shortened the first match to one point and invoked production
+`EndRound`; this does not prove a natural best-of-five match.
+
+The saved roster comparison passed 59 checks across 80 peer rows. Player IDs,
+human/bot flags, heroes, and both team identifiers agreed exactly on all four
+peers at the first match, connected frontend, and second match. Each gameplay
+roster contained four humans and four bots; the frontend retained four humans
+with cleared teams/heroes. All four logs contained zero error or critical lines,
+including no recurrence of the recorded travel ASC GUID error in this run.
+Three clients exited normally with code 0. The host's separate owned teardown
+returned -1 and is not a normal-exit claim.
+
+Evidence: `Saved/Logs/frontend-lan-20261012/`, including
+`packaged-LAN-20261011-06-connected-flow01-result.json`,
+`connected-flow01-flow-brief.json`, `connected-flow01-roster-comparison02.json`,
+and `connected-fixture-coverage-review01.json`. The initial roster comparison
+is preserved as a parser-only CRLF handling failure; normalization corrected
+the analysis without another runtime. All 131 packaged artifact hashes were
+verified before reuse. This gate used one runtime attempt and no build/package.
+
+Natural match completion, exact results statistics, physical input/presentation,
+Rediscovery and SelectionEdges on this artifact, second-PC LAN, and performance
+acceptance remain separate. A natural-match fixture must retain the production
+rules, remove the synthetic finish, and use bounds derived from those rules.
+
+## Earlier implementation and evidence
+
 September 8, 2026. Normal Return to Lobby now uses server travel in PIE as well as packaged games. It preserves the actual listen port and clears the host's inherited match options before constructing the frontend URL. Connected clients follow the host; real host loss still uses network-failure recovery.
 
 ## Cause and change

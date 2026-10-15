@@ -59,6 +59,82 @@ int32 UBwayUpgradeComponent::GetOwnedRank(FName Id) const
 	return Owned ? Owned->Rank : 0;
 }
 
+void UBwayUpgradeComponent::SetInHealingZone(bool bInZone, int32 ZoneTeamIndex)
+{
+	const APlayerState* Player = Cast<APlayerState>(GetOwner());
+	if (!bInZone || !Player)
+	{
+		bExplicitInHealingZone = false;
+		ExplicitHealingZoneTeamIndex = -1;
+		ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		return;
+	}
+
+	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+	const int32 PlayerTeam = GS ? GS->GetPlayerTeam(Player) : INDEX_NONE;
+	if (ZoneTeamIndex != INDEX_NONE && PlayerTeam != INDEX_NONE && PlayerTeam != ZoneTeamIndex)
+	{
+		// Opposing team base healing zones never grant healing or shop eligibility.
+		bExplicitInHealingZone = false;
+		ExplicitHealingZoneTeamIndex = -1;
+		ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		return;
+	}
+
+	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	const APawn* Pawn = ASC ? Cast<APawn>(ASC->GetAvatarActor()) : Player->GetPawn();
+	bExplicitInHealingZone = true;
+	ExplicitHealingZoneTeamIndex = ZoneTeamIndex;
+	ExplicitHealingZonePawnLocation = IsValid(Pawn) ? Pawn->GetActorLocation() : FVector(FLT_MAX);
+}
+
+bool UBwayUpgradeComponent::IsPlayerInHealingZone() const
+{
+	const APlayerState* Player = Cast<APlayerState>(GetOwner());
+	if (!IsValid(Player))
+	{
+		return false;
+	}
+
+	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
+	if (ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| (Health && (!FMath::IsFinite(Health->GetHealth()) || Health->GetHealth() <= 0.0f))))
+	{
+		return false;
+	}
+
+	if (GetWorld())
+	{
+		for (TActorIterator<ABwayBaseZone> Base(GetWorld()); Base; ++Base)
+		{
+			if (Base->CanUseBase(Player))
+			{
+				return true;
+			}
+		}
+	}
+
+	if (bExplicitInHealingZone)
+	{
+		const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+		const int32 PlayerTeam = GS ? GS->GetPlayerTeam(Player) : INDEX_NONE;
+		if (ExplicitHealingZoneTeamIndex != INDEX_NONE && PlayerTeam != INDEX_NONE && PlayerTeam != ExplicitHealingZoneTeamIndex)
+		{
+			return false;
+		}
+		const APawn* Pawn = ASC ? Cast<APawn>(ASC->GetAvatarActor()) : Player->GetPawn();
+		if (IsValid(Pawn) && !ExplicitHealingZonePawnLocation.Equals(FVector(FLT_MAX), 1.0f)
+			&& !Pawn->GetActorLocation().Equals(ExplicitHealingZonePawnLocation, 5.0f))
+		{
+			return false;
+		}
+		return true;
+	}
+
+	return false;
+}
+
 bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 {
 	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
@@ -68,12 +144,9 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 	if (Phase == EBwayMatchPhase::Prematch || Phase == EBwayMatchPhase::Warmup) return true;
 	if (Phase == EBwayMatchPhase::PostRound) return !Rounds->CheckMatchEnd();
 	if (Phase != EBwayMatchPhase::Playing) return false;
+	if (IsPlayerInHealingZone()) return true;
 	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner(), true);
 	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
-	for (TActorIterator<ABwayBaseZone> Base(GetWorld()); Base; ++Base)
-	{
-		if (Base->CanUseBase(Cast<APlayerState>(GetOwner()))) return true;
-	}
 	// Pawn teardown clears death tags, but the PlayerState ASC retains zero health
 	// until the replacement pawn initializes it. Keep the shop open in that gap.
 	return ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
@@ -83,6 +156,12 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 void UBwayUpgradeComponent::ServerPurchaseUpgrade_Implementation(FName Id, int32 ExpectedCurrentRank)
 {
 	ClientPurchaseResult(Id, TryPurchaseUpgrade(Id, ExpectedCurrentRank));
+}
+
+void UBwayUpgradeComponent::ServerTryPurchaseUpgrade_Implementation(FName Id, int32 ExpectedCurrentRank)
+{
+	const int32 EffectiveRank = (ExpectedCurrentRank >= 0) ? ExpectedCurrentRank : GetOwnedRank(Id);
+	ClientPurchaseResult(Id, TryPurchaseUpgrade(Id, EffectiveRank));
 }
 
 void UBwayUpgradeComponent::ClientPurchaseResult_Implementation(FName Id, bool bSuccess)
@@ -99,7 +178,8 @@ bool UBwayUpgradeComponent::TryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRa
 	TGuardValue<bool> TransactionGuard(bTransactionInProgress, true);
 	const FBwayUpgradeDefinition* Definition = Catalog->FindUpgrade(Id);
 	const int32 CurrentRank = GetOwnedRank(Id);
-	if (!Definition || ExpectedCurrentRank != CurrentRank || !Definition->Ranks.IsValidIndex(CurrentRank)
+	const int32 EffectiveExpectedRank = (ExpectedCurrentRank >= 0) ? ExpectedCurrentRank : CurrentRank;
+	if (!Definition || EffectiveExpectedRank != CurrentRank || !Definition->Ranks.IsValidIndex(CurrentRank)
 		|| (CurrentRank == 0 && OwnedUpgrades.Num() >= Catalog->MaxOwnedUpgrades)) return false;
 	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
 	const UBwayGoldAttributeSet* Gold = ASC ? ASC->GetSet<UBwayGoldAttributeSet>() : nullptr;

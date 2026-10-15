@@ -280,10 +280,15 @@ void UBwayRelicManagerComponent::OnCarrierDamageMessage(FGameplayTag Channel, co
 		return;
 	}
 
-	UE_LOG(LogBwayRelic, Log, TEXT("Fumble-on-damage: %s took %.1f damage while carrying — dropping relic"),
-		*GetNameSafe(Carrier), static_cast<float>(Payload.Magnitude));
+	AActor* InstigatorActor = Cast<AActor>(Payload.Instigator);
+	if (!InstigatorActor && Payload.Instigator)
+	{
+		InstigatorActor = ULyraVerbMessageHelpers::GetPlayerStateFromObject(Payload.Instigator);
+	}
 
-	ActiveRelic->ForceFumbleFromDamage();
+	const bool bFumbled = ActiveRelic->HandleCarrierDamage(static_cast<float>(Payload.Magnitude), InstigatorActor);
+	UE_LOG(LogBwayRelic, Log, TEXT("Fumble-on-damage: %s took %.1f damage while carrying (accum=%.1f fumbled=%d)"),
+		*GetNameSafe(Carrier), static_cast<float>(Payload.Magnitude), ActiveRelic->GetAccumulatedCarrierDamage(), bFumbled ? 1 : 0);
 }
 
 void UBwayRelicManagerComponent::DropRelicIfCarriedBy(ABwayCharacterWithAbilities* Character)

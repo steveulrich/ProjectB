@@ -25,7 +25,9 @@ void UBwayGameplayUrlLibrary::AppendMatchRulesToTravelUrl(FString& TravelUrl, co
 	// belong to the hosted session and must be carried explicitly to the selected arena.
 	static const TCHAR* Keys[] = { TEXT("NumBots"), TEXT("PointsToWin"), TEXT("MatchFlowConfig"),
 		TEXT("PrematchDuration"), TEXT("WarmupDuration"), TEXT("PostRoundDuration"),
-		TEXT("PostMatchSummaryDuration"), TEXT("RoundDuration"), TEXT("DisableRelicBotAI") };
+		TEXT("PostMatchSummaryDuration"), TEXT("RoundDuration"), TEXT("BaseRespawnDelay"),
+		TEXT("PerDeathRespawnIncrement"), TEXT("MaxRespawnDelay"), TEXT("RespawnDelay"),
+		TEXT("ResetRespawnEscalationEachRound"), TEXT("DisableRelicBotAI") };
 	int32 QueryStart = INDEX_NONE;
 	const FString ExistingOptions = TravelUrl.FindChar(TEXT('?'), QueryStart) ? TravelUrl.Mid(QueryStart) : FString();
 	for (const TCHAR* Key : Keys)
@@ -80,6 +82,11 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("PostRoundDuration"),
 		TEXT("PostMatchSummaryDuration"),
 		TEXT("RoundDuration"),
+		TEXT("BaseRespawnDelay"),
+		TEXT("PerDeathRespawnIncrement"),
+		TEXT("MaxRespawnDelay"),
+		TEXT("RespawnDelay"),
+		TEXT("ResetRespawnEscalationEachRound"),
 		TEXT("DisableRelicBotAI"),
 		TEXT("HeroSelectStaging"),
 		TEXT("HeroSelectTargetMap"),

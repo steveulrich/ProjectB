@@ -104,6 +104,10 @@ void CopyConfigToResolved(const UBwayMatchFlowConfig* BaseConfig, FBwayResolvedM
 	Resolved.bOrchestrateMatchFlow = BaseConfig->bOrchestrateMatchFlow;
 	Resolved.PointsToWin = BaseConfig->PointsToWin;
 	Resolved.RoundDuration = BaseConfig->RoundDuration;
+	Resolved.BaseRespawnDelaySeconds = FMath::Max(0.05f, BaseConfig->BaseRespawnDelaySeconds);
+	Resolved.PerDeathRespawnIncrementSeconds = FMath::Max(0.0f, BaseConfig->PerDeathRespawnIncrementSeconds);
+	Resolved.MaxRespawnDelaySeconds = FMath::Max(Resolved.BaseRespawnDelaySeconds, BaseConfig->MaxRespawnDelaySeconds);
+	Resolved.bResetRespawnEscalationEachRound = BaseConfig->bResetRespawnEscalationEachRound;
 	Resolved.PrematchDuration = BaseConfig->PrematchDuration;
 	Resolved.WarmupDuration = BaseConfig->WarmupDuration;
 	Resolved.PostRoundDuration = BaseConfig->PostRoundDuration;
@@ -178,6 +182,9 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 	const float DaPostRoundDuration = Resolved.PostRoundDuration;
 	const float DaPostMatchSummaryDuration = Resolved.PostMatchSummaryDuration;
 	const float DaRoundDuration = Resolved.RoundDuration;
+	const float DaBaseRespawnDelay = Resolved.BaseRespawnDelaySeconds;
+	const float DaPerDeathRespawnIncrement = Resolved.PerDeathRespawnIncrementSeconds;
+	const float DaMaxRespawnDelay = Resolved.MaxRespawnDelaySeconds;
 
 	if (!BaseConfig)
 	{
@@ -234,6 +241,24 @@ FBwayResolvedMatchFlowSettings UBwayMatchFlowLibrary::ResolveMatchFlowSettings(
 	ApplyDurationUrlOverride(TEXT("PostMatchSummaryDuration"), Resolved.PostMatchSummaryDuration, DaPostMatchSummaryDuration);
 	ApplyDurationUrlOverride(TEXT("RoundDuration"), Resolved.RoundDuration, DaRoundDuration);
 
+	float UrlBaseRespawn = 0.0f;
+	if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloatWithSource(WorldContextObject, TEXT("BaseRespawnDelay"), UrlBaseRespawn, UrlSourceLabel)
+		|| UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloatWithSource(WorldContextObject, TEXT("RespawnDelay"), UrlBaseRespawn, UrlSourceLabel))
+	{
+		Resolved.BaseRespawnDelaySeconds = FMath::Max(0.05f, UrlBaseRespawn);
+		UE_LOG(LogTemp, Log, TEXT("BwayMatchFlow: BaseRespawnDelaySeconds=%.1fs (URL override from %s, DA default was %.1fs)"),
+			Resolved.BaseRespawnDelaySeconds, *UrlSourceLabel, DaBaseRespawnDelay);
+	}
+	ApplyDurationUrlOverride(TEXT("PerDeathRespawnIncrement"), Resolved.PerDeathRespawnIncrementSeconds, DaPerDeathRespawnIncrement);
+	ApplyDurationUrlOverride(TEXT("MaxRespawnDelay"), Resolved.MaxRespawnDelaySeconds, DaMaxRespawnDelay);
+	Resolved.MaxRespawnDelaySeconds = FMath::Max(Resolved.BaseRespawnDelaySeconds, Resolved.MaxRespawnDelaySeconds);
+
+	int32 UrlResetEscalation = 1;
+	if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionIntWithSource(WorldContextObject, TEXT("ResetRespawnEscalationEachRound"), UrlResetEscalation, UrlSourceLabel))
+	{
+		Resolved.bResetRespawnEscalationEachRound = (UrlResetEscalation != 0);
+	}
+
 	return Resolved;
 }
 
@@ -247,6 +272,11 @@ void UBwayMatchFlowLibrary::ApplyMatchRulesOnly(
 	{
 		RoundManagement->SetPointsToWin(Settings.PointsToWin);
 		RoundManagement->SetRoundDuration(Settings.RoundDuration);
+		RoundManagement->SetRespawnProgressionRules(
+			Settings.BaseRespawnDelaySeconds,
+			Settings.PerDeathRespawnIncrementSeconds,
+			Settings.MaxRespawnDelaySeconds,
+			Settings.bResetRespawnEscalationEachRound);
 	}
 
 	if (BotCreation && Settings.NumBotsOverride >= 0)
@@ -262,10 +292,14 @@ void UBwayMatchFlowLibrary::LogResolvedMatchFlowSettings(const FBwayResolvedMatc
 		: TEXT("default (use DA DefaultNumBots or BotCreation scaling)");
 
 	UE_LOG(LogTemp, Log,
-		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs NumBots=%s bOrchestrate=%s Prematch=%.1fs Warmup=%.1fs PostRound=%.1fs PostMatchSummary=%.1fs"),
+		TEXT("BwayMatchFlow: Resolved config '%s' — PointsToWin=%d RoundDuration=%.0fs Respawn=%.1fs+%.1fs/death(max=%.1fs,resetEachRound=%s) NumBots=%s bOrchestrate=%s Prematch=%.1fs Warmup=%.1fs PostRound=%.1fs PostMatchSummary=%.1fs"),
 		*Settings.ConfigAssetName.ToString(),
 		Settings.PointsToWin,
 		Settings.RoundDuration,
+		Settings.BaseRespawnDelaySeconds,
+		Settings.PerDeathRespawnIncrementSeconds,
+		Settings.MaxRespawnDelaySeconds,
+		Settings.bResetRespawnEscalationEachRound ? TEXT("true") : TEXT("false"),
 		*NumBotsText,
 		Settings.bOrchestrateMatchFlow ? TEXT("true") : TEXT("false"),
 		Settings.PrematchDuration,
