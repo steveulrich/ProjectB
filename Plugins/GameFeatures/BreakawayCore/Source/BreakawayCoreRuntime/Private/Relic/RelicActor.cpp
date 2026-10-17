@@ -303,6 +303,11 @@ void ARelicActor::BeginPlay()
     }
     // Bind overlap event (can also be done in Blueprint)
     InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &ARelicActor::OnInteractionSphereOverlap);
+    RelicMesh->SetNotifyRigidBodyCollision(HasAuthority());
+    if (HasAuthority())
+    {
+        RelicMesh->OnComponentHit.AddUniqueDynamic(this, &ARelicActor::HandleRelicMeshHit);
+    }
 
     // Initialize dynamic material for team color tinting
     if (RelicMesh && RelicSettings && !RelicSettings->RelicMaterial.IsNull())
@@ -323,6 +328,7 @@ void ARelicActor::BeginPlay()
 
 void ARelicActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    RelicMesh->OnComponentHit.RemoveDynamic(this, &ARelicActor::HandleRelicMeshHit);
     UnbindCarrierCCTagListener();
     for (ERelicState State : {ERelicState::Neutral, ERelicState::Carried, ERelicState::Dropped, ERelicState::Scoring})
     {
@@ -560,6 +566,23 @@ bool ARelicActor::CanBePickedUpBy(ABwayCharacterWithAbilities* Character) const
     }
 
     return false;
+}
+
+void ARelicActor::HandleRelicMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+{
+    if (!HasAuthority() || HitComponent != RelicMesh || CurrentCarrier || !IsRelicPassFlightState(CurrentState)
+        || !Hit.bBlockingHit || !OtherComponent || OtherActor == this || Cast<APawn>(OtherActor))
+    {
+        return;
+    }
+
+    SetRelicState(ERelicState::Dropped);
+    ForceNetUpdate();
+#if !UE_BUILD_SHIPPING
+    UE_LOG(LogTemp, Display, TEXT("BwayRelicFlight: PassImpact relic=%s other=%s location=%s normal=%s state=%d inFlight=%d passingTeam=%d lastTeam=%d"),
+        *GetNameSafe(this), *GetNameSafe(OtherActor), *Hit.ImpactPoint.ToCompactString(), *Hit.ImpactNormal.ToCompactString(),
+        static_cast<int32>(CurrentState), bIsPassInFlight ? 1 : 0, PassingTeamIndex, LastPossessingTeam);
+#endif
 }
 
 UAbilitySystemComponent* ARelicActor::GetAbilitySystemComponent() const

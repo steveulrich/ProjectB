@@ -28,6 +28,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bUseStartedForAbilityPress = false;
 };
 
 /**
@@ -36,7 +39,7 @@ public:
  *	Non-mutable data asset that contains input configuration properties.
  */
 UCLASS(BlueprintType, Const)
-class ULyraInputConfig : public UDataAsset
+class LYRAGAME_API ULyraInputConfig : public UDataAsset
 {
 	GENERATED_BODY()
 

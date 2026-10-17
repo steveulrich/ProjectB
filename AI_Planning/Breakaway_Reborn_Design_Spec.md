@@ -44,13 +44,13 @@ Implemented in `ARelicActor`, `URelicMovementReplicationComponent`, `UBwayRelicM
 2. `Carried` — Attached to `CurrentCarrier`'s `RelicAttachSocket`; grants `AS_BW_BallAbilities` exactly once on authority.
 3. `Dropped` — Physics-enabled after a combat fumble, carrier death, or manual drop (`PickupCooldownAfterDrop = 0.5s`).
 4. `Passed` — Directed pass flight toward a teammate or pass trajectory (`PassSpeed = 1500 cm/s`, `bIsPassInFlight = true`).
-5. `Thrown` — Charged ballistic throw toward the arena or enemy goal (`MinThrowSpeed = 800`, `MaxThrowSpeed = 2000`, `MaxChargeTime = 1.5s`).
+5. `Thrown` — Hold primary fire to charge; release to throw in the aim direction. Authority clamps hold time to `MaxChargeTime = 1.5s` and interpolates speed from `MinThrowSpeed = 800` to `MaxThrowSpeed = 2000`.
 6. `PendingRequest` — Reserved for pass-request coordination.
 7. `Scoring` — Transient goal-entry state suppressing duplicate pickups/scores.
 8. `Scored` — Terminal round-point state before `ResetToNeutral`.
 
 ### 3.2 Carrier Restrictions, Prepared Catch, Call-for-Relic & Turnovers
-- **Carrier Restrictions (`State.Relic.Carrying`):** Carrying the Relic applies a movement speed multiplier (`0.85x` default) and blocks offensive hero combat abilities while enabling `GA_BW_PassRelic`, `GA_BW_Relic_Throw`, and `GA_BW_DropRelic`.
+- **Carrier Restrictions (`State.Relic.Carrying`):** Carrying the Relic applies a movement speed multiplier (`0.85x` default) and blocks offensive hero combat abilities while enabling `GA_BW_PassRelic`, native `UBwayGameplayAbility_RelicThrow`, and `GA_BW_DropRelic`.
 - **Call-for-Relic Indicator (`UBwayRelicRequestIndicatorComponent`):** Non-carriers can activate Call-for-Relic (`Gameplay.Relic.Requesting`, `3.0s`), projecting a 2D screen-space `72x72` hand marker (`W_BW_CaptureTheRelic_RelicRequestMarker`) visible exclusively to living teammates.
 - **Prepared Catch (`State.Relic.PreparingCatch`):** Holding Right Mouse Button while unarmed prepares the hero to cleanly receive high-velocity incoming passes/throws on overlap.
 - **Pass Interception (`Interceptions` Stat):** When an opposing player overlaps or catches a Relic while `CurrentState == ERelicState::Passed` and `PassingTeamIndex != CatcherTeamIndex`, authority transitions possession to the interceptor and increments `ABwayPlayerState::Interceptions`.

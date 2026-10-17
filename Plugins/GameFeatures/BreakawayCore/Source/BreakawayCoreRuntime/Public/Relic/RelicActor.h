@@ -215,6 +215,9 @@ protected:
 
     FDelegateHandle CarrierTagEventHandle;
 
+    UFUNCTION()
+    void HandleRelicMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
     void BindCarrierCCTagListener(ABwayCharacterWithAbilities* Carrier);
     void UnbindCarrierCCTagListener();
     void HandleCarrierGameplayTagChanged(const FGameplayTag Tag, int32 NewCount);

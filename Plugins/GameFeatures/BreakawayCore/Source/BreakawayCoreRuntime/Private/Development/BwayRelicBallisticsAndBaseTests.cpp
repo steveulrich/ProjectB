@@ -508,6 +508,198 @@ bool FBwayEconomyBaseHealingShopWindowTest::RunTest(const FString& Parameters)
 	return true;
 }
 
+namespace BwayRelicPassImpactTest
+{
+class FRun : public IAutomationLatentCommand
+{
+public:
+	explicit FRun(FAutomationTestBase* InTest) : Test(InTest) {}
+	virtual ~FRun() override
+	{
+		if (Relic && Relic->CurrentCarrier) Relic->OnDropped();
+		if (World) World->DestroyWorld(false);
+		if (Instance) Instance->Shutdown();
+		if (World && GEngine) GEngine->DestroyWorldContext(World);
+	}
+
+	virtual bool Update() override
+	{
+		if (FPlatformTime::Seconds() - Started > 20.0)
+		{
+			Test->AddError(TEXT("Relic pass-impact physics fixture exceeded its timeout"));
+			return true;
+		}
+		if (!World)
+		{
+			if (!Setup()) return true;
+			StartPass();
+			return false;
+		}
+
+		World->Tick(LEVELTICK_All, 1.0f / 60.0f);
+		Elapsed += 1.0f / 60.0f;
+		if (CaseIndex < 2)
+		{
+			if (Relic->GetCurrentState() != ERelicState::Dropped)
+			{
+				if (Elapsed < 3.0f) return false;
+				Test->AddError(FString::Printf(TEXT("%s pass never ended on physical contact; location=%s velocity=%s"),
+					CaseIndex == 0 ? TEXT("Floor") : TEXT("Wall"), *Relic->GetActorLocation().ToCompactString(),
+					*Mesh->GetPhysicsLinearVelocity().ToCompactString()));
+				return true;
+			}
+
+			Test->TestFalse(TEXT("World impact clears pass-flight flag"), Relic->bIsPassInFlight);
+			Test->TestEqual(TEXT("World impact clears passing team"), Relic->PassingTeamIndex, INDEX_NONE);
+			Test->TestEqual(TEXT("World impact preserves last possessing team"), Relic->LastPossessingTeam, 0);
+			Test->TestTrue(TEXT("World impact keeps loose-ball physics enabled"), Mesh->IsSimulatingPhysics());
+			Test->TestFalse(TEXT("Unprepared defender cannot auto-collect a grounded pass"), Relic->CanBePickedUpBy(Defender));
+			const int32 InterceptionsBefore = DefenderState->GetInterceptions();
+			DefenderASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
+			Defender->SetActorLocation(Relic->GetActorLocation(), false, nullptr, ETeleportType::TeleportPhysics);
+			Defender->UpdateOverlaps();
+			Test->TestEqual(TEXT("Prepared defender recovers impacted pass through overlap"), Relic->CurrentCarrier.Get(), Defender);
+			Test->TestEqual(TEXT("Impacted pass recovery does not award an interception"), DefenderState->GetInterceptions(), InterceptionsBefore);
+			DefenderASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
+			UE_LOG(LogTemp, Display, TEXT("BwayRelicPassImpactTest: Verify case=%s flightCleared=%d groundedInterceptions=%d"),
+				CaseIndex == 0 ? TEXT("floor") : TEXT("wall"), !Relic->bIsPassInFlight, DefenderState->GetInterceptions() - InterceptionsBefore);
+			++CaseIndex;
+			StartPass();
+			return false;
+		}
+
+		if (Relic->CurrentCarrier != Defender)
+		{
+			if (Elapsed < 3.0f) return false;
+			Test->AddError(TEXT("Airborne pass did not reach the defender's overlap"));
+			return true;
+		}
+		Test->TestEqual(TEXT("Airborne opposing catch earns exactly one interception"), DefenderState->GetInterceptions(), 1);
+		Test->TestEqual(TEXT("Airborne catch enters Carried"), Relic->GetCurrentState(), ERelicState::Carried);
+		Test->TestFalse(TEXT("Airborne catch clears flight metadata"), Relic->bIsPassInFlight);
+		FHitResult DelayedHit;
+		DelayedHit.bBlockingHit = true;
+		Mesh->OnComponentHit.Broadcast(Mesh, Floor->GetOwner(), Floor, FVector::ZeroVector, DelayedHit);
+		Test->TestEqual(TEXT("Delayed impact cannot detach a caught relic"), Relic->CurrentCarrier.Get(), Defender);
+		Test->TestEqual(TEXT("Delayed impact cannot change Carried state"), Relic->GetCurrentState(), ERelicState::Carried);
+		Test->TestEqual(TEXT("Delayed impact cannot duplicate interception credit"), DefenderState->GetInterceptions(), 1);
+		UE_LOG(LogTemp, Display, TEXT("BwayRelicPassImpactTest: Verify case=airborne interceptions=%d delayedImpactIgnored=%d"),
+			DefenderState->GetInterceptions(), Relic->CurrentCarrier == Defender && Relic->GetCurrentState() == ERelicState::Carried);
+		return true;
+	}
+
+private:
+	UBoxComponent* AddWorldBox(const FVector& Location, const FVector& Extent)
+	{
+		AActor* Surface = World->SpawnActor<AActor>();
+		UBoxComponent* Box = NewObject<UBoxComponent>(Surface);
+		Surface->SetRootComponent(Box);
+		Box->SetMobility(EComponentMobility::Static);
+		Box->SetBoxExtent(Extent);
+		Box->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Box->SetCollisionObjectType(ECC_WorldStatic);
+		Box->SetCollisionResponseToAllChannels(ECR_Block);
+		Box->SetWorldLocation(Location);
+		Box->RegisterComponent();
+		return Box;
+	}
+
+	ABwayCharacterWithAbilities* SpawnPlayer(int32 TeamIndex, ABwayPlayerState*& OutState)
+	{
+		OutState = World->SpawnActor<ABwayPlayerState>();
+		OutState->SetGenericTeamId(FGenericTeamId(TeamIndex + 1));
+		FActorSpawnParameters Spawn;
+		Spawn.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		ABwayCharacterWithAbilities* Pawn = World->SpawnActor<ABwayCharacterWithAbilities>(
+			FVector(-5000.0f - TeamIndex * 1000.0f, 0.0f, 1000.0f), FRotator::ZeroRotator, Spawn);
+		Pawn->SetPlayerState(OutState);
+		Pawn->SetGenericTeamId(FGenericTeamId(TeamIndex + 1));
+		Pawn->GetCharacterMovement()->DisableMovement();
+		OutState->GetLyraAbilitySystemComponent()->InitAbilityActorInfo(OutState, Pawn);
+		return Pawn;
+	}
+
+	bool Setup()
+	{
+		Instance.Reset(NewObject<UGameInstance>(GEngine));
+		Instance->InitializeStandalone();
+		World = Instance->GetWorld();
+		if (!Test->TestNotNull(TEXT("Relic impact fixture world"), World)) return false;
+		World->InitializeActorsForPlay(FURL());
+		World->SetGameState(World->SpawnActor<ABwayGameState>());
+		World->SetBegunPlay(true);
+		Floor = AddWorldBox(FVector(0.0f, 0.0f, -25.0f), FVector(5000.0f, 5000.0f, 25.0f));
+		AddWorldBox(FVector(300.0f, 0.0f, 1000.0f), FVector(25.0f, 400.0f, 1000.0f));
+		ABwayPlayerState* PasserState = nullptr;
+		Passer = SpawnPlayer(0, PasserState);
+		Defender = SpawnPlayer(1, DefenderState);
+		DefenderASC = DefenderState->GetLyraAbilitySystemComponent();
+		URelicSettings* Settings = NewObject<URelicSettings>(World);
+		Settings->RelicMesh = TSoftObjectPtr<UStaticMesh>(FSoftObjectPath(TEXT("/Engine/BasicShapes/Sphere.Sphere")));
+		Settings->RelicAbilitySet = TSoftObjectPtr<ULyraAbilitySet>(FSoftObjectPath(
+			TEXT("/BreakawayCore/GameModes/BallMode/Abilities/BallHandlingAbilities/AS_BW_BallAbilities.AS_BW_BallAbilities")));
+		Settings->RelicSocket = TEXT("");
+		const FTransform SpawnTransform(FVector(0.0f, 1200.0f, 500.0f));
+		Relic = World->SpawnActorDeferred<ARelicActor>(ARelicActor::StaticClass(), SpawnTransform, nullptr, nullptr,
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+		if (!Test->TestNotNull(TEXT("Relic impact actor"), Relic)) return false;
+		Relic->InitializeRelicData(Settings);
+		Relic->FinishSpawning(SpawnTransform);
+		Mesh = Cast<UStaticMeshComponent>(Relic->GetRootComponent());
+		if (!Test->TestNotNull(TEXT("Relic physics root"), Mesh)) return false;
+		Mesh->SetCollisionObjectType(ECC_PhysicsBody);
+		Mesh->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);
+		Mesh->SetEnableGravity(true);
+		return true;
+	}
+
+	void StartPass()
+	{
+		Relic->BeginResettingState();
+		Relic->ClearScoringFlag();
+		Relic->OnDropped();
+		Defender->SetActorLocation(FVector(-6000.0f, 0.0f, 1000.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		Relic->OnPickedUp(Passer);
+		Relic->Server_PassRelic_Implementation(FVector(1500.0f, 0.0f, 0.0f));
+		const FVector LaunchLocation = CaseIndex == 0 ? FVector(0.0f, 1200.0f, 500.0f)
+			: CaseIndex == 1 ? FVector(0.0f, 0.0f, 500.0f) : FVector(0.0f, 2400.0f, 1500.0f);
+		Relic->SetActorLocation(LaunchLocation, false, nullptr, ETeleportType::TeleportPhysics);
+		Mesh->SetPhysicsLinearVelocity(FVector(1500.0f, 0.0f, 0.0f));
+		Mesh->WakeAllRigidBodies();
+		if (CaseIndex == 2)
+		{
+			Defender->SetActorLocation(LaunchLocation + FVector(500.0f, 0.0f, 0.0f), false, nullptr, ETeleportType::TeleportPhysics);
+		}
+		Test->TestEqual(TEXT("Pass starts in BeingPassed state"), Relic->GetCurrentState(), ERelicState::BeingPassed);
+		Test->TestTrue(TEXT("Pass starts with live flight metadata"), Relic->bIsPassInFlight && Relic->PassingTeamIndex == 0);
+		Elapsed = 0.0f;
+	}
+
+	FAutomationTestBase* Test = nullptr;
+	TStrongObjectPtr<UGameInstance> Instance;
+	UWorld* World = nullptr;
+	ARelicActor* Relic = nullptr;
+	UStaticMeshComponent* Mesh = nullptr;
+	UBoxComponent* Floor = nullptr;
+	ABwayCharacterWithAbilities* Passer = nullptr;
+	ABwayCharacterWithAbilities* Defender = nullptr;
+	ABwayPlayerState* DefenderState = nullptr;
+	ULyraAbilitySystemComponent* DefenderASC = nullptr;
+	int32 CaseIndex = 0;
+	float Elapsed = 0.0f;
+	double Started = FPlatformTime::Seconds();
+};
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayRelicPassImpactTest, "Breakaway.Relic.PassImpactLifecycle",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayRelicPassImpactTest::RunTest(const FString& Parameters)
+{
+	ADD_LATENT_AUTOMATION_COMMAND(BwayRelicPassImpactTest::FRun(this));
+	return true;
+}
+
 #endif // WITH_DEV_AUTOMATION_TESTS
 
 #if !UE_BUILD_SHIPPING
