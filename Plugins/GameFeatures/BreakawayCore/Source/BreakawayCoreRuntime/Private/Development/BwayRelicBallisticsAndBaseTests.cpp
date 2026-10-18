@@ -186,9 +186,13 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Player 0 has State.Relic.Carrying tag"), ASCs[0]->HasMatchingGameplayTag(BwayGameplayTags::State_Relic_Carrying));
 
 	const FVector UnchargedVel = Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 0.0f);
+	const FVector MidChargedVel = Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 0.75f);
 	const FVector MaxChargedVel = Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 1.5f);
+	const FVector OverChargedVel = Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 3.0f);
 	TestTrue(TEXT("Uncharged velocity magnitude is 800"), FMath::IsNearlyEqual(UnchargedVel.Size(), 800.0f, 0.1f));
+	TestTrue(TEXT("Intermediate 0.75s velocity magnitude is 1400"), FMath::IsNearlyEqual(MidChargedVel.Size(), 1400.0f, 0.1f));
 	TestTrue(TEXT("Max-charged velocity magnitude is 2000"), FMath::IsNearlyEqual(MaxChargedVel.Size(), 2000.0f, 0.1f));
+	TestTrue(TEXT("Over-charged 3.0s velocity is capped at 2000"), FMath::IsNearlyEqual(OverChargedVel.Size(), 2000.0f, 0.1f));
 	TestTrue(TEXT("Server_ThrowRelic_Validate accepts MaxThrowSpeed (2000)"), Relic->Server_ThrowRelic_Validate(MaxChargedVel));
 
 	Relic->ThrowRelicCharged(1.5f, FVector::ForwardVector);
@@ -199,6 +203,14 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	// Teammate (Pawns[1]) without Prepared Catch cannot auto-catch the thrown Relic
 	TestFalse(TEXT("Teammate without State.Relic.PreparingCatch cannot catch"), Relic->CanBePickedUpBy(Pawns[1]));
 
+	// Indicator tag Gameplay.Relic.Requesting alone (after RMB release) does NOT grant catch eligibility
+	if (Settings->RequestingTag.IsValid())
+	{
+		ASCs[1]->SetLooseGameplayTagCount(Settings->RequestingTag, 1);
+		TestFalse(TEXT("Call-for-relic indicator tag alone without State.Relic.PreparingCatch does not allow catch"), Relic->CanBePickedUpBy(Pawns[1]));
+		ASCs[1]->SetLooseGameplayTagCount(Settings->RequestingTag, 0);
+	}
+
 	// Teammate activates RMB Prepared Catch (State.Relic.PreparingCatch)
 	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
 	TestTrue(TEXT("Teammate holding State.Relic.PreparingCatch satisfies CanBePickedUpBy"), Relic->CanBePickedUpBy(Pawns[1]));
@@ -208,6 +220,7 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	Relic->OnInteractionSphereOverlap( nullptr, Pawns[1], nullptr, 0, false, DummySweep);
 	TestEqual(TEXT("Teammate holding Prepared Catch secures high-velocity throw on overlap"), Relic->CurrentCarrier.Get(), Pawns[1]);
 	TestEqual(TEXT("Relic transitions to Carried on Prepared Catch reception"), Relic->GetCurrentState(), ERelicState::Carried);
+	TestFalse(TEXT("Acquiring Relic clears State.Relic.PreparingCatch on catcher"), ASCs[1]->HasMatchingGameplayTag(BwayGameplayTags::State_Relic_PreparingCatch));
 	TestEqual(TEXT("Prepared Catch grants exact ability set once"), CountRelicGrants(ASCs[1]), ExpectedGrants);
 	// Repeated overlap and RepNotify cannot duplicate ability grants
 	Relic->OnInteractionSphereOverlap(nullptr, Pawns[1], nullptr, 0, false, DummySweep);
@@ -220,6 +233,7 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestNull(TEXT("Relic dropped by Pawns[1]"), Relic->CurrentCarrier.Get());
 	TestEqual(TEXT("Relic state is Dropped"), Relic->GetCurrentState(), ERelicState::Dropped);
 	TestTrue(TEXT("Drop cooldown active for dropping carrier at t=10.0s"), Relic->IsDropPickupCooldownActiveFor(Pawns[1]));
+	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
 	TestFalse(TEXT("Dropping carrier blocked by PickupCooldownAfterDrop at +0.1s"),
 		(World->TimeSeconds = 10.1f, Relic->CanBePickedUpBy(Pawns[1])));
 	Relic->OnInteractionSphereOverlap(nullptr, Pawns[1], nullptr, 0, false, DummySweep);
@@ -233,11 +247,73 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Carrier re-acquired Relic after cooldown"), Relic->CurrentCarrier.Get(), Pawns[1]);
 	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
 
-	// 4. Verify Directed Pass (PassSpeed=1500) & Mid-Air Pass Interception (ABwayPlayerState::Interceptions + FBwayMatchSummary)
+	// 4. Verify Directed Pass (PassSpeed=1500), Negative Controls, Missed-Pass Landing, & Mid-Air Pass Interception
 	const FVector PassVel = Relic->ComputeDirectedPassVelocity(Pawns[0]->GetActorLocation());
 	TestTrue(TEXT("Directed pass speed is PassSpeed (1500)"), FMath::IsNearlyEqual(PassVel.Size(), 1500.0f, 0.1f));
 	TestTrue(TEXT("Server_PassRelic_Validate accepts PassSpeed (1500)"), Relic->Server_PassRelic_Validate(PassVel));
 
+	// 4a. Negative control: Teammate catching a pass does NOT count as an interception
+	Relic->Server_PassRelic_Implementation(PassVel);
+	TestEqual(TEXT("Pass enters BeingPassed state"), Relic->GetCurrentState(), ERelicState::BeingPassed);
+	TestTrue(TEXT("bIsPassInFlight is true during pass flight"), Relic->bIsPassInFlight);
+	TestEqual(TEXT("PassingTeamIndex records Team 0"), Relic->PassingTeamIndex, 0);
+	ASCs[0]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
+	Relic->OnInteractionSphereOverlap(nullptr, Pawns[0], nullptr, 0, false, DummySweep);
+	ASCs[0]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
+	TestEqual(TEXT("Teammate caught pass"), Relic->CurrentCarrier.Get(), Pawns[0]);
+	TestEqual(TEXT("Teammate pass reception does not increment Interceptions"), Players[0]->GetInterceptions(), 0);
+
+	// 4b. Negative control: Ordinary throw caught by opponent does NOT count as an interception
+	Relic->ThrowRelicCharged(0.75f, FVector::ForwardVector);
+	TestEqual(TEXT("Ordinary throw state is Thrown"), Relic->GetCurrentState(), ERelicState::Thrown);
+	TestFalse(TEXT("Ordinary throw does not set bIsPassInFlight"), Relic->bIsPassInFlight);
+	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
+	Relic->OnInteractionSphereOverlap(nullptr, Pawns[2], nullptr, 0, false, DummySweep);
+	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
+	TestEqual(TEXT("Opponent caught ordinary throw"), Relic->CurrentCarrier.Get(), Pawns[2]);
+	TestEqual(TEXT("Opponent catching an ordinary throw does not increment Interceptions"), Players[2]->GetInterceptions(), 0);
+
+	// 4c. Negative control: Missed pass landing clears pass-in-flight and PassingTeamIndex; later opponent pickup is not an interception
+	Relic->OnPickedUp(Pawns[1]);
+	Relic->OnDropped();
+	World->TimeSeconds = 12.0f;
+	Relic->OnPickedUp(Pawns[1]);
+	Relic->Server_PassRelic_Implementation(PassVel);
+	TestTrue(TEXT("Pass is in flight before landing"), Relic->bIsPassInFlight && Relic->PassingTeamIndex == 0);
+	AActor* FloorActor = World->SpawnActor<AActor>();
+	UBoxComponent* FloorBox = NewObject<UBoxComponent>(FloorActor);
+	FloorActor->AddInstanceComponent(FloorBox);
+	FloorActor->SetRootComponent(FloorBox);
+	FloorBox->RegisterComponent();
+	FHitResult LandingHit;
+	LandingHit.bBlockingHit = true;
+	LandingHit.ImpactPoint = Relic->GetActorLocation();
+	LandingHit.ImpactNormal = FVector::UpVector;
+	Relic->HandleRelicMeshHit(Cast<UPrimitiveComponent>(Relic->GetRootComponent()), FloorActor, FloorBox, FVector::UpVector * 100.0f, LandingHit);
+	TestEqual(TEXT("Missed pass landing transitions Relic to Dropped"), Relic->GetCurrentState(), ERelicState::Dropped);
+	TestFalse(TEXT("Missed pass landing clears bIsPassInFlight"), Relic->bIsPassInFlight);
+	TestEqual(TEXT("Missed pass landing clears PassingTeamIndex"), Relic->PassingTeamIndex, INDEX_NONE);
+	TestFalse(TEXT("Opposing defender cannot auto-intercept a landed pass without Prepared Catch"), Relic->CanBePickedUpBy(Pawns[3]));
+	ASCs[3]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
+	Relic->OnInteractionSphereOverlap(nullptr, Pawns[3], nullptr, 0, false, DummySweep);
+	ASCs[3]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
+	TestEqual(TEXT("Opponent picked up landed pass from ground"), Relic->CurrentCarrier.Get(), Pawns[3]);
+	TestEqual(TEXT("Ground pickup after missed pass landing does not increment Interceptions"), Players[3]->GetInterceptions(), 0);
+
+	// 4d. Negative control: Round reset during pass flight clears pass state without awarding interception
+	Relic->Server_PassRelic_Implementation(PassVel);
+	TestTrue(TEXT("Pass in flight from Team 1"), Relic->bIsPassInFlight && Relic->PassingTeamIndex == 1);
+	Relic->BeginResettingState();
+	Relic->OnDropped();
+	TestFalse(TEXT("Round reset clears bIsPassInFlight"), Relic->bIsPassInFlight);
+	TestEqual(TEXT("Round reset clears PassingTeamIndex"), Relic->PassingTeamIndex, INDEX_NONE);
+	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
+	Relic->OnInteractionSphereOverlap(nullptr, Pawns[1], nullptr, 0, false, DummySweep);
+	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
+	TestEqual(TEXT("Player 1 picked up reset Relic"), Relic->CurrentCarrier.Get(), Pawns[1]);
+	TestEqual(TEXT("Pickup after round reset does not increment Interceptions"), Players[1]->GetInterceptions(), 0);
+
+	// 4e. Positive mid-air pass interception by opposing defender (with duplicate-overlap guard)
 	Relic->Server_PassRelic_Implementation(PassVel);
 	TestEqual(TEXT("Pass enters BeingPassed state"), Relic->GetCurrentState(), ERelicState::BeingPassed);
 	TestTrue(TEXT("bIsPassInFlight is true during pass flight"), Relic->bIsPassInFlight);
@@ -250,21 +326,38 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	const int32 InterceptionsBefore = Players[2]->GetInterceptions();
 	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1);
 	Relic->OnInteractionSphereOverlap(nullptr, Pawns[2], nullptr, 0, false, DummySweep);
+	Relic->OnInteractionSphereOverlap(nullptr, Pawns[2], nullptr, 0, false, DummySweep); // Duplicate overlap negative control
 	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
 
 	TestEqual(TEXT("Defender awarded Relic possession on mid-air interception"), Relic->CurrentCarrier.Get(), Pawns[2]);
 	TestEqual(TEXT("Relic state is Carried after interception"), Relic->GetCurrentState(), ERelicState::Carried);
 	TestFalse(TEXT("bIsPassInFlight cleared on interception"), Relic->bIsPassInFlight);
+	TestEqual(TEXT("PassingTeamIndex cleared on interception"), Relic->PassingTeamIndex, INDEX_NONE);
 	TestEqual(TEXT("LastPossessingTeam updated to Defender Team 1"), Relic->LastPossessingTeam, 1);
-	TestEqual(TEXT("Defender ABwayPlayerState::Interceptions incremented by +1"), Players[2]->GetInterceptions(), InterceptionsBefore + 1);
+	TestEqual(TEXT("Defender ABwayPlayerState::Interceptions incremented by exactly +1"), Players[2]->GetInterceptions(), InterceptionsBefore + 1);
 	TestEqual(TEXT("Defender MatchStatsSnapshot includes Interception"), Players[2]->GetMatchStatsSnapshot().Interceptions, InterceptionsBefore + 1);
 
 	const FBwayMatchSummary SummaryAfterIntercept = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(World, 1, 1, 5.0f);
 	TestEqual(TEXT("FBwayMatchSummary Team 1 aggregate includes Interception"), SummaryAfterIntercept.Team1MatchStats.Stats.Interceptions, 1);
 
 	// 5. Verify Combat Fumble Thresholds (FumbleDamageThreshold=50.0) & Hard CC Forced Fumbles (State.Status.Silenced, State.Status.Jailed)
-	// 5a. Sub-threshold hit (30.0 < 50.0) does NOT force a fumble; cumulative hit (30.0 + 25.0 = 55.0 >= 50.0) forces immediate fumble
+	// 5a. Negative control: Self-damage and teammate damage never credit ForcedFumbles to victim or teammate
+	TestTrue(TEXT("Teammate damage >= 50 forces drop but never credits teammate ForcedFumbles"), Relic->HandleCarrierDamage(60.0f, Pawns[3]));
+	TestEqual(TEXT("Teammate ForcedFumbles remains 0"), Players[3]->GetForcedFumbles(), 0);
+	TestEqual(TEXT("Victim ForcedFumbles remains 0"), Players[2]->GetForcedFumbles(), 0);
+	World->TimeSeconds = 18.0f;
+	Relic->OnPickedUp(Pawns[2]);
+
+	// 5b. Negative control: Chip damage resets when carrier passes/throws and re-acquires, preventing stale attacker credit
+	TestFalse(TEXT("20.0 chip damage from Player 0 does not fumble"), Relic->HandleCarrierDamage(20.0f, Pawns[0]));
+	Relic->OnDropped();
+	World->TimeSeconds = 19.0f;
+	Relic->OnPickedUp(Pawns[2]);
+	TestEqual(TEXT("AccumulatedCarrierDamage reset to 0 on re-pickup"), Relic->GetAccumulatedCarrierDamage(), 0.0f);
+
+	// 5c. Sub-threshold hit (30.0 < 50.0) does NOT force a fumble; cumulative hit (30.0 + 25.0 = 55.0 >= 50.0) forces immediate fumble
 	const int32 Attacker0FumblesBefore = Players[0]->GetForcedFumbles();
+	const int32 Carrier2FumblesBefore = Players[2]->GetForcedFumbles();
 	TestFalse(TEXT("Sub-threshold 30.0 damage does not force fumble"), Relic->HandleCarrierDamage(30.0f, Pawns[0]));
 	TestEqual(TEXT("Carrier retains Relic after 30.0 sub-threshold damage"), Relic->CurrentCarrier.Get(), Pawns[2]);
 	TestEqual(TEXT("AccumulatedCarrierDamage tracks 30.0"), Relic->GetAccumulatedCarrierDamage(), 30.0f);
@@ -275,6 +368,7 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestNull(TEXT("Cumulative threshold damage clears CurrentCarrier"), Relic->CurrentCarrier.Get());
 	TestEqual(TEXT("Cumulative threshold damage puts Relic in Dropped state"), Relic->GetCurrentState(), ERelicState::Dropped);
 	TestEqual(TEXT("Attacker ForcedFumbles incremented by +1 on cumulative threshold fumble"), Players[0]->GetForcedFumbles(), Attacker0FumblesBefore + 1);
+	TestEqual(TEXT("Losing possession does not award the carrier a forced fumble"), Players[2]->GetForcedFumbles(), Carrier2FumblesBefore);
 
 	// Verify immediate self-reacquisition by fumbled carrier (Pawns[2]) is blocked by PickupCooldownAfterDrop (0.5s)
 	World->TimeSeconds = 20.2f;
@@ -282,15 +376,17 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestFalse(TEXT("Fumbling carrier blocked from immediate self-reacquisition"), Relic->CanBePickedUpBy(Pawns[2]));
 	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0);
 
-	// 5b. Single hit >= 50.0 damage forces immediate fumble
+	// 5d. Single hit >= 50.0 damage forces immediate fumble
 	Relic->OnPickedUp(Pawns[1]);
 	TestEqual(TEXT("Player 1 picked up Relic"), Relic->CurrentCarrier.Get(), Pawns[1]);
 	const int32 Attacker3FumblesBefore = Players[3]->GetForcedFumbles();
+	const int32 Carrier1FumblesBefore = Players[1]->GetForcedFumbles();
 	TestTrue(TEXT("Single 55.0 hit (>= 50.0) forces immediate fumble"), Relic->HandleCarrierDamage(55.0f, Pawns[3]));
 	TestNull(TEXT("Single hit fumble clears CurrentCarrier"), Relic->CurrentCarrier.Get());
 	TestEqual(TEXT("Attacker 3 ForcedFumbles incremented by +1"), Players[3]->GetForcedFumbles(), Attacker3FumblesBefore + 1);
+	TestEqual(TEXT("Single-hit fumble does not credit its victim"), Players[1]->GetForcedFumbles(), Carrier1FumblesBefore);
 
-	// 5c. Hard CC tag State.Status.Silenced forces immediate fumble
+	// 5e. Hard CC tag State.Status.Silenced forces immediate fumble
 	World->TimeSeconds = 22.0f;
 	Relic->OnPickedUp(Pawns[1]);
 	TestEqual(TEXT("Player 1 picked up Relic for Silence test"), Relic->CurrentCarrier.Get(), Pawns[1]);
@@ -301,19 +397,28 @@ bool FBwayRelicBallisticsAndInterceptionTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Attacker 3 ForcedFumbles incremented by +1 on Silence CC fumble"), Players[3]->GetForcedFumbles(), Attacker3FumblesBefore + 2);
 	ASCs[1]->SetLooseGameplayTagCount(BwayGameplayTags::State_Status_Silenced, 0);
 
-	// 5d. Hard CC tag State.Status.Jailed forces immediate fumble
+	// 5f. Hard CC tag State.Status.Jailed forces immediate fumble and prioritizes CC source over earlier chip damage
 	World->TimeSeconds = 25.0f;
 	Relic->OnPickedUp(Pawns[2]);
 	TestEqual(TEXT("Player 2 picked up Relic for Jail test"), Relic->CurrentCarrier.Get(), Pawns[2]);
 	Relic->HandleCarrierDamage(5.0f, Pawns[0]); // Attribute attacker context without reaching 50.0 damage
-	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Status_Jailed, 1);
+	UGameplayEffect* JailEffect = NewObject<UGameplayEffect>(World);
+	JailEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+	FGameplayEffectContextHandle JailContext = ASCs[1]->MakeEffectContext();
+	JailContext.AddInstigator(Pawns[1], Pawns[1]);
+	FGameplayEffectSpec JailSpec(JailEffect, JailContext, 1.0f);
+	JailSpec.DynamicGrantedTags.AddTag(BwayGameplayTags::State_Status_Jailed);
+	const FActiveGameplayEffectHandle JailHandle = ASCs[2]->ApplyGameplayEffectSpecToSelf(JailSpec);
 	TestNull(TEXT("State.Status.Jailed forces immediate Relic fumble"), Relic->CurrentCarrier.Get());
 	TestEqual(TEXT("Relic state is Dropped after Jail fumble"), Relic->GetCurrentState(), ERelicState::Dropped);
-	TestEqual(TEXT("Attacker 0 ForcedFumbles incremented by +1 on Jail CC fumble"), Players[0]->GetForcedFumbles(), Attacker0FumblesBefore + 2);
-	ASCs[2]->SetLooseGameplayTagCount(BwayGameplayTags::State_Status_Jailed, 0);
+	TestEqual(TEXT("Jail effect instigator receives the forced fumble"), Players[1]->GetForcedFumbles(), Carrier1FumblesBefore + 1);
+	TestEqual(TEXT("Earlier chip-damage attacker does not receive Jail credit"), Players[0]->GetForcedFumbles(), Attacker0FumblesBefore + 1);
+	TestEqual(TEXT("Jailed victim does not receive a forced fumble"), Players[2]->GetForcedFumbles(), Carrier2FumblesBefore);
+	ASCs[2]->RemoveActiveGameplayEffect(JailHandle);
 
 	const FBwayMatchSummary FinalSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(World, 0, 1, 5.0f);
-	TestEqual(TEXT("FBwayMatchSummary Team 0 ForcedFumbles matches team totals"), FinalSummary.Team0MatchStats.Stats.ForcedFumbles, 4);
+	TestEqual(TEXT("FBwayMatchSummary Team 0 records its two forced fumbles"), FinalSummary.Team0MatchStats.Stats.ForcedFumbles, 2);
+	TestEqual(TEXT("FBwayMatchSummary Team 1 records its two forced fumbles"), FinalSummary.Team1MatchStats.Stats.ForcedFumbles, 2);
 
 	return true;
 }
@@ -438,10 +543,14 @@ bool FBwayEconomyBaseHealingShopWindowTest::RunTest(const FString& Parameters)
 	}
 	TestTrue(TEXT("ConfigureCatalog succeeds"), Shop->ConfigureCatalog(Catalog));
 
-	// Spawn Team 0 base at (0,0,0) and Team 1 enemy base at (5000,0,0)
+	// Spawn Team 0 base at (0,0,0), a second overlapping Team 0 base at (0,0,0), and Team 1 enemy base at (5000,0,0)
 	ABwayBaseZone* Team0Base = World->SpawnActor<ABwayBaseZone>();
 	Team0Base->TeamIndex = 0;
 	Team0Base->HealingPerSecond = 25.0f;
+
+	ABwayBaseZone* Team0BaseOverlap = World->SpawnActor<ABwayBaseZone>();
+	Team0BaseOverlap->TeamIndex = 0;
+	Team0BaseOverlap->HealingPerSecond = 25.0f;
 
 	ABwayBaseZone* Team1Base = World->SpawnActor<ABwayBaseZone>();
 	Team1Base->TeamIndex = 1;
@@ -456,20 +565,31 @@ bool FBwayEconomyBaseHealingShopWindowTest::RunTest(const FString& Parameters)
 	TestEqual(TEXT("Prematch purchase increments owned rank to 1"), Shop->GetOwnedRank(TEXT("Attack")), 1);
 	TestEqual(TEXT("Prematch purchase debits 50 gold (200 -> 150)"), Gold->GetCurrentGold(), 150.0f);
 
-	// 2. Playing phase inside friendly Team 0 Base Healing Zone: regenerates health & satisfies CanPurchaseUpgrades
+	// 2. Playing phase inside friendly Team 0 Base Healing Zone: regenerates health without duplicate healing & satisfies CanPurchaseUpgrades
 	SetPhase(EBwayMatchPhase::Playing);
 	Pawn->SetActorLocation(FVector::ZeroVector);
 	Shop->SetInHealingZone(true, 0);
+	Shop->SetInHealingZone(true, 0); // Enter second overlapping friendly zone
 	TestTrue(TEXT("Friendly player inside Team 0 base satisfies CanUseBase"), Team0Base->CanUseBase(Player));
 	TestTrue(TEXT("Friendly player inside Team 0 base satisfies IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
 	TestTrue(TEXT("Friendly player inside Team 0 base satisfies CanPurchaseUpgrades"), Shop->CanPurchaseUpgrades());
 
-	// Tick base healing for 4 * 0.25s = 1.0s (+25.0 HP)
+	// Entering/exiting an overlapping enemy zone while inside a friendly zone does not clobber friendly eligibility
+	Shop->SetInHealingZone(true, 1);
+	Shop->SetInHealingZone(false, 1);
+	TestTrue(TEXT("Overlapping enemy zone enter/exit preserves friendly IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
+
+	// Exiting one of two overlapping friendly zones preserves explicit zone presence until the second exit
+	Shop->SetInHealingZone(false, 0);
+	TestTrue(TEXT("Exiting one overlapping friendly zone preserves IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
+
+	// Tick BOTH overlapping friendly base zones for 4 * 0.25s = 1.0s: must heal exactly +25.0 HP (no duplicate healing)
 	for (int32 TickIdx = 0; TickIdx < 4; ++TickIdx)
 	{
 		Team0Base->Tick(0.25f);
+		Team0BaseOverlap->Tick(0.25f);
 	}
-	TestTrue(TEXT("Friendly base healing zone regenerates health (200 -> 225)"),
+	TestTrue(TEXT("Overlapping friendly base zones deduplicate healing (200 -> 225, not 250)"),
 		FMath::IsNearlyEqual(Health->GetHealth(), 225.0f, 0.1f));
 
 	// Live purchase while alive inside friendly base healing zone succeeds
@@ -479,7 +599,7 @@ bool FBwayEconomyBaseHealingShopWindowTest::RunTest(const FString& Parameters)
 
 	// 3. Stepping outside friendly base healing zone during Playing while alive immediately revokes eligibility
 	Pawn->SetActorLocation(FVector(1200.0f, 0.0f, 0.0f));
-	Shop->SetInHealingZone(false);
+	Shop->SetInHealingZone(false, 0);
 	TestFalse(TEXT("Stepping outside base revokes IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
 	TestFalse(TEXT("Stepping outside base during Playing while alive revokes CanPurchaseUpgrades"), Shop->CanPurchaseUpgrades());
 
@@ -496,14 +616,50 @@ bool FBwayEconomyBaseHealingShopWindowTest::RunTest(const FString& Parameters)
 	Shop->ServerTryPurchaseUpgrade_Implementation(TEXT("Attack"), 2);
 	TestEqual(TEXT("Enemy base purchase rejected with zero gold debit"), Gold->GetCurrentGold(), 100.0f);
 
-	// 5. Dead window during Playing outside friendly base remains valid
-	Pawn->SetActorLocation(FVector(2000.0f, 0.0f, 0.0f));
-	ASC->SetLooseGameplayTagCount(LyraGameplayTags::Status_Death_Dead, 1);
+	// 5. Death inside base -> Dead window valid -> Respawn on new pawn outside base clears stale zone eligibility -> Reconnect clears stale zone state
+	Pawn->SetActorLocation(FVector::ZeroVector);
+	Shop->SetInHealingZone(true, 0);
+	TestTrue(TEXT("Alive at base before death"), Shop->IsPlayerInHealingZone());
+	ASC->SetLooseGameplayTagCount(LyraGameplayTags::Status_Death, 1);
 	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 0.0f);
+	TestFalse(TEXT("Dead player in base volume does not satisfy IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
+	TestFalse(TEXT("Dead player in base volume does not satisfy CanUseBase"), Team0Base->CanUseBase(Player));
 	TestTrue(TEXT("Dead window during Playing satisfies CanPurchaseUpgrades"), Shop->CanPurchaseUpgrades());
 	Shop->ServerTryPurchaseUpgrade_Implementation(TEXT("Attack"), 2);
 	TestEqual(TEXT("Dead window purchase increments owned rank to 3"), Shop->GetOwnedRank(TEXT("Attack")), 3);
 	TestEqual(TEXT("Dead window purchase debits 50 gold (100 -> 50)"), Gold->GetCurrentGold(), 50.0f);
+
+	// Respawn onto a new pawn outside the base
+	ASC->SetLooseGameplayTagCount(LyraGameplayTags::Status_Death, 0);
+	ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 300.0f);
+	APawn* RespawnedPawn = World->SpawnActor<APawn>();
+	USceneComponent* RespawnRoot = NewObject<USceneComponent>(RespawnedPawn);
+	RespawnedPawn->AddInstanceComponent(RespawnRoot);
+	RespawnedPawn->SetRootComponent(RespawnRoot);
+	RespawnRoot->RegisterComponent();
+	RespawnedPawn->SetActorLocation(FVector(2500.0f, 0.0f, 0.0f));
+	PawnStateProperty->SetObjectPropertyValue_InContainer(RespawnedPawn, Player);
+	ASC->InitAbilityActorInfo(Player, RespawnedPawn);
+	TestFalse(TEXT("Respawning onto a new pawn outside base clears stale IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
+	TestFalse(TEXT("Respawning onto a new pawn outside base revokes CanPurchaseUpgrades"), Shop->CanPurchaseUpgrades());
+
+	// Disconnect/inactive and reconnect/CopyProperties clear stale zone state
+	RespawnedPawn->SetActorLocation(FVector::ZeroVector);
+	Shop->SetInHealingZone(true, 0);
+	Player->SetIsInactive(true);
+	TestFalse(TEXT("Inactive/disconnected player denies CanUseBase"), Team0Base->CanUseBase(Player));
+	TestFalse(TEXT("Inactive/disconnected player denies IsPlayerInHealingZone"), Shop->IsPlayerInHealingZone());
+	TestFalse(TEXT("Inactive/disconnected player denies CanPurchaseUpgrades"), Shop->CanPurchaseUpgrades());
+	Player->SetIsInactive(false);
+
+	ABwayPlayerState* ReconnectedPlayer = World->SpawnActor<ABwayPlayerState>();
+	if (!ReconnectedPlayer->IsActorInitialized())
+	{
+		static_cast<AActor*>(ReconnectedPlayer)->PostInitializeComponents();
+	}
+	ReconnectedPlayer->UpgradeComponent->SetInHealingZone(true, 0);
+	Player->CopyProperties(ReconnectedPlayer);
+	TestFalse(TEXT("CopyProperties on reconnect clears stale explicit base zone state"), ReconnectedPlayer->UpgradeComponent->IsPlayerInHealingZone());
 
 	return true;
 }
@@ -890,7 +1046,7 @@ bool VerifyGoal2WorldConvergence(UWorld* World, FString& OutSummary)
 		P0Health, bInBase0 ? 1 : 0, bCanShop0 ? 1 : 0);
 
 	return InterceptsP1 >= 1 && SummaryIntercepts >= 1 &&
-		FumblesP0 >= 1 && FumblesP2 >= 1 && TotalFumbles >= 2 && SummaryFumbles >= 2 &&
+		FumblesP0 >= 1 && FumblesP2 >= 1 && TotalFumbles >= 2 && SummaryFumbles == TotalFumbles &&
 		P0Health >= 220.0f && bInBase0 && bCanShop0;
 }
 
@@ -1116,16 +1272,47 @@ bool TickGoal2Probe(const TSharedPtr<FGoal2Probe>& Probe)
 			Relic->ClearScoringFlag();
 			Relic->OnDropped();
 		}
+
+		ULyraAbilitySystemComponent* ASC0 = Players[0]->GetLyraAbilitySystemComponent();
+		ULyraAbilitySystemComponent* ASC1 = Players[1]->GetLyraAbilitySystemComponent();
+		ULyraAbilitySystemComponent* ASC2 = Players[2]->GetLyraAbilitySystemComponent();
+		ULyraAbilitySystemComponent* ASC3 = Players[3]->GetLyraAbilitySystemComponent();
+
+		// Verify RMB held prepared catch vs 3.0s call-for-relic indicator decoupling on locally-controlled Host player (ASC0) before pickup
+		const FGameplayTag RequestInputTag = FGameplayTag::RequestGameplayTag(TEXT("InputTag.Ability.RelicRequest"), false);
+		const FGameplayTag RequestIndicatorTag = Relic->GetRelicSettings() ? Relic->GetRelicSettings()->RequestingTag : FGameplayTag();
+		if (RequestInputTag.IsValid() && RequestIndicatorTag.IsValid())
+		{
+			ASC0->AbilityInputTagPressed(RequestInputTag);
+			ASC0->ProcessAbilityInput(1.0f / 60.0f, false);
+			if (!ASC0->HasMatchingGameplayTag(BwayGameplayTags::State_Relic_PreparingCatch)
+				|| !ASC0->HasMatchingGameplayTag(RequestIndicatorTag))
+			{
+				return FinishGoal2Probe(Probe, TEXT("prepared-catch-press-tags-missing"));
+			}
+			ASC0->AbilityInputTagReleased(RequestInputTag);
+			ASC0->ProcessAbilityInput(1.0f / 60.0f, false);
+			if (ASC0->HasMatchingGameplayTag(BwayGameplayTags::State_Relic_PreparingCatch)
+				|| !ASC0->HasMatchingGameplayTag(RequestIndicatorTag))
+			{
+				return FinishGoal2Probe(Probe, TEXT("prepared-catch-release-decouple-failed"));
+			}
+		}
+
 		Relic->OnPickedUp(Pawn0);
 		if (Relic->CurrentCarrier != Pawn0)
 		{
 			return FinishGoal2Probe(Probe, TEXT("initial-pickup-failed"));
 		}
 
-		ULyraAbilitySystemComponent* ASC0 = Players[0]->GetLyraAbilitySystemComponent();
-		ULyraAbilitySystemComponent* ASC1 = Players[1]->GetLyraAbilitySystemComponent();
-		ULyraAbilitySystemComponent* ASC2 = Players[2]->GetLyraAbilitySystemComponent();
-		ULyraAbilitySystemComponent* ASC3 = Players[3]->GetLyraAbilitySystemComponent();
+		// Verify minimum (0.0s -> 800), intermediate (0.75s -> 1400), and capped (1.5s/3.0s -> 2000) charged throw speeds
+		if (!FMath::IsNearlyEqual(Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 0.0f).Size(), 800.0f, 1.0f)
+			|| !FMath::IsNearlyEqual(Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 0.75f).Size(), 1400.0f, 1.0f)
+			|| !FMath::IsNearlyEqual(Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 1.5f).Size(), 2000.0f, 1.0f)
+			|| !FMath::IsNearlyEqual(Relic->ComputeChargedThrowVelocity(FVector::ForwardVector, 3.0f).Size(), 2000.0f, 1.0f))
+		{
+			return FinishGoal2Probe(Probe, TEXT("charged-throw-curve-mismatch"));
+		}
 
 		ASC2->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
 		Relic->ThrowRelicCharged(1.5f, FVector::ForwardVector);
@@ -1142,12 +1329,24 @@ bool TickGoal2Probe(const TSharedPtr<FGoal2Probe>& Probe)
 			return FinishGoal2Probe(Probe, TEXT("prepared-catch-overlap-failed"));
 		}
 
-		// 2. PickupCooldownAfterDrop (0.5s) & Directed Pass (PassSpeed=1500) & Mid-Air Interception
+		// 2. PickupCooldownAfterDrop (0.5s) & Directed Pass (PassSpeed=1500) & Mid-Air Interception (with negative controls)
 		Relic->OnDropped();
 		if (!Relic->IsDropPickupCooldownActiveFor(Pawn2) || Relic->CanBePickedUpBy(Pawn2))
 		{
 			return FinishGoal2Probe(Probe, TEXT("drop-cooldown-not-enforced"));
 		}
+
+		// Negative control: Ordinary throw caught by opponent (Pawn1) does NOT count as an interception
+		Relic->OnPickedUp(Pawn0);
+		Relic->ThrowRelicCharged(0.75f, FVector::ForwardVector);
+		ASC1->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
+		Relic->OnInteractionSphereOverlap(nullptr, Pawn1, nullptr, 0, false, Sweep);
+		ASC1->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::TagAndCountToAll);
+		if (Relic->CurrentCarrier != Pawn1 || Players[1]->GetInterceptions() != 0)
+		{
+			return FinishGoal2Probe(Probe, TEXT("ordinary-throw-falsely-counted-interception"));
+		}
+		Relic->OnDropped();
 
 		// Teammate Pawn0 picks up immediately and passes at PassSpeed=1500
 		Relic->OnPickedUp(Pawn0);
@@ -1165,28 +1364,44 @@ bool TickGoal2Probe(const TSharedPtr<FGoal2Probe>& Probe)
 		// Opposing Defender Pawn1 (Team 1) intercepts the pass mid-air
 		ASC1->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
 		Relic->OnInteractionSphereOverlap(nullptr, Pawn1, nullptr, 0, false, Sweep);
+		Relic->OnInteractionSphereOverlap(nullptr, Pawn1, nullptr, 0, false, Sweep); // Duplicate overlap negative control
 		ASC1->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::TagAndCountToAll);
-		if (Relic->CurrentCarrier != Pawn1 || Players[1]->GetInterceptions() < 1)
+		if (Relic->CurrentCarrier != Pawn1 || Players[1]->GetInterceptions() != 1)
 		{
 			return FinishGoal2Probe(Probe, TEXT("midair-interception-failed"));
 		}
 
 		// 3. Combat Fumble Threshold (50.0) & Hard CC (State.Status.Silenced / State.Status.Jailed) Forced Fumbles
+		const int32 DamageAttackerFumblesBefore = Players[0]->GetForcedFumbles();
+		const int32 DamageVictimFumblesBefore = Players[1]->GetForcedFumbles();
 		if (Relic->HandleCarrierDamage(30.0f, Pawn0) || Relic->CurrentCarrier != Pawn1)
 		{
 			return FinishGoal2Probe(Probe, TEXT("sub-threshold-damage-fumbled-early"));
 		}
-		if (!Relic->HandleCarrierDamage(25.0f, Pawn0) || Relic->CurrentCarrier != nullptr || Players[0]->GetForcedFumbles() < 1)
+		if (!Relic->HandleCarrierDamage(25.0f, Pawn0) || Relic->CurrentCarrier != nullptr
+			|| Players[0]->GetForcedFumbles() != DamageAttackerFumblesBefore + 1
+			|| Players[1]->GetForcedFumbles() != DamageVictimFumblesBefore)
 		{
 			return FinishGoal2Probe(Probe, TEXT("cumulative-threshold-fumble-failed"));
 		}
 
-		// Hard CC forced fumble on Pawn3 (Team 1) attributed to Pawn2 (Team 0)
+		// Hard CC forced fumble on Pawn3 (Team 1) prioritizes forcing CC source (Pawn2) over earlier chip damage (Pawn0)
+		const int32 CCAttackerFumblesBefore = Players[2]->GetForcedFumbles();
+		const int32 ChipAttackerFumblesBefore = Players[0]->GetForcedFumbles();
+		const int32 CCVictimFumblesBefore = Players[3]->GetForcedFumbles();
 		Relic->OnPickedUp(Pawn3);
-		Relic->HandleCarrierDamage(10.0f, Pawn2);
-		ASC3->SetLooseGameplayTagCount(BwayGameplayTags::State_Status_Jailed, 1, EGameplayTagReplicationState::TagAndCountToAll);
-		ASC3->SetLooseGameplayTagCount(BwayGameplayTags::State_Status_Jailed, 0, EGameplayTagReplicationState::TagAndCountToAll);
-		if (Relic->CurrentCarrier != nullptr || Players[2]->GetForcedFumbles() < 1)
+		Relic->HandleCarrierDamage(10.0f, Pawn0);
+		UGameplayEffect* JailEffect = NewObject<UGameplayEffect>(World);
+		JailEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+		FGameplayEffectContextHandle JailContext = ASC2->MakeEffectContext();
+		JailContext.AddInstigator(Pawn2, Pawn2);
+		FGameplayEffectSpec JailSpec(JailEffect, JailContext, 1.0f);
+		JailSpec.DynamicGrantedTags.AddTag(BwayGameplayTags::State_Status_Jailed);
+		const FActiveGameplayEffectHandle JailHandle = ASC3->ApplyGameplayEffectSpecToSelf(JailSpec);
+		ASC3->RemoveActiveGameplayEffect(JailHandle);
+		if (Relic->CurrentCarrier != nullptr || Players[2]->GetForcedFumbles() != CCAttackerFumblesBefore + 1
+			|| Players[0]->GetForcedFumbles() != ChipAttackerFumblesBefore
+			|| Players[3]->GetForcedFumbles() != CCVictimFumblesBefore)
 		{
 			return FinishGoal2Probe(Probe, TEXT("hard-cc-fumble-failed"));
 		}

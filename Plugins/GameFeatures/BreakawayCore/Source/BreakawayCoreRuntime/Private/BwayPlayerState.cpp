@@ -54,6 +54,10 @@ void ABwayPlayerState::CopyProperties(APlayerState* PlayerState)
 		BwayPlayerState->PlayerNum = PlayerNum;
 		BwayPlayerState->SetGenericTeamId(GetGenericTeamId());
 		BwayPlayerState->bHasCarriedTeamAssignment = true;
+		if (UBwayUpgradeComponent* NewUpgradeComp = BwayPlayerState->UpgradeComponent)
+		{
+			NewUpgradeComp->SetInHealingZone(false);
+		}
 	}
 }
 

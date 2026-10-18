@@ -19,6 +19,8 @@
 #include "Engine/OverlapResult.h"
 #include "System/LyraAssetManager.h"
 #include "Development/BwayHeroDebugComponent.h"
+#include "GameState/BwayRelicManagerComponent.h"
+#include "Relic/RelicActor.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBwayAbility, Log, All);
 
@@ -434,6 +436,26 @@ void UBwayGameplayAbility_Base::ApplyKnockbackToEnemy(ABwayCharacterWithAbilitie
 	}
 
 	Enemy->LaunchCharacter(Impulse, true, true);
+
+	if (Enemy->HasAuthority())
+	{
+		if (const UWorld* World = Enemy->GetWorld())
+		{
+			if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+			{
+				if (const UBwayRelicManagerComponent* RelicMgr = GameState->RelicManagerComponent)
+				{
+					if (ARelicActor* ActiveRelic = RelicMgr->GetRelicActor())
+					{
+						if (ActiveRelic->GetCurrentState() == ERelicState::Carried && ActiveRelic->CurrentCarrier == Enemy)
+						{
+							ActiveRelic->ForceFumbleFromDamageWithInstigator(GetAvatarActorFromActorInfo());
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 FGameplayEffectContextHandle UBwayGameplayAbility_Base::MakeEffectContextForAbility() const

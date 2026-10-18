@@ -182,6 +182,7 @@ void UBwayUpgradeShopWidget::RefreshAccess()
 
 void UBwayUpgradeShopWidget::BuySelected()
 {
+	RefreshAccess();
 	const int32 Index = Selector->GetSelectedIndex();
 	if (!Shop || bPending || !DisplayIds.IsValidIndex(Index) || !BuyButton->GetIsEnabled()) return;
 	bPending = true;

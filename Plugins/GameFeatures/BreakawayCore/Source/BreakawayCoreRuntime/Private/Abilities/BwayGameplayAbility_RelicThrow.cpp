@@ -4,9 +4,11 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
+#include "BwayGameplayTags.h"
 #include "Engine/Texture2D.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
+#include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerState.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "LyraGameplayTags.h"
@@ -22,9 +24,20 @@ FGameplayTag RelicCarrierTag()
 	return FGameplayTag::RequestGameplayTag(TEXT("Gameplay.State.RelicCarrier"));
 }
 
+bool IsCharacterDeadOrDying(const ABwayCharacterWithAbilities* Character)
+{
+	return !Character
+		|| Character->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| Character->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying);
+}
+
 ARelicActor* FindOwnedRelic(const FGameplayAbilityActorInfo* ActorInfo)
 {
 	ABwayCharacterWithAbilities* Character = ActorInfo ? Cast<ABwayCharacterWithAbilities>(ActorInfo->AvatarActor.Get()) : nullptr;
+	if (IsCharacterDeadOrDying(Character))
+	{
+		return nullptr;
+	}
 	const UWorld* World = Character ? Character->GetWorld() : nullptr;
 	const ABwayGameState* GameState = World ? World->GetGameState<ABwayGameState>() : nullptr;
 	ARelicActor* Relic = GameState && GameState->RelicManagerComponent ? GameState->RelicManagerComponent->GetRelicActor() : nullptr;
@@ -65,6 +78,13 @@ UBwayGameplayAbility_RelicThrow::UBwayGameplayAbility_RelicThrow(const FObjectIn
 	ActivationRequiredTags.AddTag(RelicCarrierTag());
 	ActivationBlockedTags.AddTag(LyraGameplayTags::Status_Death);
 	ActivationBlockedTags.AddTag(LyraGameplayTags::Status_Death_Dying);
+	ActivationBlockedTags.AddTag(BwayGameplayTags::State_Status_Silenced);
+	ActivationBlockedTags.AddTag(BwayGameplayTags::State_Status_Jailed);
+	const FGameplayTag StunnedTag = FGameplayTag::RequestGameplayTag(FName("State.Stunned"), false);
+	if (StunnedTag.IsValid())
+	{
+		ActivationBlockedTags.AddTag(StunnedTag);
+	}
 	FGameplayTagContainer Tags = GetAssetTags();
 	Tags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("Ability.Relic.Throw")));
 	SetAssetTags(Tags);
@@ -86,16 +106,33 @@ void UBwayGameplayAbility_RelicThrow::ActivateAbility(const FGameplayAbilitySpec
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	bReleaseHandled = false;
 	ChargingRelic = FindOwnedRelic(ActorInfo);
-	if (!ActorInfo || !ActorInfo->AvatarActor.IsValid() || (HasAuthority(&ActivationInfo) && !ChargingRelic.IsValid()))
+	ChargeAvatar = ActorInfo ? Cast<APawn>(ActorInfo->AvatarActor.Get()) : nullptr;
+	ChargeController = ChargeAvatar.IsValid() ? ChargeAvatar->GetController() : nullptr;
+	if (!ActorInfo || !ChargeAvatar.IsValid() || IsCharacterDeadOrDying(Cast<ABwayCharacterWithAbilities>(ChargeAvatar.Get()))
+		|| (HasAuthority(&ActivationInfo) && !ChargingRelic.IsValid()))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+	ChargeAvatar->ReceiveControllerChangedDelegate.AddUniqueDynamic(this, &ThisClass::OnPawnControllerChanged);
+
 	UAbilityTask_WaitGameplayTagRemoved* CarrierTask = UAbilityTask_WaitGameplayTagRemoved::WaitGameplayTagRemove(this, RelicCarrierTag(), nullptr, true);
 	CarrierTask->Removed.AddDynamic(this, &ThisClass::OnCarrierTagRemoved);
 	CarrierTask->ReadyForActivation();
 	if (!IsActive()) return;
+
+	UAbilityTask_WaitGameplayTagAdded* DyingTask = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, LyraGameplayTags::Status_Death_Dying, nullptr, true);
+	DyingTask->Added.AddDynamic(this, &ThisClass::OnCarrierTagRemoved);
+	DyingTask->ReadyForActivation();
+	if (!IsActive()) return;
+
+	UAbilityTask_WaitGameplayTagAdded* DeathTask = UAbilityTask_WaitGameplayTagAdded::WaitGameplayTagAdd(this, LyraGameplayTags::Status_Death, nullptr, true);
+	DeathTask->Added.AddDynamic(this, &ThisClass::OnCarrierTagRemoved);
+	DeathTask->ReadyForActivation();
+	if (!IsActive()) return;
+
 	UAbilityTask_WaitInputRelease* ReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this, true);
 	ReleaseTask->OnRelease.AddDynamic(this, &ThisClass::OnInputReleased);
 #if !UE_BUILD_SHIPPING
@@ -107,7 +144,8 @@ void UBwayGameplayAbility_RelicThrow::ActivateAbility(const FGameplayAbilitySpec
 
 void UBwayGameplayAbility_RelicThrow::OnInputReleased(float TimeHeld)
 {
-	if (!IsActive()) return;
+	if (!IsActive() || bReleaseHandled) return;
+	bReleaseHandled = true;
 	if (!HasAuthority(&CurrentActivationInfo))
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
@@ -115,7 +153,8 @@ void UBwayGameplayAbility_RelicThrow::OnInputReleased(float TimeHeld)
 	}
 	ABwayCharacterWithAbilities* Character = Cast<ABwayCharacterWithAbilities>(GetAvatarActorFromActorInfo());
 	ARelicActor* Relic = ChargingRelic.Get();
-	if (!Character || !Relic || FindOwnedRelic(CurrentActorInfo) != Relic || !FMath::IsFinite(TimeHeld))
+	if (!Character || Character != ChargeAvatar.Get() || Character->GetController() != ChargeController.Get()
+		|| IsCharacterDeadOrDying(Character) || !Relic || FindOwnedRelic(CurrentActorInfo) != Relic || !FMath::IsFinite(TimeHeld))
 	{
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		return;
@@ -153,6 +192,14 @@ void UBwayGameplayAbility_RelicThrow::OnCarrierTagRemoved()
 	if (IsActive()) CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
 }
 
+void UBwayGameplayAbility_RelicThrow::OnPawnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController)
+{
+	if (IsActive() && (Pawn == ChargeAvatar.Get() || NewController != ChargeController.Get()))
+	{
+		CancelAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true);
+	}
+}
+
 void UBwayGameplayAbility_RelicThrow::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
@@ -164,7 +211,14 @@ void UBwayGameplayAbility_RelicThrow::EndAbility(const FGameplayAbilitySpecHandl
 			Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
 		return;
 	}
+	if (ChargeAvatar.IsValid())
+	{
+		ChargeAvatar->ReceiveControllerChangedDelegate.RemoveDynamic(this, &ThisClass::OnPawnControllerChanged);
+	}
+	ChargeAvatar.Reset();
+	ChargeController.Reset();
 	ChargingRelic.Reset();
+	bReleaseHandled = false;
 #if !UE_BUILD_SHIPPING
 	UE_LOG(LogTemp, Display, TEXT("BwayRelicThrow: END role=%d player=%d cancelled=%d"),
 		GetWorld() ? int32(GetWorld()->GetNetMode()) : INDEX_NONE, ThrowPlayerId(ActorInfo), bWasCancelled);

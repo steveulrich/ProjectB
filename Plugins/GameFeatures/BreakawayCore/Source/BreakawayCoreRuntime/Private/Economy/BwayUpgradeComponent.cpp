@@ -62,36 +62,80 @@ int32 UBwayUpgradeComponent::GetOwnedRank(FName Id) const
 void UBwayUpgradeComponent::SetInHealingZone(bool bInZone, int32 ZoneTeamIndex)
 {
 	const APlayerState* Player = Cast<APlayerState>(GetOwner());
-	if (!bInZone || !Player)
+	if (!Player || Player->IsInactive())
 	{
 		bExplicitInHealingZone = false;
+		ExplicitHealingZoneDepth = 0;
 		ExplicitHealingZoneTeamIndex = -1;
+		ExplicitHealingZonePawn.Reset();
 		ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		OnUpgradesChanged.Broadcast();
 		return;
 	}
 
 	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
 	const int32 PlayerTeam = GS ? GS->GetPlayerTeam(Player) : INDEX_NONE;
-	if (ZoneTeamIndex != INDEX_NONE && PlayerTeam != INDEX_NONE && PlayerTeam != ZoneTeamIndex)
+	const bool bIsEnemyZone = (ZoneTeamIndex != INDEX_NONE && PlayerTeam != INDEX_NONE && PlayerTeam != ZoneTeamIndex);
+	if (bIsEnemyZone)
 	{
-		// Opposing team base healing zones never grant healing or shop eligibility.
-		bExplicitInHealingZone = false;
-		ExplicitHealingZoneTeamIndex = -1;
-		ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		// Opposing team base healing zones never grant healing or shop eligibility,
+		// and entering/exiting an overlapping enemy volume must not clobber an active friendly zone.
+		if (!bExplicitInHealingZone || ExplicitHealingZoneDepth <= 0
+			|| (ExplicitHealingZoneTeamIndex != INDEX_NONE && ExplicitHealingZoneTeamIndex != PlayerTeam))
+		{
+			bExplicitInHealingZone = false;
+			ExplicitHealingZoneDepth = 0;
+			ExplicitHealingZoneTeamIndex = -1;
+			ExplicitHealingZonePawn.Reset();
+			ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		}
+		OnUpgradesChanged.Broadcast();
 		return;
 	}
 
 	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
+	const bool bIsDead = ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying)
+		|| (Health && (!FMath::IsFinite(Health->GetHealth()) || Health->GetHealth() <= 0.0f)));
 	const APawn* Pawn = ASC ? Cast<APawn>(ASC->GetAvatarActor()) : Player->GetPawn();
+
+	if (!bInZone || bIsDead)
+	{
+		if (!bIsDead && ZoneTeamIndex != INDEX_NONE && bExplicitInHealingZone && ExplicitHealingZoneDepth > 1
+			&& (!ExplicitHealingZonePawn.IsValid() || ExplicitHealingZonePawn.Get() == Pawn))
+		{
+			--ExplicitHealingZoneDepth;
+			ExplicitHealingZonePawnLocation = IsValid(Pawn) ? Pawn->GetActorLocation() : FVector(FLT_MAX);
+			OnUpgradesChanged.Broadcast();
+			return;
+		}
+
+		bExplicitInHealingZone = false;
+		ExplicitHealingZoneDepth = 0;
+		ExplicitHealingZoneTeamIndex = -1;
+		ExplicitHealingZonePawn.Reset();
+		ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
+		OnUpgradesChanged.Broadcast();
+		return;
+	}
+
+	if (ExplicitHealingZonePawn.Get() != Pawn)
+	{
+		ExplicitHealingZoneDepth = 0;
+	}
+	ExplicitHealingZoneDepth = (ZoneTeamIndex != INDEX_NONE) ? (FMath::Max(0, ExplicitHealingZoneDepth) + 1) : 1;
 	bExplicitInHealingZone = true;
-	ExplicitHealingZoneTeamIndex = ZoneTeamIndex;
+	ExplicitHealingZoneTeamIndex = (ZoneTeamIndex != INDEX_NONE) ? ZoneTeamIndex : PlayerTeam;
+	ExplicitHealingZonePawn = Pawn;
 	ExplicitHealingZonePawnLocation = IsValid(Pawn) ? Pawn->GetActorLocation() : FVector(FLT_MAX);
+	OnUpgradesChanged.Broadcast();
 }
 
 bool UBwayUpgradeComponent::IsPlayerInHealingZone() const
 {
 	const APlayerState* Player = Cast<APlayerState>(GetOwner());
-	if (!IsValid(Player))
+	if (!IsValid(Player) || Player->IsInactive())
 	{
 		return false;
 	}
@@ -99,6 +143,7 @@ bool UBwayUpgradeComponent::IsPlayerInHealingZone() const
 	const UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
 	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
 	if (ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying)
 		|| (Health && (!FMath::IsFinite(Health->GetHealth()) || Health->GetHealth() <= 0.0f))))
 	{
 		return false;
@@ -124,6 +169,14 @@ bool UBwayUpgradeComponent::IsPlayerInHealingZone() const
 			return false;
 		}
 		const APawn* Pawn = ASC ? Cast<APawn>(ASC->GetAvatarActor()) : Player->GetPawn();
+		if (ExplicitHealingZonePawn.IsValid() && Pawn != ExplicitHealingZonePawn.Get())
+		{
+			return false;
+		}
+		if (!IsValid(Pawn) && !ExplicitHealingZonePawnLocation.Equals(FVector(FLT_MAX), 1.0f))
+		{
+			return false;
+		}
 		if (IsValid(Pawn) && !ExplicitHealingZonePawnLocation.Equals(FVector(FLT_MAX), 1.0f)
 			&& !Pawn->GetActorLocation().Equals(ExplicitHealingZonePawnLocation, 5.0f))
 		{
@@ -137,6 +190,8 @@ bool UBwayUpgradeComponent::IsPlayerInHealingZone() const
 
 bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 {
+	const APlayerState* Player = Cast<APlayerState>(GetOwner());
+	if (!IsValid(Player) || Player->IsInactive()) return false;
 	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
 	const UBwayRoundManagementComponent* Rounds = GS ? GS->GetRoundManagement() : nullptr;
 	if (!Rounds) return false;
@@ -150,6 +205,7 @@ bool UBwayUpgradeComponent::IsPurchaseWindowOpen() const
 	// Pawn teardown clears death tags, but the PlayerState ASC retains zero health
 	// until the replacement pawn initializes it. Keep the shop open in that gap.
 	return ASC && (ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying)
 		|| (Health && FMath::IsFinite(Health->GetHealth()) && Health->GetHealth() <= 0.0f));
 }
 

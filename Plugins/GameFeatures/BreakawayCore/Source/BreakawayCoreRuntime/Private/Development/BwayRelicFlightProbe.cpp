@@ -545,7 +545,8 @@ void ABwayRelicFlightProbe::AuthorityTick()
 				const URelicSettings* Settings = Relic->GetRelicSettings();
 				const float Expected = Settings->ComputeChargedThrowSpeed(Frame.HoldSeconds);
 				const bool bSpeed = FMath::Abs(State->LaunchSpeed - Expected) <= 180.0f
-					&& (Frame.Scenario > 0 || State->LaunchSpeed < Settings->MaxThrowSpeed - 200.0f);
+					&& (Frame.Scenario > 0 || State->LaunchSpeed < Settings->MaxThrowSpeed - 200.0f)
+					&& (Frame.Scenario != 1 || (State->LaunchSpeed > Settings->MinThrowSpeed + 200.0f && State->LaunchSpeed < Settings->MaxThrowSpeed - 200.0f));
 				UE_LOG(LogTemp, Display, TEXT("BwayRelicFlight: Launch scenario=%d source=%d observedSpeed=%.3f expectedSpeed=%.3f physicsTolerance=180 sample=post-physics-next-frame pass=%d"),
 					Frame.Scenario, Frame.Source, State->LaunchSpeed, Expected, bSpeed);
 				if (!bSpeed) { Fail(TEXT("launch-speed-outside-bound")); return; }
@@ -598,7 +599,7 @@ void ABwayRelicFlightProbe::AuthorityTick()
 	if (Frame.Stage == Ready)
 	{
 		const float Maximum = Relic->GetRelicSettings()->MaxChargeTime;
-		Frame.HoldSeconds = Frame.Scenario == 0 ? 0.1f : Frame.Scenario == 1 ? Maximum + 0.2f : Frame.Scenario == 2 ? Maximum * 2.0f + 0.2f
+		Frame.HoldSeconds = Frame.Scenario == 0 ? 0.1f : Frame.Scenario == 1 ? Maximum * 0.5f : Frame.Scenario == 2 ? Maximum + 0.35f
 			: Frame.Scenario == 3 ? 1.7f : 2.5f + Relic->GetRelicSettings()->PickupCooldownAfterDrop;
 		State->LaunchSpeed = 0.0f;
 		State->bAuthoritySawActive = false;

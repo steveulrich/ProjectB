@@ -5,6 +5,7 @@
 #include "BwayGameState.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "Components/BoxComponent.h"
+#include "EngineUtils.h"
 #include "GameFramework/PlayerState.h"
 #include "GameFramework/Pawn.h"
 #include "Engine/World.h"
@@ -50,7 +51,7 @@ void ABwayBaseZone::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 bool ABwayBaseZone::CanUseBase(const APlayerState* Player) const
 {
-	if (!bEnabled || !IsValid(Player) || Player->GetWorld() != GetWorld() || TeamIndex < 0 || TeamIndex > 1) return false;
+	if (!bEnabled || !IsValid(Player) || Player->IsInactive() || Player->GetWorld() != GetWorld() || TeamIndex < 0 || TeamIndex > 1) return false;
 	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
 	const UBwayRoundManagementComponent* Rounds = GS ? GS->GetRoundManagement() : nullptr;
 	if (!Rounds || GS->GetPlayerTeam(Player) != TeamIndex) return false;
@@ -60,7 +61,8 @@ bool ABwayBaseZone::CanUseBase(const APlayerState* Player) const
 	const ULyraHealthSet* Health = ASC ? ASC->GetSet<ULyraHealthSet>() : nullptr;
 	const APawn* Pawn = ASC ? Cast<APawn>(ASC->GetAvatarActor()) : nullptr;
 	if (!IsValid(Pawn) || Pawn->GetPlayerState() != Player || !Health || !FMath::IsFinite(Health->GetHealth())
-		|| Health->GetHealth() <= 0.0f || ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)) return false;
+		|| Health->GetHealth() <= 0.0f || ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		|| ASC->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying)) return false;
 	const FVector Position = Bounds->GetComponentTransform().InverseTransformPosition(Pawn->GetActorLocation());
 	const FVector Extent = Bounds->GetUnscaledBoxExtent();
 	return !Position.ContainsNaN() && FMath::Abs(Position.X) <= Extent.X
@@ -79,6 +81,29 @@ void ABwayBaseZone::Tick(float DeltaSeconds)
 	for (APlayerState* Player : GS->PlayerArray)
 	{
 		if (!CanUseBase(Player)) continue;
+
+		// Prevent duplicate healing when overlapping friendly base zones cover the same player.
+		bool bSupersededByOverlappingZone = false;
+		for (TActorIterator<ABwayBaseZone> OtherIt(GetWorld()); OtherIt; ++OtherIt)
+		{
+			const ABwayBaseZone* OtherZone = *OtherIt;
+			if (!OtherZone || OtherZone == this || !OtherZone->HasAuthority() || !OtherZone->bEnabled
+				|| !FMath::IsFinite(OtherZone->HealingPerSecond) || OtherZone->HealingPerSecond <= 0.0f)
+			{
+				continue;
+			}
+			if (OtherZone->CanUseBase(Player))
+			{
+				if (OtherZone->HealingPerSecond > HealingPerSecond
+					|| (FMath::IsNearlyEqual(OtherZone->HealingPerSecond, HealingPerSecond) && OtherZone < this))
+				{
+					bSupersededByOverlappingZone = true;
+					break;
+				}
+			}
+		}
+		if (bSupersededByOverlappingZone) continue;
+
 		UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
 		const ULyraHealthSet* Health = ASC->GetSet<ULyraHealthSet>();
 		if (Health->GetHealth() >= Health->GetMaxHealth()) continue;

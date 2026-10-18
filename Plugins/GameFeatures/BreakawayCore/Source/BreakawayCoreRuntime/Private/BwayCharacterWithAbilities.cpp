@@ -106,23 +106,30 @@ void ABwayCharacterWithAbilities::OnAbilitySystemUninitialized()
 
 void ABwayCharacterWithAbilities::ClearRelicRequestForCurrentPawn()
 {
+	ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
+	if (!ASC || ASC->GetAvatarActor() != this)
+	{
+		return;
+	}
+
 	if (HasAuthority())
 	{
-		ULyraAbilitySystemComponent* ASC = GetLyraAbilitySystemComponent();
 		const FGameplayTag RequestTag = UBwayRelicRequestIndicatorComponent::ResolveRequestTag(this);
-		if (ASC && ASC->GetAvatarActor() == this)
+		if (RequestTag.IsValid())
 		{
-			if (RequestTag.IsValid())
-			{
-				// The PlayerState ASC survives this pawn. A new avatar must make its own request.
-				ASC->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(RequestTag));
-			}
-			if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid() &&
-				ASC->GetTagCount(BwayGameplayTags::State_Relic_PreparingCatch) > 0)
-			{
-				ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::TagAndCountToAll);
-			}
+			// The PlayerState ASC survives this pawn. A new avatar must make its own request.
+			ASC->RemoveActiveEffectsWithGrantedTags(FGameplayTagContainer(RequestTag));
 		}
+		if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid() &&
+			ASC->GetTagCount(BwayGameplayTags::State_Relic_PreparingCatch) > 0)
+		{
+			ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::TagAndCountToAll);
+		}
+	}
+	else if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid() &&
+		ASC->GetTagCount(BwayGameplayTags::State_Relic_PreparingCatch) > 0)
+	{
+		ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 0, EGameplayTagReplicationState::None);
 	}
 }
 
@@ -539,6 +546,7 @@ void ABwayCharacterWithAbilities::PossessedBy(AController* NewController)
 void ABwayCharacterWithAbilities::UnPossessed()
 {
 	StopSlideCameraShake(true);
+	ClearRelicRequestForCurrentPawn();
 	Super::UnPossessed();
 }
 

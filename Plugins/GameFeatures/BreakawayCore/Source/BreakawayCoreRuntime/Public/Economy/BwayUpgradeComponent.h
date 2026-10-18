@@ -4,6 +4,7 @@
 #include "GameplayEffectTypes.h"
 #include "BwayUpgradeComponent.generated.h"
 
+class APawn;
 class UBwayUpgradeCatalog;
 
 USTRUCT(BlueprintType)
@@ -76,5 +77,7 @@ private:
 	bool bTransactionInProgress = false;
 	bool bExplicitInHealingZone = false;
 	int32 ExplicitHealingZoneTeamIndex = -1;
+	int32 ExplicitHealingZoneDepth = 0;
+	TWeakObjectPtr<const APawn> ExplicitHealingZonePawn;
 	FVector ExplicitHealingZonePawnLocation = FVector(FLT_MAX);
 };

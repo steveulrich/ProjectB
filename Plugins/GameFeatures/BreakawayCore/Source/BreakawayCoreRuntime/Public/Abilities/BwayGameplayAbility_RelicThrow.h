@@ -3,6 +3,8 @@
 #include "Abilities/BwayGameplayAbility.h"
 #include "BwayGameplayAbility_RelicThrow.generated.h"
 
+class AController;
+class APawn;
 class ARelicActor;
 
 UCLASS()
@@ -30,5 +32,11 @@ private:
 	UFUNCTION()
 	void OnCarrierTagRemoved();
 
+	UFUNCTION()
+	void OnPawnControllerChanged(APawn* Pawn, AController* OldController, AController* NewController);
+
 	TWeakObjectPtr<ARelicActor> ChargingRelic;
+	TWeakObjectPtr<APawn> ChargeAvatar;
+	TWeakObjectPtr<AController> ChargeController;
+	bool bReleaseHandled = false;
 };

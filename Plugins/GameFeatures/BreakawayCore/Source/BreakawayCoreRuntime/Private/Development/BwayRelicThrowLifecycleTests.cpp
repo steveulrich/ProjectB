@@ -7,6 +7,7 @@
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "LyraGameplayTags.h"
 #include "Character/LyraHeroComponent.h"
 #include "Character/LyraPawnExtensionComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -65,6 +66,7 @@ public:
 		Pawn = World->SpawnActor<ABwayCharacterWithAbilities>(FVector(0.f, 0.f, 1000.f), FRotator::ZeroRotator, Spawn);
 		Relic = World->SpawnActor<ARelicActor>(FVector(5000.f, 0.f, 1000.f), FRotator::ZeroRotator, Spawn);
 		if (!Test.TestNotNull(TEXT("Throw pawn"), Pawn) || !Test.TestNotNull(TEXT("Throw relic"), Relic)) return false;
+		Controller->PlayerState = Player;
 		Controller->Possess(Pawn);
 		Pawn->SetPlayerState(Player);
 		ASC = Player->GetLyraAbilitySystemComponent();
@@ -246,6 +248,21 @@ bool FBwayRelicThrowCancelTest::RunTest(const FString&)
 	Fixture.Release();
 	TestTrue(TEXT("Late release cannot throw a reacquired relic"), Fixture.Relic->CurrentCarrier == Fixture.Pawn && Fixture.Relic->GetCurrentState() == ERelicState::Carried);
 	TestFalse(TEXT("Replacement grant remains inactive"), Fixture.ASC->FindAbilitySpecFromHandle(Fixture.Handle)->IsActive());
+	if (!Fixture.Press()) return false;
+	Fixture.ASC->AddLooseGameplayTag(LyraGameplayTags::Status_Death_Dying);
+	TestFalse(TEXT("Death tag cancels active throw charge immediately"), Fixture.ASC->FindAbilitySpecFromHandle(Fixture.Handle)->IsActive());
+	Fixture.Release();
+	TestTrue(TEXT("Releasing after death cancellation does not launch the relic"), Fixture.Relic->CurrentCarrier == Fixture.Pawn && Fixture.Relic->GetCurrentState() == ERelicState::Carried);
+	Fixture.ASC->RemoveLooseGameplayTag(LyraGameplayTags::Status_Death_Dying);
+
+	if (!Fixture.Press()) return false;
+	Fixture.Controller->UnPossess();
+	TestFalse(TEXT("Possession change cancels active throw charge immediately"), Fixture.ASC->FindAbilitySpecFromHandle(Fixture.Handle)->IsActive());
+	Fixture.Release();
+	TestTrue(TEXT("Releasing after possession change does not launch the relic"), Fixture.Relic->CurrentCarrier == Fixture.Pawn && Fixture.Relic->GetCurrentState() == ERelicState::Carried);
+	Fixture.Controller->Possess(Fixture.Pawn);
+	Fixture.ASC->InitAbilityActorInfo(Fixture.Pawn->GetPlayerState(), Fixture.Pawn);
+
 	if (!Fixture.Press()) return false;
 	Fixture.Release();
 	TestTrue(TEXT("A fresh press and release throws the reacquired relic"), Fixture.Relic->GetCurrentState() == ERelicState::Thrown && !Fixture.Relic->CurrentCarrier);

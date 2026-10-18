@@ -2,6 +2,7 @@
 
 #include "AI/BwayRelicBotLibrary.h"
 #include "BwayCharacterWithAbilities.h"
+#include "BwayGameplayTags.h"
 #include "BwayGameState.h"
 #include "BwayGoalVolume.h"
 #include "BwayPlayerState.h"
@@ -173,6 +174,11 @@ void UBwayRelicBotLibrary::ApplyRelicRequestState(ABwayCharacterWithAbilities* B
 		Settings = Relic ? Relic->GetRelicSettings() : nullptr;
 	}
 
+	if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid())
+	{
+		ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
+	}
+
 	if (Settings && Settings->RequestingGameplayEffectClass)
 	{
 		FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
@@ -182,6 +188,7 @@ void UBwayRelicBotLibrary::ApplyRelicRequestState(ABwayCharacterWithAbilities* B
 		const FGameplayEffectSpecHandle SpecHandle = ASC->MakeOutgoingSpec(Settings->RequestingGameplayEffectClass, 1.0f, EffectContext);
 		if (SpecHandle.IsValid())
 		{
+			SpecHandle.Data->DynamicGrantedTags.AddTag(BwayGameplayTags::State_Relic_PreparingCatch);
 			ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 			return;
 		}

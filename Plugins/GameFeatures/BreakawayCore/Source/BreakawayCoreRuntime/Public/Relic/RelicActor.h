@@ -193,6 +193,9 @@ public:
     {
         return CurrentState;
     }
+
+    UFUNCTION()
+    void HandleRelicMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
     
 protected:
     /** Non-owning identity; reset at the round boundary and never sent to clients. */
@@ -214,9 +217,6 @@ protected:
     TWeakObjectPtr<UAbilitySystemComponent> BoundCarrierASC;
 
     FDelegateHandle CarrierTagEventHandle;
-
-    UFUNCTION()
-    void HandleRelicMeshHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
     void BindCarrierCCTagListener(ABwayCharacterWithAbilities* Carrier);
     void UnbindCarrierCCTagListener();
@@ -267,7 +267,7 @@ protected:
     /**
      * Shared drop path used by OnDropped (voluntary / reset) and ForceFumbleFromDamage.
      * @param InitialVelocity Optional velocity change applied after physics is enabled.
-     * @param bRecordForcedFumble When true, increments ForcedFumbles on the attacker and/or current carrier.
+     * @param bRecordForcedFumble When true, increments ForcedFumbles on the resolved attacker.
      * @param InstigatorActor Optional attacker actor that caused the forced fumble.
      */
     void DropFromCarrierInternal(const FVector* InitialVelocity, bool bRecordForcedFumble, AActor* InstigatorActor = nullptr);

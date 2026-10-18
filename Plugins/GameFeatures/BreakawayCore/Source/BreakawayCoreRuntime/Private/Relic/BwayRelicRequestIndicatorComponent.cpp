@@ -143,9 +143,12 @@ void UBwayRelicRequestIndicatorComponent::RefreshVisibility()
 		return;
 	}
 	const ULyraTeamSubsystem* Teams = GetWorld()->GetSubsystem<ULyraTeamSubsystem>();
+	const FGameplayTag CarrierTag = FGameplayTag::RequestGameplayTag(TEXT("Gameplay.State.RelicCarrier"), false);
 	const bool bRequestActive = AbilitySystem.IsValid() && AbilitySystem->GetAvatarActor() == GetOwner()
 		&& RequestTag.IsValid() && AbilitySystem->HasMatchingGameplayTag(RequestTag)
-		&& !AbilitySystem->HasMatchingGameplayTag(LyraGameplayTags::Status_Death);
+		&& !AbilitySystem->HasMatchingGameplayTag(LyraGameplayTags::Status_Death)
+		&& !AbilitySystem->HasMatchingGameplayTag(LyraGameplayTags::Status_Death_Dying)
+		&& (!CarrierTag.IsValid() || !AbilitySystem->HasMatchingGameplayTag(CarrierTag));
 	const bool bEligibleViewer = !bEndingPlay && Viewer.IsValid() && Teams
 		&& Teams->FindPlayerStateFromActor(Viewer.Get()) != Teams->FindPlayerStateFromActor(GetOwner())
 		&& Teams->CompareTeams(Viewer.Get(), GetOwner()) == ELyraTeamComparison::OnSameTeam;
