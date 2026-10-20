@@ -891,3 +891,18 @@ so a compact packet cannot silently reuse outdated provenance or hygiene. If the
 contract records `candidateSourceIdentity`, the packet also warns when the selected
 artifact is older than the current source snapshot; reuse then remains limited to the
 candidate's recorded frozen scope.
+
+## Travel GUID & Dorado VSM helpers (Goal 3)
+
+Use `Get-TravelGuidBrief.ps1 -LogFile <log1>,<log2>,... -OutputJson <brief.json>` to
+extract `Attempt to reassign read-only NetGUID` warnings, `Invalid Net GUID` errors,
+`[VSM]` overflow lines, `BwayTravelGuid` observer start/stop windows, pins/sanitization
+outside active observation, tracked traveling drivers, hook install/remove markers,
+resolved `UBwayMatchFlowConfig` values, and scheduled respawn delays from PIE or
+packaged logs without loading full logs into context.
+
+Use `Measure-DoradoVsm.ps1 -Candidate <staged-root> -OutputDir <dir> -Profile <label>
+[-CaptureFrames 2400] [-HighResShotAtSeconds @(15,30)]` to measure per-frame
+`VSM/OVERFLOW_FLAGS` and VSM page/instance metrics via `-csvCategories=VSM
+-csvNoProcessingThread` alongside once-per-process `LogRenderer [VSM]` lines and
+in-engine `HighResShot` captures on a single rendered D3D12 process in `L_BW_Dorado`.

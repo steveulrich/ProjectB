@@ -10,6 +10,12 @@
 #include "Economy/BwayUpgradeCatalog.h"
 #include "Economy/BwayUpgradeComponent.h"
 #include "Engine/World.h"
+#include "Engine/Blueprint.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/Material.h"
+#include "GameModes/BwayMatchFlowConfig.h"
+#include "GameModes/BwayMatchFlowLibrary.h"
+#include "GameModes/LyraExperienceDefinition.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "GameState/BwayRoundManagementComponent.h"
@@ -162,13 +168,56 @@ bool FBwayRespawnEscalatingProgressionTest::RunTest(const FString&)
 	TestEqual(TEXT("Demo resolved MaxRespawnDelaySeconds"), DemoResolved.MaxRespawnDelaySeconds, 25.0f);
 	TestTrue(TEXT("Demo resolved bResetRespawnEscalationEachRound"), DemoResolved.bResetRespawnEscalationEachRound);
 
-	UBwayMatchConfigDataAsset* FastDevConfig = NewObject<UBwayMatchConfigDataAsset>(GS);
-	FastDevConfig->BaseRespawnDelaySeconds = 3.0f;
-	FastDevConfig->PerDeathRespawnIncrementSeconds = 0.0f;
-	FastDevConfig->MaxRespawnDelaySeconds = 3.0f;
+	const UBwayMatchConfigDataAsset* FastDevConfig = LoadObject<UBwayMatchConfigDataAsset>(nullptr,
+		TEXT("/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Dev.DA_BW_MatchFlow_Dev"));
+	if (!TestNotNull(TEXT("Authored fast development match config"), FastDevConfig)) return false;
+	TestEqual(TEXT("Development asset keeps a three-second respawn"), FastDevConfig->BaseRespawnDelaySeconds, 3.0f);
+	TestEqual(TEXT("Development asset disables escalation"), FastDevConfig->PerDeathRespawnIncrementSeconds, 0.0f);
+	TestEqual(TEXT("Development asset caps respawns at three seconds"), FastDevConfig->MaxRespawnDelaySeconds, 3.0f);
 	const FBwayResolvedMatchFlowSettings FastResolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(World, FastDevConfig, nullptr);
 	TestEqual(TEXT("Fast dev override BaseRespawnDelaySeconds"), FastResolved.BaseRespawnDelaySeconds, 3.0f);
+	TestEqual(TEXT("Fast dev override PerDeathRespawnIncrementSeconds"), FastResolved.PerDeathRespawnIncrementSeconds, 0.0f);
 	TestEqual(TEXT("Fast dev override MaxRespawnDelaySeconds"), FastResolved.MaxRespawnDelaySeconds, 3.0f);
+	TestEqual(TEXT("Fast dev resolution names DA_BW_MatchFlow_Dev"), FastResolved.ConfigAssetName, FName(TEXT("DA_BW_MatchFlow_Dev")));
+
+	// 1b. The authored Demo asset itself (not only the CDO defaults) carries the provisional 10/5/25 progression.
+	const UBwayMatchFlowConfig* DemoAsset = LoadObject<UBwayMatchFlowConfig>(nullptr,
+		TEXT("/BreakawayCore/MatchFlow/DA_BW_MatchFlow_Demo.DA_BW_MatchFlow_Demo"));
+	if (!TestNotNull(TEXT("Authored Demo match config"), DemoAsset)) return false;
+	TestEqual(TEXT("Demo asset BaseRespawnDelaySeconds"), DemoAsset->BaseRespawnDelaySeconds, 10.0f);
+	TestEqual(TEXT("Demo asset PerDeathRespawnIncrementSeconds"), DemoAsset->PerDeathRespawnIncrementSeconds, 5.0f);
+	TestEqual(TEXT("Demo asset MaxRespawnDelaySeconds"), DemoAsset->MaxRespawnDelaySeconds, 25.0f);
+	TestTrue(TEXT("Demo asset bResetRespawnEscalationEachRound"), DemoAsset->bResetRespawnEscalationEachRound);
+	TestEqual(TEXT("Default resolution names DA_BW_MatchFlow_Demo"), DemoResolved.ConfigAssetName, FName(TEXT("DA_BW_MatchFlow_Demo")));
+
+	// 1c. Selected experiences resolve the intended asset: the hosted Capture-the-Relic match (and the
+	// staging/ball experiences that carry no explicit config) use Demo; only the Dev experience opts into 3/0/3.
+	struct FExperienceExpectation
+	{
+		const TCHAR* ClassPath;
+		const TCHAR* ExpectedConfig;
+		float Base;
+		float Increment;
+		float Max;
+	};
+	const FExperienceExpectation ExperienceExpectations[] = {
+		{ TEXT("/BreakawayCore/Experiences/B_BW_Experience_CaptureTheRelic.B_BW_Experience_CaptureTheRelic_C"), TEXT("DA_BW_MatchFlow_Demo"), 10.0f, 5.0f, 25.0f },
+		{ TEXT("/BreakawayCore/Experiences/B_BW_Experience_HeroSelectStaging.B_BW_Experience_HeroSelectStaging_C"), TEXT("DA_BW_MatchFlow_Demo"), 10.0f, 5.0f, 25.0f },
+		{ TEXT("/BreakawayCore/Experiences/B_BW_Experience_BallMode.B_BW_Experience_BallMode_C"), TEXT("DA_BW_MatchFlow_Demo"), 10.0f, 5.0f, 25.0f },
+		{ TEXT("/BreakawayCore/Experiences/B_BW_Experience_Dev.B_BW_Experience_Dev_C"), TEXT("DA_BW_MatchFlow_Dev"), 3.0f, 0.0f, 3.0f },
+	};
+	for (const FExperienceExpectation& Expectation : ExperienceExpectations)
+	{
+		UClass* ExperienceClass = LoadClass<ULyraExperienceDefinition>(nullptr, Expectation.ClassPath);
+		if (!TestNotNull(*FString::Printf(TEXT("Experience class %s"), Expectation.ClassPath), ExperienceClass)) continue;
+		const ULyraExperienceDefinition* Experience = GetDefault<ULyraExperienceDefinition>(ExperienceClass);
+		const FBwayResolvedMatchFlowSettings ExperienceResolved = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(World, nullptr, Experience);
+		const FString Label = ExperienceClass->GetName();
+		TestEqual(*FString::Printf(TEXT("%s resolves %s"), *Label, Expectation.ExpectedConfig), ExperienceResolved.ConfigAssetName, FName(Expectation.ExpectedConfig));
+		TestEqual(*FString::Printf(TEXT("%s base delay"), *Label), ExperienceResolved.BaseRespawnDelaySeconds, Expectation.Base);
+		TestEqual(*FString::Printf(TEXT("%s increment"), *Label), ExperienceResolved.PerDeathRespawnIncrementSeconds, Expectation.Increment);
+		TestEqual(*FString::Printf(TEXT("%s cap"), *Label), ExperienceResolved.MaxRespawnDelaySeconds, Expectation.Max);
+	}
 
 	// Apply Demo escalating progression rules to RoundManagementComponent
 	UBwayMatchFlowLibrary::ApplyMatchRulesOnly(World, DemoResolved, Rounds, nullptr);
@@ -378,11 +427,66 @@ bool FBwayRespawnEscalatingProgressionTest::RunTest(const FString&)
 	TestNotNull(TEXT("Canonical ScoringComponent on GameState"), GS->FindComponentByClass<UBwayScoringComponent>());
 	TestNotNull(TEXT("Canonical RelicManagerComponent on GameState"), GS->FindComponentByClass<UBwayRelicManagerComponent>());
 
-	// 7. Verify Dorado VSM Non-Nanite coarse page configuration
-	IConsoleVariable* VsmCoarseNonNanite = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Shadow.Virtual.NonNanite.IncludeInCoarsePages"));
-	if (TestNotNull(TEXT("r.Shadow.Virtual.NonNanite.IncludeInCoarsePages cvar"), VsmCoarseNonNanite))
+	// 6b. Serialized Blueprint subclasses still load against the slimmed native GameMode and compile cleanly,
+	// so no graph retains a call to a removed legacy authority function or property.
+	const TCHAR* GameModeBlueprintPaths[] = {
+		TEXT("/BreakawayCore/GameModes/B_BWayGameMode.B_BWayGameMode_C"),
+		TEXT("/BreakawayCore/GameModes/B_BWayGameMode_Default.B_BWayGameMode_Default_C"),
+	};
+	for (const TCHAR* ClassPath : GameModeBlueprintPaths)
 	{
-		TestEqual(TEXT("r.Shadow.Virtual.NonNanite.IncludeInCoarsePages configured to 0"), VsmCoarseNonNanite->GetInt(), 0);
+		UClass* BlueprintClass = LoadClass<AGameModeBase>(nullptr, ClassPath);
+		if (!TestNotNull(*FString::Printf(TEXT("GameMode Blueprint class %s"), ClassPath), BlueprintClass)) continue;
+		TestTrue(*FString::Printf(TEXT("%s derives from ABreakawayGameMode"), *BlueprintClass->GetName()),
+			BlueprintClass->IsChildOf(ABreakawayGameMode::StaticClass()));
+		for (const TCHAR* FuncName : RemovedFunctions)
+		{
+			TestNull(*FString::Printf(TEXT("%s does not resurrect %s"), *BlueprintClass->GetName(), FuncName),
+				BlueprintClass->FindFunctionByName(FName(FuncName), EIncludeSuperFlag::IncludeSuper));
+		}
+#if WITH_EDITORONLY_DATA
+		if (const UBlueprint* Blueprint = Cast<UBlueprint>(BlueprintClass->ClassGeneratedBy))
+		{
+			TestNotEqual(*FString::Printf(TEXT("%s compiles without errors"), *Blueprint->GetName()),
+				static_cast<int32>(Blueprint->Status), static_cast<int32>(EBlueprintStatus::BS_Error));
+		}
+#endif
+	}
+
+	// 7. Dorado VSM: the large arena meshes that overflowed the non-Nanite marking queue are Nanite with a
+	// Nanite-flagged material, and the shadow configuration is not degraded below Lyra/engine defaults.
+	const TCHAR* DoradoNaniteMeshes[] = {
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_C.el_dorado_fbx_Scene_rel_eldorado_main_floor_C"),
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_D.el_dorado_fbx_Scene_rel_eldorado_main_floor_D"),
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_base_b.el_dorado_fbx_Scene_rel_eldorado_flr_base_b"),
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_foot_c.el_dorado_fbx_Scene_rel_eldorado_flr_foot_c"),
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001.el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001"),
+		TEXT("/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B.el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B"),
+	};
+	for (const TCHAR* MeshPath : DoradoNaniteMeshes)
+	{
+		const UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, MeshPath);
+		if (!TestNotNull(*FString::Printf(TEXT("Dorado mesh %s"), MeshPath), Mesh)) continue;
+#if WITH_EDITOR
+		// The authored Nanite flag is editor-only data; cooked builds carry the built Nanite resources instead.
+		TestTrue(*FString::Printf(TEXT("%s is Nanite-enabled"), *Mesh->GetName()), Mesh->IsNaniteEnabled());
+#else
+		TestTrue(*FString::Printf(TEXT("%s has Nanite data"), *Mesh->GetName()), Mesh->HasValidNaniteData());
+#endif
+		for (const FStaticMaterial& Slot : Mesh->GetStaticMaterials())
+		{
+			const UMaterial* Base = Slot.MaterialInterface ? Slot.MaterialInterface->GetMaterial() : nullptr;
+			TestTrue(*FString::Printf(TEXT("%s material %s is used with Nanite"), *Mesh->GetName(), *GetNameSafe(Base)),
+				Base && Base->GetUsageByFlag(MATUSAGE_Nanite));
+		}
+	}
+	if (IConsoleVariable* FirstLevel = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Shadow.Virtual.Clipmap.FirstLevel")))
+	{
+		TestTrue(TEXT("VSM clipmap first level is not coarsened above the engine default (6)"), FirstLevel->GetInt() <= 6);
+	}
+	if (IConsoleVariable* LodBias = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Shadow.Virtual.ResolutionLodBiasDirectional")))
+	{
+		TestTrue(TEXT("Directional VSM resolution bias is not degraded (<= 0)"), LodBias->GetFloat() <= 0.0f);
 	}
 
 	return true;
