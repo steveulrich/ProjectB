@@ -2,7 +2,7 @@
 
 **Engine Target:** Unreal Engine 5.8 (`5.8.1` Source Build on Lyra Starter Game)
 **Parity Target:** 1:1 Amazon Game Studios *Breakaway* (September 2017 Final Public Alpha)
-**Last Reviewed:** October 13, 2026
+**Last Reviewed:** October 20, 2026
 **Companion References:** [Hero Stats Sheet](./Breakaway_Hero_Stats_Sheet.md) · [Final Alpha Parity](./FINAL_ALPHA_PARITY.md) · [Architecture Overview](./project_architecture_overview.md)
 
 ---
@@ -92,8 +92,8 @@ Players can equip up to **4 distinct upgrade items** per match (`MaxEquippedUpgr
 | `RespawnTimeReduction` | `RespawnTimeReduction` (`[0, 1]`) | `+10% / +20% / +30% / +40%` | Multiplies respawn delay by `(1 - Reduction)`, updating live pending deaths |
 
 ### 5.3 Authoritative Shop Purchase Windows (`UBwayUpgradeComponent::CanPurchaseUpgrades`)
-Purchases are validated on the server (`ServerTryPurchaseUpgrade`) and permitted only when the player is in one of three valid states:
-1. **Prematch (`EGamePhase::Prematch`):** Before the round gates open.
+Purchases, sales (`ServerSellUpgrade`), and session undo actions (`ServerUndoLastTransaction`) are validated on the server and permitted only when the player is in one of three valid states:
+1. **Prematch / Pre-Round Shop (`EBwayMatchPhase::Prematch` & `EBwayMatchPhase::Warmup`):** Following the 5.5s Arena Intro camera pan across *The Shrine of Auros*, `EnterWarmup` seeds `1000` starting gold (`UBwayEconomyLibrary::GrantStartingMatchGold`) and auto-opens `W_MatchShop` (`UBwayUpgradeShopWidget`) for the `15s` pre-round countdown before Round 1 begins.
 2. **While Dead:** While the player's pawn is dead or awaiting respawn (`RespawnSchedule.bIsWaitingToRespawn`).
 3. **Team Base Healing Zone:** While the living player is inside their team's base healing volume (`IsPlayerInHealingZone`).
 

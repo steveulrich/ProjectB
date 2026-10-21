@@ -54,8 +54,13 @@ public:
 	/** True only when team identity was copied from an earlier player state. */
 	bool HasCarriedTeamAssignment() const { return bHasCarriedTeamAssignment; }
 
+	/** Suppresses MatchGoldEarned accumulation while applying shop refunds or initial match starting gold. */
+	void SetSuppressMatchGoldEarningsTracking(bool bSuppress) { bSuppressMatchGoldEarningsTracking = bSuppress; }
+	bool IsSuppressingMatchGoldEarningsTracking() const { return bSuppressMatchGoldEarningsTracking; }
+
 private:
 	bool bHasCarriedTeamAssignment = false;
+	bool bSuppressMatchGoldEarningsTracking = false;
 
 public:
 	ABwayPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());

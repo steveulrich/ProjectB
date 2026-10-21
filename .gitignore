@@ -79,6 +79,11 @@ Scripts/Test/*
 !Scripts/Test/*.psd1
 !Scripts/Test/*.md
 !Scripts/Test/Verify-ResultsSnapshot.py
+!Scripts/Test/Verify-AllKitOwnerTransport.py
+!Scripts/Test/Export-AllKitCooldownConfiguration.py
+!Scripts/Test/Verify-BarrageLifecycleTransport.py
+!Scripts/Test/Verify-SlideReview.py
+!Scripts/Test/Test-SlideReviewVerifier.py
 !Scripts/setup-step19-5-match-hud.mjs
 !Scripts/setup-korryn-20a-functional.mjs
 !Scripts/setup-korryn-20b-cursed-ward.mjs

@@ -58,7 +58,8 @@ enum class EHeroClass : uint8
     Fighter     UMETA(DisplayName = "Fighter"),
     Tank        UMETA(DisplayName = "Tank"),
     Support     UMETA(DisplayName = "Support"),
-    Assassin    UMETA(DisplayName = "Assassin")
+    Assassin    UMETA(DisplayName = "Assassin"),
+    Shooter     UMETA(DisplayName = "Shooter")
 };
 
 USTRUCT(BlueprintType)

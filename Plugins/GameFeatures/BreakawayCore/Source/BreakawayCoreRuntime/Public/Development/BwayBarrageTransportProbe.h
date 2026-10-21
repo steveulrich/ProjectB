@@ -29,6 +29,11 @@ struct FBwayBarrageTransportFrame
 	UPROPERTY() TArray<int32> Teams;
 	UPROPERTY() TArray<float> Health;
 	UPROPERTY() TArray<float> Maximum;
+	/** Opt-in development scenario; zero preserves the normal/aim transport contract. */
+	UPROPERTY() int32 Lifecycle = 0;
+	UPROPERTY() int32 TerminalShots = 0;
+	UPROPERTY() float ExpectedHealth = 0;
+	UPROPERTY() TArray<uint64> ReplacementGuids;
 	bool NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess);
 };
 
@@ -100,4 +105,10 @@ private:
 	bool HandoffStartup(const TCHAR* Reason, bool bRequireIdle);
 	bool CheckStartupActivation(bool bObservedTick);
 	void RestoreStartupTick(const TCHAR* Reason);
+	void BindLifecycle();
+	void ObserveLifecycle();
+	void AuthorityLifecycle();
+	bool LifecycleRoster(bool bRequireReplacement, bool bLog);
+	bool ApplyLifecycleHealth(bool bHeal, float Amount, const TCHAR* Reason);
+	bool LifecycleCooldown();
 };

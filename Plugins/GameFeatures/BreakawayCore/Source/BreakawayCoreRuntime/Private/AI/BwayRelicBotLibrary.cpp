@@ -174,11 +174,6 @@ void UBwayRelicBotLibrary::ApplyRelicRequestState(ABwayCharacterWithAbilities* B
 		Settings = Relic ? Relic->GetRelicSettings() : nullptr;
 	}
 
-	if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid())
-	{
-		ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
-	}
-
 	if (Settings && Settings->RequestingGameplayEffectClass)
 	{
 		FGameplayEffectContextHandle EffectContext = ASC->MakeEffectContext();
@@ -194,6 +189,10 @@ void UBwayRelicBotLibrary::ApplyRelicRequestState(ABwayCharacterWithAbilities* B
 		}
 	}
 
+	if (BwayGameplayTags::State_Relic_PreparingCatch.GetTag().IsValid())
+	{
+		ASC->SetLooseGameplayTagCount(BwayGameplayTags::State_Relic_PreparingCatch, 1, EGameplayTagReplicationState::TagAndCountToAll);
+	}
 	AddLooseRelicRequestTag(ASC, Settings);
 }
 

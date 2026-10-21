@@ -38,11 +38,7 @@ void ABwayRawlinsBulletProjectile::ConfigureProjectile(
 	DamageAmount = InDamageAmount;
 	LaunchImpulse = InLaunchImpulse;
 
-	if (InInstigatorCharacter)
-	{
-		SetInstigator(InInstigatorCharacter);
-		SetOwner(InInstigatorCharacter);
-	}
+	ConfigureDamageSource(InInstigatorCharacter);
 
 	ConfigureMovement(InSpeed, InLifeSpan);
 }
@@ -55,7 +51,7 @@ bool ABwayRawlinsBulletProjectile::HandleDamageHit(const FHitResult& Hit)
 		return false;
 	}
 
-	if (!InstigatorCharacter || DamageAmount <= 0.f)
+	if (!GetDamageSourceASC() || DamageAmount <= 0.f)
 	{
 		return false;
 	}
@@ -66,38 +62,23 @@ bool ABwayRawlinsBulletProjectile::HandleDamageHit(const FHitResult& Hit)
 		return false;
 	}
 
-	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
+	UAbilitySystemComponent* SourceASC = GetDamageSourceASC();
 
-	if (UBwayDamageLibrary::ApplyDamageToEnemyBuildable(InstigatorCharacter, HitActor, DamageAmount, this))
+	if (ApplyDamageToEnemyBuildable(HitActor, DamageAmount))
 	{
 		bHasAppliedHit = true;
 		return true;
 	}
 
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
-	if (!HitCharacter)
+	if (!IsEnemyCharacter(HitCharacter))
 	{
 		return false;
 	}
 
-	bool bIsEnemy = false;
-	if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
+	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, GetDamageInstigator()))
 	{
-		bIsEnemy = !GameState->AreOnSameTeam(InstigatorCharacter, HitCharacter);
-	}
-	else if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-	{
-		bIsEnemy = TeamSubsystem->CompareTeams(InstigatorCharacter, HitCharacter) == ELyraTeamComparison::DifferentTeams;
-	}
-
-	if (!bIsEnemy)
-	{
-		return false;
-	}
-
-	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter))
-	{
-		if (!LaunchImpulse.IsNearlyZero())
+		if (!LaunchImpulse.IsNearlyZero() && GetDamageSourceASC() && IsEnemyCharacter(HitCharacter))
 		{
 			HitCharacter->LaunchCharacter(LaunchImpulse, true, true);
 		}

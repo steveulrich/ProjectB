@@ -31,6 +31,17 @@ void ABwayRelicBotController::ConfigureRelicAI(UBehaviorTree* InBehaviorTree, UB
 	}
 }
 
+void ABwayRelicBotController::SetBotDifficultyTier(FName InDifficultyTier)
+{
+	BotDifficultyTier = InDifficultyTier.IsNone() ? FName(TEXT("Normal")) : InDifficultyTier;
+	if (UBlackboardComponent* BBComp = GetBlackboardComponent())
+	{
+		const int32 DifficultyInt = BotDifficultyTier.IsEqual(TEXT("Elite"), ENameCase::IgnoreCase) ? 1 : 0;
+		BBComp->SetValueAsInt(TEXT("BotDifficulty"), DifficultyInt);
+		BBComp->SetValueAsName(TEXT("BotDifficultyTier"), BotDifficultyTier);
+	}
+}
+
 void ABwayRelicBotController::StartRelicBotLogic()
 {
 	RunRelicBehaviorTreeIfReady();
@@ -94,11 +105,18 @@ void ABwayRelicBotController::RunRelicBehaviorTreeIfReady()
 	{
 		UBlackboardComponent* BlackboardComp = nullptr;
 		UseBlackboard(RelicBlackboard, BlackboardComp);
+		if (BlackboardComp)
+		{
+			const int32 DifficultyInt = BotDifficultyTier.IsEqual(TEXT("Elite"), ENameCase::IgnoreCase) ? 1 : 0;
+			BlackboardComp->SetValueAsInt(TEXT("BotDifficulty"), DifficultyInt);
+			BlackboardComp->SetValueAsName(TEXT("BotDifficultyTier"), BotDifficultyTier);
+		}
 	}
 
 	if (RunBehaviorTree(RelicBehaviorTree))
 	{
-		UE_LOG(LogTemp, Log, TEXT("BwayRelicBotController: %s running %s"), *GetName(), *GetNameSafe(RelicBehaviorTree));
+		UE_LOG(LogTemp, Log, TEXT("BwayRelicBotController: %s running %s (Difficulty=%s)"),
+			*GetName(), *GetNameSafe(RelicBehaviorTree), *BotDifficultyTier.ToString());
 	}
 	else
 	{

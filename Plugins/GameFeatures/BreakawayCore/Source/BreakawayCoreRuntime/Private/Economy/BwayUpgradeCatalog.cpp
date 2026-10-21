@@ -53,6 +53,51 @@ const FBwayUpgradeDefinition* UBwayUpgradeCatalog::FindUpgrade(FName Id) const
 	return Upgrades.FindByPredicate([Id](const FBwayUpgradeDefinition& Entry) { return Entry.Id == Id; });
 }
 
+EBwayUpgradeCategory FBwayUpgradeDefinition::GetEffectiveCategory() const
+{
+	if (bHasExplicitCategory)
+	{
+		return Category;
+	}
+	if (EffectClass)
+	{
+		if (EffectClass->IsChildOf(UBwayUpgradeEffect_AttackStrength::StaticClass())
+			|| EffectClass->IsChildOf(UBwayUpgradeEffect_LifeLeech::StaticClass()))
+		{
+			return EBwayUpgradeCategory::Attack;
+		}
+		if (EffectClass->IsChildOf(UBwayUpgradeEffect_Armor::StaticClass())
+			|| EffectClass->IsChildOf(UBwayUpgradeEffect_RespawnTimeReduction::StaticClass()))
+		{
+			return EBwayUpgradeCategory::Defense;
+		}
+		if (EffectClass->IsChildOf(UBwayUpgradeEffect_MoveSpeed::StaticClass())
+			|| EffectClass->IsChildOf(UBwayUpgradeEffect_CooldownReduction::StaticClass()))
+		{
+			return EBwayUpgradeCategory::Misc;
+		}
+	}
+	const FString IdStr = Id.ToString();
+	if (IdStr.Contains(TEXT("Attack")) || IdStr.Contains(TEXT("Leech")) || IdStr.Contains(TEXT("Sword")))
+	{
+		return EBwayUpgradeCategory::Attack;
+	}
+	if (IdStr.Contains(TEXT("Armor")) || IdStr.Contains(TEXT("Respawn")) || IdStr.Contains(TEXT("Shield")))
+	{
+		return EBwayUpgradeCategory::Defense;
+	}
+	return EBwayUpgradeCategory::Misc;
+}
+
+bool FBwayUpgradeDefinition::IsEffectiveRecommended() const
+{
+	if (bHasExplicitRecommended)
+	{
+		return bIsRecommended;
+	}
+	return Id == TEXT("AttackStrength") || Id == TEXT("Armor") || Id == TEXT("MoveSpeed");
+}
+
 UBwayUpgradeEffect_Armor::UBwayUpgradeEffect_Armor()
 {
 	FSetByCallerFloat Value;

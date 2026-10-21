@@ -53,6 +53,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnRoundEnded, int32, WinningTeam
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMatchEnded, int32, WinningTeam, int32, TotalRounds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundStateChanged, FName, NewRoundState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRoundTimeChanged, int32, RemainingSeconds);
+DECLARE_MULTICAST_DELEGATE(FOnRoundResetStarting);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostRoundSummaryStarted, FBwayPostRoundSummaryData, SummaryData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMatchPhaseChanged, EBwayMatchPhase, NewPhase);
 /** @deprecated Use OnPostRoundSummaryStarted — retained for legacy Blueprint bindings. */
@@ -169,6 +170,18 @@ public:
 	/** Get remaining time in the current round (in seconds) */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Round")
 	int32 GetRoundTimeRemaining() const;
+
+	/** Get remaining time in the pre-round Warmup / Shop phase (in seconds, e.g. 15 -> 0). */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	int32 GetWarmupTimeRemaining() const;
+
+	/** True while the Arena Intro camera fly-through sequence is running between Hero Selection and Warmup. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	bool IsArenaIntroActive() const { return bArenaIntroActive; }
+
+	/** True once the Arena Intro sequence has run in this match. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	bool HasArenaIntroPlayed() const { return bArenaIntroPlayed; }
 
 	// ========================================
 	// Match Flow Orchestration (11-3+)
@@ -324,6 +337,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnRoundStateChanged OnRoundStateChanged;
 
+	/** Authority cleanup before a direct round/rematch reset replaces pawns. */
+	FOnRoundResetStarting OnRoundResetStarting;
+
 	/** Fired after a round ends with team-aggregate round stats for PostRoundSummary UI (Step 15). */
 	UPROPERTY(BlueprintAssignable, Category = "Breakaway|Events")
 	FOnPostRoundSummaryStarted OnPostRoundSummaryStarted;
@@ -364,6 +380,12 @@ protected:
 	void HandlePrematchTimerExpired();
 
 	void CompletePrematchPhase();
+
+	void StartArenaIntroSequence(float DurationSeconds);
+
+	void FinishArenaIntroSequence();
+
+	void SeedArenaIntroStartingGold();
 
 	bool ShouldWaitForDirectPieHeroLocks() const;
 
@@ -468,6 +490,24 @@ protected:
 	/** When the current round started (server time) */
 	UPROPERTY(Replicated)
 	float RoundStartTime = 0.0f;
+
+	/** When the Warmup / Pre-Round Shop phase started (server time) */
+	UPROPERTY(Replicated)
+	float WarmupStartTime = 0.0f;
+
+	/** Replicated duration of the Warmup / Pre-Round Shop phase in seconds */
+	UPROPERTY(Replicated)
+	float WarmupDurationSeconds = 15.0f;
+
+	/** Replicated flag indicating the Arena Intro fly-through is currently active */
+	UPROPERTY(Replicated)
+	bool bArenaIntroActive = false;
+
+	/** Replicated flag indicating the Arena Intro fly-through ran for this match */
+	UPROPERTY(Replicated)
+	bool bArenaIntroPlayed = false;
+
+	FTimerHandle ArenaIntroTimerHandle;
 
 	/** Current round number */
 	UPROPERTY(Replicated)

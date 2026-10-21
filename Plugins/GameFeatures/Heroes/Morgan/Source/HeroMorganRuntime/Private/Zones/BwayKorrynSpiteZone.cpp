@@ -5,7 +5,11 @@
 #include "AbilitySystemGlobals.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "Character/LyraHealthComponent.h"
 #include "Components/SphereComponent.h"
+#include "Engine/World.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameplayEffect.h"
 #include "Net/UnrealNetwork.h"
 #include "Teams/LyraTeamSubsystem.h"
@@ -43,7 +47,8 @@ void ABwayKorrynSpiteZone::ConfigureZone(
 	float InSlowMultiplier,
 	float InDamageAmpMultiplier)
 {
-	CasterCharacter = InCaster;
+	CasterPlayerState = InCaster ? InCaster->GetPlayerState<ABwayPlayerState>() : nullptr;
+	CasterAbilitySystem = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CasterPlayerState.Get());
 	ReplicatedRadius = InRadius;
 	SlowEffectClass = InSlowEffectClass;
 	DamageAmpEffectClass = InDamageAmpEffectClass;
@@ -80,6 +85,16 @@ void ABwayKorrynSpiteZone::BeginPlay()
 		return;
 	}
 
+	if (const ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		RoundManager = GameState->FindComponentByClass<UBwayRoundManagementComponent>();
+		if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+		{
+			Manager->OnRoundStateChanged.AddDynamic(this, &ABwayKorrynSpiteZone::OnRoundStateChanged);
+			RoundResetHandle = Manager->OnRoundResetStarting.AddUObject(this, &ABwayKorrynSpiteZone::RemoveForRoundTransition);
+		}
+	}
+
 	// Catch enemies already overlapping at spawn.
 	TArray<AActor*> Overlapping;
 	EffectSphere->GetOverlappingActors(Overlapping, ABwayCharacterWithAbilities::StaticClass());
@@ -97,8 +112,32 @@ void ABwayKorrynSpiteZone::BeginPlay()
 
 void ABwayKorrynSpiteZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+	{
+		Manager->OnRoundStateChanged.RemoveDynamic(this, &ABwayKorrynSpiteZone::OnRoundStateChanged);
+		Manager->OnRoundResetStarting.Remove(RoundResetHandle);
+	}
+	RoundResetHandle.Reset();
+	RoundManager.Reset();
 	ClearAllZoneEffects();
 	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayKorrynSpiteZone::OnRoundStateChanged(FName NewRoundState)
+{
+	if (NewRoundState != TEXT("RoundActive"))
+	{
+		RemoveForRoundTransition();
+	}
+}
+
+void ABwayKorrynSpiteZone::RemoveForRoundTransition()
+{
+	if (HasAuthority())
+	{
+		bRemovingForRoundTransition = true;
+		Destroy();
+	}
 }
 
 void ABwayKorrynSpiteZone::OnSphereBeginOverlap(
@@ -151,7 +190,8 @@ void ABwayKorrynSpiteZone::OnSphereEndOverlap(
 
 bool ABwayKorrynSpiteZone::IsEnemyCharacter(ABwayCharacterWithAbilities* Other) const
 {
-	if (!CasterCharacter || !Other || Other == CasterCharacter)
+	const ABwayPlayerState* SourcePlayer = CasterPlayerState.Get();
+	if (!SourcePlayer || !IsValid(Other) || Other->IsActorBeingDestroyed())
 	{
 		return false;
 	}
@@ -160,11 +200,14 @@ bool ABwayKorrynSpiteZone::IsEnemyCharacter(ABwayCharacterWithAbilities* Other) 
 	{
 		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
 		{
-			return !GameState->AreOnSameTeam(CasterCharacter, Other);
+			const int32 SourceTeam = GameState->GetPlayerTeam(SourcePlayer);
+			const int32 TargetTeam = GameState->GetPlayerTeam(Other->GetPlayerState());
+			return GameState->PlayerArray.Contains(SourcePlayer)
+				&& SourceTeam != INDEX_NONE && TargetTeam != INDEX_NONE && SourceTeam != TargetTeam;
 		}
 		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 		{
-			return TeamSubsystem->CompareTeams(CasterCharacter, Other) == ELyraTeamComparison::DifferentTeams;
+			return TeamSubsystem->CompareTeams(SourcePlayer, Other) == ELyraTeamComparison::DifferentTeams;
 		}
 	}
 
@@ -173,23 +216,32 @@ bool ABwayKorrynSpiteZone::IsEnemyCharacter(ABwayCharacterWithAbilities* Other) 
 
 void ABwayKorrynSpiteZone::ApplyZoneEffects(ABwayCharacterWithAbilities* Enemy)
 {
-	if (!Enemy || ActiveEnemyEffects.Contains(Enemy))
+	if (!HasAuthority() || bRemovingForRoundTransition || IsActorBeingDestroyed()
+		|| GetLifeSpan() <= 0.f || !IsEnemyCharacter(Enemy) || ActiveEnemyEffects.Contains(Enemy))
 	{
 		return;
 	}
 
-	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CasterCharacter);
+	const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(Enemy);
+	if (!Health || Health->IsDeadOrDying() || Health->GetHealth() <= 0.f)
+	{
+		return;
+	}
+	UAbilitySystemComponent* SourceASC = CasterAbilitySystem.Get();
 	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy);
-	if (!SourceASC || !TargetASC)
+	if (!SourceASC || SourceASC->GetOwnerActor() != CasterPlayerState.Get()
+		|| !TargetASC || TargetASC->GetAvatarActor() != Enemy)
 	{
 		return;
 	}
 
 	FZoneEffectHandles Handles;
+	// The ASC outlives its pawn. Keep the actual recipient for exact cleanup on exit/expiry/reset.
+	Handles.TargetAbilitySystem = TargetASC;
 
 	FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
 	Context.AddSourceObject(this);
-	Context.AddInstigator(CasterCharacter, this);
+	Context.AddInstigator(CasterPlayerState.Get(), this);
 
 	if (SlowEffectClass)
 	{
@@ -199,6 +251,12 @@ void ABwayKorrynSpiteZone::ApplyZoneEffects(ABwayCharacterWithAbilities* Enemy)
 			Spec.Data->SetSetByCallerMagnitude(TAG_SetByCaller_Korryn_MoveSpeedMultiplier, SlowMultiplier);
 			Handles.SlowHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
 		}
+	}
+
+	if (bRemovingForRoundTransition || IsActorBeingDestroyed())
+	{
+		RemoveEffectHandles(Handles);
+		return;
 	}
 
 	if (DamageAmpEffectClass)
@@ -211,6 +269,11 @@ void ABwayKorrynSpiteZone::ApplyZoneEffects(ABwayCharacterWithAbilities* Enemy)
 		}
 	}
 
+	if (bRemovingForRoundTransition || IsActorBeingDestroyed())
+	{
+		RemoveEffectHandles(Handles);
+		return;
+	}
 	ActiveEnemyEffects.Add(Enemy, Handles);
 }
 
@@ -227,31 +290,32 @@ void ABwayKorrynSpiteZone::RemoveZoneEffects(ABwayCharacterWithAbilities* Enemy)
 		return;
 	}
 
-	if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Enemy))
+	const FZoneEffectHandles RemovedHandles = *Handles;
+	ActiveEnemyEffects.Remove(Enemy);
+	RemoveEffectHandles(RemovedHandles);
+}
+
+void ABwayKorrynSpiteZone::RemoveEffectHandles(const FZoneEffectHandles& Handles)
+{
+	if (UAbilitySystemComponent* TargetASC = Handles.TargetAbilitySystem.Get())
 	{
-		if (Handles->SlowHandle.IsValid())
+		if (Handles.SlowHandle.IsValid())
 		{
-			TargetASC->RemoveActiveGameplayEffect(Handles->SlowHandle);
+			TargetASC->RemoveActiveGameplayEffect(Handles.SlowHandle);
 		}
-		if (Handles->AmpHandle.IsValid())
+		if (Handles.AmpHandle.IsValid())
 		{
-			TargetASC->RemoveActiveGameplayEffect(Handles->AmpHandle);
+			TargetASC->RemoveActiveGameplayEffect(Handles.AmpHandle);
 		}
 	}
-
-	ActiveEnemyEffects.Remove(Enemy);
 }
 
 void ABwayKorrynSpiteZone::ClearAllZoneEffects()
 {
-	TArray<TWeakObjectPtr<ABwayCharacterWithAbilities>> Enemies;
-	ActiveEnemyEffects.GetKeys(Enemies);
-	for (const TWeakObjectPtr<ABwayCharacterWithAbilities>& WeakEnemy : Enemies)
-	{
-		if (ABwayCharacterWithAbilities* Enemy = WeakEnemy.Get())
-		{
-			RemoveZoneEffects(Enemy);
-		}
-	}
+	const TMap<TWeakObjectPtr<ABwayCharacterWithAbilities>, FZoneEffectHandles> RemovedEffects = MoveTemp(ActiveEnemyEffects);
 	ActiveEnemyEffects.Reset();
+	for (const auto& Entry : RemovedEffects)
+	{
+		RemoveEffectHandles(Entry.Value);
+	}
 }

@@ -1,4 +1,4 @@
-// Development-only Goal 4 full-flow 1080p HUD layout, render performance, and 4-hero input/kit verification probe.
+// Development-only full-flow observations; physical input and visual layout require separate acceptance.
 #include "CoreMinimal.h"
 
 #if !UE_BUILD_SHIPPING
@@ -134,7 +134,7 @@ FIntPoint GetViewportSize(UWorld* World)
 	{
 		return World->GetGameViewport()->Viewport->GetSizeXY();
 	}
-	return FIntPoint(1920, 1080);
+	return FIntPoint::ZeroValue;
 }
 
 bool CheckWidgetBounds(UUserWidget* Widget, const FIntPoint& ViewportSize, int32& OutClippingCount)
@@ -144,9 +144,10 @@ bool CheckWidgetBounds(UUserWidget* Widget, const FIntPoint& ViewportSize, int32
 	const FVector2D LocalSize = Geom.GetLocalSize();
 	if (LocalSize.X <= 0.f || LocalSize.Y <= 0.f)
 	{
-		return true;
+		++OutClippingCount;
+		return false;
 	}
-	if (FMath::IsNaN(LocalSize.X) || FMath::IsNaN(LocalSize.Y) || LocalSize.X > float(ViewportSize.X) * 2.0f || LocalSize.Y > float(ViewportSize.Y) * 2.0f)
+	if (!FMath::IsFinite(LocalSize.X) || !FMath::IsFinite(LocalSize.Y) || LocalSize.X > float(ViewportSize.X) * 2.0f || LocalSize.Y > float(ViewportSize.Y) * 2.0f)
 	{
 		++OutClippingCount;
 		return false;
@@ -250,8 +251,7 @@ struct FAuditRunner
 	bool bPostRoundAudited = false;
 	bool bInterstitialAudited = false;
 	bool bPostMatchAudited = false;
-	int32 HeroesVerified = 0;
-	int32 TotalOverlapCount = 0;
+	int32 HeroesSampled = 0;
 	int32 TotalClippingCount = 0;
 	int32 TotalFocusLossCount = 0;
 	uint32 PreDeathPawnId = 0;
@@ -280,21 +280,17 @@ struct FAuditRunner
 	{
 		const FIntPoint Res = GetViewportSize(World);
 		int32 Clipping = 0;
-		int32 Overlap = 0;
-		CheckWidgetBounds(PrimaryWidget, Res, Clipping);
+		const bool bBoundsObserved = CheckWidgetBounds(PrimaryWidget, Res, Clipping);
 		UCommonUIActionRouterBase* Router = PC && PC->GetLocalPlayer() ? PC->GetLocalPlayer()->GetSubsystem<UCommonUIActionRouterBase>() : nullptr;
 		const ECommonInputMode InputMode = Router ? Router->GetActiveInputMode() : ECommonInputMode::Game;
-		const UCommonActivatableWidget* Activatable = Cast<UCommonActivatableWidget>(PrimaryWidget);
 		const bool bHasMenuOrWidgetFocus = (InputMode != ECommonInputMode::Game)
-			|| (PrimaryWidget && (PrimaryWidget->HasUserFocus(PC) || PrimaryWidget->HasUserFocusedDescendants(PC) || PrimaryWidget->IsInViewport()))
-			|| (Activatable && Activatable->IsActivated());
+			&& PrimaryWidget && PC && (PrimaryWidget->HasUserFocus(PC) || PrimaryWidget->HasUserFocusedDescendants(PC));
 		const bool bFocusLoss = bExpectMenuFocus ? !bHasMenuOrWidgetFocus : false;
 		if (bFocusLoss) ++TotalFocusLossCount;
 		TotalClippingCount += Clipping;
-		TotalOverlapCount += Overlap;
-		UE_LOG(LogTemp, Display, TEXT("BwayGoal4HUD: State=%s res=%dx%d widget=%s visible=%d inputMode=%d overlapCount=%d clippingCount=%d focusLoss=%d"),
+		UE_LOG(LogTemp, Display, TEXT("BwayGoal4HUD: State=%s res=%dx%d widget=%s visible=%d inputMode=%d boundsObserved=%d boundsFailures=%d menuFocusMissing=%d visualLayoutVerified=0"),
 			StateLabel, Res.X, Res.Y, *GetNameSafe(PrimaryWidget), PrimaryWidget && PrimaryWidget->IsVisible(),
-			int32(InputMode), Overlap, Clipping, bFocusLoss ? 1 : 0);
+			int32(InputMode), bBoundsObserved, Clipping, bFocusLoss ? 1 : 0);
 	}
 
 	void IsolateBots(UWorld* World, APawn* LocalPawn)
@@ -441,7 +437,8 @@ struct FAuditRunner
 				PerfFrameSamplesMs.Reserve(400);
 				GEngine->Exec(World, TEXT("CsvProfile Start"));
 				bCsvActive = true;
-				UE_LOG(LogTemp, Display, TEXT("BwayGoal4Perf: StartedCsvCapture res=1920x1080 targetFrames=360"));
+				const FIntPoint Res = GetViewportSize(World);
+				UE_LOG(LogTemp, Display, TEXT("BwayGoal4Perf: StartedCsvCapture res=%dx%d targetFrames=360"), Res.X, Res.Y);
 				Advance(3);
 			}
 			return true;
@@ -454,7 +451,7 @@ struct FAuditRunner
 			GEngine->SetMaxFPS(0.0f);
 			if (auto* CVarMaxFPS = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS"))) CVarMaxFPS->Set(0.0f);
 			if (auto* CVarVSync = IConsoleManager::Get().FindConsoleVariable(TEXT("r.VSync"))) CVarVSync->Set(0);
-			const double FrameMs = FMath::Clamp(FApp::GetDeltaTime() * 1000.0, 0.5, 50.0);
+			const double FrameMs = FApp::GetDeltaTime() * 1000.0;
 			// Skip the first 10 frames after CsvProfile Start to avoid command-start overhead
 			++PerfFramesCaptured;
 			if (PerfFramesCaptured > 10)
@@ -475,8 +472,8 @@ struct FAuditRunner
 				const double Fps = 1000.0 / MeanMs;
 				const double P95Ms = PerfFrameSamplesMs[FMath::Clamp(int32(PerfFrameSamplesMs.Num() * 0.95), 0, PerfFrameSamplesMs.Num() - 1)];
 				const FIntPoint Res = GetViewportSize(World);
-				UE_LOG(LogTemp, Display, TEXT("BwayGoal4Perf: PASS resolution=%dx%d frames=%d meanFrameMs=%.4f fps=%.2f p95FrameMs=%.4f maxFrameMs=%.4f vsmOverflows=0 budgetMs=8.33 withinBudget=%d"),
-					Res.X, Res.Y, PerfFrameSamplesMs.Num(), MeanMs, Fps, P95Ms, PerfMaxFrameMs, MeanMs < 8.33);
+				UE_LOG(LogTemp, Display, TEXT("BwayGoal4Perf: SAMPLE resolution=%dx%d frames=%d meanFrameMs=%.4f fps=%.2f p95FrameMs=%.4f maxFrameMs=%.4f vsmOverflows=unmeasured budgetMs=8.33 withinBudget=%d"),
+					Res.X, Res.Y, PerfFrameSamplesMs.Num(), MeanMs, Fps, P95Ms, PerfMaxFrameMs, MeanMs < 8.33 && P95Ms < 11.0 && Res == FIntPoint(1920, 1080));
 				HeroIndex = 0;
 				Advance(4, 0);
 			}
@@ -739,7 +736,7 @@ struct FAuditRunner
 							break;
 						}
 					}
-					bPassed = (Relic->GetCurrentState() == ERelicState::BeingPassed || Relic->CurrentCarrier == nullptr);
+					bPassed = (Relic->GetCurrentState() == ERelicState::BeingPassed && Relic->CurrentCarrier == nullptr);
 
 					// Pickup 2 -> Throw (LMB)
 					RelicMgr->ResetRelic();
@@ -756,11 +753,11 @@ struct FAuditRunner
 							break;
 						}
 					}
-					bThrown = (Relic->GetCurrentState() == ERelicState::Thrown || Relic->CurrentCarrier != nullptr);
+					bThrown = (Relic->GetCurrentState() == ERelicState::Thrown && Relic->CurrentCarrier == nullptr);
 					RelicMgr->ResetRelic();
 				}
-				++HeroesVerified;
-				UE_LOG(LogTemp, Display, TEXT("BwayGoal4HeroKit: PASS hero=%s index=%d lmbPrimary=1 rmbSecondaryCallForRelic=1 shiftSlide=1 qefCombatAbilities=1 gBuildablePreviewAndPlace=1 bUpgradeShop=1 relicPass=%d relicThrow=%d"),
+				++HeroesSampled;
+				UE_LOG(LogTemp, Display, TEXT("BwayGoal4HeroKit: OBSERVED hero=%s index=%d physicalInputVerified=0 relicPass=%d relicThrow=%d"),
 					HeroName, HeroIndex, bPickedUpPass && bPassed, bPickedUpThrow && bThrown);
 				++HeroIndex;
 				Advance(4, 0);
@@ -902,9 +899,11 @@ struct FAuditRunner
 			PerfFrameSamplesMs.Sort();
 			const double MeanMs = PerfFrameSamplesMs.IsEmpty() ? 0.0 : PerfTotalFrameMs / double(PerfFrameSamplesMs.Num());
 			const double Fps = MeanMs > 0.0 ? 1000.0 / MeanMs : 0.0;
-			UE_LOG(LogTemp, Display, TEXT("BwayGoal4Audit: COMPLETE passed=1 resolution=1920x1080 prematchAudited=%d playingAudited=%d shopAudited=%d relicMarkerAudited=%d deadRespawnAudited=%d postRoundAudited=%d postMatchAudited=%d heroesVerified=%d overlapCount=%d clippingCount=%d focusLossCount=%d meanFrameMs=%.4f fps=%.2f vsmOverflows=0"),
+			const FIntPoint Res = GetViewportSize(World);
+			UE_LOG(LogTemp, Display, TEXT("BwayGoal4Audit: COMPLETE status=observed acceptancePassed=0 physicalInputVerified=0 visualLayoutVerified=0 resolution=%dx%d prematchAudited=%d playingAudited=%d shopAudited=%d relicMarkerAudited=%d deadRespawnAudited=%d postRoundAudited=%d postMatchAudited=%d heroesSampled=%d boundsFailures=%d menuFocusMissing=%d meanFrameMs=%.4f fps=%.2f vsmOverflows=unmeasured"),
+				Res.X, Res.Y,
 				bPrematchAudited, bPlayingHudAudited, bShopAudited, bRelicMarkerAudited, bDeadRespawnAudited, bPostRoundAudited, bPostMatchAudited,
-				HeroesVerified, TotalOverlapCount, TotalClippingCount, TotalFocusLossCount, MeanMs, Fps);
+				HeroesSampled, TotalClippingCount, TotalFocusLossCount, MeanMs, Fps);
 			bRunning = false;
 			if (bExitOnComplete && World->WorldType == EWorldType::Game)
 			{
@@ -935,12 +934,12 @@ void StartGoal4Audit(bool bExitOnComplete)
 
 FAutoConsoleCommand Goal4FullFlowCommand(
 	TEXT("bway.Test.Goal4FullFlow1080pAudit"),
-	TEXT("Development Goal 4 full-flow 1080p HUD layout, CSV performance, and 4-hero input/kit verification probe."),
+	TEXT("Development full-flow HUD, timing, and hero observations; does not establish physical input or visual acceptance."),
 	FConsoleCommandDelegate::CreateLambda([]() { StartGoal4Audit(true); }));
 
 FAutoConsoleCommand Goal4InteractiveNoExitCommand(
 	TEXT("bway.Test.Goal4InteractiveAudit"),
-	TEXT("Development Goal 4 full-flow 1080p audit without auto-exit at completion."),
+	TEXT("Development full-flow observations without auto-exit; does not establish physical input or visual acceptance."),
 	FConsoleCommandDelegate::CreateLambda([]() { StartGoal4Audit(false); }));
 } // namespace BwayGoal4PolishAudit
 #endif

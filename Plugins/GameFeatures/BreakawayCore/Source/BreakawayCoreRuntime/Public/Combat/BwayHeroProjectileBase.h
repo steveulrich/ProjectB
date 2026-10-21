@@ -9,6 +9,10 @@
 #include "BwayHeroProjectileBase.generated.h"
 
 class UBwayProjectilePresentationData;
+class ABwayCharacterWithAbilities;
+class ABwayPlayerState;
+class UAbilitySystemComponent;
+class UBwayRoundManagementComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UProjectileMovementComponent;
@@ -75,6 +79,17 @@ protected:
 	 */
 	virtual bool HandleDamageHit(const FHitResult& Hit);
 
+	/** Keep fired shots attributed to the persistent player when the firing pawn ends. */
+	void ConfigureDamageSource(ABwayCharacterWithAbilities* SourceCharacter);
+	UAbilitySystemComponent* GetDamageSourceASC() const;
+	AActor* GetDamageInstigator() const;
+	bool IsEnemyCharacter(ABwayCharacterWithAbilities* Target) const;
+	bool ApplyDamageToEnemyBuildable(AActor* Target, float RawDamage);
+
+	UFUNCTION()
+	void OnRoundStateChanged(FName NewRoundState);
+	void RemoveForRoundTransition();
+
 	/** True when OtherActor should be ignored (self, owner, instigator). */
 	virtual bool ShouldIgnoreActor(const AActor* OtherActor) const;
 
@@ -138,6 +153,16 @@ protected:
 	TSubclassOf<UCameraShakeBase> CachedImpactCameraShake;
 
 	float CachedImpactCameraShakeScale = 1.f;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<ABwayPlayerState> SourcePlayerState;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAbilitySystemComponent> SourceAbilitySystem;
+
+	TWeakObjectPtr<UBwayRoundManagementComponent> RoundManager;
+	FDelegateHandle RoundResetHandle;
+	bool bRemovingForRoundTransition = false;
 
 	bool bHasProcessedTerminalHit = false;
 	bool bHasExecutedSpawnCue = false;

@@ -36,6 +36,14 @@
 #include "TimerManager.h"
 #include "Economy/BwayUpgradeComponent.h"
 #include "Input/CommonUIActionRouterBase.h"
+#include "Camera/CameraActor.h"
+#include "Camera/CameraComponent.h"
+#include "Camera/PlayerCameraManager.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
+#include "GameState/BwayRelicManagerComponent.h"
+#include "Relic/RelicActor.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayPlayerController)
 
@@ -175,12 +183,35 @@ void ABwayPlayerController::ToggleUpgradeShop()
 		UpgradeShopWidget->DeactivateWidget();
 		return;
 	}
-	const ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>();
+	OpenUpgradeShop();
+}
+
+void ABwayPlayerController::OpenUpgradeShop()
+{
+	if (!IsLocalController() || !GetLocalPlayer()) return;
+	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) return;
+	const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
 	if (!GS || !GS->GetRoundManagement() || (HeroSelectionWidget && HeroSelectionWidget->IsActivated()) || ResultsWidget) return;
 	const EBwayMatchPhase Phase = GS->GetRoundManagement()->GetCurrentMatchPhase();
 	if (Phase == EBwayMatchPhase::None || Phase == EBwayMatchPhase::Prematch || Phase == EBwayMatchPhase::PostMatch) return;
+
+	TSubclassOf<UCommonActivatableWidget> ShopClass = UBwayUpgradeShopWidget::StaticClass();
+	const FSoftClassPath WMatchShopPath(TEXT("/BreakawayCore/UI/Match/W_MatchShop.W_MatchShop_C"));
+	if (UClass* LoadedClass = WMatchShopPath.TryLoadClass<UCommonActivatableWidget>())
+	{
+		ShopClass = LoadedClass;
+	}
+	else
+	{
+		const FSoftClassPath WFrontEndMatchShopPath(TEXT("/BreakawayCore/UI/FrontEnd/W_MatchShop.W_MatchShop_C"));
+		if (UClass* LoadedAltClass = WFrontEndMatchShopPath.TryLoadClass<UCommonActivatableWidget>())
+		{
+			ShopClass = LoadedAltClass;
+		}
+	}
+
 	UpgradeShopWidget = Cast<UBwayUpgradeShopWidget>(UCommonUIExtensions::PushContentToLayer_ForPlayer(
-		GetLocalPlayer(), FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Menu")), UBwayUpgradeShopWidget::StaticClass()));
+		GetLocalPlayer(), FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Menu")), ShopClass));
 }
 
 void ABwayPlayerController::HideHeroSelect()
@@ -417,6 +448,7 @@ void ABwayPlayerController::RefreshRespawnHUD()
 
 void ABwayPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	StopArenaIntroFlyThrough();
 	if (RespawnHUDWidget) RespawnHUDWidget->RemoveFromParent();
 	RespawnHUDWidget = nullptr;
 	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) UpgradeShopWidget->DeactivateWidget();
@@ -480,10 +512,133 @@ void ABwayPlayerController::HandlePostRoundSummaryStarted(FBwayPostRoundSummaryD
 
 void ABwayPlayerController::HandleMatchPhaseChanged(EBwayMatchPhase NewPhase)
 {
-	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) UpgradeShopWidget->DeactivateWidget();
+	StopArenaIntroFlyThrough();
+
+	if (NewPhase == EBwayMatchPhase::Warmup)
+	{
+		const UBwayRoundManagementComponent* RoundMgmt = BoundRoundManagementComponent.Get();
+		const bool bIsArenaIntroMatch = (RoundMgmt && RoundMgmt->HasArenaIntroPlayed())
+			|| UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro"));
+		if (bIsArenaIntroMatch && IsLocalController())
+		{
+			OpenUpgradeShop();
+		}
+	}
+	else if (UpgradeShopWidget && UpgradeShopWidget->IsActivated())
+	{
+		UpgradeShopWidget->DeactivateWidget();
+	}
+
 	if (NewPhase != EBwayMatchPhase::PostRound)
 	{
 		DismissPostRoundSummary();
+	}
+}
+
+void ABwayPlayerController::Client_StartArenaIntroFlyThrough_Implementation(float DurationSeconds)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	Client_HideHeroSelection_Implementation();
+	StopArenaIntroFlyThrough();
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	ArenaIntroTotalDuration = FMath::Max(0.5f, DurationSeconds);
+	ArenaIntroStartTime = FPlatformTime::Seconds();
+
+	// Resolve Relic center location for the fly-through focal point
+	ArenaIntroCenterLocation = FVector(0.f, 0.f, 200.f);
+	if (const ABwayGameState* GS = World->GetGameState<ABwayGameState>())
+	{
+		if (const UBwayRelicManagerComponent* RelicMgr = GS->FindComponentByClass<UBwayRelicManagerComponent>())
+		{
+			if (const ARelicActor* Relic = RelicMgr->GetRelicActor())
+			{
+				ArenaIntroCenterLocation = Relic->GetActorLocation();
+			}
+		}
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ArenaIntroCameraActor = World->SpawnActor<ACameraActor>(
+		ArenaIntroCenterLocation + FVector(-1400.f, -900.f, 650.f),
+		FRotator(-22.f, 32.f, 0.f),
+		SpawnParams);
+
+	if (ArenaIntroCameraActor && ArenaIntroCameraActor->GetCameraComponent())
+	{
+		ArenaIntroCameraActor->GetCameraComponent()->bConstrainAspectRatio = false;
+		SetViewTargetWithBlend(ArenaIntroCameraActor, 0.35f);
+	}
+
+	if (PlayerCameraManager)
+	{
+		PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 0.85f, FLinearColor::Black, false, false);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayArenaIntro: Announcer hook triggered — Welcome to The Shrine of Auros (%.1fs fly-through)"), ArenaIntroTotalDuration);
+
+	TickArenaIntroFlyThrough();
+	World->GetTimerManager().SetTimer(
+		ArenaIntroTickTimerHandle,
+		this,
+		&ABwayPlayerController::TickArenaIntroFlyThrough,
+		0.016f,
+		true);
+}
+
+void ABwayPlayerController::TickArenaIntroFlyThrough()
+{
+	if (!ArenaIntroCameraActor)
+	{
+		StopArenaIntroFlyThrough();
+		return;
+	}
+
+	const double Elapsed = FPlatformTime::Seconds() - ArenaIntroStartTime;
+	const float Alpha = FMath::Clamp(static_cast<float>(Elapsed) / FMath::Max(0.1f, ArenaIntroTotalDuration), 0.0f, 1.0f);
+	const float SmoothAlpha = FMath::InterpEaseInOut(0.0f, 1.0f, Alpha, 1.6f);
+
+	// Sweeping orbital pan across the Shrine of Auros / center Relic pedestal
+	const float AngleDeg = FMath::Lerp(-55.0f, 55.0f, SmoothAlpha);
+	const float AngleRad = FMath::DegreesToRadians(AngleDeg);
+	const float Radius = FMath::Lerp(1650.0f, 1150.0f, SmoothAlpha);
+	const float Height = FMath::Lerp(680.0f, 420.0f, SmoothAlpha);
+
+	const FVector CamPos = ArenaIntroCenterLocation + FVector(
+		-FMath::Cos(AngleRad) * Radius,
+		FMath::Sin(AngleRad) * Radius,
+		Height);
+	const FVector LookTarget = ArenaIntroCenterLocation + FVector(0.f, 0.f, 90.f);
+	const FRotator CamRot = (LookTarget - CamPos).Rotation();
+
+	ArenaIntroCameraActor->SetActorLocationAndRotation(CamPos, CamRot);
+}
+
+void ABwayPlayerController::StopArenaIntroFlyThrough()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ArenaIntroTickTimerHandle);
+	}
+
+	if (ArenaIntroCameraActor)
+	{
+		if (GetViewTarget() == ArenaIntroCameraActor && GetPawn())
+		{
+			SetViewTargetWithBlend(GetPawn(), 0.25f);
+		}
+		ArenaIntroCameraActor->Destroy();
+		ArenaIntroCameraActor = nullptr;
 	}
 }
 

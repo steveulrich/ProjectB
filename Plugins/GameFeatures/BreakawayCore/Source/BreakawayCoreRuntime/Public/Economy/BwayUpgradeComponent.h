@@ -56,6 +56,21 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void ServerTryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRank = -1);
 	bool TryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRank = -1);
+
+	/** Sell the highest owned rank of Id, refunding its catalog cost and restoring the prior rank. */
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="Economy")
+	void ServerSellUpgrade(FName Id);
+	bool TrySellUpgrade(FName Id);
+	UFUNCTION(BlueprintPure, Category="Economy")
+	bool CanSellUpgrade(FName Id) const;
+
+	/** Undo the most recent buy or sell transaction in the current shop session. */
+	UFUNCTION(Server, Reliable, BlueprintCallable, Category="Economy")
+	void ServerUndoLastTransaction();
+	bool TryUndoLastTransaction();
+	UFUNCTION(BlueprintPure, Category="Economy")
+	bool CanUndoLastTransaction() const;
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	void ResetUpgrades();
 	UPROPERTY(BlueprintAssignable)
@@ -64,6 +79,15 @@ public:
 	FBwayPurchaseResult OnPurchaseResult;
 
 private:
+	struct FBwayUpgradeTransactionRecord
+	{
+		FName Id;
+		int32 PreviousRank = 0;
+		int32 NewRank = 0;
+		int32 GoldCost = 0;
+		bool bWasPurchase = true;
+	};
+	bool ApplyOwnedRankInternal(FName Id, int32 TargetRank, class UAbilitySystemComponent* ASC, const struct FBwayUpgradeDefinition* Definition);
 	virtual void BeginPlay() override;
 	UFUNCTION(Client, Reliable)
 	void ClientPurchaseResult(FName Id, bool bSuccess);
@@ -71,9 +95,12 @@ private:
 	TObjectPtr<UBwayUpgradeCatalog> Catalog;
 	UPROPERTY(ReplicatedUsing=OnRep_OwnedUpgrades)
 	TArray<FBwayOwnedUpgrade> OwnedUpgrades;
+	UPROPERTY(ReplicatedUsing=OnRep_OwnedUpgrades)
+	int32 ReplicatedUndoCount = 0;
 	UFUNCTION()
 	void OnRep_OwnedUpgrades();
 	TMap<FName, FActiveGameplayEffectHandle> EffectHandles;
+	TArray<FBwayUpgradeTransactionRecord> TransactionHistory;
 	bool bTransactionInProgress = false;
 	bool bExplicitInHealingZone = false;
 	int32 ExplicitHealingZoneTeamIndex = -1;

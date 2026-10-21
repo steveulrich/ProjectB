@@ -1,6 +1,6 @@
 # Breakaway Planning & Architecture Hub
 
-**Last Reviewed:** October 13, 2026
+**Last Reviewed:** October 15, 2026** October 13, 2026
 **Engine:** Unreal Engine `5.8.1` Source Build (`LyraEditor` / `LyraGame`)
 
 Use this index to navigate the active `AI_Planning/` working set. Historical narratives, superseded gate docs, and reference Lua files are isolated in `AI_Planning/Archive/` and must **never** be read during routine gates.
@@ -16,8 +16,8 @@ Use this index to navigate the active `AI_Planning/` working set. Historical nar
 | **Match Economy & 6-Item Upgrade Shop** | **PASSED** (50g Kill / 25g Assist credit, 4-slot cap, Attack, Armor, MoveSpeed, CDR, LifeLeech, RespawnReduction at 200ms) | [COMBAT_CREDIT_ACCEPTANCE.md](./COMBAT_CREDIT_ACCEPTANCE.md) · [SHOP_INPUT_ACCEPTANCE.md](./SHOP_INPUT_ACCEPTANCE.md) · [COOLDOWN_UPGRADE_ACCEPTANCE.md](./COOLDOWN_UPGRADE_ACCEPTANCE.md) · [LIFE_LEECH_ACCEPTANCE.md](./LIFE_LEECH_ACCEPTANCE.md) · [RESPAWN_UPGRADE_ACCEPTANCE.md](./RESPAWN_UPGRADE_ACCEPTANCE.md) |
 | **Persistent Buildables (4 Heroes)** | **PASSED** (Shared `FBwayPlacementQuery`, obstruction recovery, 3-round persistence, active caps, Jail trap immunity at 200ms) | [BUILDABLE_AUTHORITY_ACCEPTANCE.md](./BUILDABLE_AUTHORITY_ACCEPTANCE.md) |
 | **Slide Physics & Lifecycle** | **PASSED** (4-process packaged at 100ms + 20/20 Oct 1–9 gravity/wall/ramp/camera-shake repairs) | [SLIDE_LIFECYCLE_ACCEPTANCE.md](./SLIDE_LIFECYCLE_ACCEPTANCE.md) |
-| **4-Hero Primary & Barrage Animations** | **PASSED / PARTIAL** (Alona, Argus, Korryn, Rawlins primaries passed packaged 100ms; Rawlins Barrage normal 0/100ms passed, changing-aim 1 host frame spike open) | [ALONA_PRIMARY_ANIMATION.md](./ALONA_PRIMARY_ANIMATION.md) · [ARGUS_PRIMARY_ANIMATION.md](./ARGUS_PRIMARY_ANIMATION.md) · [KORRYN_PRIMARY_ANIMATION.md](./KORRYN_PRIMARY_ANIMATION.md) · [RAWLINS_PRIMARY_ANIMATION.md](./RAWLINS_PRIMARY_ANIMATION.md) · [RAWLINS_BARRAGE_ACCEPTANCE.md](./RAWLINS_BARRAGE_ACCEPTANCE.md) |
-| **Remaining Parity Queue (Goals 1–6)** | **QUEUED** (All-16 ability combat effects, Relic catch/intercept/base-shop, escalating respawn & NetGUID fix, human playtest, 7 expansion heroes) | [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md) · [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) |
+| **4-Hero Primary & Barrage Animations** | Recorded packaged checks passed; review corrections and scope limits are tracked in the ledger | [RAWLINS_BARRAGE_ACCEPTANCE.md](./RAWLINS_BARRAGE_ACCEPTANCE.md) · [SLICE_STATUS.md](./SLICE_STATUS.md) |
+| **Current Goal Queue (Goals 1–11)** | Goals 1–3 have scoped evidence with review gaps; expanded polish Goals 4–9 precede roster Goals 10–11. Implementation is paused. | [MASTER_GOAL_QUEUE.md](./MASTER_GOAL_QUEUE.md) · [SLICE_STATUS.md](./SLICE_STATUS.md) · [PROJECT_ROADMAP.md](./PROJECT_ROADMAP.md) |
 
 ---
 

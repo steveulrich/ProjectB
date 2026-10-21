@@ -340,4 +340,37 @@ bool FBwaySlideLifecycleTest::RunTest(const FString& Parameters)
 	Fixture.ExpectEnded(TEXT("replacement-after-teardown"), MOVE_Walking);
 	return true;
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideHeldJumpTest,
+	"Breakaway.CombatPolish.Slide.Lifecycle.HeldJumpMomentum",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwaySlideHeldJumpTest::RunTest(const FString& Parameters)
+{
+	(void)Parameters;
+	BwaySlideLifecycleTest::FFixture Fixture(this);
+	if (!Fixture.Setup() || !Fixture.Begin(TEXT("held-jump"))) return false;
+	Fixture.Pawn->JumpMaxHoldTime = 0.2f;
+	Fixture.Movement->Velocity = FVector(500.f, 0.f, 0.f);
+	const float ExpectedLaunchSpeed = FMath::Clamp(500.f * Fixture.Movement->SlideJumpMomentumBoost,
+		Fixture.Movement->SlideJumpMinHorizontalSpeed, Fixture.Movement->SlideJumpMaxHorizontalSpeed);
+	constexpr float StepSeconds = 1.f / 60.f;
+	Fixture.Pawn->Jump();
+	Fixture.Pawn->CheckJumpInput(StepSeconds);
+	Fixture.ExpectEnded(TEXT("held-jump"), MOVE_Falling);
+	TestTrue(TEXT("First held-jump frame applies the slide boost"),
+		FMath::IsNearlyEqual(Fixture.Movement->Velocity.Size2D(), ExpectedLaunchSpeed, 0.01));
+	for (int32 Frame = 0; Frame < 5; ++Frame)
+	{
+		Fixture.Pawn->ClearJumpInput(StepSeconds);
+		Fixture.Pawn->CheckJumpInput(StepSeconds);
+		TestTrue(TEXT("Jump remains held during the regression sample"), Fixture.Pawn->bPressedJump && Fixture.Pawn->bWasJumping);
+		TestEqual(TEXT("Holding jump remains one jump"), Fixture.Pawn->JumpCurrentCount, 1);
+		TestTrue(TEXT("Holding jump does not compound slide momentum"),
+			FMath::IsNearlyEqual(Fixture.Movement->Velocity.Size2D(), ExpectedLaunchSpeed, 0.01));
+	}
+	Fixture.Pawn->StopJumping();
+	Fixture.Release();
+	return true;
+}
 #endif

@@ -4,9 +4,12 @@
 #include "AbilitySystemGlobals.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "Character/LyraHealthComponent.h"
 #include "Components/SphereComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/World.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "LyraGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 #include "System/LyraAssetManager.h"
@@ -45,7 +48,8 @@ void ABwayAlonaBlessingZone::ConfigureZone(
 	float InInitialHeal,
 	float InHealPerSecond)
 {
-	CasterCharacter = InCaster;
+	CasterPlayerState = InCaster ? InCaster->GetPlayerState<ABwayPlayerState>() : nullptr;
+	CasterAbilitySystem = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CasterPlayerState.Get());
 	HealRadius = InRadius;
 	ZoneDuration = InDuration;
 	InitialHeal = InInitialHeal;
@@ -54,7 +58,8 @@ void ABwayAlonaBlessingZone::ConfigureZone(
 
 	if (InCaster)
 	{
-		SetOwner(InCaster);
+		// The cast belongs to the persistent player, including after pawn death.
+		SetOwner(CasterPlayerState.Get());
 		SetInstigator(InCaster);
 	}
 
@@ -82,6 +87,16 @@ void ABwayAlonaBlessingZone::BeginPlay()
 		return;
 	}
 
+	if (const ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		RoundManager = GameState->FindComponentByClass<UBwayRoundManagementComponent>();
+		if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+		{
+			Manager->OnRoundStateChanged.AddDynamic(this, &ABwayAlonaBlessingZone::OnRoundStateChanged);
+			RoundResetHandle = Manager->OnRoundResetStarting.AddUObject(this, &ABwayAlonaBlessingZone::RemoveForRoundTransition);
+		}
+	}
+
 	ApplyInitialHeals();
 
 	if (UWorld* World = GetWorld())
@@ -98,6 +113,13 @@ void ABwayAlonaBlessingZone::BeginPlay()
 
 void ABwayAlonaBlessingZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+	{
+		Manager->OnRoundStateChanged.RemoveDynamic(this, &ABwayAlonaBlessingZone::OnRoundStateChanged);
+		Manager->OnRoundResetStarting.Remove(RoundResetHandle);
+	}
+	RoundResetHandle.Reset();
+	RoundManager.Reset();
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(HealTickTimerHandle);
@@ -105,6 +127,22 @@ void ABwayAlonaBlessingZone::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	AlliesInZone.Reset();
 	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayAlonaBlessingZone::OnRoundStateChanged(FName NewRoundState)
+{
+	if (NewRoundState != TEXT("RoundActive"))
+	{
+		RemoveForRoundTransition();
+	}
+}
+
+void ABwayAlonaBlessingZone::RemoveForRoundTransition()
+{
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ABwayAlonaBlessingZone::OnSphereBeginOverlap(
@@ -149,7 +187,7 @@ void ABwayAlonaBlessingZone::OnSphereEndOverlap(
 void ABwayAlonaBlessingZone::ApplyInitialHeals()
 {
 	UWorld* World = GetWorld();
-	if (!World || !CasterCharacter)
+	if (!World || !CasterPlayerState.IsValid())
 	{
 		return;
 	}
@@ -166,14 +204,16 @@ void ABwayAlonaBlessingZone::ApplyInitialHeals()
 		FCollisionShape::MakeSphere(HealRadius),
 		QueryParams);
 
+	TSet<ABwayCharacterWithAbilities*> InitiallyHealed;
 	for (const FOverlapResult& Overlap : Overlaps)
 	{
 		ABwayCharacterWithAbilities* Ally = Cast<ABwayCharacterWithAbilities>(Overlap.GetActor());
-		if (!Ally || !IsAllyOfCaster(Ally))
+		if (!Ally || !IsAllyOfCaster(Ally) || InitiallyHealed.Contains(Ally))
 		{
 			continue;
 		}
 
+		InitiallyHealed.Add(Ally);
 		AlliesInZone.Add(Ally);
 		ApplyHealToAlly(Ally, InitialHeal);
 	}
@@ -181,7 +221,8 @@ void ABwayAlonaBlessingZone::ApplyInitialHeals()
 
 void ABwayAlonaBlessingZone::TickHeal()
 {
-	if (!HasAuthority() || HealPerSecond <= 0.f)
+	// Lifespan and periodic timers can share a deadline; never heal at/after expiry.
+	if (!HasAuthority() || HealPerSecond <= 0.f || GetLifeSpan() <= 0.f)
 	{
 		return;
 	}
@@ -205,12 +246,17 @@ void ABwayAlonaBlessingZone::TickHeal()
 
 void ABwayAlonaBlessingZone::ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, float HealAmount)
 {
-	if (!Ally || HealAmount <= 0.f || !CasterCharacter)
+	if (!IsValid(Ally) || HealAmount <= 0.f || !IsAllyOfCaster(Ally))
 	{
 		return;
 	}
 
-	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(CasterCharacter);
+	const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(Ally);
+	if (!Health || Health->IsDeadOrDying() || Health->GetHealth() <= 0.f)
+	{
+		return;
+	}
+	UAbilitySystemComponent* SourceASC = CasterAbilitySystem.Get();
 	UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Ally);
 	if (!SourceASC || !TargetASC)
 	{
@@ -226,7 +272,7 @@ void ABwayAlonaBlessingZone::ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, 
 
 	FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
 	EffectContext.AddSourceObject(this);
-	EffectContext.AddInstigator(CasterCharacter, this);
+	EffectContext.AddInstigator(CasterPlayerState.Get(), this);
 
 	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(HealEffectClass, 1.f, EffectContext);
 	if (SpecHandle.IsValid())
@@ -241,27 +287,23 @@ void ABwayAlonaBlessingZone::ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, 
 
 bool ABwayAlonaBlessingZone::IsAllyOfCaster(ABwayCharacterWithAbilities* OtherCharacter) const
 {
-	if (!CasterCharacter || !OtherCharacter)
+	const ABwayPlayerState* SourcePlayer = CasterPlayerState.Get();
+	if (!SourcePlayer || !IsValid(OtherCharacter))
 	{
 		return false;
-	}
-
-	// Self is a valid ally for Blessing.
-	if (OtherCharacter == CasterCharacter)
-	{
-		return true;
 	}
 
 	if (UWorld* World = GetWorld())
 	{
 		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
 		{
-			return GameState->AreOnSameTeam(CasterCharacter, OtherCharacter);
+			return GameState->PlayerArray.Contains(SourcePlayer)
+				&& GameState->AreOnSameTeam(SourcePlayer, OtherCharacter);
 		}
 
 		if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
 		{
-			return TeamSubsystem->CompareTeams(CasterCharacter, OtherCharacter) == ELyraTeamComparison::OnSameTeam;
+			return TeamSubsystem->CompareTeams(SourcePlayer, OtherCharacter) == ELyraTeamComparison::OnSameTeam;
 		}
 	}
 

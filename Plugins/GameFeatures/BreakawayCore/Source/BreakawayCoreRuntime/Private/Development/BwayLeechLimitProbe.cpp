@@ -37,7 +37,7 @@ bool FBwayLeechLimitFrame::NetSerialize(FArchive& Ar, UPackageMap*, bool& bOutSu
 
 namespace
 {
-const TCHAR* Cases[] = { TEXT("Cap"), TEXT("Full"), TEXT("Immune"), TEXT("Friendly"), TEXT("Self"), TEXT("Overkill"), TEXT("DeadSource") };
+const TCHAR* LeechLimitCaseNames[] = { TEXT("Cap"), TEXT("Full"), TEXT("Immune"), TEXT("Friendly"), TEXT("Self"), TEXT("Overkill"), TEXT("DeadSource") };
 ULyraAbilitySystemComponent* ASC(ABwayPlayerState* P) { return P ? P->GetLyraAbilitySystemComponent() : nullptr; }
 float Health(ABwayPlayerState* P) { return ASC(P)->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()); }
 float Maximum(ABwayPlayerState* P) { return ASC(P)->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute()); }
@@ -210,7 +210,7 @@ bool ABwayLeechLimitProbe::PrepareCase(int32 Case)
 	Frame.Incoming = ASC(Target)->GetNumericAttribute(UBwayHeroAttributeSet::GetIncomingDamageMultiplierAttribute());
 	++Frame.Serial; State->Changed = FPlatformTime::Seconds();
 	ForceNetUpdate();
-	UE_LOG(LogTemp, Display, TEXT("BwayLeechLimits: Plan serial=%d case=%d name=%s source=%d target=%d raw=%.4f armor=%.4f incoming=%.4f bonus=%.4f sourceBefore=%.4f targetBefore=%.4f sourceMax=%.4f"), Frame.Serial, Case, Cases[Case], Frame.Source, Frame.Target, Frame.Raw, Frame.Armor, Frame.Incoming, Frame.Bonus, Health(Source), Health(Target), Maximum(Source));
+	UE_LOG(LogTemp, Display, TEXT("BwayLeechLimits: Plan serial=%d case=%d name=%s source=%d target=%d raw=%.4f armor=%.4f incoming=%.4f bonus=%.4f sourceBefore=%.4f targetBefore=%.4f sourceMax=%.4f"), Frame.Serial, Case, LeechLimitCaseNames[Case], Frame.Source, Frame.Target, Frame.Raw, Frame.Armor, Frame.Incoming, Frame.Bonus, Health(Source), Health(Target), Maximum(Source));
 	return true;
 }
 void ABwayLeechLimitProbe::ApplyCase()
@@ -224,7 +224,7 @@ void ABwayLeechLimitProbe::ApplyCase()
 	if (Frame.Case == 5) UBwayDamageLibrary::ApplyDamageFromSource(ASC(Source), Target, Frame.Raw, this, Source);
 	const float Damage = ExpectedDamage(Frame), Healing = ExpectedHeal(Frame, Maximum(Source));
 	if (State->bWrongMessage || State->DamageEvents != (Damage > 0 ? 1 : 0) || State->HealEvents != (Healing > 0 ? 1 : 0) || !FMath::IsNearlyEqual(State->Damage, double(Damage), 0.002) || !FMath::IsNearlyEqual(State->Healing, double(Healing), 0.002)) { Fail(TEXT("damage-heal-event-mismatch")); return; }
-	UE_LOG(LogTemp, Display, TEXT("BwayLeechLimits: Result case=%d name=%s source=%d target=%d damage=%.4f healing=%.4f hits=%d heals=%d attempts=%d"), Frame.Case, Cases[Frame.Case], Frame.Source, Frame.Target, State->Damage, State->Healing, State->DamageEvents, State->HealEvents, Frame.Case == 5 ? 2 : 1);
+	UE_LOG(LogTemp, Display, TEXT("BwayLeechLimits: Result case=%d name=%s source=%d target=%d damage=%.4f healing=%.4f hits=%d heals=%d attempts=%d"), Frame.Case, LeechLimitCaseNames[Frame.Case], Frame.Source, Frame.Target, State->Damage, State->Healing, State->DamageEvents, State->HealEvents, Frame.Case == 5 ? 2 : 1);
 	Frame.Stage = 1; ++Frame.Serial; State->Changed = FPlatformTime::Seconds(); ForceNetUpdate();
 }
 void ABwayLeechLimitProbe::OnDamageMessage(FGameplayTag, const FLyraVerbMessage& Message)

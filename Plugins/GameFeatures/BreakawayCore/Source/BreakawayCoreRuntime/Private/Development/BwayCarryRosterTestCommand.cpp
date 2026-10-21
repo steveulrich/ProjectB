@@ -13,13 +13,16 @@ namespace BwayCarryRosterTest
 {
 bool Running = false;
 FAutoConsoleCommand Command(TEXT("bway.Test.SelectDistinctCarryRoster"),
-    TEXT("Development carry fixture: select four distinct human heroes, then fill unique team bot slots and lock through production selection."),
-    FConsoleCommandDelegate::CreateLambda([]()
+    TEXT("Development carry fixture: [remote-argus] selects four distinct human heroes, then fills unique team bot slots and locks through production selection."),
+    FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
     {
+        if (Args.Num() > 1 || (Args.Num() == 1 && Args[0] != TEXT("remote-argus")))
+        { UE_LOG(LogTemp, Error, TEXT("BwayCarryRoster: STOP reason=invalid-roster-option")); return; }
+        const bool bRemoteArgus = Args.Num() == 1;
         if (Running) return;
         Running = true;
         const double Started = FPlatformTime::Seconds();
-        FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Started](float)
+        FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Started, bRemoteArgus](float)
         {
             auto Stop = [](const TCHAR* Reason)
             {
@@ -43,7 +46,8 @@ FAutoConsoleCommand Command(TEXT("bway.Test.SelectDistinctCarryRoster"),
                 // The LAN staging map has humans only; its bots spawn in Dorado.
                 if (Humans.Num() != 4) continue;
                 Humans.Sort([](const ABwayPlayerState& A, const ABwayPlayerState& B) { return A.GetPlayerId() < B.GetPlayerId(); });
-                const FName Names[] = {TEXT("DA_BW_HeroData_Argus"), TEXT("DA_BW_HeroData_Gunslinger"), TEXT("DA_BW_HeroData_Hexweaver"), TEXT("DA_BW_HeroData_Alona")};
+                FName Names[] = {TEXT("DA_BW_HeroData_Argus"), TEXT("DA_BW_HeroData_Gunslinger"), TEXT("DA_BW_HeroData_Hexweaver"), TEXT("DA_BW_HeroData_Alona")};
+                if (bRemoteArgus) Swap(Names[0], Names[1]);
                 for (FName Name : Names)
                     if (!UBwayHeroRegistry::GetHeroDataById(FPrimaryAssetId(TEXT("HeroDataAsset"), Name))) return true;
                 TMap<int32, TSet<FName>> Used;

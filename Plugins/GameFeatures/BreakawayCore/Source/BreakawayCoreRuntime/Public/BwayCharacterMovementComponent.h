@@ -14,6 +14,26 @@ class UAbilitySystemComponent;
 class UBwayMovementFeelConfig;
 struct FBwaySlideContactContext;
 
+/** Development observations of real production steps; never drives movement. */
+struct FBwaySlideReviewObservation
+{
+	bool bJump = false;
+	bool bWasJumping = false;
+	bool bBoostApplied = false;
+	float DeltaSeconds = 0.f;
+	float FirstHitFraction = 1.f;
+	float SlideConsumedFraction = 0.f;
+	float FinalHitFraction = 1.f;
+	float ContinuationFraction = 0.f;
+	FVector Start = FVector::ZeroVector;
+	FVector End = FVector::ZeroVector;
+	FVector BeforeVelocity = FVector::ZeroVector;
+	FVector AfterVelocity = FVector::ZeroVector;
+	FVector FirstNormal = FVector::ZeroVector;
+	FVector FinalNormal = FVector::ZeroVector;
+};
+DECLARE_MULTICAST_DELEGATE_OneParam(FBwaySlideReviewObserver, const FBwaySlideReviewObservation&);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDashStartDelegate);
 
 UENUM(BlueprintType)
@@ -32,6 +52,8 @@ class BREAKAWAYCORERUNTIME_API UBwayCharacterMovementComponent : public ULyraCha
 
 public:
 	UBwayCharacterMovementComponent(const FObjectInitializer& ObjectInitializer);
+	/** Broadcast only in non-shipping builds while a development observer is bound. */
+	FBwaySlideReviewObserver SlideReviewObserver;
 
 	// -- SLIDE -- //
 	//~ UCharacterMovementComponent Interface

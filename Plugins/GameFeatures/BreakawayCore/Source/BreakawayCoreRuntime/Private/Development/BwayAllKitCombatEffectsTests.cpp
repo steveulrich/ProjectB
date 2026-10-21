@@ -1,6 +1,7 @@
 #include "Misc/AutomationTest.h"
 
 #include "Abilities/GameplayAbility.h"
+#include "Abilities/BwayGameplayAbility_RelicPass.h"
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
@@ -20,17 +21,20 @@
 #include "Combat/BwayHeroProjectileBase.h"
 #include "Combat/BwayLifeLeechComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Containers/Ticker.h"
 #include "Economy/BwayBaseZone.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "Engine/Engine.h"
 #include "Engine/GameInstance.h"
+#include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameState/BwayRelicManagerComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
+#include "GameplayEffect.h"
 #include "HAL/IConsoleManager.h"
 #include "HAL/PlatformTime.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
@@ -40,6 +44,7 @@
 #include "LyraGameplayTags.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
+#include "Misc/ScopeExit.h"
 #include "Relic/RelicActor.h"
 #include "TimerManager.h"
 #include "UObject/StrongObjectPtr.h"
@@ -61,10 +66,23 @@ struct FParticipant
 class FRun : public IAutomationLatentCommand
 {
 public:
-	explicit FRun(FAutomationTestBase* InTest) : Test(InTest) {}
+	explicit FRun(FAutomationTestBase* InTest, bool bInRestrictionsOnly = false, int32 InBlessingCase = INDEX_NONE,
+		int32 InReviewGroup = 0, int32 InReviewCase = 0)
+		: Test(InTest), bRestrictionsOnly(bInRestrictionsOnly), BlessingCase(InBlessingCase), ReviewGroup(InReviewGroup), ReviewCase(InReviewCase) {}
 
 	virtual ~FRun() override
 	{
+		if (Ally.ASC) Ally.ASC->OnGameplayEffectAppliedDelegateToSelf.Remove(BlessingHealObserver);
+		if (Enemy.ASC) Enemy.ASC->OnGameplayEffectAppliedDelegateToSelf.Remove(ReviewEffectObserver);
+		if (bRestrictionsOnly)
+		{
+			if (Relic && Relic->CurrentCarrier) Relic->OnDropped();
+			if (Source.ASC)
+			{
+				Source.ASC->CancelAllAbilities();
+				if (Source.PS) Source.PS->GetHeroAbilityGrantedHandles().TakeFromAbilitySystem(Source.ASC);
+			}
+		}
 		if (Source.ASC) Source.ASC->ClearAllAbilities();
 		if (Enemy.ASC) Enemy.ASC->ClearAllAbilities();
 		if (World) World->DestroyWorld(false);
@@ -149,7 +167,7 @@ public:
 		if (!Out.ASC->GetSet<ULyraHealthSet>()) Out.ASC->AddSpawnedAttribute(NewObject<ULyraHealthSet>(Out.PS));
 		if (!Out.ASC->GetSet<UBwayGoldAttributeSet>()) Out.ASC->AddSpawnedAttribute(NewObject<UBwayGoldAttributeSet>(Out.PS));
 		ULyraPawnExtensionComponent* Ext = ULyraPawnExtensionComponent::FindPawnExtensionComponent(Out.Pawn);
-		Ext->SetPawnData(NewObject<ULyraPawnData>(World));
+		Ext->SetPawnData(bRestrictionsOnly ? RestrictionPawnData : NewObject<ULyraPawnData>(World));
 		Ext->InitializeAbilitySystem(Out.ASC, Out.PS);
 		EnsureBegunPlay(Out.Pawn);
 		Out.Move = Out.Pawn->GetBwayCharacterMovement();
@@ -220,6 +238,13 @@ public:
 		Teams->Add(FTeamInfo(0));
 		Teams->Add(FTeamInfo(1));
 		if (!ConfigureRoundActive()) return false;
+		if (bRestrictionsOnly)
+		{
+			RestrictionPawnData = LoadObject<ULyraPawnData>(nullptr,
+				TEXT("/BreakawayCore/Characters/DA_BW_PawnData_Humanoid.DA_BW_PawnData_Humanoid"));
+			if (!Test->TestNotNull(TEXT("Authored restriction PawnData"), RestrictionPawnData)
+				|| !Test->TestNotNull(TEXT("Authored ability tag relationships"), RestrictionPawnData->TagRelationshipMapping.Get())) return false;
+		}
 
 		if (!SpawnParticipant(Source, 0, FVector(0.f, 0.f, 200.f))
 			|| !SpawnParticipant(Ally, 0, FVector(0.f, 200.f, 200.f))
@@ -248,8 +273,11 @@ public:
 		{
 			RelicMgr->SetActiveRelic(Relic);
 		}
-		HumanoidSet = LoadObject<ULyraAbilitySet>(nullptr, TEXT("/BreakawayCore/Characters/DA_BW_AbilitySet_Humanoid.DA_BW_AbilitySet_Humanoid"));
-		if (!Test->TestNotNull(TEXT("Humanoid ability set"), HumanoidSet)) return false;
+		if (!bRestrictionsOnly)
+		{
+			HumanoidSet = LoadObject<ULyraAbilitySet>(nullptr, TEXT("/BreakawayCore/Characters/DA_BW_AbilitySet_Humanoid.DA_BW_AbilitySet_Humanoid"));
+			if (!Test->TestNotNull(TEXT("Humanoid ability set"), HumanoidSet)) return false;
+		}
 		Started = FPlatformTime::Seconds();
 		return true;
 	}
@@ -290,6 +318,238 @@ public:
 		Source.ASC->ClearAllAbilities();
 		UBwayHeroStatsLibrary::ApplyHeroStatsFromDataAsset(Source.Pawn, CurrentHeroData);
 		return GrantAbilitySet(Source.ASC, HumanoidSet) && GrantAbilitySet(Source.ASC, HeroSet);
+	}
+
+	// Immediate authority eligibility only. No successful activation or world/timer
+	// tick is used here; the original effects test and owned-client gate remain separate.
+	TArray<FString> RestrictionFootprint() const
+	{
+		TArray<FString> Rows;
+		int32 Index = 0;
+		for (const FParticipant* P : {&Source, &Ally, &Enemy, &Assister})
+		{
+			const FString Prefix = FString::Printf(TEXT("P%d:"), Index++);
+			TArray<FGameplayAttribute> Attrs; P->ASC->GetAllAttributes(Attrs);
+			for (const auto& Attr : Attrs) Rows.Add(Prefix + FString::Printf(TEXT("attr:%s:%.17g:%.17g"),
+				*Attr.GetName(), double(P->ASC->GetNumericAttributeBase(Attr)), double(P->ASC->GetNumericAttribute(Attr))));
+			FGameplayTagContainer Tags; P->ASC->GetOwnedGameplayTags(Tags);
+			for (const auto& Tag : Tags) Rows.Add(Prefix + FString::Printf(TEXT("tag:%s:%d"), *Tag.ToString(), P->ASC->GetTagCount(Tag)));
+			for (const auto H : P->ASC->GetActiveEffects(FGameplayEffectQuery()))
+			{
+				const FActiveGameplayEffect* Effect = P->ASC->GetActiveGameplayEffect(H);
+				Rows.Add(Prefix + FString::Printf(TEXT("effect:%s:%s:%.17g:%.17g:%d"), *H.ToString(),
+					Effect ? *GetPathNameSafe(Effect->Spec.Def) : TEXT("missing"), Effect ? double(Effect->Spec.GetLevel()) : -1.,
+					Effect ? double(Effect->Spec.GetDuration()) : -1., Effect ? Effect->Spec.GetStackCount() : -1));
+			}
+			for (const auto& Spec : P->ASC->GetActivatableAbilities()) Rows.Add(Prefix + FString::Printf(
+				TEXT("grant:%s:%s:%d:%d:%d:%s:%s"), *Spec.Handle.ToString(), *GetPathNameSafe(Spec.Ability), Spec.Level,
+				Spec.IsActive(), Spec.InputPressed, *Spec.GetDynamicSpecSourceTags().ToStringSimple(), *GetPathNameSafe(Spec.SourceObject.Get())));
+			for (const FName Name : {TEXT("Kills"), TEXT("Deaths"), TEXT("Assists"), TEXT("ObjectiveScore"), TEXT("DamageDealt"),
+				TEXT("HealingDone"), TEXT("ForcedFumbles"), TEXT("Interceptions"), TEXT("DeathsInCurrentRound")})
+			{
+				const auto* Prop = FindFProperty<FIntProperty>(P->PS->GetClass(), Name);
+				Test->TestNotNull(TEXT("Restriction stat property"), Prop);
+				Rows.Add(Prefix + FString::Printf(TEXT("stat:%s:%d"), *Name.ToString(), Prop ? Prop->GetPropertyValue_InContainer(P->PS) : -1));
+			}
+			const auto* Gold = FindFProperty<FDoubleProperty>(P->PS->GetClass(), TEXT("MatchGoldEarned"));
+			Test->TestNotNull(TEXT("Restriction earned-gold property"), Gold);
+			Rows.Add(Prefix + FString::Printf(TEXT("gold:%.17g:carry:%d"), Gold ? Gold->GetPropertyValue_InContainer(P->PS) : -1., P->PS->bHasRelic));
+#if !UE_BUILD_SHIPPING
+			Rows.Add(Prefix + FString::Printf(TEXT("credit:%d:%d"), P->Pawn->GetCombatContributionCountForAudit(), P->Pawn->GetConsumedAssisterCountForAudit()));
+#endif
+			const FTransform Transform = P->Pawn->GetActorTransform();
+			const FQuat Rotation = Transform.GetRotation();
+			const FRotator Control = P->PC->GetControlRotation();
+			int32 VectorIndex = 0;
+			for (const FVector V : {Transform.GetLocation(), Transform.GetScale3D(), P->Move->Velocity, P->Move->PendingLaunchVelocity,
+				P->Move->GetCurrentAcceleration(), FVector(Control.Pitch, Control.Yaw, Control.Roll)})
+				Rows.Add(Prefix + FString::Printf(TEXT("vector:%d:%.17g:%.17g:%.17g"), VectorIndex++, V.X, V.Y, V.Z));
+			Rows.Add(Prefix + FString::Printf(TEXT("rotation:%.17g:%.17g:%.17g:%.17g:move:%d:%d:%.17g:%.17g:collision:%d"),
+				Rotation.X, Rotation.Y, Rotation.Z, Rotation.W, int32(P->Move->MovementMode), int32(P->Move->CustomMovementMode),
+				double(P->Move->MaxWalkSpeed), double(P->Move->MaxFlySpeed), int32(P->Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn))));
+		}
+		for (TActorIterator<AActor> It(World); It; ++It) if (IsValid(*It) && !It->IsActorBeingDestroyed())
+			Rows.Add(FString::Printf(TEXT("actor:%u:%s"), It->GetUniqueID(), *It->GetPathName()));
+		Rows.Sort();
+		return Rows;
+	}
+
+	TArray<FString> PrimaryNegativeOutcomes() const
+	{
+		TArray<FString> Outcomes;
+		for (const FString& Row : RestrictionFootprint())
+		{
+			// A successful swing may legitimately change source cooldown/spec state.
+			// Compare combat outcomes, not the rejection-only full footprint.
+			if (Row.Contains(TEXT(":attr:")) || Row.Contains(TEXT(":stat:")) || Row.Contains(TEXT(":gold:")) || Row.Contains(TEXT(":credit:"))
+				|| (!Row.StartsWith(TEXT("P0:")) && (Row.Contains(TEXT(":tag:")) || Row.Contains(TEXT(":effect:"))))) Outcomes.Add(Row);
+		}
+		FGameplayTagContainer SourceTags; Source.ASC->GetOwnedGameplayTags(SourceTags);
+		const auto StatusRoot = FGameplayTag::RequestGameplayTag(TEXT("State.Status"));
+		for (const auto& Tag : SourceTags) if (Tag.MatchesTag(StatusRoot) || Tag == TAG_Gameplay_DamageImmunity)
+			Outcomes.Add(FString::Printf(TEXT("sourceStatus:%s:%d"), *Tag.ToString(), Source.ASC->GetTagCount(Tag)));
+		Outcomes.Sort();
+		return Outcomes;
+	}
+
+	bool RestrictionReady(FGameplayAbilitySpecHandle Handle, const TCHAR* Context)
+	{
+		const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(Handle);
+		if (!Test->TestNotNull(Context, Spec) || !Test->TestFalse(TEXT("Restriction spec is inactive"), Spec->IsActive())) return false;
+		const UGameplayAbility* Ability = Spec->GetPrimaryInstance() ? Spec->GetPrimaryInstance() : Spec->Ability.Get();
+		FGameplayTagContainer Failure;
+		return Test->TestTrue(Context, Ability->CanActivateAbility(Handle, Source.ASC->AbilityActorInfo.Get(), nullptr, nullptr, &Failure))
+			&& Test->TestTrue(TEXT("Ready spec has no failure tags"), Failure.IsEmpty());
+	}
+
+	bool RestrictionRejected(FGameplayAbilitySpecHandle Handle, const TCHAR* StateName)
+	{
+		const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(Handle);
+		if (!Test->TestNotNull(TEXT("Same restricted authored spec"), Spec)) return false;
+		const UClass* AbilityClass = Spec->Ability->GetClass();
+		const auto Before = RestrictionFootprint();
+		int32 Failures = 0;
+		FGameplayTagContainer Failure;
+		const FDelegateHandle Observer = Source.ASC->AbilityFailedCallbacks.AddLambda(
+			[&](const UGameplayAbility* Failed, const FGameplayTagContainer& Reasons)
+			{
+				if (Failed && Failed->GetClass() == AbilityClass) { ++Failures; Failure.AppendTags(Reasons); }
+			});
+		const bool bActivated = Source.ASC->TryActivateAbility(Handle);
+		Source.ASC->AbilityFailedCallbacks.Remove(Observer);
+		const FGameplayTag Blocked = UAbilitySystemGlobals::Get().ActivateFailTagsBlockedTag;
+		bool bOk = Test->TestFalse(TEXT("Restricted production activation rejected"), bActivated);
+		bOk &= Test->TestEqual(TEXT("Exactly one production failure callback"), Failures, 1);
+		bOk &= Test->TestTrue(TEXT("Production failure is blocked-tag rejection"), Blocked.IsValid() && Failure.HasTagExact(Blocked));
+		bOk &= Test->TestTrue(TEXT("Rejected call leaves immediate fixture footprint unchanged"), Before == RestrictionFootprint());
+		UE_LOG(LogTemp, Display, TEXT("BwayAllKitRestrictions: Rejected state=%s class=%s handle=%s activated=%d failures=%d blocked=%d unchanged=%d"),
+			StateName, *AbilityClass->GetPathName(), *Handle.ToString(), bActivated, Failures, Failure.HasTagExact(Blocked), Before == RestrictionFootprint());
+		return bOk;
+	}
+
+	bool RestrictionCarryState(bool bCarried) const
+	{
+		const auto CarrierTag = FGameplayTag::RequestGameplayTag(TEXT("Gameplay.State.RelicCarrier"));
+		bool bOk = Test->TestTrue(TEXT("Production carrier pointer"), Relic->CurrentCarrier.Get() == (bCarried ? Source.Pawn : nullptr));
+		bOk &= Test->TestEqual(TEXT("Production carried/dropped state"), Relic->GetCurrentState(), bCarried ? ERelicState::Carried : ERelicState::Dropped);
+		bOk &= Test->TestEqual(TEXT("Production possession flag"), Source.PS->bHasRelic, bCarried);
+		bOk &= Test->TestEqual(TEXT("Production carrier tag count"), Source.ASC->GetTagCount(CarrierTag), bCarried ? 1 : 0);
+		bOk &= Test->TestEqual(TEXT("Production carrying tag count"), Source.ASC->GetTagCount(BwayGameplayTags::State_Relic_Carrying), bCarried ? 1 : 0);
+		bOk &= Test->TestTrue(TEXT("Production relic attachment"), Relic->GetAttachParentActor() == (bCarried ? Source.Pawn : nullptr));
+		return bOk;
+	}
+
+	bool RestrictionCarrierGrants(bool bCarried) const
+	{
+		TArray<FString> Actual, Expected;
+		const auto Signature = [](const UClass* Class, int32 Level, const FGameplayTagContainer& Tags)
+			{ return FString::Printf(TEXT("%s:%d:%s"), *GetPathNameSafe(Class), Level, *Tags.ToStringSimple()); };
+		for (const auto& Spec : Source.ASC->GetActivatableAbilities()) if (Spec.SourceObject.Get() == Relic)
+			Actual.Add(Signature(Spec.Ability->GetClass(), Spec.Level, Spec.GetDynamicSpecSourceTags()));
+		if (bCarried)
+		{
+			const auto* Loaded = FindFProperty<FObjectPropertyBase>(ARelicActor::StaticClass(), TEXT("LoadedRelicAbilitySet"));
+			const auto* GrantsProp = FindFProperty<FArrayProperty>(ULyraAbilitySet::StaticClass(), TEXT("GrantedGameplayAbilities"));
+			const auto* Set = Loaded ? Cast<ULyraAbilitySet>(Loaded->GetObjectPropertyValue_InContainer(Relic)) : nullptr;
+			if (!Test->TestNotNull(TEXT("Actual carrier set"), Set) || !Test->TestNotNull(TEXT("Authored carrier grants"), GrantsProp)) return false;
+			for (const auto& Grant : *GrantsProp->ContainerPtrToValuePtr<TArray<FLyraAbilitySet_GameplayAbility>>(Set))
+			{
+				if (!Test->TestNotNull(TEXT("Authored carrier grant class"), Grant.Ability.Get())) return false;
+				FGameplayTagContainer Tags; if (Grant.InputTag.IsValid()) Tags.AddTag(Grant.InputTag);
+				Expected.Add(Signature(Grant.Ability.Get(), Grant.AbilityLevel, Tags));
+			}
+			FGameplayTagContainer PassTags; PassTags.AddTag(FGameplayTag::RequestGameplayTag(TEXT("InputTag.Relic.Pass")));
+			Expected.Add(Signature(UBwayGameplayAbility_RelicPass::StaticClass(), 1, PassTags));
+		}
+		Actual.Sort(); Expected.Sort();
+		return Test->TestTrue(TEXT("Exact production Relic-sourced grants and input tags"), Actual == Expected);
+	}
+
+	bool FreshRestrictionRelic()
+	{
+		// Each hero gets one real pickup on a fresh isolated relic. No ticking or
+		// writes to production repick cooldown state are needed between heroes.
+		if (Relic) { if (Relic->CurrentCarrier) Relic->OnDropped(); Relic->Destroy(); }
+		FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		Relic = World->SpawnActor<ARelicActor>(ARelicActor::StaticClass(), FTransform(FVector(0.f, 0.f, 3000.f)), Params);
+		auto* Set = LoadObject<ULyraAbilitySet>(nullptr,
+			TEXT("/BreakawayCore/GameModes/BallMode/Abilities/BallHandlingAbilities/AS_BW_BallAbilities.AS_BW_BallAbilities"));
+		auto* Loaded = FindFProperty<FObjectPropertyBase>(ARelicActor::StaticClass(), TEXT("LoadedRelicAbilitySet"));
+		if (!Test->TestNotNull(TEXT("Fresh restriction relic"), Relic) || !Test->TestNotNull(TEXT("Authored carrier set"), Set)
+			|| !Test->TestNotNull(TEXT("Carrier set property"), Loaded)) return false;
+		EnsureBegunPlay(Relic); Loaded->SetObjectPropertyValue_InContainer(Relic, Set);
+		auto* Manager = GS->FindComponentByClass<UBwayRelicManagerComponent>();
+		if (!Test->TestNotNull(TEXT("Restriction relic manager"), Manager)) return false;
+		Manager->SetActiveRelic(Relic);
+		return true;
+	}
+
+	bool CheckAuthoredRestrictions()
+	{
+		struct FHero { const TCHAR* Path; const TCHAR* Families[5]; };
+		const FHero Heroes[] = {
+			{TEXT("/Hero_Spartacus/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus"),
+				{TEXT("BwayGameplayAbility_MeleePrimary"), TEXT("BwayGameplayAbility_ArgusSlide"), TEXT("BwayGameplayAbility_NoRetreat"), TEXT("BwayGameplayAbility_ForGlory"), TEXT("BwayGameplayAbility_Retribution")}},
+			{TEXT("/Hero_Alona/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona"),
+				{TEXT("BwayGameplayAbility_AlonaPrimary"), TEXT("BwayGameplayAbility_AlonaSunsGrace"), TEXT("BwayGameplayAbility_AlonaRadiance"), TEXT("BwayGameplayAbility_AlonaSunBurst"), TEXT("BwayGameplayAbility_AlonaBlessing")}},
+			{TEXT("/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_HeroData_Hexweaver.DA_BW_HeroData_Hexweaver"),
+				{TEXT("BwayGameplayAbility_KorrynPrimary"), TEXT("BwayGameplayAbility_KorrynFlock"), TEXT("BwayGameplayAbility_KorrynBurdenOfSin"), TEXT("BwayGameplayAbility_KorrynCircleOfSpite"), TEXT("BwayGameplayAbility_KorrynAuraOfSilence")}},
+			{TEXT("/Hero_Rawlins/Characters/Heroes/Gunslinger/DA_BW_HeroData_Gunslinger.DA_BW_HeroData_Gunslinger"),
+				{TEXT("BwayGameplayAbility_RawlinsPrimary"), TEXT("BwayGameplayAbility_RawlinsDoubleDown"), TEXT("BwayGameplayAbility_RawlinsPowerShot"), TEXT("BwayGameplayAbility_RawlinsSlideShot"), TEXT("BwayGameplayAbility_RawlinsBlazingBarrage")}}
+		};
+		const FName Inputs[] = {TEXT("InputTag.Ability.Primary"), TEXT("InputTag.Ability.Ability4"), TEXT("InputTag.Ability.Ability1"), TEXT("InputTag.Ability.Ability2"), TEXT("InputTag.Ability.Ability3")};
+		int32 Completed = 0;
+		for (const FHero& Hero : Heroes)
+		{
+			CurrentHeroData = LoadObject<UBwayHeroDataAsset>(nullptr, Hero.Path);
+			if (!Test->TestNotNull(TEXT("Authored hero data"), CurrentHeroData)
+				|| !Test->TestTrue(TEXT("Authored hero sets exist"), !CurrentHeroData->AbilitySets.IsEmpty()) || !FreshRestrictionRelic()) return false;
+			// HeroData owns the real grant path. Common abilities are outside this
+			// matrix; granting the Humanoid set would duplicate PlayerState's Gold set.
+			Source.Pawn->InitializeHeroData(CurrentHeroData);
+			ResetArena(); // Before restriction/snapshots only; never between rejection and recovery.
+			TSet<const UClass*> AttributeClasses;
+			for (const UAttributeSet* Attrs : Source.ASC->GetSpawnedAttributes())
+			{
+				if (!Test->TestTrue(TEXT("No duplicate attribute-set class"), Attrs && !AttributeClasses.Contains(Attrs->GetClass()))) return false;
+				AttributeClasses.Add(Attrs->GetClass());
+			}
+			bool bInjectedSilence = false;
+			ON_SCOPE_EXIT
+			{
+				if (bInjectedSilence) Source.ASC->RemoveLooseGameplayTag(BwayGameplayTags::State_Status_Silenced);
+				if (Relic && Relic->CurrentCarrier) Relic->OnDropped();
+			};
+			TArray<FGameplayAbilitySpecHandle> Handles;
+			for (int32 I = 0; I < 5; ++I)
+			{
+				const auto H = FindAbilityHandle(Source.ASC, Hero.Families[I]);
+				if (!Test->TestTrue(TEXT("Five distinct actual hero grants"), H.IsValid() && !Handles.Contains(H))) return false;
+				const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(H);
+				if (!Test->TestTrue(TEXT("Authored hero input tag"), Spec->GetDynamicSpecSourceTags().HasTagExact(FGameplayTag::RequestGameplayTag(Inputs[I])))
+					|| !RestrictionReady(H, TEXT("Clean authored CanActivate true"))) return false;
+				Handles.Add(H);
+			}
+			const auto Clean = RestrictionFootprint();
+			if (!Test->TestEqual(TEXT("Clean silence count"), Source.ASC->GetTagCount(BwayGameplayTags::State_Status_Silenced), 0)) return false;
+			Source.ASC->AddLooseGameplayTag(BwayGameplayTags::State_Status_Silenced); bInjectedSilence = true;
+			if (!Test->TestEqual(TEXT("Explicit silence fixture count"), Source.ASC->GetTagCount(BwayGameplayTags::State_Status_Silenced), 1)) return false;
+			for (const auto H : Handles) if (!RestrictionRejected(H, TEXT("silenced"))) return false;
+			Source.ASC->RemoveLooseGameplayTag(BwayGameplayTags::State_Status_Silenced); bInjectedSilence = false;
+			if (!Test->TestTrue(TEXT("Exact footprint restored by removing only fixture silence"), Clean == RestrictionFootprint())) return false;
+			for (const auto H : Handles) if (!RestrictionReady(H, TEXT("Same handle recovers after silence removal"))) return false;
+			Relic->OnPickedUp(Source.Pawn);
+			if (!RestrictionCarryState(true) || !RestrictionCarrierGrants(true)) return false;
+			for (const auto H : Handles) if (!RestrictionRejected(H, TEXT("carrier"))) return false;
+			if (!RestrictionCarryState(true) || !RestrictionCarrierGrants(true)) return false;
+			Relic->OnDropped();
+			if (!RestrictionCarryState(false) || !RestrictionCarrierGrants(false)
+				|| !Test->TestTrue(TEXT("Exact participant footprint restored after production drop"), Clean == RestrictionFootprint())) return false;
+			for (const auto H : Handles) if (!RestrictionReady(H, TEXT("Same handle recovers after production drop"))) return false;
+			Completed += Handles.Num();
+			UE_LOG(LogTemp, Display, TEXT("BwayAllKitRestrictions: HeroPASS hero=%s actions=5 rejected=10 recoveries=10 cleanup=1 scope=headless-authority-immediate"), Hero.Path);
+		}
+		return Test->TestEqual(TEXT("All authored actions checked"), Completed, 20);
 	}
 
 	void ResetArena(float SourceHP = 200.f, float EnemyHP = 500.f, float AllyHP = 200.f,
@@ -411,9 +671,831 @@ public:
 		PhaseElapsed = 0.f;
 	}
 
+	bool UpdateBlessingLifecycle()
+	{
+		if (FPlatformTime::Seconds() - Started > 20.)
+		{
+			Test->AddError(TEXT("Blessing lifecycle fixture timed out"));
+			return true;
+		}
+		if (!bPhaseInitialized)
+		{
+			if (!ConfigureHero(TEXT("/Hero_Alona/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona"),
+				TEXT("/Hero_Alona/Characters/Heroes/Alona/DA_BW_AbilitySet_Alona.DA_BW_AbilitySet_Alona"))) return true;
+			ResetArena(200.f, 100.f, 50.f, FVector(160.f, 100.f, 200.f), FVector(160.f, 0.f, 200.f));
+			Source.ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), Source.ASC->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute()));
+			// Real duplicate component overlaps must still produce one initial heal.
+			USphereComponent* ExtraOverlap = NewObject<USphereComponent>(Ally.Pawn);
+			Ally.Pawn->AddInstanceComponent(ExtraOverlap);
+			ExtraOverlap->SetupAttachment(Ally.Pawn->GetRootComponent());
+			ExtraOverlap->SetSphereRadius(30.f);
+			ExtraOverlap->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			ExtraOverlap->SetCollisionObjectType(ECC_Pawn);
+			ExtraOverlap->SetCollisionResponseToAllChannels(ECR_Ignore);
+			ExtraOverlap->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+			ExtraOverlap->RegisterComponent();
+			TArray<FOverlapResult> OverlapControl;
+			World->OverlapMultiByChannel(OverlapControl, Ally.Pawn->GetActorLocation(), FQuat::Identity,
+				ECC_Pawn, FCollisionShape::MakeSphere(100.f));
+			int32 AllyOverlapCount = 0;
+			for (const auto& Hit : OverlapControl) if (Hit.GetActor() == Ally.Pawn) ++AllyOverlapCount;
+			if (!Test->TestTrue(TEXT("Duplicate-component overlap control is exercised"), AllyOverlapCount >= 2)) return true;
+			BlessingHealObserver = Ally.ASC->OnGameplayEffectAppliedDelegateToSelf.AddLambda(
+				[this](UAbilitySystemComponent*, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle)
+				{
+					if (Spec.GetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Heal, false, 0.f) <= 0.f) return;
+					++BlessingHealApplications;
+					const auto& Context = Spec.GetEffectContext();
+					bBlessingAttributionValid &= Context.GetOriginalInstigator() == Source.PS
+						&& Context.GetOriginalInstigatorAbilitySystemComponent() == Source.ASC;
+					AActor* Causer = Context.GetEffectCauser();
+					bBlessingAttributionValid &= Causer && Causer->GetClass()->GetName().Contains(TEXT("BlessingZone"));
+				});
+			const auto Handle = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_AlonaBlessing"));
+			if (!Test->TestTrue(TEXT("Production Blessing cast accepted"), Source.ASC->TryActivateAbility(Handle))) return true;
+			EnsureZonesAndProjectilesBegunPlay();
+			int32 ZoneCount = 0;
+			for (TActorIterator<AActor> It(World); It; ++It)
+			{
+				if (It->GetClass()->GetName().Contains(TEXT("BlessingZone")) && !It->IsActorBeingDestroyed())
+				{
+					BlessingZone = *It;
+					++ZoneCount;
+				}
+			}
+			if (!Test->TestEqual(TEXT("Exactly one production Blessing zone"), ZoneCount, 1)) return true;
+			Test->TestTrue(TEXT("Zone owned by persistent source player"), BlessingZone->GetOwner() == Source.PS);
+			BlessingDuration = BlessingZone->GetLifeSpan();
+			if (!Test->TestTrue(TEXT("Bounded authored Blessing duration"), BlessingDuration > 2.2f && BlessingDuration < 10.f)) return true;
+			Test->TestTrue(TEXT("Initial ally heal is exactly70"), FMath::IsNearlyEqual(Health(Ally), 120.f, .1f));
+			Test->TestEqual(TEXT("Initial heal applied once"), BlessingHealApplications, 1);
+			Test->TestEqual(TEXT("Enemy inside circle is not healed"), Health(Enemy), 100.f);
+			BlessingLastTick = FPlatformTime::Seconds();
+			bPhaseInitialized = true;
+			return false;
+		}
+		const double Now = FPlatformTime::Seconds();
+		const float Delta = FMath::Clamp(float(Now - BlessingLastTick), 0.f, .1f);
+		BlessingLastTick = Now;
+		// Only zone/lifecycle timers are needed here; reset may replace fixture pawns.
+		PhaseElapsed += Delta;
+		World->GetTimerManager().Tick(Delta);
+		if (!bSubCheckDone && PhaseElapsed >= 1.1f)
+		{
+			Test->TestTrue(TEXT("First periodic ally heal is exactly35"), FMath::IsNearlyEqual(Health(Ally), 155.f, .1f));
+			Test->TestEqual(TEXT("Initial plus one periodic heal"), BlessingHealApplications, 2);
+			if (!Test->TestTrue(TEXT("Zone remains before lifecycle trigger"), BlessingZone.IsValid() && !BlessingZone->IsActorBeingDestroyed())) return true;
+			if (BlessingCase == 0)
+			{
+				const float RemainingBeforeDeath = BlessingZone->GetLifeSpan();
+				ULyraHealthComponent* SourceHealth = ULyraHealthComponent::FindHealthComponent(Source.Pawn);
+				if (!Test->TestNotNull(TEXT("Source health component"), SourceHealth)) return true;
+				SourceHealth->DamageSelfDestruct();
+				Test->TestEqual(TEXT("Production self-destruct depleted source health"), Health(Source), 0.f);
+				// Exercise the real pawn-extension teardown before removing the corpse.
+				ULyraPawnExtensionComponent::FindPawnExtensionComponent(Source.Pawn)->UninitializeAbilitySystem();
+				Source.PC->UnPossess();
+				Source.Pawn->Destroy();
+				Source.Pawn = nullptr;
+				Source.Move = nullptr;
+				Test->TestNull(TEXT("Dead source ASC has no avatar"), Source.ASC->GetAvatarActor());
+				Test->TestTrue(TEXT("Source death and pawn removal preserve zone"), BlessingZone.IsValid() && !BlessingZone->IsActorBeingDestroyed());
+				if (BlessingZone.IsValid()) Test->TestTrue(TEXT("Death preserves original expiry deadline"),
+					FMath::IsNearlyEqual(BlessingZone->GetLifeSpan(), RemainingBeforeDeath, .001f));
+			}
+			else
+			{
+				if (BlessingCase == 1) GS->GetRoundManagement()->ResetRoundState();
+				else if (BlessingCase == 2) GS->GetRoundManagement()->EndRound(0, EBwayWinCondition::GoalScored);
+				else if (BlessingCase == 3) BlessingZone->Destroy();
+				else GS->GetRoundManagement()->ResetForNextMatch();
+				Test->TestTrue(TEXT("Lifecycle trigger removes zone immediately"), !BlessingZone.IsValid() || BlessingZone->IsActorBeingDestroyed());
+			}
+			bSubCheckDone = true;
+		}
+		if (BlessingCase == 0 && PhaseElapsed >= 2.1f && !bBlessingPostDeathChecked)
+		{
+			Test->TestTrue(TEXT("Healing continues after source pawn teardown"), FMath::IsNearlyEqual(Health(Ally), 190.f, .1f));
+			Test->TestEqual(TEXT("Post-death heal applied once"), BlessingHealApplications, 3);
+			bBlessingPostDeathChecked = true;
+		}
+		if (BlessingCase == 0 && PhaseElapsed < BlessingDuration - .01f)
+		{
+			if (!Test->TestTrue(TEXT("Zone survives until original deadline"), BlessingZone.IsValid() && !BlessingZone->IsActorBeingDestroyed())) return true;
+		}
+		if (PhaseElapsed < BlessingDuration + .3f) return false;
+		const int32 ExpectedHeals = BlessingCase == 0 ? FMath::CeilToInt(BlessingDuration) : 2;
+		Test->TestEqual(TEXT("No duplicate or post-cleanup healing applications"), BlessingHealApplications, ExpectedHeals);
+		if (BlessingCase == 0 || BlessingCase == 3)
+		{
+			Test->TestTrue(TEXT("Exact remaining heal budget"), FMath::IsNearlyEqual(Health(Ally), 120.f + (ExpectedHeals - 1) * 35.f, .1f));
+			Test->TestEqual(TEXT("Enemy never healed"), Health(Enemy), 100.f);
+		}
+		Test->TestTrue(TEXT("Source player attribution survives teardown"), bBlessingAttributionValid);
+		Test->TestTrue(TEXT("Original expiry/cleanup leaves no zone"), !BlessingZone.IsValid() || BlessingZone->IsActorBeingDestroyed());
+		Test->AddInfo(FString::Printf(TEXT("Blessing lifecycle case=%d heals=%d elapsed=%.3f duration=%.3f scope=isolated-authority-timers"), BlessingCase, BlessingHealApplications, PhaseElapsed, BlessingDuration));
+		return true;
+	}
+
+	bool ReviewHero(int32 Hero)
+	{
+		static const TCHAR* Data[] = {
+			TEXT("/Hero_Spartacus/Characters/Heroes/Argus/DA_BW_HeroData_Argus.DA_BW_HeroData_Argus"),
+			TEXT("/Hero_Alona/Characters/Heroes/Alona/DA_BW_HeroData_Alona.DA_BW_HeroData_Alona"),
+			TEXT("/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_HeroData_Hexweaver.DA_BW_HeroData_Hexweaver"),
+			TEXT("/Hero_Rawlins/Characters/Heroes/Gunslinger/DA_BW_HeroData_Gunslinger.DA_BW_HeroData_Gunslinger")};
+		static const TCHAR* Sets[] = {
+			TEXT("/Hero_Spartacus/Characters/Heroes/Argus/DA_BW_AbilitySet_Argus.DA_BW_AbilitySet_Argus"),
+			TEXT("/Hero_Alona/Characters/Heroes/Alona/DA_BW_AbilitySet_Alona.DA_BW_AbilitySet_Alona"),
+			TEXT("/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_AbilitySet_Hexweaver.DA_BW_AbilitySet_Hexweaver"),
+			TEXT("/Hero_Rawlins/Characters/Heroes/Gunslinger/DA_BW_AbilitySet_Gunslinger.DA_BW_AbilitySet_Gunslinger")};
+		return Hero >= 0 && Hero < 4 && ConfigureHero(Data[Hero], Sets[Hero]);
+	}
+
+	TArray<AActor*> ReviewActors(const TCHAR* ClassFragment) const
+	{
+		TArray<AActor*> Result;
+		for (TActorIterator<AActor> It(World); It; ++It)
+			if (IsValid(*It) && !It->IsActorBeingDestroyed() && It->GetClass()->GetName().Contains(ClassFragment)) Result.Add(*It);
+		return Result;
+	}
+
+	TArray<FActiveGameplayEffectHandle> ReviewEffectsFrom(AActor* EffectSource) const
+	{
+		TArray<FActiveGameplayEffectHandle> Result;
+		for (const auto H : Enemy.ASC->GetActiveEffects(FGameplayEffectQuery()))
+		{
+			const FActiveGameplayEffect* Effect = Enemy.ASC->GetActiveGameplayEffect(H);
+			if (Effect && Effect->Spec.GetEffectContext().GetSourceObject() == EffectSource) Result.Add(H);
+		}
+		return Result;
+	}
+
+	bool ReviewHandlesGone(const TArray<FActiveGameplayEffectHandle>& Handles)
+	{
+		bool bOk = true;
+		for (const auto H : Handles) bOk &= Test->TestNull(TEXT("Exact owned effect handle removed before fixture purge"), Enemy.ASC->GetActiveGameplayEffect(H));
+		return bOk;
+	}
+
+	void ReviewStep()
+	{
+		// This isolated fixture manually advances timers/projectiles. GAS duration
+		// callbacks independently read UWorld::TimeSeconds; advance that same clock.
+		// One latent update per engine frame avoids TimerManager's per-frame guard.
+		constexpr float Delta = .025f;
+		if (World->GetTimerManager().HasBeenTickedThisFrame()) return;
+		World->TimeSeconds += Delta;
+		World->UnpausedTimeSeconds += Delta;
+		TickWorldStep(Delta);
+	}
+
+	bool ReviewKillSource(bool bDestroyPawn)
+	{
+		ULyraHealthComponent* HC = ULyraHealthComponent::FindHealthComponent(Source.Pawn);
+		if (!Test->TestNotNull(TEXT("Production source health component"), HC)) return false;
+		HC->DamageSelfDestruct();
+		if (!Test->TestEqual(TEXT("Production self-destruct depletes source health"), Health(Source), 0.f)) return false;
+		if (bDestroyPawn)
+		{
+			ULyraPawnExtensionComponent::FindPawnExtensionComponent(Source.Pawn)->UninitializeAbilitySystem();
+			Source.PC->UnPossess();
+			Source.Pawn->Destroy();
+			Source.Pawn = nullptr;
+			Source.Move = nullptr;
+			Test->TestNull(TEXT("Source ASC avatar removed by production pawn extension"), Source.ASC->GetAvatarActor());
+		}
+		return true;
+	}
+
+	void ReviewRoundTrigger(int32 Trigger)
+	{
+		if (Trigger == 0) GS->GetRoundManagement()->ResetRoundState();
+		else if (Trigger == 1) GS->GetRoundManagement()->EndRound(0, EBwayWinCondition::GoalScored);
+		else GS->GetRoundManagement()->ResetForNextMatch();
+	}
+
+	bool UpdateCircleLifecycle()
+	{
+		// 0 retained dead caster; 1 removed caster; 2 target teardown;
+		// 3 direct reset; 4 round end; 5 rematch reset. Each owns a fresh world.
+		if (!bPhaseInitialized)
+		{
+			if (!ReviewHero(2)) return true;
+			ResetArena(200.f, 500.f, 200.f, ReviewCase <= 1 ? FVector(-2000.f, 0.f, 200.f) : FVector(160.f, 0.f, 200.f));
+			const auto H = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynCircleOfSpite"));
+			if (!Test->TestTrue(TEXT("Real Circle activation accepted"), Source.ASC->TryActivateAbility(H))) return true;
+			EnsureZonesAndProjectilesBegunPlay();
+			const auto Zones = ReviewActors(TEXT("BwayKorrynSpiteZone"));
+			if (!Test->TestEqual(TEXT("Exactly one production Circle"), Zones.Num(), 1)) return true;
+			ReviewActor = Zones[0];
+			ReviewDuration = ReviewActor->GetLifeSpan();
+			Test->TestTrue(TEXT("Circle duration remains authored five seconds"), FMath::IsNearlyEqual(ReviewDuration, 5.f, .01f));
+			Test->TestTrue(TEXT("Circle preserves production pawn ownership"), ReviewActor->GetOwner() == Source.Pawn);
+			if (ReviewCase <= 1)
+			{
+				Test->TestFalse(TEXT("Outside target starts unaffected"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed));
+			}
+			else
+			{
+				ReviewEffectHandles = ReviewEffectsFrom(ReviewActor.Get());
+				if (!Test->TestEqual(TEXT("Circle owns exactly slow and amp effects"), ReviewEffectHandles.Num(), 2)) return true;
+			}
+			bPhaseInitialized = true;
+			return false;
+		}
+		ReviewStep();
+		if (!bSubCheckDone && PhaseElapsed >= .25f)
+		{
+			if (!Test->TestTrue(TEXT("Circle alive before trigger"), ReviewActor.IsValid() && !ReviewActor->IsActorBeingDestroyed())) return true;
+			const float Remaining = ReviewActor->GetLifeSpan();
+			if (ReviewCase <= 1)
+			{
+				if (!ReviewKillSource(ReviewCase == 1)) return true;
+				if (!Test->TestTrue(TEXT("Caster death preserves Circle"), ReviewActor.IsValid() && !ReviewActor->IsActorBeingDestroyed())) return true;
+				Test->TestTrue(TEXT("Caster death does not restart original lifespan"), FMath::IsNearlyEqual(Remaining, ReviewActor->GetLifeSpan(), .001f));
+				Enemy.Pawn->SetActorLocation(FVector(160.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+				Enemy.Pawn->UpdateOverlaps();
+				ReviewEffectHandles = ReviewEffectsFrom(ReviewActor.Get());
+				Test->TestEqual(TEXT("Post-death entrant receives exactly two owned effects"), ReviewEffectHandles.Num(), 2);
+				Test->TestTrue(TEXT("Post-death Circle slows exact15 percent"), FMath::IsNearlyEqual(MoveMult(Enemy), .85f, .001f));
+				Test->TestTrue(TEXT("Post-death Circle amplifies exact35 percent"), FMath::IsNearlyEqual(DamageMult(Enemy), 1.35f, .001f));
+				for (const auto EffectH : ReviewEffectHandles)
+				{
+					const auto* Effect = Enemy.ASC->GetActiveGameplayEffect(EffectH);
+					if (Effect) Test->TestTrue(TEXT("Circle context retains original player and ASC"),
+						Effect->Spec.GetEffectContext().GetOriginalInstigator() == Source.PS && Effect->Spec.GetEffectContext().GetOriginalInstigatorAbilitySystemComponent() == Source.ASC);
+				}
+			}
+			else if (ReviewCase == 2)
+			{
+				ULyraPawnExtensionComponent::FindPawnExtensionComponent(Enemy.Pawn)->UninitializeAbilitySystem();
+				Enemy.PC->UnPossess();
+				Enemy.Pawn->Destroy(); Enemy.Pawn = nullptr; Enemy.Move = nullptr;
+				ReviewActor->Destroy();
+				ReviewHandlesGone(ReviewEffectHandles);
+			}
+			else ReviewRoundTrigger(ReviewCase - 3);
+			bSubCheckDone = true;
+		}
+		if (ReviewCase <= 1 && PhaseElapsed >= ReviewDuration - .1f && PhaseElapsed < ReviewDuration - .04f)
+		{
+			bReviewDeadlineSample = true;
+			Test->TestTrue(TEXT("Circle and owned effects persist immediately before original deadline"), ReviewActor.IsValid()
+				&& !ReviewActor->IsActorBeingDestroyed() && ReviewEffectsFrom(ReviewActor.Get()).Num() == 2);
+		}
+		if (PhaseElapsed < (ReviewCase <= 1 ? ReviewDuration + .15f : .5f)) return false;
+		if (ReviewCase <= 1) Test->TestTrue(TEXT("Observed pre-expiry boundary"), bReviewDeadlineSample);
+		Test->TestTrue(TEXT("Circle removed on original expiry or production transition"), !ReviewActor.IsValid() || ReviewActor->IsActorBeingDestroyed());
+		ReviewHandlesGone(ReviewEffectHandles);
+		Test->TestTrue(TEXT("Target persistent ASC speed restored"), FMath::IsNearlyEqual(MoveMult(Enemy), 1.f, .001f));
+		Test->TestTrue(TEXT("Target persistent ASC amplification restored"), FMath::IsNearlyEqual(DamageMult(Enemy), 1.f, .001f));
+		Test->TestFalse(TEXT("No stale Circle slow tag"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed));
+		Test->TestFalse(TEXT("No stale Circle amp tag"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_DamageAmplified));
+		Test->AddInfo(FString::Printf(TEXT("CircleLifecycle case=%d duration=%.3f elapsed=%.3f scope=authority-lifecycle-no-respawn"), ReviewCase, ReviewDuration, PhaseElapsed));
+		return true;
+	}
+
+	bool UpdateProjectileLifecycle()
+	{
+		// Three real primaries x seven cases: retained/deleted dead-source hit,
+		// deleted-source expiry, reset/end/rematch, and actual lethal credit.
+		const int32 Hero = ReviewCase / 7 + 1;
+		const int32 Scenario = ReviewCase % 7;
+		if (!bPhaseInitialized)
+		{
+			if (!ReviewHero(Hero)) return true;
+			ResetArena(200.f, Scenario == 6 ? 5.f : 500.f, 200.f, FVector(1200.f, 0.f, 200.f), FVector(-2000.f, 2000.f, 200.f));
+			Assister.Pawn->SetActorLocation(FVector(-2000.f, -2000.f, 200.f));
+			static const TCHAR* Classes[] = {TEXT("BwayGameplayAbility_AlonaPrimary"), TEXT("BwayGameplayAbility_KorrynPrimary"), TEXT("BwayGameplayAbility_RawlinsPrimary")};
+			ActiveHandle = FindAbilityHandle(Source.ASC, Classes[Hero - 1]);
+			ReviewEffectObserver = Enemy.ASC->OnGameplayEffectAppliedDelegateToSelf.AddLambda(
+				[this](UAbilitySystemComponent*, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle)
+				{
+					if (Spec.GetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, false, 0.f) <= 0.f) return;
+					++ReviewDamageEffects;
+					const auto& Context = Spec.GetEffectContext();
+					bReviewContextValid &= Context.GetOriginalInstigator() == Source.PS && Context.GetOriginalInstigatorAbilitySystemComponent() == Source.ASC
+						&& Context.GetEffectCauser() == ReviewActor.Get();
+				});
+			if (!Test->TestTrue(TEXT("Real primary activates before shooter death"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			EnsureZonesAndProjectilesBegunPlay();
+			TArray<AActor*> Projectiles;
+			for (TActorIterator<ABwayHeroProjectileBase> It(World); It; ++It) if (IsValid(*It) && !It->IsActorBeingDestroyed()) Projectiles.Add(*It);
+			if (!Test->TestEqual(TEXT("Exactly one already-fired projectile before timer advancement"), Projectiles.Num(), 1)) return true;
+			ReviewActor = Projectiles[0];
+			ReviewDuration = ReviewActor->GetLifeSpan();
+			if (!Test->TestTrue(TEXT("Projectile has bounded authored lifespan"), ReviewDuration > .1f && ReviewDuration < 10.f)) return true;
+			if (!ReviewKillSource(Scenario != 0)) return true;
+			Test->TestTrue(TEXT("Already-fired projectile survives source death"), ReviewActor.IsValid() && !ReviewActor->IsActorBeingDestroyed());
+			Test->TestTrue(TEXT("Death preserves projectile original expiry"), FMath::IsNearlyEqual(ReviewDuration, ReviewActor->GetLifeSpan(), .001f));
+			// Rawlins' delayed second shot must be cancelled through actual teardown;
+			// retained-corpse case uses real GAS cancel because this isolated fixture
+			// has no authored automatic death-ability grant.
+			if (Scenario == 0) Source.ASC->CancelAbilityHandle(ActiveHandle);
+			if (Scenario <= 1 || Scenario == 6)
+			{
+				Enemy.Pawn->SetActorLocation(FVector(160.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+			}
+			else Enemy.Pawn->SetActorLocation(FVector(-2000.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+			if (Scenario >= 3 && Scenario <= 5) ReviewRoundTrigger(Scenario - 3);
+			bPhaseInitialized = true;
+			return false;
+		}
+		ReviewStep();
+		if ((Scenario <= 1 || Scenario == 6) && !bSubCheckDone && ReviewDamageEffects > 0)
+		{
+			static const float ExpectedDamage[] = {38.f, 34.f, 19.f};
+			ReviewHitHealth = Health(Enemy);
+			Test->TestTrue(TEXT("Exactly one original projectile deals expected damage"), FMath::IsNearlyEqual(ReviewHitHealth, Scenario == 6 ? 0.f : 500.f - ExpectedDamage[Hero - 1], .05f));
+			if (Scenario != 6) Test->TestEqual(TEXT("Projectile creates exactly one credit contribution"), Enemy.Pawn->GetCombatContributionCountForAudit(), 1);
+			Test->TestTrue(TEXT("Original persistent source context used after death"), bReviewContextValid);
+			Test->TestEqual(TEXT("One damage application from the fired projectile"), ReviewDamageEffects, 1);
+			if (Scenario != 6) Test->TestTrue(TEXT("Only Korryn retains its independent armor shred"), FMath::IsNearlyEqual(Armor(Enemy), Hero == 2 ? -2.f : 0.f, .001f));
+			if (Scenario == 6)
+			{
+				ULyraHealthComponent* TargetHealth = ULyraHealthComponent::FindHealthComponent(Enemy.Pawn);
+				if (!Test->TestNotNull(TEXT("Lethal target health component"), TargetHealth)) return true;
+				// Existing standalone credit fixture's production death route. This
+				// supplies controller ownership, not a fabricated contribution.
+				Enemy.PC->PlayerState = Enemy.PS;
+				if (!TargetHealth->IsDeadOrDying()) TargetHealth->StartDeath();
+				Enemy.PC->PlayerState = nullptr;
+				Test->TestEqual(TEXT("Post-mortem projectile credits original dead shooter"), Source.PS->GetKills(), 1);
+				Test->TestEqual(TEXT("Post-mortem projectile records target death"), Enemy.PS->GetDeaths(), 1);
+				Test->TestEqual(TEXT("Lethal projectile contribution consumed exactly once"), Enemy.Pawn->GetCombatContributionCountForAudit(), 0);
+			}
+			bSubCheckDone = true;
+		}
+		if (Scenario == 2 && PhaseElapsed >= ReviewDuration - .1f && PhaseElapsed < ReviewDuration - .04f)
+		{
+			bReviewDeadlineSample = true;
+			Test->TestTrue(TEXT("Missed projectile remains immediately before original expiry"), ReviewActor.IsValid() && !ReviewActor->IsActorBeingDestroyed());
+		}
+		if (PhaseElapsed < (Scenario == 2 ? ReviewDuration + .15f : .5f)) return false;
+		if (Scenario <= 1 || Scenario == 6)
+		{
+			Test->TestTrue(TEXT("Post-mortem projectile actually hit through production collision"), bSubCheckDone);
+			Test->TestTrue(TEXT("No delayed second hit after teardown/cancel"), FMath::IsNearlyEqual(Health(Enemy), ReviewHitHealth, .001f));
+			Test->TestEqual(TEXT("No extra delayed damage applications"), ReviewDamageEffects, 1);
+		}
+		else
+		{
+			Test->TestEqual(TEXT("Miss/transition causes no target damage"), Health(Enemy), 500.f);
+			Test->TestEqual(TEXT("Miss/transition creates no contribution"), Enemy.Pawn->GetCombatContributionCountForAudit(), 0);
+			Test->TestEqual(TEXT("Miss/transition creates no damage application"), ReviewDamageEffects, 0);
+		}
+		if (Scenario == 2) Test->TestTrue(TEXT("Observed projectile pre-expiry boundary"), bReviewDeadlineSample);
+		Test->TestEqual(TEXT("Dead source receives no life-leech healing"), Health(Source), 0.f);
+		Test->TestTrue(TEXT("Projectile removed on hit, original expiry or transition"), !ReviewActor.IsValid() || ReviewActor->IsActorBeingDestroyed());
+		int32 LiveProjectiles = 0;
+		for (TActorIterator<ABwayHeroProjectileBase> It(World); It; ++It) if (IsValid(*It) && !It->IsActorBeingDestroyed()) ++LiveProjectiles;
+		Test->TestEqual(TEXT("No stale or delayed-shot projectile"), LiveProjectiles, 0);
+		Test->AddInfo(FString::Printf(TEXT("ProjectileLifecycle hero=%d scenario=%d elapsed=%.3f scope=authority-real-projectile-no-owner"), Hero, Scenario, PhaseElapsed));
+		return true;
+	}
+
+	static const TCHAR* ReviewActionClass(int32 Action)
+	{
+		static const TCHAR* Classes[] = {
+			TEXT("BwayGameplayAbility_MeleePrimary"), TEXT("BwayGameplayAbility_ArgusSlide"), TEXT("BwayGameplayAbility_NoRetreat"), TEXT("BwayGameplayAbility_ForGlory"), TEXT("BwayGameplayAbility_Retribution"),
+			TEXT("BwayGameplayAbility_AlonaPrimary"), TEXT("BwayGameplayAbility_AlonaSunsGrace"), TEXT("BwayGameplayAbility_AlonaRadiance"), TEXT("BwayGameplayAbility_AlonaSunBurst"), TEXT("BwayGameplayAbility_AlonaBlessing"),
+			TEXT("BwayGameplayAbility_KorrynPrimary"), TEXT("BwayGameplayAbility_KorrynFlock"), TEXT("BwayGameplayAbility_KorrynBurdenOfSin"), TEXT("BwayGameplayAbility_KorrynCircleOfSpite"), TEXT("BwayGameplayAbility_KorrynAuraOfSilence"),
+			TEXT("BwayGameplayAbility_RawlinsPrimary"), TEXT("BwayGameplayAbility_RawlinsDoubleDown"), TEXT("BwayGameplayAbility_RawlinsPowerShot"), TEXT("BwayGameplayAbility_RawlinsSlideShot"), TEXT("BwayGameplayAbility_RawlinsBlazingBarrage")};
+		return Classes[Action];
+	}
+
+	bool ReviewEnemyStrike()
+	{
+		Enemy.Pawn->SetActorLocationAndRotation(Source.Pawn->GetActorLocation() - FVector(160.f, 0.f, 0.f), FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
+		Enemy.PC->SetControlRotation(FRotator::ZeroRotator);
+		return Test->TestTrue(TEXT("Real opposing primary strike accepted"), Enemy.ASC->TryActivateAbility(ReviewStrikeHandle));
+	}
+
+	bool ReviewRadianceParameters()
+	{
+		const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+		const auto* Soft = Spec && Spec->Ability ? FindFProperty<FSoftObjectProperty>(Spec->Ability->GetClass(), TEXT("KitConfig")) : nullptr;
+		UObject* Config = Soft ? Soft->GetPropertyValue_InContainer(Spec->Ability).LoadSynchronous() : nullptr;
+		if (!Test->TestNotNull(TEXT("Actual Radiance grant's loaded kit config"), Config)) return false;
+		const auto Read = [&](const TCHAR* Name, float& Out)
+		{
+			const auto* Prop = FindFProperty<FFloatProperty>(Config->GetClass(), Name);
+			if (!Test->TestNotNull(Name, Prop)) return false;
+			Out = Prop->GetPropertyValue_InContainer(Config);
+			return FMath::IsFinite(Out);
+		};
+		float Base = 0.f, Divisor = 0.f, Cap = 0.f, Interval = 0.f;
+		if (!Read(TEXT("RadianceHealPerTick"), Base) || !Read(TEXT("RadianceStrengthDivisor"), Divisor)
+			|| !Read(TEXT("RadianceMaxHealMultiplier"), Cap) || !Read(TEXT("RadianceActiveDuration"), ReviewDuration)
+			|| !Read(TEXT("RadianceHealTickInterval"), Interval)) return false;
+		if (!Test->TestTrue(TEXT("Radiance authored schedule is finite and bounded"), Divisor > 0.f && Cap > 0.f && Interval > 0.f && ReviewDuration >= Interval && ReviewDuration < 10.f)) return false;
+		ReviewExpectedHeal = Base * FMath::Clamp(Source.ASC->GetNumericAttribute(UBwayHeroAttributeSet::GetAttackStrengthAttribute()) / Divisor, 0.f, Cap);
+		ReviewExpectedHealCount = FMath::FloorToInt(ReviewDuration / Interval + KINDA_SMALL_NUMBER);
+		return Test->TestTrue(TEXT("Radiance independent expected heal is positive"), ReviewExpectedHeal > 0.f && ReviewExpectedHealCount > 0);
+	}
+
+	bool UpdateTargeting()
+	{
+		const int32 Action = ReviewCase / 4;
+		const int32 Variant = ReviewCase % 4; // enemy positive, friendly, miss, raw immunity
+		const bool bMovement = Action == 1 || Action == 6 || Action == 11 || Action == 16;
+		const bool bHealing = Action == 7 || Action == 9;
+		if ((bMovement && Variant != 0) || (bHealing && Variant == 3))
+		{
+			Test->AddInfo(FString::Printf(TEXT("All20Applicability action=%d variant=%d result=NA reason=%s"), Action, Variant,
+				bMovement ? TEXT("self-movement; real protection covered by variant0") : TEXT("healing has no damage-immunity rejection requirement")));
+			return true;
+		}
+		if (!bPhaseInitialized)
+		{
+			if (!ReviewHero(Action / 5)) return true;
+			const FVector Far(-5000.f, 3000.f, 200.f);
+			const bool bAllyInLane = bHealing ? Variant == 0 : Variant == 1;
+			const bool bEnemyInLane = bHealing ? Variant == 1 : Variant == 0 || Variant == 3;
+			ResetArena(200.f, 500.f, 100.f, bEnemyInLane ? FVector(160.f, 0.f, 200.f) : Far,
+				bAllyInLane ? FVector(160.f, 0.f, 200.f) : Far + FVector(0.f, 1000.f, 0.f));
+			Assister.Pawn->SetActorLocation(Far + FVector(0.f, 2000.f, 0.f));
+			Test->TestTrue(TEXT("Targeting control has distinct enemy and friendly teams"), !GS->AreOnSameTeam(Source.Pawn, Enemy.Pawn) && GS->AreOnSameTeam(Source.Pawn, Ally.Pawn));
+			ActiveHandle = FindAbilityHandle(Source.ASC, ReviewActionClass(Action));
+			if (!Test->TestTrue(TEXT("Requested production action grant exists"), ActiveHandle.IsValid())) return true;
+			if (Action == 7 && !ReviewRadianceParameters()) return true;
+			if (bMovement)
+			{
+				Source.ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetArmorAttribute(), 0.f);
+				const auto* Set = LoadObject<ULyraAbilitySet>(nullptr, TEXT("/Hero_Spartacus/Characters/Heroes/Argus/DA_BW_AbilitySet_Argus.DA_BW_AbilitySet_Argus"));
+				if (!Test->TestNotNull(TEXT("Opposing strike authored set"), Set) || !GrantAbilitySet(Enemy.ASC, Set)) return true;
+				Enemy.ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetAttackStrengthAttribute(), 50.f);
+				Enemy.ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetLifeLeechAttribute(), 0.f);
+				ReviewStrikeHandle = FindAbilityHandle(Enemy.ASC, TEXT("BwayGameplayAbility_MeleePrimary"));
+				if (!ReviewEnemyStrike()) return true;
+				if (!Test->TestTrue(TEXT("Vulnerable lane actually takes30 damage before window"), FMath::IsNearlyEqual(Health(Source), 170.f, .05f))) return true;
+				Source.ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), 200.f);
+			}
+			if (Variant == 3) Enemy.ASC->AddLooseGameplayTag(TAG_Gameplay_DamageImmunity);
+			ReviewOutcomes = PrimaryNegativeOutcomes();
+			if (!Test->TestTrue(TEXT("Real targeting action accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			EnsureZonesAndProjectilesBegunPlay();
+			if (bMovement)
+			{
+				if (!Test->TestTrue(TEXT("Actual ability window grants damage immunity"), Source.ASC->HasMatchingGameplayTag(TAG_Gameplay_DamageImmunity))) return true;
+				if (Action == 11) Test->TestEqual(TEXT("Actual Flock window ignores Pawn collisions"), Source.Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn), ECR_Ignore);
+				if (!ReviewEnemyStrike()) return true;
+				Test->TestEqual(TEXT("Actual opposing hit cannot damage active immunity window"), Health(Source), 200.f);
+			}
+			bPhaseInitialized = true;
+			return false;
+		}
+		ReviewStep();
+		const float ObserveAt = bMovement ? 2.f : bHealing ? .15f : Action == 19 ? 1.4f : .8f;
+		if (PhaseElapsed < ObserveAt) return false;
+		if (bMovement)
+		{
+			const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+			Test->TestFalse(TEXT("Movement action ended naturally"), Spec && Spec->IsActive());
+			Test->TestFalse(TEXT("Movement action removed its immunity"), Source.ASC->HasMatchingGameplayTag(TAG_Gameplay_DamageImmunity));
+			if (!ReviewEnemyStrike()) return true;
+			Test->TestTrue(TEXT("Same opposing strike deals30 damage after window"), FMath::IsNearlyEqual(Health(Source), 170.f, .05f));
+		}
+		else if (bHealing)
+		{
+			Test->TestEqual(TEXT("Healing never changes enemy health"), Health(Enemy), 500.f);
+			Test->TestEqual(TEXT("Healing creates no enemy contribution"), Enemy.Pawn->GetCombatContributionCountForAudit(), 0);
+			if (Action == 7)
+			{
+				Test->TestTrue(TEXT("Radiance heals selected ally or defined self fallback by exact configured scaling"), FMath::IsNearlyEqual(Health(Ally), 100.f + (Variant == 0 ? ReviewExpectedHeal : 0.f), .05f)
+					&& FMath::IsNearlyEqual(Health(Source), 200.f + (Variant == 0 ? 0.f : ReviewExpectedHeal), .05f));
+			}
+			else Test->TestTrue(TEXT("Blessing initial70 reaches only in-zone ally"), FMath::IsNearlyEqual(Health(Ally), Variant == 0 ? 170.f : 100.f, .05f));
+		}
+		else if (Variant == 1 || Variant == 2)
+		{
+			Test->TestTrue(TEXT("Friendly/miss activation leaves exact combat outcomes unchanged"), ReviewOutcomes == PrimaryNegativeOutcomes());
+			Test->TestTrue(TEXT("Friendly/miss target has no pending launch"), EffectiveVelocity(Enemy).IsNearlyZero() && EffectiveVelocity(Ally).IsNearlyZero());
+		}
+		else
+		{
+			static const float Damage[] = {30.f, 0.f, 22.f, 22.f, 80.f, 38.f, 0.f, 0.f, 46.f, 0.f, 34.f, 0.f, 45.f, 0.f, 33.f, 38.f, 0.f, 69.f, 46.f, 264.f};
+			const float ExpectedDamage = Variant == 3 ? 0.f : Damage[Action];
+			Test->TestTrue(TEXT("Positive/immunity action has exact health damage"), FMath::IsNearlyEqual(Health(Enemy), 500.f - ExpectedDamage, .1f));
+			Test->TestTrue(TEXT("Positive/immunity action has exact actual-damage leech"), FMath::IsNearlyEqual(Health(Source), 200.f + ExpectedDamage * .1f, .1f));
+			Test->TestEqual(TEXT("Blocked/zero damage cannot create combat contribution"), Enemy.Pawn->GetCombatContributionCountForAudit(), ExpectedDamage > 0.f ? 1 : 0);
+			Test->TestTrue(TEXT("Independent armor shred follows primary hit even under raw immunity"), FMath::IsNearlyEqual(Armor(Enemy), Action == 10 ? -2.f : 0.f, .001f));
+			Test->TestEqual(TEXT("Independent silence follows Aura hit even under raw immunity"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Silenced), Action == 14);
+			Test->TestEqual(TEXT("Slow applies only for the two configured actions"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed), Action == 12 || Action == 13);
+			Test->TestTrue(TEXT("Independent slow has exact action magnitude"), FMath::IsNearlyEqual(MoveMult(Enemy), Action == 12 ? .5f : Action == 13 ? .85f : 1.f, .001f));
+			Test->TestTrue(TEXT("Circle amplification has exact action magnitude"), FMath::IsNearlyEqual(DamageMult(Enemy), Action == 13 ? 1.35f : 1.f, .001f));
+		}
+		Test->AddInfo(FString::Printf(TEXT("All20Targeting action=%d variant=%d elapsed=%.3f scope=authority-real-action"), Action, Variant, PhaseElapsed));
+		return true;
+	}
+
+	bool ReviewInterruptAsync(int32 Action, int32 Trigger)
+	{
+		const auto* BeforeSpec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+		if (!Test->TestTrue(TEXT("Exact async instance still active at interruption"), BeforeSpec && BeforeSpec->IsActive())) return false;
+		ReviewHitHealth = Health(Enemy);
+		ReviewAllyHealth = Health(Ally);
+		ReviewContributionCount = Enemy.Pawn->GetCombatContributionCountForAudit();
+		ReviewSourceHealth = Trigger == 1 ? 0.f : Health(Source);
+		if (Trigger == 0) Source.ASC->CancelAbilityHandle(ActiveHandle);
+		else
+		{
+			if (Trigger == 1 && !ReviewKillSource(false)) return false;
+			ULyraPawnExtensionComponent::FindPawnExtensionComponent(Source.Pawn)->UninitializeAbilitySystem();
+			Test->TestNull(TEXT("Production avatar teardown unbinds ASC"), Source.ASC->GetAvatarActor());
+		}
+		Test->TestTrue(TEXT("Interruption itself cannot heal the source"), FMath::IsNearlyEqual(Health(Source), ReviewSourceHealth, .001f));
+		Test->TestTrue(TEXT("Interruption itself leaves target and ally health unchanged"), FMath::IsNearlyEqual(Health(Enemy), ReviewHitHealth, .001f)
+			&& FMath::IsNearlyEqual(Health(Ally), ReviewAllyHealth, .001f));
+		Test->TestEqual(TEXT("Interruption itself preserves earned contribution"), Enemy.Pawn->GetCombatContributionCountForAudit(), ReviewContributionCount);
+		const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+		Test->TestFalse(TEXT("Exact interrupted spec immediately inactive"), Spec && Spec->IsActive());
+		Test->TestFalse(TEXT("Interrupted action immediately clears owned immunity"), Source.ASC->HasMatchingGameplayTag(TAG_Gameplay_DamageImmunity));
+		Test->TestFalse(TEXT("Interrupted action immediately clears owned ethereal"), Source.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Ethereal));
+		if (Action == 11)
+		{
+			Test->TestEqual(TEXT("Interrupted Flock restores prior fly speed"), Source.Move->MaxFlySpeed, 345.f);
+			Test->TestEqual(TEXT("Interrupted Flock restores prior gravity"), Source.Move->GravityScale, 1.2f);
+			if (Trigger == 1)
+			{
+				// Death cancels Flock first, then Lyra's OnDeathStarted disables
+				// movement/collision. That terminal policy supersedes living restoration.
+				const auto* HealthComponent = ULyraHealthComponent::FindHealthComponent(Source.Pawn);
+				Test->TestTrue(TEXT("Interrupted Flock source entered production death"), HealthComponent && HealthComponent->IsDeadOrDying());
+				Test->TestEqual(TEXT("Dead Flock source keeps capsule collision disabled"), Source.Pawn->GetCapsuleComponent()->GetCollisionEnabled(), ECollisionEnabled::NoCollision);
+				Test->TestEqual(TEXT("Dead Flock source keeps pawn response ignored"), Source.Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn), ECR_Ignore);
+				Test->TestEqual(TEXT("Dead Flock source keeps movement disabled"), Source.Move->MovementMode.GetValue(), MOVE_None);
+			}
+			else
+			{
+				Test->TestEqual(TEXT("Living interrupted Flock restores prior pawn response"), Source.Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn), ECR_Block);
+			}
+		}
+		bSubCheckDone = true;
+		return true;
+	}
+
+	bool UpdateAsyncLifecycle()
+	{
+		static const int32 Actions[] = {1, 2, 4, 6, 7, 11, 15, 16, 18};
+		const bool bBetweenRetributionHits = ReviewCase >= 27;
+		const int32 Action = bBetweenRetributionHits ? 4 : Actions[ReviewCase / 3];
+		const int32 Trigger = bBetweenRetributionHits ? ReviewCase - 27 : ReviewCase % 3; // GAS cancel, death+uninitialize, healthy uninitialize
+		if (!bPhaseInitialized)
+		{
+			if (!ReviewHero(Action / 5)) return true;
+			ResetArena(200.f, 500.f, 100.f, FVector(160.f, 0.f, 200.f), FVector(160.f, 100.f, 200.f));
+			Source.Move->MaxFlySpeed = 345.f;
+			Source.Move->GravityScale = 1.2f;
+			ActiveHandle = FindAbilityHandle(Source.ASC, ReviewActionClass(Action));
+			if (!Test->TestTrue(TEXT("Real async action activation accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+			if (!Test->TestTrue(TEXT("Async action demonstrably active before interruption"), Spec && Spec->IsActive())) return true;
+			EnsureZonesAndProjectilesBegunPlay();
+			if (!bBetweenRetributionHits && !ReviewInterruptAsync(Action, Trigger)) return true;
+			bPhaseInitialized = true;
+			return false;
+		}
+		ReviewStep();
+		if (bBetweenRetributionHits && !bSubCheckDone)
+		{
+			if (PhaseElapsed < .15f) return false;
+			if (!Test->TestTrue(TEXT("Real Retribution uppercut landed before interruption"), FMath::IsNearlyEqual(Health(Enemy), 465.f, .05f)
+				&& EffectiveVelocity(Enemy).Z >= 500.f)) return true;
+			if (!ReviewInterruptAsync(Action, Trigger)) return true;
+		}
+		if (PhaseElapsed < (Action == 7 ? 4.3f : 2.f)) return false;
+		const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+		Test->TestFalse(TEXT("Interrupted action stays inactive beyond original callbacks"), Spec && Spec->IsActive());
+		// The approved policy preserves a bullet already fired before interruption.
+		const float AlreadyFiredDamage = Action == 15 ? 19.f : 0.f;
+		Test->TestTrue(TEXT("No late damage other than the single already-fired bullet"), FMath::IsNearlyEqual(Health(Enemy), ReviewHitHealth - AlreadyFiredDamage, .05f));
+		Test->TestEqual(TEXT("Interruption preserves legitimate earned contributions without adding late hits"), Enemy.Pawn->GetCombatContributionCountForAudit(),
+			Action == 15 ? 1 : ReviewContributionCount);
+		Test->TestTrue(TEXT("Interrupted Radiance produces no later heal tick"), FMath::IsNearlyEqual(Health(Ally), ReviewAllyHealth, .05f));
+		const float ExpectedSource = ReviewSourceHealth + (Trigger == 0 ? AlreadyFiredDamage * .1f : 0.f);
+		Test->TestTrue(TEXT("No dead/detached source leech or unexpected self-heal"), FMath::IsNearlyEqual(Health(Source), ExpectedSource, .05f));
+		Test->TestFalse(TEXT("No delayed restoration of immunity"), Source.ASC->HasMatchingGameplayTag(TAG_Gameplay_DamageImmunity));
+		Test->TestFalse(TEXT("No delayed restoration of ethereal"), Source.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Ethereal));
+		int32 LiveProjectiles = 0;
+		for (TActorIterator<ABwayHeroProjectileBase> It(World); It; ++It) if (IsValid(*It) && !It->IsActorBeingDestroyed()) ++LiveProjectiles;
+		Test->TestEqual(TEXT("No unbounded delayed projectile after interruption"), LiveProjectiles, 0);
+		Test->AddInfo(FString::Printf(TEXT("AsyncLifecycle action=%d trigger=%d betweenHits=%d elapsed=%.3f scope=authority-cancel-death-avatar-teardown-not-round-respawn"), Action, Trigger, bBetweenRetributionHits, PhaseElapsed));
+		return true;
+	}
+
+	TArray<FActiveGameplayEffectHandle> ReviewEffectFamily(const TCHAR* Fragment) const
+	{
+		TArray<FActiveGameplayEffectHandle> Result;
+		for (const auto H : Enemy.ASC->GetActiveEffects(FGameplayEffectQuery()))
+		{
+			const auto* Effect = Enemy.ASC->GetActiveGameplayEffect(H);
+			if (Effect && Effect->Spec.Def && Effect->Spec.Def->GetClass()->GetName().Contains(Fragment)) Result.Add(H);
+		}
+		return Result;
+	}
+
+	bool UpdateStatusOwnership()
+	{
+		// 0/1 independent Circle removal orders; 2 Burden+Circle expiry;
+		// 3 primary shred cap/refresh/expiry; 4 silence expiry; 5/6 full/clamped Radiance.
+		if (!bPhaseInitialized)
+		{
+			if (!ReviewHero(ReviewCase >= 5 ? 1 : 2)) return true;
+			ResetArena(200.f, 1000.f, ReviewCase == 6 ? 490.f : 100.f, FVector(160.f, 0.f, 200.f), FVector(160.f, 100.f, 200.f));
+			if (ReviewCase <= 2)
+			{
+				ActiveHandle = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynCircleOfSpite"));
+				if (!Test->TestTrue(TEXT("First real Circle accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+				EnsureZonesAndProjectilesBegunPlay();
+				const auto First = ReviewActors(TEXT("BwayKorrynSpiteZone"));
+				if (!Test->TestEqual(TEXT("One first Circle"), First.Num(), 1)) return true;
+				ReviewActor = First[0];
+				ReviewEffectHandles = ReviewEffectsFrom(ReviewActor.Get());
+				if (!Test->TestEqual(TEXT("First zone owns exactly two handles"), ReviewEffectHandles.Num(), 2)) return true;
+				if (ReviewCase <= 1)
+				{
+					const auto* Set = LoadObject<ULyraAbilitySet>(nullptr, TEXT("/Hero_Morgan/Characters/Heroes/Hexweaver/DA_BW_AbilitySet_Hexweaver.DA_BW_AbilitySet_Hexweaver"));
+					if (!Test->TestNotNull(TEXT("Second source authored Korryn grant"), Set)) return true;
+					UBwayHeroStatsLibrary::ApplyHeroStatsFromDataAsset(Ally.Pawn, CurrentHeroData);
+					if (!GrantAbilitySet(Ally.ASC, Set)) return true;
+					const auto SecondH = FindAbilityHandle(Ally.ASC, TEXT("BwayGameplayAbility_KorrynCircleOfSpite"));
+					if (!Test->TestTrue(TEXT("Distinct source real Circle accepted"), Ally.ASC->TryActivateAbility(SecondH))) return true;
+					EnsureZonesAndProjectilesBegunPlay();
+					const auto Both = ReviewActors(TEXT("BwayKorrynSpiteZone"));
+					if (!Test->TestEqual(TEXT("Two separate production circles"), Both.Num(), 2)) return true;
+					AActor* Second = Both[0] == ReviewActor.Get() ? Both[1] : Both[0];
+					const auto SecondHandles = ReviewEffectsFrom(Second);
+					if (!Test->TestEqual(TEXT("Second zone owns independent two handles"), SecondHandles.Num(), 2)) return true;
+					for (const auto H : SecondHandles)
+					{
+						Test->TestFalse(TEXT("Sources do not share target effect handles"), ReviewEffectHandles.Contains(H));
+						const auto* Effect = Enemy.ASC->GetActiveGameplayEffect(H);
+						if (Effect) Test->TestTrue(TEXT("Second zone effect retains second player's ASC"), Effect->Spec.GetEffectContext().GetOriginalInstigatorAbilitySystemComponent() == Ally.ASC);
+					}
+					Test->TestTrue(TEXT("Two Circle slows compound while amp remains override35percent"), FMath::IsNearlyEqual(MoveMult(Enemy), .85f * .85f, .001f) && FMath::IsNearlyEqual(DamageMult(Enemy), 1.35f, .001f));
+					AActor* Removed = ReviewCase == 0 ? ReviewActor.Get() : Second;
+					AActor* Surviving = ReviewCase == 0 ? Second : ReviewActor.Get();
+					const auto RemovedHandles = ReviewEffectsFrom(Removed);
+					const auto SurvivingHandles = ReviewEffectsFrom(Surviving);
+					Removed->Destroy();
+					ReviewHandlesGone(RemovedHandles);
+					for (const auto H : SurvivingHandles) Test->TestNotNull(TEXT("Other source's exact handle survives removal"), Enemy.ASC->GetActiveGameplayEffect(H));
+					Test->TestTrue(TEXT("Removing one zone preserves remaining15percent slow and35percent amp"), FMath::IsNearlyEqual(MoveMult(Enemy), .85f, .001f) && FMath::IsNearlyEqual(DamageMult(Enemy), 1.35f, .001f));
+					Enemy.Pawn->SetActorLocation(FVector(-2000.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+					ReviewHandlesGone(SurvivingHandles);
+					Enemy.Pawn->SetActorLocation(FVector(160.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+					const auto ReentryHandles = ReviewEffectsFrom(Surviving);
+					Test->TestEqual(TEXT("Reentry creates one fresh pair, never duplicate effects"), ReentryHandles.Num(), 2);
+					Surviving->Destroy();
+					ReviewHandlesGone(ReentryHandles);
+					Test->TestTrue(TEXT("Removing final zone restores baseline attributes"), FMath::IsNearlyEqual(MoveMult(Enemy), 1.f, .001f) && FMath::IsNearlyEqual(DamageMult(Enemy), 1.f, .001f));
+					Test->TestFalse(TEXT("No final slowed tag"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed));
+					Test->TestFalse(TEXT("No final amplified tag"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_DamageAmplified));
+					Test->AddInfo(FString::Printf(TEXT("StatusOwnership removalOrder=%d twoSources=1 reentry=1"), ReviewCase));
+					return true;
+				}
+				if (!Test->TestTrue(TEXT("Real Burden overlaps Circle"), Source.ASC->TryActivateAbility(FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynBurdenOfSin"))))) return true;
+				Test->TestTrue(TEXT("Burden and Circle compound exact slow"), FMath::IsNearlyEqual(MoveMult(Enemy), .425f, .001f));
+				ReviewDuration = 5.f;
+			}
+			else if (ReviewCase == 3)
+			{
+				ActiveHandle = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynPrimary"));
+				ReviewEffectObserver = Enemy.ASC->OnGameplayEffectAppliedDelegateToSelf.AddLambda([this](UAbilitySystemComponent*, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle)
+				{
+					if (Spec.GetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, false, 0.f) > 0.f) ++ReviewDamageEffects;
+				});
+				if (!Test->TestTrue(TEXT("First real shred projectile accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			}
+			else if (ReviewCase == 4)
+			{
+				if (!Test->TestTrue(TEXT("Real Aura applies timed silence"), Source.ASC->TryActivateAbility(FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynAuraOfSilence"))))) return true;
+				ReviewEffectHandles = ReviewEffectFamily(TEXT("KorrynSilence"));
+				if (!Test->TestEqual(TEXT("One real silence effect"), ReviewEffectHandles.Num(), 1)) return true;
+				ReviewDuration = 5.f;
+			}
+			else
+			{
+				ActiveHandle = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_AlonaRadiance"));
+				if (!ReviewRadianceParameters()) return true;
+				BlessingHealObserver = Ally.ASC->OnGameplayEffectAppliedDelegateToSelf.AddLambda([this](UAbilitySystemComponent*, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle)
+				{
+					const float Heal = Spec.GetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Heal, false, 0.f);
+					if (Heal <= 0.f) return;
+					++ReviewHealApplications;
+					bReviewContextValid &= FMath::IsNearlyEqual(Heal, ReviewExpectedHeal, .01f) && Spec.GetEffectContext().GetOriginalInstigatorAbilitySystemComponent() == Source.ASC;
+				});
+				if (!Test->TestTrue(TEXT("Real Radiance full schedule accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+				Test->TestEqual(TEXT("Exactly one initial heal application"), ReviewHealApplications, 1);
+			}
+			bPhaseInitialized = true;
+			return false;
+		}
+		ReviewStep();
+		if (ReviewCase == 3)
+		{
+			if (ReviewDamageEffects > ReviewObservedHits)
+			{
+				++ReviewObservedHits;
+				if (!Test->TestEqual(TEXT("One hit per real primary activation"), ReviewDamageEffects, ReviewObservedHits)) return true;
+				const auto Effects = ReviewEffectFamily(TEXT("KorrynArmorShred"));
+				if (!Test->TestEqual(TEXT("Same source retains one shred effect"), Effects.Num(), 1)) return true;
+				const auto* Effect = Enemy.ASC->GetActiveGameplayEffect(Effects[0]);
+				Test->TestEqual(TEXT("Shred stacks cap at five"), Effect->Spec.GetStackCount(), FMath::Min(ReviewObservedHits, 5));
+				Test->TestTrue(TEXT("Armor follows exact -2 increments and max -10"), FMath::IsNearlyEqual(Armor(Enemy), -2.f * FMath::Min(ReviewObservedHits, 5), .001f));
+				Test->TestTrue(TEXT("Authored shred duration is exactly two seconds"), FMath::IsNearlyEqual(Effect->GetDuration(), 2.f, .001f));
+				if (ReviewObservedHits == 5) ReviewRefreshAt = PhaseElapsed + 1.f;
+				if (ReviewObservedHits == 6)
+				{
+					Test->TestTrue(TEXT("Sixth successful hit refreshes capped stack duration"), Effect->StartWorldTime > ReviewOldStart + .9f);
+					ReviewDuration = float(Effect->StartWorldTime + Effect->GetDuration());
+					ReviewEffectHandles = Effects;
+				}
+				else ReviewOldStart = Effect->StartWorldTime;
+				if (ReviewObservedHits < 5 && !Test->TestTrue(TEXT("Next real shred primary activates"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			}
+			if (ReviewObservedHits == 5 && PhaseElapsed >= ReviewRefreshAt && !bSubCheckDone)
+			{
+				if (!Test->TestTrue(TEXT("Sixth real primary accepted at cap"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+				bSubCheckDone = true;
+			}
+			if (ReviewObservedHits < 6) return false;
+			if (World->GetTimeSeconds() >= ReviewDuration - .1f && World->GetTimeSeconds() < ReviewDuration - .04f)
+			{
+				bReviewDeadlineSample = true;
+				Test->TestTrue(TEXT("Refreshed full shred stack remains just before expiry"), FMath::IsNearlyEqual(Armor(Enemy), -10.f, .001f));
+			}
+			if (World->GetTimeSeconds() < ReviewDuration + .15f) return false;
+			Test->TestTrue(TEXT("Observed shred pre-expiry boundary"), bReviewDeadlineSample);
+			ReviewHandlesGone(ReviewEffectHandles);
+			Test->TestTrue(TEXT("Whole shred stack expires to original armor"), FMath::IsNearlyZero(Armor(Enemy), .001f));
+			Test->TestFalse(TEXT("Expired shred removes its tag"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_ArmorShred));
+		}
+		else
+		{
+			if (ReviewCase == 2 && PhaseElapsed >= 1.9f && PhaseElapsed < 1.96f)
+				Test->TestTrue(TEXT("Burden survives just before two seconds"), FMath::IsNearlyEqual(MoveMult(Enemy), .425f, .001f));
+			if (ReviewCase == 2 && PhaseElapsed >= 2.1f && !bSubCheckDone)
+			{
+				Test->TestTrue(TEXT("Burden expires while exact Circle handles remain"), FMath::IsNearlyEqual(MoveMult(Enemy), .85f, .001f) && ReviewEffectsFrom(ReviewActor.Get()) == ReviewEffectHandles);
+				bSubCheckDone = true;
+			}
+			if (PhaseElapsed >= ReviewDuration - .1f && PhaseElapsed < ReviewDuration - .04f)
+			{
+				bReviewDeadlineSample = true;
+				if (ReviewCase == 2) Test->TestTrue(TEXT("Circle remains just before five seconds"), ReviewActor.IsValid() && !ReviewActor->IsActorBeingDestroyed());
+				else if (ReviewCase == 4) Test->TestTrue(TEXT("Silence remains just before five seconds"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Silenced));
+			}
+			if (PhaseElapsed < ReviewDuration + .3f) return false;
+			Test->TestTrue(TEXT("Observed duration boundary"), bReviewDeadlineSample);
+			if (ReviewCase == 2)
+			{
+				Test->TestTrue(TEXT("Both original durations observed"), bSubCheckDone);
+				ReviewHandlesGone(ReviewEffectHandles);
+				Test->TestTrue(TEXT("Expiry restores independent slow and amplification baselines"), FMath::IsNearlyEqual(MoveMult(Enemy), 1.f, .001f) && FMath::IsNearlyEqual(DamageMult(Enemy), 1.f, .001f));
+			}
+			else if (ReviewCase == 4)
+			{
+				ReviewHandlesGone(ReviewEffectHandles);
+				Test->TestFalse(TEXT("Silence expires without forced effect removal"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Silenced));
+			}
+			else
+			{
+				Test->TestEqual(TEXT("Radiance applies exact configured heal count and no late tick"), ReviewHealApplications, ReviewExpectedHealCount);
+				Test->TestTrue(TEXT("Radiance exact total and max-health clamp"), FMath::IsNearlyEqual(Health(Ally), FMath::Min(500.f, (ReviewCase == 5 ? 100.f : 490.f) + ReviewExpectedHealCount * ReviewExpectedHeal), .05f));
+				Test->TestTrue(TEXT("Every scheduled heal has exact magnitude and source"), bReviewContextValid);
+				const auto* Spec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+				Test->TestFalse(TEXT("Radiance ends at original schedule"), Spec && Spec->IsActive());
+			}
+		}
+		Test->AddInfo(FString::Printf(TEXT("StatusExpiry case=%d elapsed=%.3f scope=authority-production-effects"), ReviewCase, PhaseElapsed));
+		return true;
+	}
+
+	bool UpdateReview()
+	{
+		if (FPlatformTime::Seconds() - Started > 30.)
+		{
+			Test->AddError(FString::Printf(TEXT("AllKit review timed out group=%d case=%d phase=%d"), ReviewGroup, ReviewCase, Phase));
+			return true;
+		}
+		if (ReviewGroup == 1) return UpdateCircleLifecycle();
+		if (ReviewGroup == 2) return UpdateProjectileLifecycle();
+		if (ReviewGroup == 3) return UpdateTargeting();
+		if (ReviewGroup == 4) return UpdateAsyncLifecycle();
+		if (ReviewGroup == 5) return UpdateStatusOwnership();
+		Test->AddError(TEXT("Unknown AllKit review group"));
+		return true;
+	}
+
 	virtual bool Update() override
 	{
 		if (!World && !Setup()) return true;
+		if (ReviewGroup != 0) return UpdateReview();
+		if (bRestrictionsOnly) { CheckAuthoredRestrictions(); return true; }
+		if (BlessingCase != INDEX_NONE) return UpdateBlessingLifecycle();
 		if (FPlatformTime::Seconds() - Started > 30.0)
 		{
 			Test->AddError(FString::Printf(TEXT("AllKitCombatEffects timed out in phase %d"), Phase));
@@ -444,6 +1526,29 @@ public:
 			Test->TestTrue(TEXT("Argus Primary activated"), Source.ASC->TryActivateAbility(PrimaryH));
 			Test->TestTrue(TEXT("Argus Primary damage with 20 Armor"), FMath::IsNearlyEqual(Health(Enemy), 476.f, 0.05f));
 			Test->TestTrue(TEXT("Argus Primary 10% life leech"), FMath::IsNearlyEqual(Health(Source), 202.4f, 0.05f));
+
+			// Keep the positive hit above as the lane control. These are successful
+			// immediate production swings, not activation-restriction tests.
+			for (const bool bFriendlyInLane : {true, false})
+			{
+				ResetArena(200.f, 500.f, 200.f, FVector(-1500.f, 0.f, 200.f),
+					bFriendlyInLane ? FVector(160.f, 0.f, 200.f) : FVector(-1500.f, 500.f, 200.f));
+				Assister.Pawn->SetActorLocation(FVector(-1500.f, -500.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
+				Test->TestEqual(TEXT("Friendly lane uses the source PlayerState team"), Ally.PS->GetTeamId(), Source.PS->GetTeamId());
+				Test->TestTrue(TEXT("Enemy control uses a different PlayerState team"), Enemy.PS->GetTeamId() != Source.PS->GetTeamId());
+				Test->TestTrue(TEXT("Production GameState agrees with friendly/enemy controls"), GS->AreOnSameTeam(Source.Pawn, Ally.Pawn) && !GS->AreOnSameTeam(Source.Pawn, Enemy.Pawn));
+				if (bFriendlyInLane)
+				{
+					Test->TestEqual(TEXT("Friendly lane target uses the positive target's pawn class"), Ally.Pawn->GetClass(), Enemy.Pawn->GetClass());
+					Test->TestTrue(TEXT("Friendly target is in the positive hit position"), Ally.Pawn->GetActorLocation().Equals(Source.Pawn->GetActorLocation() + FVector(160.f, 0.f, 0.f), .01f));
+					Test->TestEqual(TEXT("Friendly target shares positive target Pawn collision response"), Ally.Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn), Enemy.Pawn->GetCapsuleComponent()->GetCollisionResponseToChannel(ECC_Pawn));
+				}
+				const auto Before = PrimaryNegativeOutcomes();
+				if (!Test->TestTrue(bFriendlyInLane ? TEXT("Argus friendly-lane swing activates") : TEXT("Argus empty-lane swing activates"), Source.ASC->TryActivateAbility(PrimaryH))) return true;
+				// Assert before any reset/purge. Existing positive damage/credit totals
+				// may be nonzero; neither negative case may add to or erase them.
+				Test->TestTrue(bFriendlyInLane ? TEXT("Argus friendly-lane swing leaves combat outcomes unchanged") : TEXT("Argus empty-lane swing leaves combat outcomes unchanged"), Before == PrimaryNegativeOutcomes());
+			}
 
 			// 2. Argus ForGlory (2 + 0.4*50 = 22 raw; 0 Armor -> 22 damage, +2.2 non-primary leech, knockback)
 			ResetArena(200.f, 500.f);
@@ -651,15 +1756,19 @@ public:
 				// 2. Korryn CircleOfSpite (ABwayKorrynSpiteZone: 15% slow + +35% IncomingDamageMultiplier = 1.35 via State.Status.DamageAmplified)
 				ResetArena(200.f, 500.f);
 				const FGameplayAbilitySpecHandle CircleH = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynCircleOfSpite"));
+				const float CircleBaselineMoveMultiplier = MoveMult(Enemy);
 				Test->TestTrue(TEXT("Korryn CircleOfSpite activated"), Source.ASC->TryActivateAbility(CircleH));
 				EnsureZonesAndProjectilesBegunPlay();
 				Test->TestTrue(TEXT("Korryn CircleOfSpite applies State.Status.DamageAmplified"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_DamageAmplified));
 				Test->TestTrue(TEXT("Korryn CircleOfSpite applies State.Status.Slowed"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed));
+				Test->TestTrue(TEXT("Korryn CircleOfSpite applies the expected 15 percent slow"), FMath::IsNearlyEqual(MoveMult(Enemy), .85f, .01f));
 				Test->TestTrue(TEXT("Korryn CircleOfSpite IncomingDamageMultiplier == 1.35"), FMath::IsNearlyEqual(DamageMult(Enemy), 1.35f, 0.01f));
 				Test->TestTrue(TEXT("Korryn CircleOfSpite ResolveFinalDamage(100) == 135"), FMath::IsNearlyEqual(UBwayDamageLibrary::ResolveFinalDamage(100.f, Enemy.ASC), 135.f, 0.05f));
 				Enemy.Pawn->SetActorLocation(FVector(-1200.f, 0.f, 200.f), false, nullptr, ETeleportType::TeleportPhysics);
 				Test->TestFalse(TEXT("Leaving CircleOfSpite removes DamageAmplified"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_DamageAmplified));
 				Test->TestTrue(TEXT("Leaving CircleOfSpite restores IncomingDamageMultiplier == 1.0"), FMath::IsNearlyEqual(DamageMult(Enemy), 1.0f, 0.01f));
+				Test->TestFalse(TEXT("Leaving CircleOfSpite removes Slowed"), Enemy.ASC->HasMatchingGameplayTag(BwayGameplayTags::State_Status_Slowed));
+				Test->TestTrue(TEXT("Leaving CircleOfSpite restores the prior movement multiplier"), FMath::IsNearlyEqual(MoveMult(Enemy), CircleBaselineMoveMultiplier, .01f));
 
 				// 3. Korryn AuraOfSilence (13 + 0.5*40 = 33 damage + State.Status.Silenced blocking non-primary ability + Relic carrier fumble)
 				ResetArena(200.f, 500.f);
@@ -671,7 +1780,8 @@ public:
 				Test->TestTrue(TEXT("Enemy granted NoRetreat for silence test"), EnemyNoRetreatH.IsValid());
 				Relic->OnPickedUp(Enemy.Pawn);
 				Test->TestEqual(TEXT("Enemy carrying Relic before AuraOfSilence"), Relic->CurrentCarrier.Get(), Enemy.Pawn);
-				const int32 FumblesBefore = Enemy.PS->GetForcedFumbles();
+				const int32 FumblesBefore = Source.PS->GetForcedFumbles();
+				const int32 VictimFumblesBefore = Enemy.PS->GetForcedFumbles();
 				const FGameplayAbilitySpecHandle SilenceH = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_KorrynAuraOfSilence"));
 				Test->TestTrue(TEXT("Korryn AuraOfSilence activated"), Source.ASC->TryActivateAbility(SilenceH));
 				Test->TestTrue(TEXT("Korryn AuraOfSilence damage (13 + 0.5*40 = 33)"), FMath::IsNearlyEqual(Health(Enemy), 467.f, 0.05f));
@@ -680,7 +1790,8 @@ public:
 				Test->TestFalse(TEXT("State.Status.Silenced blocks non-primary ability activation"), Enemy.ASC->TryActivateAbility(EnemyNoRetreatH));
 				Test->TestNull(TEXT("Korryn AuraOfSilence forces Relic carrier fumble"), Relic->CurrentCarrier.Get());
 				Test->TestEqual(TEXT("Relic enters Dropped state on AuraOfSilence fumble"), Relic->GetCurrentState(), ERelicState::Dropped);
-				Test->TestEqual(TEXT("ForcedFumbles incremented on AuraOfSilence fumble"), Enemy.PS->GetForcedFumbles(), FumblesBefore + 1);
+				Test->TestEqual(TEXT("AuraOfSilence credits the attacker"), Source.PS->GetForcedFumbles(), FumblesBefore + 1);
+				Test->TestEqual(TEXT("AuraOfSilence does not credit the victim"), Enemy.PS->GetForcedFumbles(), VictimFumblesBefore);
 
 				// 4. Korryn Primary Projectile (22 + 0.3*40 = 34 damage + -2 State.Status.ArmorShred)
 				ResetArena(200.f, 500.f);
@@ -742,7 +1853,8 @@ public:
 				ResetArena(200.f, 500.f);
 				Relic->OnPickedUp(Enemy.Pawn);
 				Test->TestEqual(TEXT("Enemy carrying Relic before PowerShot"), Relic->CurrentCarrier.Get(), Enemy.Pawn);
-				const int32 FumblesBefore = Enemy.PS->GetForcedFumbles();
+				const int32 FumblesBefore = Source.PS->GetForcedFumbles();
+				const int32 VictimFumblesBefore = Enemy.PS->GetForcedFumbles();
 				const FGameplayAbilitySpecHandle PowerShotH = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_RawlinsPowerShot"));
 				Test->TestTrue(TEXT("Rawlins PowerShot activated"), Source.ASC->TryActivateAbility(PowerShotH));
 				Test->TestTrue(TEXT("Rawlins PowerShot damage (30 + 0.65*60 = 69)"), FMath::IsNearlyEqual(Health(Enemy), 431.f, 0.05f));
@@ -750,7 +1862,8 @@ public:
 				Test->TestTrue(TEXT("Rawlins PowerShot knockback"), EffectiveVelocity(Enemy).X > 1000.f);
 				Test->TestNull(TEXT("Rawlins PowerShot forces Relic carrier fumble"), Relic->CurrentCarrier.Get());
 				Test->TestEqual(TEXT("Relic enters Dropped state on PowerShot fumble"), Relic->GetCurrentState(), ERelicState::Dropped);
-				Test->TestEqual(TEXT("ForcedFumbles incremented on PowerShot fumble"), Enemy.PS->GetForcedFumbles(), FumblesBefore + 1);
+				Test->TestEqual(TEXT("PowerShot credits the attacker"), Source.PS->GetForcedFumbles(), FumblesBefore + 1);
+				Test->TestEqual(TEXT("PowerShot does not credit the victim"), Enemy.PS->GetForcedFumbles(), VictimFumblesBefore);
 
 				// 2. Rawlins Primary 2-shot burst (1 + 0.3*60 = 19 per shot, 38 total across 2 shots)
 				ResetArena(200.f, 500.f);
@@ -874,6 +1987,37 @@ private:
 	int32 Phase = 0;
 	bool bPhaseInitialized = false;
 	bool bSubCheckDone = false;
+	bool bRestrictionsOnly = false;
+	int32 BlessingCase = INDEX_NONE;
+	TWeakObjectPtr<AActor> BlessingZone;
+	FDelegateHandle BlessingHealObserver;
+	int32 BlessingHealApplications = 0;
+	float BlessingDuration = 0.f;
+	double BlessingLastTick = 0.;
+	bool bBlessingAttributionValid = true;
+	bool bBlessingPostDeathChecked = false;
+	ULyraPawnData* RestrictionPawnData = nullptr;
+	int32 ReviewGroup = 0;
+	int32 ReviewCase = 0;
+	TWeakObjectPtr<AActor> ReviewActor;
+	TArray<FActiveGameplayEffectHandle> ReviewEffectHandles;
+	FDelegateHandle ReviewEffectObserver;
+	float ReviewDuration = 0.f;
+	float ReviewHitHealth = 0.f;
+	int32 ReviewDamageEffects = 0;
+	bool bReviewContextValid = true;
+	bool bReviewDeadlineSample = false;
+	FGameplayAbilitySpecHandle ReviewStrikeHandle;
+	TArray<FString> ReviewOutcomes;
+	float ReviewAllyHealth = 0.f;
+	float ReviewSourceHealth = 0.f;
+	int32 ReviewContributionCount = 0;
+	int32 ReviewHealApplications = 0;
+	int32 ReviewObservedHits = 0;
+	float ReviewRefreshAt = 0.f;
+	float ReviewOldStart = 0.f;
+	float ReviewExpectedHeal = 0.f;
+	int32 ReviewExpectedHealCount = 0;
 };
 } // namespace BwayAllKitCombatEffectsTest
 
@@ -883,6 +2027,67 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayAllKitCombatEffectsTest, "Breakaway.Abilit
 bool FBwayAllKitCombatEffectsTest::RunTest(const FString&)
 {
 	ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayAllKitActivationRestrictionsTest, "Breakaway.Abilities.AllKitActivationRestrictions",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayAllKitActivationRestrictionsTest::RunTest(const FString&)
+{
+	ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, true));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayBlessingLifecycleTest, "Breakaway.Abilities.Alona.BlessingLifecycle",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayBlessingLifecycleTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 5; ++Case)
+	{
+		ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, Case));
+	}
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayCircleLifecycleTest, "Breakaway.Abilities.Korryn.CircleLifecycle",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwayCircleLifecycleTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 6; ++Case) ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, INDEX_NONE, 1, Case));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayProjectileLifecycleTest, "Breakaway.Abilities.ProjectileLifecycle",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwayProjectileLifecycleTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 21; ++Case) ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, INDEX_NONE, 2, Case));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayAllKitTargetingTest, "Breakaway.Abilities.AllKitTargetingAndImmunity",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwayAllKitTargetingTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 80; ++Case) ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, INDEX_NONE, 3, Case));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayAllKitAsyncLifecycleTest, "Breakaway.Abilities.AllKitAsyncLifecycle",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwayAllKitAsyncLifecycleTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 30; ++Case) ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, INDEX_NONE, 4, Case));
+	return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayStatusOwnershipExpiryTest, "Breakaway.Abilities.Korryn.StatusOwnershipAndExpiry",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwayStatusOwnershipExpiryTest::RunTest(const FString&)
+{
+	for (int32 Case = 0; Case < 7; ++Case) ADD_LATENT_AUTOMATION_COMMAND(BwayAllKitCombatEffectsTest::FRun(this, false, INDEX_NONE, 5, Case));
 	return true;
 }
 
@@ -904,6 +2109,9 @@ struct FHeldActor
 {
 	TWeakObjectPtr<ACharacter> Pawn;
 	FTransform Transform;
+	FVector Velocity = FVector::ZeroVector;
+	TWeakObjectPtr<AController> Controller;
+	FRotator ControlRotation = FRotator::ZeroRotator;
 	EMovementMode Mode = MOVE_Walking;
 	uint8 CustomMode = 0;
 	TWeakObjectPtr<UBrainComponent> Brain;
@@ -915,6 +2123,7 @@ struct FPlayerRestore
 	TWeakObjectPtr<ABwayPlayerState> PS;
 	float Health = 0.f;
 	float Armor = 0.f;
+	float LifeLeech = 0.f;
 };
 
 struct FRuntimeProbe
@@ -985,7 +2194,12 @@ void CleanupProbe(const TSharedPtr<FRuntimeProbe>& Probe)
 		if (ACharacter* P = H.Pawn.Get())
 		{
 			P->SetActorTransform(H.Transform, false, nullptr, ETeleportType::TeleportPhysics);
-			if (UCharacterMovementComponent* M = P->GetCharacterMovement()) M->SetMovementMode(H.Mode, H.CustomMode);
+			if (UCharacterMovementComponent* M = P->GetCharacterMovement())
+			{
+				M->SetMovementMode(H.Mode, H.CustomMode);
+				M->Velocity = H.Velocity;
+			}
+			if (AController* Controller = H.Controller.Get()) Controller->SetControlRotation(H.ControlRotation);
 		}
 		if (H.bBrainRunning)
 		{
@@ -1000,6 +2214,7 @@ void CleanupProbe(const TSharedPtr<FRuntimeProbe>& Probe)
 			{
 				ASC->SetNumericAttributeBase(ULyraHealthSet::GetHealthAttribute(), R.Health);
 				ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetArmorAttribute(), R.Armor);
+				ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetLifeLeechAttribute(), R.LifeLeech);
 			}
 		}
 	}
@@ -1191,10 +2406,13 @@ bool TickRuntimeProbe(const TSharedPtr<FRuntimeProbe>& Probe)
 			FHeldActor H;
 			H.Pawn = C;
 			H.Transform = C->GetActorTransform();
+			H.Controller = C->GetController();
+			if (H.Controller.IsValid()) H.ControlRotation = H.Controller->GetControlRotation();
 			if (UCharacterMovementComponent* M = C->GetCharacterMovement())
 			{
 				H.Mode = M->MovementMode;
 				H.CustomMode = M->CustomMovementMode;
+				H.Velocity = M->Velocity;
 				M->StopMovementImmediately();
 			}
 			if (AAIController* AI = Cast<AAIController>(C->GetController()))
@@ -1243,7 +2461,8 @@ bool TickRuntimeProbe(const TSharedPtr<FRuntimeProbe>& Probe)
 			}
 			ULyraAbilitySystemComponent* ASC = Players[I]->GetLyraAbilitySystemComponent();
 			Probe->RestorePlayers.Add({ Players[I], ASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()),
-				ASC->GetNumericAttribute(UBwayHeroAttributeSet::GetArmorAttribute()) });
+				ASC->GetNumericAttribute(UBwayHeroAttributeSet::GetArmorAttribute()),
+				ASC->GetNumericAttributeBase(UBwayHeroAttributeSet::GetLifeLeechAttribute()) });
 			ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetLifeLeechAttribute(), 0.10f);
 		}
 

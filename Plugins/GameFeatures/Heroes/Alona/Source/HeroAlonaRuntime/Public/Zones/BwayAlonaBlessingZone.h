@@ -4,6 +4,9 @@
 #include "BwayAlonaBlessingZone.generated.h"
 
 class ABwayCharacterWithAbilities;
+class ABwayPlayerState;
+class UAbilitySystemComponent;
+class UBwayRoundManagementComponent;
 class USphereComponent;
 
 /**
@@ -36,6 +39,11 @@ protected:
 	UFUNCTION()
 	void OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+	void OnRoundStateChanged(FName NewRoundState);
+
+	void RemoveForRoundTransition();
+
 	void ApplyHealToAlly(ABwayCharacterWithAbilities* Ally, float HealAmount);
 	void ApplyInitialHeals();
 	void TickHeal();
@@ -60,10 +68,17 @@ protected:
 	float ReplicatedRadius = 400.f;
 
 	UPROPERTY(Transient)
-	TObjectPtr<ABwayCharacterWithAbilities> CasterCharacter;
+	TWeakObjectPtr<ABwayPlayerState> CasterPlayerState;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAbilitySystemComponent> CasterAbilitySystem;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UBwayRoundManagementComponent> RoundManager;
 
 	UPROPERTY(Transient)
 	TSet<TObjectPtr<ABwayCharacterWithAbilities>> AlliesInZone;
 
 	FTimerHandle HealTickTimerHandle;
+	FDelegateHandle RoundResetHandle;
 };

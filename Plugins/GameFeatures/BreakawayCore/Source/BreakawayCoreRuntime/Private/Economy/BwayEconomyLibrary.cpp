@@ -1,6 +1,7 @@
 #include "Economy/BwayEconomyLibrary.h"
 
 #include "AbilitySystemGlobals.h"
+#include "BwayPlayerState.h"
 #include "Economy/BwayGoldAttributeSet.h"
 #include "GameFramework/PlayerState.h"
 
@@ -38,4 +39,77 @@ bool UBwayEconomyLibrary::TrySpendGold(APlayerState* PlayerState, int32 Cost)
 	FGameplayEffectSpec Spec(GetDefault<UBwayGameplayEffect_SpendGold>(), ASC->MakeEffectContext(), 1.0f);
 	Spec.SetSetByCallerMagnitude(UBwayGameplayEffect_SpendGold::DebitMagnitudeName, -static_cast<float>(Cost));
 	return ASC->ApplyGameplayEffectSpecToSelf(Spec).WasSuccessfullyApplied();
+}
+
+bool UBwayEconomyLibrary::TryRefundGold(APlayerState* PlayerState, int32 RefundAmount)
+{
+	if (!IsValid(PlayerState) || !PlayerState->HasAuthority() || RefundAmount < 0)
+	{
+		return false;
+	}
+	if (RefundAmount == 0)
+	{
+		return true;
+	}
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState, true);
+	const UBwayGoldAttributeSet* Gold = ASC ? ASC->GetSet<UBwayGoldAttributeSet>() : nullptr;
+	if (!Gold || !FMath::IsFinite(Gold->GetCurrentGold()))
+	{
+		return false;
+	}
+
+	ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState);
+	const bool bPrevSuppress = BwayPS ? BwayPS->IsSuppressingMatchGoldEarningsTracking() : false;
+	if (BwayPS)
+	{
+		BwayPS->SetSuppressMatchGoldEarningsTracking(true);
+	}
+
+	const float TargetBalance = Gold->GetCurrentGold() + static_cast<float>(RefundAmount);
+	if (TargetBalance > Gold->GetMaxGold())
+	{
+		ASC->SetNumericAttributeBase(UBwayGoldAttributeSet::GetMaxGoldAttribute(), FMath::Max(TargetBalance, 10000.0f));
+	}
+
+	FGameplayEffectSpec Spec(GetDefault<UBwayGameplayEffect_SpendGold>(), ASC->MakeEffectContext(), 1.0f);
+	Spec.SetSetByCallerMagnitude(UBwayGameplayEffect_SpendGold::DebitMagnitudeName, static_cast<float>(RefundAmount));
+	const bool bApplied = ASC->ApplyGameplayEffectSpecToSelf(Spec).WasSuccessfullyApplied();
+
+	if (BwayPS)
+	{
+		BwayPS->SetSuppressMatchGoldEarningsTracking(bPrevSuppress);
+	}
+	return bApplied;
+}
+
+bool UBwayEconomyLibrary::GrantStartingMatchGold(APlayerState* PlayerState, int32 StartingGold)
+{
+	if (!IsValid(PlayerState) || !PlayerState->HasAuthority() || StartingGold < 0)
+	{
+		return false;
+	}
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(PlayerState, true);
+	const UBwayGoldAttributeSet* Gold = ASC ? ASC->GetSet<UBwayGoldAttributeSet>() : nullptr;
+	if (!Gold)
+	{
+		return false;
+	}
+
+	ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState);
+	const bool bPrevSuppress = BwayPS ? BwayPS->IsSuppressingMatchGoldEarningsTracking() : false;
+	if (BwayPS)
+	{
+		BwayPS->SetSuppressMatchGoldEarningsTracking(true);
+	}
+
+	const float DesiredMaxGold = FMath::Max(Gold->GetMaxGold(), FMath::Max(static_cast<float>(StartingGold), 10000.0f));
+	ASC->SetNumericAttributeBase(UBwayGoldAttributeSet::GetMaxGoldAttribute(), DesiredMaxGold);
+	ASC->SetNumericAttributeBase(UBwayGoldAttributeSet::GetCurrentGoldAttribute(), static_cast<float>(StartingGold));
+
+	if (BwayPS)
+	{
+		BwayPS->SetSuppressMatchGoldEarningsTracking(bPrevSuppress);
+	}
+	PlayerState->ForceNetUpdate();
+	return true;
 }

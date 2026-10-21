@@ -4,6 +4,12 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "BwayCharacterWithAbilities.h"
+#include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "Buildable/BuildableBase.h"
+#include "Character/LyraHealthComponent.h"
+#include "Combat/BwayDamageLibrary.h"
 #include "Combat/BwayProjectilePresentationData.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
@@ -12,6 +18,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "GameplayEffectTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -19,6 +26,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "Sound/SoundBase.h"
+#include "Teams/LyraTeamSubsystem.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHeroProjectileBase)
 
@@ -109,6 +117,19 @@ void ABwayHeroProjectileBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (HasAuthority())
+	{
+		if (const ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+		{
+			RoundManager = GameState->FindComponentByClass<UBwayRoundManagementComponent>();
+			if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+			{
+				Manager->OnRoundStateChanged.AddDynamic(this, &ABwayHeroProjectileBase::OnRoundStateChanged);
+				RoundResetHandle = Manager->OnRoundResetStarting.AddUObject(this, &ABwayHeroProjectileBase::RemoveForRoundTransition);
+			}
+		}
+	}
+
 	if (PresentData && !bPresentationApplied)
 	{
 		ApplyPresentationInternal(PresentData);
@@ -127,6 +148,17 @@ void ABwayHeroProjectileBase::BeginPlay()
 
 void ABwayHeroProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
+	{
+		Manager->OnRoundStateChanged.RemoveDynamic(this, &ABwayHeroProjectileBase::OnRoundStateChanged);
+		Manager->OnRoundResetStarting.Remove(RoundResetHandle);
+	}
+	RoundResetHandle.Reset();
+	RoundManager.Reset();
+	if (APawn* FiringPawn = GetInstigator())
+	{
+		FiringPawn->MoveIgnoreActorRemove(this);
+	}
 	if (HasAuthority() && !bHasExecutedExpireCue)
 	{
 		bHasExecutedExpireCue = true;
@@ -135,6 +167,102 @@ void ABwayHeroProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayHeroProjectileBase::OnRoundStateChanged(FName NewRoundState)
+{
+	if (NewRoundState != TEXT("RoundActive"))
+	{
+		RemoveForRoundTransition();
+	}
+}
+
+void ABwayHeroProjectileBase::RemoveForRoundTransition()
+{
+	if (HasAuthority())
+	{
+		bRemovingForRoundTransition = true;
+		bHasProcessedTerminalHit = true;
+		ExpireProjectile();
+	}
+}
+
+void ABwayHeroProjectileBase::ConfigureDamageSource(ABwayCharacterWithAbilities* SourceCharacter)
+{
+	SourcePlayerState = SourceCharacter ? SourceCharacter->GetPlayerState<ABwayPlayerState>() : nullptr;
+	SourceAbilitySystem = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(SourcePlayerState.Get());
+	// Preserve the firing-pawn ownership contract; damage attribution is independent of its lifetime.
+	SetOwner(SourceCharacter);
+	SetInstigator(SourceCharacter);
+}
+
+UAbilitySystemComponent* ABwayHeroProjectileBase::GetDamageSourceASC() const
+{
+	ABwayPlayerState* Player = SourcePlayerState.Get();
+	UAbilitySystemComponent* ASC = SourceAbilitySystem.Get();
+	if (!Player || !ASC || ASC->GetOwnerActor() != Player || bRemovingForRoundTransition || IsActorBeingDestroyed())
+	{
+		return nullptr;
+	}
+	if (const ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		if (!GameState->PlayerArray.Contains(Player))
+		{
+			return nullptr;
+		}
+	}
+	return ASC;
+}
+
+AActor* ABwayHeroProjectileBase::GetDamageInstigator() const
+{
+	return SourcePlayerState.Get();
+}
+
+bool ABwayHeroProjectileBase::IsEnemyCharacter(ABwayCharacterWithAbilities* Target) const
+{
+	if (!GetDamageSourceASC() || !IsValid(Target) || Target->IsActorBeingDestroyed())
+	{
+		return false;
+	}
+	const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(Target);
+	const UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Target);
+	if (!Health || Health->IsDeadOrDying() || Health->GetHealth() <= 0.f
+		|| !TargetASC || TargetASC->GetAvatarActor() != Target)
+	{
+		return false;
+	}
+	if (const ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		const int32 SourceTeam = GameState->GetPlayerTeam(SourcePlayerState.Get());
+		const int32 TargetTeam = GameState->GetPlayerTeam(Target->GetPlayerState());
+		return SourceTeam != INDEX_NONE && TargetTeam != INDEX_NONE && SourceTeam != TargetTeam;
+	}
+	if (const ULyraTeamSubsystem* Teams = GetWorld()->GetSubsystem<ULyraTeamSubsystem>())
+	{
+		return Teams->CompareTeams(SourcePlayerState.Get(), Target) == ELyraTeamComparison::DifferentTeams;
+	}
+	return false;
+}
+
+bool ABwayHeroProjectileBase::ApplyDamageToEnemyBuildable(AActor* Target, float RawDamage)
+{
+	const ABuildableActor* Buildable = Cast<ABuildableActor>(Target);
+	UAbilitySystemComponent* SourceASC = GetDamageSourceASC();
+	if (!HasAuthority() || !SourceASC || !IsValid(Buildable) || !Buildable->CanBeDamaged()
+		|| Buildable->IsActorBeingDestroyed() || RawDamage <= 0.f)
+	{
+		return false;
+	}
+	const ULyraTeamSubsystem* Teams = GetWorld()->GetSubsystem<ULyraTeamSubsystem>();
+	const int32 SourceTeam = Teams ? Teams->FindTeamFromObject(SourcePlayerState.Get()) : INDEX_NONE;
+	const int32 TargetTeam = Buildable->GetTeamId().GetId();
+	if (SourceTeam == INDEX_NONE || Buildable->GetTeamId() == FGenericTeamId::NoTeam
+		|| TargetTeam == 0 || SourceTeam == TargetTeam)
+	{
+		return false;
+	}
+	return UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, Target, RawDamage, this, GetDamageInstigator());
 }
 
 void ABwayHeroProjectileBase::OnRep_PresentData()
@@ -204,7 +332,7 @@ void ABwayHeroProjectileBase::OnSphereBeginOverlap(
 
 void ABwayHeroProjectileBase::ProcessHit(const FHitResult& Hit, bool bForceExpire)
 {
-	if (bHasProcessedTerminalHit)
+	if (bHasProcessedTerminalHit || bRemovingForRoundTransition || IsActorBeingDestroyed())
 	{
 		return;
 	}
@@ -277,7 +405,11 @@ void ABwayHeroProjectileBase::ExecuteProjectileCue(
 		return;
 	}
 
-	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetInstigator());
+	UAbilitySystemComponent* ASC = SourceAbilitySystem.Get();
+	if (!ASC)
+	{
+		ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetInstigator());
+	}
 	if (!ASC)
 	{
 		ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner());
@@ -295,12 +427,13 @@ void ABwayHeroProjectileBase::ExecuteProjectileCue(
 	}
 	Params.RawMagnitude = Magnitude;
 	Params.NormalizedMagnitude = Magnitude;
-	Params.Instigator = GetInstigator();
+	AActor* CueInstigator = SourcePlayerState.IsValid() ? GetDamageInstigator() : GetInstigator();
+	Params.Instigator = CueInstigator;
 	Params.EffectCauser = const_cast<ABwayHeroProjectileBase*>(this);
 	Params.SourceObject = this;
 
 	FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
-	Context.AddInstigator(GetInstigator(), const_cast<ABwayHeroProjectileBase*>(this));
+	Context.AddInstigator(CueInstigator, const_cast<ABwayHeroProjectileBase*>(this));
 	Context.AddSourceObject(this);
 	Params.EffectContext = Context;
 

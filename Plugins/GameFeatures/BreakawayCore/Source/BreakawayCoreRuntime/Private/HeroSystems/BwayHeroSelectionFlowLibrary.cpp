@@ -103,7 +103,8 @@ bool UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(cons
 FPrimaryAssetId UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroIdForGameMode(const AGameModeBase* GameMode)
 {
 #if WITH_EDITOR
-	if (!IsDirectEditorPlayMatchMapForGameMode(GameMode) || ShouldForceHumanoidGameMode(GameMode))
+	if (!IsDirectEditorPlayMatchMapForGameMode(GameMode) || ShouldForceHumanoidGameMode(GameMode)
+		|| HasUrlOptionForGameMode(GameMode, TEXT("ArenaIntro")))
 	{
 		return FPrimaryAssetId();
 	}

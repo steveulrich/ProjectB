@@ -66,6 +66,14 @@ public:
 	UBwayUpgradeEffect_RespawnTimeReduction();
 };
 
+UENUM(BlueprintType)
+enum class EBwayUpgradeCategory : uint8
+{
+	Attack	UMETA(DisplayName = "ATTACK"),
+	Defense	UMETA(DisplayName = "DEFENSE"),
+	Misc	UMETA(DisplayName = "MISC")
+};
+
 USTRUCT(BlueprintType)
 struct FBwayUpgradeRank
 {
@@ -93,6 +101,17 @@ struct FBwayUpgradeDefinition
 	TSubclassOf<UBwayUpgradeEffect> EffectClass;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FBwayUpgradeRank> Ranks;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EBwayUpgradeCategory Category = EBwayUpgradeCategory::Attack;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bHasExplicitCategory = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bIsRecommended = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bHasExplicitRecommended = false;
+
+	EBwayUpgradeCategory GetEffectiveCategory() const;
+	bool IsEffectiveRecommended() const;
 };
 
 /** Immutable match catalog. A hard reference from the owning component retains/cooks definitions. */

@@ -57,6 +57,7 @@ public class BreakawayCoreRuntime : ModuleRules
 				"MediaAssets",
 				"NetCore",
 				"PhysicsCore",
+				"RHI", // Effective renderer telemetry in development transport fixtures.
 				"Slate",
 				"Sockets",
 				"SlateCore"

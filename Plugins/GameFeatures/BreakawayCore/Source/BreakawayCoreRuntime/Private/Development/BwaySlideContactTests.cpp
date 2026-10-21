@@ -7,6 +7,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Engine/World.h"
 #include "UObject/UObjectGlobals.h"
+#include "Development/BwaySlideReviewCourse.h"
 
 namespace BwaySlideContactTest
 {
@@ -224,5 +225,68 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideCornerContactTest, "Breakaway.CombatP
 bool FBwaySlideCornerContactTest::RunTest(const FString&)
 {
 	return BwaySlideContactTest::Run(*this, BwaySlideContactTest::EScene::Corner);
+}
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideConcaveTimeBudgetTest,
+	"Breakaway.CombatPolish.Slide.Physics.Contact.ConcaveTimeBudget",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwaySlideConcaveTimeBudgetTest::RunTest(const FString&)
+{
+	const auto Settings = UWorld::InitializationValues().AllowAudioPlayback(false).CreatePhysicsScene(true)
+		.CreateNavigation(false).CreateAISystem(false).ShouldSimulatePhysics(false).SetTransactional(false);
+	UWorld* World = UWorld::CreateWorld(EWorldType::Game, false, NAME_None, nullptr, true, ERHIFeatureLevel::Num, &Settings);
+	if (!TestNotNull(TEXT("Concave fixture world"), World)) return false;
+	TArray<TWeakObjectPtr<AActor>> Course;
+	const auto Finish = [World, &Course]() { BwaySlideReviewCourse::Destroy(Course); World->DestroyWorld(false); };
+	UClass* PawnClass = LoadClass<ABwayCharacterWithAbilities>(nullptr,
+		TEXT("/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C"));
+	FActorSpawnParameters Spawn; Spawn.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	auto* Pawn = PawnClass ? World->SpawnActor<ABwayCharacterWithAbilities>(PawnClass, FVector(0, 0, 8000), FRotator::ZeroRotator, Spawn) : nullptr;
+	if (!TestNotNull(TEXT("Authored production pawn"), Pawn)) { Finish(); return false; }
+	if (!TestTrue(TEXT("Shared real collision course"), BwaySlideReviewCourse::Spawn(World, Course, Pawn->GetCapsuleComponent()->GetScaledCapsuleRadius())))
+	{ Finish(); return false; }
+	auto* Move = Pawn->GetBwayCharacterMovement();
+	Move->bRunPhysicsWithNoController = true;
+	int32 Branches = 0, Decisive = 0;
+	const FDelegateHandle Observer = Move->SlideReviewObserver.AddLambda([this, &Branches, &Decisive](const FBwaySlideReviewObservation& O)
+	{
+		if (O.bJump) return;
+		++Branches;
+		const float R = 1.f - O.FirstHitFraction;
+		const float Budget = O.FirstHitFraction + R * O.SlideConsumedFraction + O.ContinuationFraction;
+		const float LegacyBudget = O.FirstHitFraction + R * O.SlideConsumedFraction + R * (1.f - O.FinalHitFraction);
+		TestTrue(TEXT("Actual concave continuation stays inside one simulation step"), FMath::IsFinite(Budget) && Budget <= 1.0001f && O.ContinuationFraction >= 0.f);
+		TestTrue(TEXT("Independent planar displacement bound"), FVector::Dist2D(O.Start, O.End) <= O.BeforeVelocity.Size() * O.DeltaSeconds + 1.f);
+		if (LegacyBudget > 1.001f && O.SlideConsumedFraction > O.FinalHitFraction + 0.001f) ++Decisive;
+		AddInfo(FString::Printf(TEXT("SlideConcaveContact: dt=%.7f firstHit=%.7f consumed=%.7f finalHit=%.7f continuation=%.7f budget=%.7f legacyBudget=%.7f firstNormal=%s finalNormal=%s start=%s end=%s beforeVelocity=%s afterVelocity=%s"),
+			O.DeltaSeconds, O.FirstHitFraction, O.SlideConsumedFraction, O.FinalHitFraction, O.ContinuationFraction, Budget, LegacyBudget,
+			*O.FirstNormal.ToString(), *O.FinalNormal.ToString(), *O.Start.ToString(), *O.End.ToString(), *O.BeforeVelocity.ToString(), *O.AfterVelocity.ToString()));
+	});
+	for (int32 Hertz : {30, 60, 120})
+	{
+		Branches = 0; Decisive = 0;
+		Move->StopMovementImmediately(); Move->SetMovementMode(MOVE_Custom, uint8(ECustomMovementMode::CMOVE_Slide));
+		const FVector InitialPosition = BwaySlideReviewCourse::ConcaveStart(Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+		Pawn->SetActorLocation(InitialPosition, false, nullptr, ETeleportType::TeleportPhysics);
+		Move->FindFloor(InitialPosition, Move->CurrentFloor, false);
+		if (!TestTrue(TEXT("Concave initial state is supported by the real flat face"), Move->CurrentFloor.IsWalkableFloor()
+			&& !Move->CurrentFloor.HitResult.bStartPenetrating && Move->CurrentFloor.HitResult.ImpactNormal.Z > 0.999f))
+		{ Move->SlideReviewObserver.Remove(Observer); Finish(); return false; }
+		Move->Velocity = BwaySlideReviewCourse::ConcaveVelocity();
+		AddInfo(FString::Printf(TEXT("SlideConcaveSeed: hz=%d radius=%.6f halfHeight=%.6f initial=%s velocity=%s floorDistance=%.6f floorNormal=%s friction=%.6f gravity=%.6f speedCap=%.6f"),
+			Hertz, Pawn->GetCapsuleComponent()->GetScaledCapsuleRadius(), Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight(),
+			*InitialPosition.ToString(), *Move->Velocity.ToString(), Move->CurrentFloor.GetDistanceToFloor(), *Move->CurrentFloor.HitResult.ImpactNormal.ToString(),
+			Move->SlideBaseFrictionFactor, Move->GetGravityZ(), Move->GetMaxSpeed()));
+		// One production step with actual capsule sweeps; no fabricated hit or
+		// repeated phase search can stand in for the required three-contact path.
+		Move->PhysCustom(1.f / Hertz, 0);
+		AddInfo(FString::Printf(TEXT("SlideConcaveEnd: hz=%d position=%s velocity=%s floorDistance=%.6f floorNormal=%s"),
+			Hertz, *Pawn->GetActorLocation().ToString(), *Move->Velocity.ToString(), Move->CurrentFloor.GetDistanceToFloor(), *Move->CurrentFloor.HitResult.ImpactNormal.ToString()));
+		AddInfo(FString::Printf(TEXT("SlideConcave: hz=%d realBranches=%d legacyOverrunControls=%d"), Hertz, Branches, Decisive));
+		TestTrue(FString::Printf(TEXT("%d Hz reaches actual concave branch"), Hertz), Branches > 0);
+		TestTrue(FString::Printf(TEXT("%d Hz rejects old last-hit timing on real contacts"), Hertz), Decisive > 0);
+	}
+	Move->SlideReviewObserver.Remove(Observer);
+	Finish();
+	return true; // The framework retains every failed TestTrue assertion above.
 }
 #endif

@@ -26,6 +26,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
 	void ConfigureRelicAI(UBehaviorTree* InBehaviorTree, UBlackboardData* InBlackboard);
 
+	/** Assign the bot difficulty tier ("Normal" or "Elite") from Match Settings. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
+	void SetBotDifficultyTier(FName InDifficultyTier);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Relic Bot")
+	FName GetBotDifficultyTier() const { return BotDifficultyTier; }
+
 	/** Start or restart behavior-tree logic (safe to call after round respawn). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Relic Bot")
 	void StartRelicBotLogic();
@@ -39,6 +46,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breakaway|Relic Bot")
 	TObjectPtr<UBlackboardData> RelicBlackboard;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Breakaway|Relic Bot")
+	FName BotDifficultyTier = FName(TEXT("Normal"));
 
 protected:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

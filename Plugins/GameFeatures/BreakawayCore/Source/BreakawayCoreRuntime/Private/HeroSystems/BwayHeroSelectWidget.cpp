@@ -9,10 +9,28 @@
 #include "GameFramework/PlayerController.h"
 #include "GameState/BwayFrontendStateSubsystem.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
+#include "HeroSystems/BwayHeroPreviewActor.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "UI/Foundation/LyraButtonBase.h"
+#include "Blueprint/WidgetTree.h"
+#include "Components/Border.h"
+#include "Components/Button.h"
+#include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
+#include "Components/Image.h"
+#include "Components/Overlay.h"
+#include "Components/OverlaySlot.h"
+#include "Components/SizeBox.h"
+#include "Components/Spacer.h"
+#include "Components/TextBlock.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
+#include "Kismet/GameplayStatics.h"
+#include "Sound/SoundBase.h"
 #include "TimerManager.h"
 #include "CommonTextBlock.h"
 #include "CommonInputModeTypes.h"
@@ -24,6 +42,157 @@ UBwayHeroSelectWidget::UBwayHeroSelectWidget(
 
 TOptional<FUIInputConfig> UBwayHeroSelectWidget::GetDesiredInputConfig() const {
   return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
+}
+
+TSharedRef<SWidget> UBwayHeroSelectWidget::RebuildWidget() {
+  UOverlay* Root = nullptr;
+  if (WidgetTree && !WidgetTree->RootWidget) {
+    Root = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass(), TEXT("HeroSelectRootOverlay"));
+    WidgetTree->RootWidget = Root;
+  } else if (WidgetTree) {
+    if (UPanelWidget* ExistingRoot = Cast<UPanelWidget>(WidgetTree->RootWidget);
+        ExistingRoot && ExistingRoot->GetChildrenCount() == 0) {
+      Root = Cast<UOverlay>(ExistingRoot);
+      if (!Root) {
+        Root = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass(), TEXT("HeroSelectRootOverlay"));
+        ExistingRoot->AddChild(Root);
+      }
+    }
+  }
+
+  if (Root) {
+    bUsingFallbackLayout = true;
+    const FLinearColor GoldColor(0.95f, 0.78f, 0.32f, 1.0f);
+    const FLinearColor CyanColor(0.18f, 0.72f, 0.92f, 1.0f);
+    const FLinearColor DarkPanel(0.03f, 0.06f, 0.11f, 0.90f);
+
+    auto MakeTxt = [this](const FText& Txt, int32 Size, const FLinearColor& Col) {
+      UTextBlock* Block = WidgetTree->ConstructWidget<UTextBlock>();
+      Block->SetText(Txt);
+      Block->SetColorAndOpacity(FSlateColor(Col));
+      FSlateFontInfo Font = Block->GetFont();
+      Font.Size = Size;
+      Block->SetFont(Font);
+      return Block;
+    };
+
+    // Left-side Column: Selected Hero Header + 3-Column Skewed Portrait Grid + Currency + READY!
+    UVerticalBox* LeftColumn = WidgetTree->ConstructWidget<UVerticalBox>();
+    UOverlaySlot* LeftSlot = Root->AddChildToOverlay(LeftColumn);
+    LeftSlot->SetHorizontalAlignment(HAlign_Left);
+    LeftSlot->SetVerticalAlignment(VAlign_Center);
+    LeftSlot->SetPadding(FMargin(56.f, 32.f, 0.f, 32.f));
+
+    // Top-left Selected Hero Header (Name, Role/Class subtitle, Level 99)
+    UBorder* HeaderBanner = WidgetTree->ConstructWidget<UBorder>();
+    HeaderBanner->SetBrushColor(DarkPanel);
+    HeaderBanner->SetPadding(FMargin(20.f, 12.f));
+    LeftColumn->AddChildToVerticalBox(HeaderBanner)->SetPadding(FMargin(0.f, 0.f, 0.f, 18.f));
+
+    UHorizontalBox* HeaderHBox = WidgetTree->ConstructWidget<UHorizontalBox>();
+    HeaderBanner->SetContent(HeaderHBox);
+
+    UVerticalBox* NameRoleBox = WidgetTree->ConstructWidget<UVerticalBox>();
+    FallbackHeroNameText = MakeTxt(NSLOCTEXT("BwayHeroSelect", "DefaultHeroName", "RAWLINS"), 32, FLinearColor::White);
+    FallbackHeroClassText = MakeTxt(NSLOCTEXT("BwayHeroSelect", "DefaultHeroRole", "SHOOTER"), 16, GoldColor);
+    NameRoleBox->AddChildToVerticalBox(FallbackHeroNameText);
+    NameRoleBox->AddChildToVerticalBox(FallbackHeroClassText);
+    HeaderHBox->AddChildToHorizontalBox(NameRoleBox)->SetPadding(FMargin(0.f, 0.f, 28.f, 0.f));
+
+    UBorder* LevelBadge = WidgetTree->ConstructWidget<UBorder>();
+    LevelBadge->SetBrushColor(FLinearColor(0.08f, 0.14f, 0.22f, 0.95f));
+    LevelBadge->SetPadding(FMargin(12.f, 8.f));
+    FallbackHeroLevelText = MakeTxt(NSLOCTEXT("BwayHeroSelect", "DefaultHeroLvl", "99"), 22, CyanColor);
+    LevelBadge->SetContent(FallbackHeroLevelText);
+    HeaderHBox->AddChildToHorizontalBox(LevelBadge)->SetVerticalAlignment(VAlign_Center);
+
+    // 3-Column Skewed Hero Portrait Grid
+    USizeBox* GridSizeBox = WidgetTree->ConstructWidget<USizeBox>();
+    GridSizeBox->SetWidthOverride(420.f);
+    FWidgetTransform SkewTransform;
+    SkewTransform.Shear = FVector2D(-5.0f, 0.0f);
+    GridSizeBox->SetRenderTransform(SkewTransform);
+
+    FallbackPortraitGrid = WidgetTree->ConstructWidget<UUniformGridPanel>();
+    FallbackPortraitGrid->SetSlotPadding(FMargin(6.f));
+    GridSizeBox->AddChild(FallbackPortraitGrid);
+    LeftColumn->AddChildToVerticalBox(GridSizeBox)->SetPadding(FMargin(0.f, 0.f, 0.f, 18.f));
+
+    // Currency Display + READY! Button
+    UBorder* CurrencyBar = WidgetTree->ConstructWidget<UBorder>();
+    CurrencyBar->SetBrushColor(DarkPanel);
+    CurrencyBar->SetPadding(FMargin(16.f, 8.f));
+    UTextBlock* CurrencyText = MakeTxt(NSLOCTEXT("BwayHeroSelect", "CurrencyReadout", "GOLD: 564100"), 15, GoldColor);
+    CurrencyBar->SetContent(CurrencyText);
+    LeftColumn->AddChildToVerticalBox(CurrencyBar)->SetPadding(FMargin(0.f, 0.f, 0.f, 12.f));
+
+    USizeBox* ReadyBtnSize = WidgetTree->ConstructWidget<USizeBox>();
+    ReadyBtnSize->SetWidthOverride(280.f);
+    FallbackReadyButton = WidgetTree->ConstructWidget<UButton>();
+    FallbackReadyButton->SetBackgroundColor(GoldColor);
+    UBorder* ReadyPad = WidgetTree->ConstructWidget<UBorder>();
+    ReadyPad->SetBrushColor(FLinearColor::Transparent);
+    ReadyPad->SetPadding(FMargin(24.f, 12.f));
+    FallbackReadyLabel = MakeTxt(NSLOCTEXT("BwayHeroSelect", "ReadyBtn", "READY!"), 24, FLinearColor::White);
+    FallbackReadyLabel->SetJustification(ETextJustify::Center);
+    ReadyPad->SetContent(FallbackReadyLabel);
+    FallbackReadyButton->AddChild(ReadyPad);
+    FallbackReadyButton->OnClicked.AddDynamic(this, &ThisClass::OnFallbackReadyClicked);
+    ReadyBtnSize->AddChild(FallbackReadyButton);
+    LeftColumn->AddChildToVerticalBox(ReadyBtnSize);
+
+    // Bottom-Right Sub-Panels (SKINS, TAUNTS, WEAPONS, ABILITIES toggle, ASSEMBLE TEAM 99 countdown)
+    UVerticalBox* BottomRightColumn = WidgetTree->ConstructWidget<UVerticalBox>();
+    UOverlaySlot* BottomRightSlot = Root->AddChildToOverlay(BottomRightColumn);
+    BottomRightSlot->SetHorizontalAlignment(HAlign_Right);
+    BottomRightSlot->SetVerticalAlignment(VAlign_Bottom);
+    BottomRightSlot->SetPadding(FMargin(0.f, 0.f, 56.f, 36.f));
+
+    // Collapsible ABILITIES details panel
+    FallbackAbilitiesPanel = WidgetTree->ConstructWidget<UBorder>();
+    FallbackAbilitiesPanel->SetBrushColor(DarkPanel);
+    FallbackAbilitiesPanel->SetPadding(FMargin(18.f, 14.f));
+    FallbackAbilitiesPanel->SetVisibility(ESlateVisibility::Collapsed);
+    FallbackAbilitiesText = MakeTxt(FText::GetEmpty(), 14, FLinearColor::White);
+    FallbackAbilitiesText->SetAutoWrapText(true);
+    FallbackAbilitiesPanel->SetContent(FallbackAbilitiesText);
+    BottomRightColumn->AddChildToVerticalBox(FallbackAbilitiesPanel)->SetPadding(FMargin(0.f, 0.f, 0.f, 12.f));
+
+    // Customization & Abilities bar (SKINS | TAUNTS | WEAPONS | ABILITIES)
+    UHorizontalBox* SubPanelsRow = WidgetTree->ConstructWidget<UHorizontalBox>();
+    BottomRightColumn->AddChildToVerticalBox(SubPanelsRow)->SetPadding(FMargin(0.f, 0.f, 0.f, 14.f));
+
+    auto AddCosmeticTag = [this, SubPanelsRow, &MakeTxt, &DarkPanel](const FText& LabelText) {
+      UBorder* Box = WidgetTree->ConstructWidget<UBorder>();
+      Box->SetBrushColor(DarkPanel);
+      Box->SetPadding(FMargin(16.f, 10.f));
+      Box->SetContent(MakeTxt(LabelText, 14, FLinearColor(0.78f, 0.84f, 0.92f, 1.f)));
+      SubPanelsRow->AddChildToHorizontalBox(Box)->SetPadding(FMargin(4.f, 0.f));
+    };
+    AddCosmeticTag(NSLOCTEXT("BwayHeroSelect", "Sub_Skins", "SKINS"));
+    AddCosmeticTag(NSLOCTEXT("BwayHeroSelect", "Sub_Taunts", "TAUNTS"));
+    AddCosmeticTag(NSLOCTEXT("BwayHeroSelect", "Sub_Weapons", "WEAPONS"));
+
+    UButton* AbilitiesToggleBtn = WidgetTree->ConstructWidget<UButton>();
+    AbilitiesToggleBtn->SetBackgroundColor(FLinearColor(0.08f, 0.22f, 0.36f, 0.95f));
+    UBorder* AbilPad = WidgetTree->ConstructWidget<UBorder>();
+    AbilPad->SetBrushColor(FLinearColor::Transparent);
+    AbilPad->SetPadding(FMargin(16.f, 10.f));
+    AbilPad->SetContent(MakeTxt(NSLOCTEXT("BwayHeroSelect", "Sub_Abilities", "ABILITIES"), 14, CyanColor));
+    AbilitiesToggleBtn->AddChild(AbilPad);
+    AbilitiesToggleBtn->OnClicked.AddDynamic(this, &ThisClass::OnFallbackAbilitiesToggleClicked);
+    SubPanelsRow->AddChildToHorizontalBox(AbilitiesToggleBtn)->SetPadding(FMargin(4.f, 0.f));
+
+    // Bottom-Right 99-second countdown timer ("ASSEMBLE TEAM 99")
+    UBorder* TimerFrame = WidgetTree->ConstructWidget<UBorder>();
+    TimerFrame->SetBrushColor(DarkPanel);
+    TimerFrame->SetPadding(FMargin(22.f, 10.f));
+    FallbackTimerText = MakeTxt(NSLOCTEXT("BwayHeroSelect", "AssembleTeam99", "ASSEMBLE TEAM   99"), 24, GoldColor);
+    FallbackTimerText->SetJustification(ETextJustify::Right);
+    TimerFrame->SetContent(FallbackTimerText);
+    BottomRightColumn->AddChildToVerticalBox(TimerFrame)->SetHorizontalAlignment(HAlign_Right);
+  }
+  return Super::RebuildWidget();
 }
 
 void UBwayHeroSelectWidget::NativeConstruct() {
@@ -71,6 +240,7 @@ void UBwayHeroSelectWidget::NativeConstruct() {
 }
 
 void UBwayHeroSelectWidget::NativeDestruct() {
+  CleanupPreviewActor();
   UnbindFromPlayerState();
   UnbindFromSelectionManager();
   UnbindFromSelectionPhase();
@@ -106,10 +276,23 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
 
   // Trigger initial refresh
   OnHeroListChanged();
+  RefreshFallbackHeroSelectLayout();
+
+  // If no hero is selected yet, pre-highlight the first available hero so the 3D preview and header populate
+  if (!GetSelectedHeroId().IsValid()) {
+    const TArray<FHeroDisplayInfo> Available = GetAvailableHeroes();
+    for (const FHeroDisplayInfo& Info : Available) {
+      if (Info.bIsAvailable && Info.HeroId.IsValid()) {
+        SelectHero(Info.HeroId);
+        break;
+      }
+    }
+  }
 
   // Selection can replicate before this screen is activated.
   if (GetSelectedHeroId().IsValid()) {
     OnLocalSelectionChanged(GetSelectedHeroId());
+    EnsureAndUpdatePreviewActor(GetSelectedHeroId());
   }
   if (IsSelectionLocked()) {
     OnLocalSelectionLocked(GetSelectedHeroId());
@@ -117,6 +300,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
     OnLocalSelectionUnlocked();
   }
   RefreshHeroDetails();
+  RefreshFallbackHeroSelectLayout();
   RefreshTravelFailurePresentation();
 
   bIsInitialized = true;
@@ -124,6 +308,7 @@ void UBwayHeroSelectWidget::NativeOnActivated() {
 }
 
 void UBwayHeroSelectWidget::NativeOnDeactivated() {
+  CleanupPreviewActor();
   UnbindFromPlayerState();
   UnbindFromSelectionManager();
   UnbindFromSelectionPhase();
@@ -263,6 +448,8 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
 
     // Send selection to server
     LocalPlayerState->ServerSetSelectedHeroId(HeroId);
+    EnsureAndUpdatePreviewActor(HeroId);
+    RefreshFallbackHeroSelectLayout();
     UE_LOG(LogTemp, Log,
            TEXT("BwayHeroSelectWidget: Selected hero %s (Server Route)"),
            *HeroId.ToString());
@@ -270,8 +457,10 @@ bool UBwayHeroSelectWidget::SelectHero(FPrimaryAssetId HeroId) {
     // Offline Front-end route
     FrontendSubsystem->SetSelectedHeroId(HeroId);
     OnLocalSelectionChanged(HeroId);
+    EnsureAndUpdatePreviewActor(HeroId);
     RefreshHeroDetails();
     OnHeroListChanged(); // Force redraw the selection highlight locally
+    RefreshFallbackHeroSelectLayout();
     UE_LOG(LogTemp, Log,
            TEXT("BwayHeroSelectWidget: Selected hero %s (Frontend Route)"),
            *HeroId.ToString());
@@ -324,6 +513,14 @@ bool UBwayHeroSelectWidget::LockSelection() {
 
   // Send lock request to server
   LocalPlayerState->ServerLockHeroSelection();
+
+  // Play the hero's lock-in voice line if configured on the HeroDataAsset
+  if (UBwayHeroDataAsset* HeroData = GetHeroDataAsset(SelectedHero)) {
+    if (HeroData->VoiceBank) {
+      UGameplayStatics::PlaySound2D(this, HeroData->VoiceBank);
+    }
+  }
+  RefreshFallbackHeroSelectLayout();
 
   UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectWidget: Locked selection"));
   return true;
@@ -654,10 +851,12 @@ void UBwayHeroSelectWidget::HandlePlayerSelectionChanged(
 
   // Notify blueprint
   OnLocalSelectionChanged(NewHeroId);
+  EnsureAndUpdatePreviewActor(NewHeroId);
   RefreshHeroDetails();
 
   // Refresh hero list (availability may have changed)
   OnHeroListChanged();
+  RefreshFallbackHeroSelectLayout();
   RefreshTravelFailurePresentation();
 }
 
@@ -669,6 +868,7 @@ void UBwayHeroSelectWidget::HandlePlayerHeroLocked(
 
   // Notify blueprint
   OnLocalSelectionLocked(LockedHeroId);
+  RefreshFallbackHeroSelectLayout();
   RefreshTravelFailurePresentation();
 }
 
@@ -724,26 +924,200 @@ void UBwayHeroSelectWidget::UpdateSelectionTimer() {
     SelectionTimerWidget->SetVisibility(RemainingTime >= 0.0f
         ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
   }
+  if (FallbackTimerText) {
+    const int32 DisplaySecs = RemainingTime >= 0.0f ? FMath::CeilToInt(RemainingTime) : 99;
+    FallbackTimerText->SetText(FText::Format(
+        NSLOCTEXT("BwayHeroSelect", "AssembleTeamFmt", "ASSEMBLE TEAM   {0}"),
+        FText::AsNumber(DisplaySecs)));
+  }
 }
 
 void UBwayHeroSelectWidget::RefreshHeroDetails() {
-  if (!Text_HeroDetails) {
-    return;
-  }
   FHeroDisplayInfo Hero;
-  if (!GetSelectedHeroDisplayInfo(Hero)) {
-    Text_HeroDetails->SetText(NSLOCTEXT("BwayHeroSelect", "ChooseHero", "Choose a hero to view their stats and abilities."));
-    return;
-  }
-  FText Details = FText::Format(
-      NSLOCTEXT("BwayHeroSelect", "Stats", "Health: {0}   Attack: {1}\nArmor: {2}   Speed: {3}"),
-      FText::AsNumber(Hero.Stats.MaxHealth), FText::AsNumber(Hero.Stats.BaseDamage),
-      FText::AsNumber(Hero.Stats.Armor), FText::AsNumber(Hero.Stats.MoveSpeed));
-  for (const FAbilityDisplayInfo& Ability : Hero.Abilities) {
-    if (!Ability.AbilityName.IsEmpty()) {
-      Details = FText::Format(NSLOCTEXT("BwayHeroSelect", "AbilityDetails", "{0}\n\n{1}\n{2}"),
-          Details, Ability.AbilityName, Ability.Description);
+  const bool bHasHero = GetSelectedHeroDisplayInfo(Hero);
+  if (bHasHero) {
+    FText Details = FText::Format(
+        NSLOCTEXT("BwayHeroSelect", "Stats", "Health: {0}   Attack: {1}\nArmor: {2}   Speed: {3}"),
+        FText::AsNumber(Hero.Stats.MaxHealth), FText::AsNumber(Hero.Stats.BaseDamage),
+        FText::AsNumber(Hero.Stats.Armor), FText::AsNumber(Hero.Stats.MoveSpeed));
+    for (const FAbilityDisplayInfo& Ability : Hero.Abilities) {
+      if (!Ability.AbilityName.IsEmpty()) {
+        Details = FText::Format(NSLOCTEXT("BwayHeroSelect", "AbilityDetails", "{0}\n\n{1}\n{2}"),
+            Details, Ability.AbilityName, Ability.Description);
+      }
+    }
+    if (Text_HeroDetails) {
+      Text_HeroDetails->SetText(Details);
+    }
+    if (FallbackAbilitiesText) {
+      FallbackAbilitiesText->SetText(Details);
+    }
+  } else {
+    const FText EmptyPrompt = NSLOCTEXT("BwayHeroSelect", "ChooseHero", "Choose a hero to view their stats and abilities.");
+    if (Text_HeroDetails) {
+      Text_HeroDetails->SetText(EmptyPrompt);
+    }
+    if (FallbackAbilitiesText) {
+      FallbackAbilitiesText->SetText(EmptyPrompt);
     }
   }
-  Text_HeroDetails->SetText(Details);
 }
+
+void UBwayHeroSelectWidget::ToggleAbilitiesPanel() {
+  bAbilitiesPanelVisible = !bAbilitiesPanelVisible;
+  if (FallbackAbilitiesPanel) {
+    FallbackAbilitiesPanel->SetVisibility(
+        bAbilitiesPanelVisible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+  }
+}
+
+bool UBwayHeroSelectWidget::SelectHeroByIndex(int32 Index) {
+  const TArray<FHeroDisplayInfo> Heroes = GetAvailableHeroes();
+  if (!Heroes.IsValidIndex(Index)) {
+    return false;
+  }
+  return SelectHero(Heroes[Index].HeroId);
+}
+
+void UBwayHeroSelectWidget::EnsureAndUpdatePreviewActor(FPrimaryAssetId HeroId) {
+  UWorld* World = GetWorld();
+  if (!World || !World->IsGameWorld()) {
+    return;
+  }
+
+  UBwayHeroDataAsset* HeroData = GetHeroDataAsset(HeroId);
+  if (!PreviewActor || !IsValid(PreviewActor)) {
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+    SpawnParams.ObjectFlags |= RF_Transient;
+    PreviewActor = World->SpawnActor<ABwayHeroPreviewActor>(
+        ABwayHeroPreviewActor::StaticClass(),
+        FVector(0.0f, 0.0f, 1450.0f),
+        FRotator(0.0f, -20.0f, 0.0f),
+        SpawnParams);
+  }
+
+  if (PreviewActor) {
+    PreviewActor->UpdatePreviewHero(HeroData);
+    if (APlayerController* PC = GetOwningPlayer()) {
+      if (!PC->GetPawn() && PC->GetViewTarget() != PreviewActor) {
+        PC->SetViewTargetWithBlend(PreviewActor, 0.25f);
+      }
+    }
+  }
+}
+
+void UBwayHeroSelectWidget::CleanupPreviewActor() {
+  if (PreviewActor && IsValid(PreviewActor)) {
+    if (APlayerController* PC = GetOwningPlayer()) {
+      if (PC->GetViewTarget() == PreviewActor && PC->GetPawn()) {
+        PC->SetViewTarget(PC->GetPawn());
+      }
+    }
+    PreviewActor->Destroy();
+  }
+  PreviewActor = nullptr;
+}
+
+void UBwayHeroSelectWidget::RefreshFallbackHeroSelectLayout() {
+  if (!bUsingFallbackLayout) {
+    return;
+  }
+
+  FHeroDisplayInfo SelectedInfo;
+  if (GetSelectedHeroDisplayInfo(SelectedInfo)) {
+    if (FallbackHeroNameText) {
+      FallbackHeroNameText->SetText(FText::FromString(SelectedInfo.DisplayName.ToString().ToUpper()));
+    }
+    if (FallbackHeroClassText) {
+      FallbackHeroClassText->SetText(FText::FromString(SelectedInfo.ClassName.ToString().ToUpper()));
+    }
+  }
+
+  const bool bLocked = IsSelectionLocked();
+  if (FallbackReadyLabel) {
+    FallbackReadyLabel->SetText(bLocked
+        ? NSLOCTEXT("BwayHeroSelect", "LockedInState", "LOCKED IN")
+        : NSLOCTEXT("BwayHeroSelect", "ReadyState", "READY!"));
+  }
+  if (FallbackReadyButton) {
+    FallbackReadyButton->SetBackgroundColor(bLocked
+        ? FLinearColor(0.18f, 0.56f, 0.28f, 1.0f)
+        : FLinearColor(0.95f, 0.78f, 0.32f, 1.0f));
+  }
+
+  if (!FallbackPortraitGrid) {
+    return;
+  }
+
+  const TArray<FHeroDisplayInfo> Heroes = GetAvailableHeroes();
+  FallbackGridHeroIds.Reset();
+  FallbackPortraitGrid->ClearChildren();
+
+  for (int32 Idx = 0; Idx < Heroes.Num(); ++Idx) {
+    const FHeroDisplayInfo& Info = Heroes[Idx];
+    FallbackGridHeroIds.Add(Info.HeroId);
+
+    UButton* PortraitBtn = WidgetTree->ConstructWidget<UButton>();
+    PortraitBtn->SetBackgroundColor(Info.bIsSelected
+        ? FLinearColor(0.98f, 0.82f, 0.30f, 1.0f)
+        : (Info.bIsAvailable ? FLinearColor(0.08f, 0.14f, 0.24f, 0.94f) : FLinearColor(0.15f, 0.15f, 0.15f, 0.60f)));
+
+    UBorder* Inner = WidgetTree->ConstructWidget<UBorder>();
+    Inner->SetBrushColor(FLinearColor(0.03f, 0.05f, 0.09f, 0.92f));
+    Inner->SetPadding(FMargin(8.f, 10.f));
+
+    UVerticalBox* CellVBox = WidgetTree->ConstructWidget<UVerticalBox>();
+    if (Info.bIsSelected || Info.SelectedByPlayerIndex >= 0) {
+      UTextBlock* Badge = WidgetTree->ConstructWidget<UTextBlock>();
+      const int32 PNum = Info.SelectedByPlayerIndex >= 0 ? (Info.SelectedByPlayerIndex + 1) : 1;
+      Badge->SetText(FText::FromString(FString::Printf(TEXT("P%d"), PNum)));
+      Badge->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.f)));
+      FSlateFontInfo BadgeFont = Badge->GetFont();
+      BadgeFont.Size = 12;
+      Badge->SetFont(BadgeFont);
+      CellVBox->AddChildToVerticalBox(Badge);
+    }
+
+    if (Info.Portrait) {
+      UImage* PortraitImg = WidgetTree->ConstructWidget<UImage>();
+      PortraitImg->SetBrushFromTexture(Info.Portrait);
+      PortraitImg->SetDesiredSizeOverride(FVector2D(84.f, 84.f));
+      CellVBox->AddChildToVerticalBox(PortraitImg)->SetHorizontalAlignment(HAlign_Center);
+    }
+
+    UTextBlock* NameLbl = WidgetTree->ConstructWidget<UTextBlock>();
+    NameLbl->SetText(Info.DisplayName);
+    NameLbl->SetJustification(ETextJustify::Center);
+    FSlateFontInfo NameFont = NameLbl->GetFont();
+    NameFont.Size = 13;
+    NameLbl->SetFont(NameFont);
+    CellVBox->AddChildToVerticalBox(NameLbl)->SetPadding(FMargin(0.f, 4.f, 0.f, 0.f));
+
+    Inner->SetContent(CellVBox);
+    PortraitBtn->AddChild(Inner);
+
+    switch (Idx) {
+      case 0: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait0Clicked); break;
+      case 1: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait1Clicked); break;
+      case 2: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait2Clicked); break;
+      case 3: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait3Clicked); break;
+      case 4: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait4Clicked); break;
+      case 5: PortraitBtn->OnClicked.AddDynamic(this, &ThisClass::OnPortrait5Clicked); break;
+      default: break;
+    }
+
+    const int32 Row = Idx / 3;
+    const int32 Col = Idx % 3;
+    FallbackPortraitGrid->AddChildToUniformGrid(PortraitBtn, Row, Col);
+  }
+}
+
+void UBwayHeroSelectWidget::OnFallbackReadyClicked() { ConfirmSelection(); }
+void UBwayHeroSelectWidget::OnFallbackAbilitiesToggleClicked() { ToggleAbilitiesPanel(); }
+void UBwayHeroSelectWidget::OnPortrait0Clicked() { if (FallbackGridHeroIds.IsValidIndex(0)) SelectHero(FallbackGridHeroIds[0]); }
+void UBwayHeroSelectWidget::OnPortrait1Clicked() { if (FallbackGridHeroIds.IsValidIndex(1)) SelectHero(FallbackGridHeroIds[1]); }
+void UBwayHeroSelectWidget::OnPortrait2Clicked() { if (FallbackGridHeroIds.IsValidIndex(2)) SelectHero(FallbackGridHeroIds[2]); }
+void UBwayHeroSelectWidget::OnPortrait3Clicked() { if (FallbackGridHeroIds.IsValidIndex(3)) SelectHero(FallbackGridHeroIds[3]); }
+void UBwayHeroSelectWidget::OnPortrait4Clicked() { if (FallbackGridHeroIds.IsValidIndex(4)) SelectHero(FallbackGridHeroIds[4]); }
+void UBwayHeroSelectWidget::OnPortrait5Clicked() { if (FallbackGridHeroIds.IsValidIndex(5)) SelectHero(FallbackGridHeroIds[5]); }

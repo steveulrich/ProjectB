@@ -39,6 +39,9 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
+#include "Player/LyraCheatManager.h"
+#include "System/LyraGameData.h"
+#include "UObject/ObjectKey.h"
 #include "UObject/UnrealType.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayBarrageTransportProbe)
@@ -46,6 +49,7 @@
 bool FBwayBarrageTransportFrame::NetSerialize(FArchive& Ar, UPackageMap*, bool& bOutSuccess)
 {
 	Ar << Serial << Stage << Witness << Source << Round << Lag << Count << Interval << Life << Cooldown << Speed << Offset << FrameQuantum << KitPath << Players << Teams << Health << Maximum;
+	Ar << Lifecycle << TerminalShots << ExpectedHealth << ReplacementGuids;
 	bOutSuccess = !Ar.IsError();
 	return true;
 }
@@ -53,6 +57,8 @@ bool FBwayBarrageTransportFrame::NetSerialize(FArchive& Ar, UPackageMap*, bool& 
 namespace BwayBarrageTransport
 {
 enum EStage { Waiting = 0, Ready = 1, CastOne = 2, Cooling = 3, CastTwo = 4, Cleanup = 5, Complete = 6, Failed = 7 };
+enum ELifecycle { NoLifecycle = 0, DamageOnly = 1, HealDamage = 2, HealOnly = 3, Death = 4, RoundReset = 5 };
+enum ELifecycleStage { LifePrepare = 10, LifePrepared = 11, LifeCast = 12, LifeSettled = 13, LifeRestored = 14, LifeCooldown = 15, LifeReuse = 16, LifeFinish = 17 };
 const TCHAR* FamilyPath = TEXT("/Script/HeroRawlinsRuntime.BwayGameplayAbility_RawlinsBlazingBarrage");
 const TCHAR* BulletPath = TEXT("/Script/HeroRawlinsRuntime.BwayRawlinsBulletProjectile");
 const TCHAR* MontagePath = TEXT("/BreakawayCore/Animations/AM_BW_Rawlins_Barrage_Placeholder.AM_BW_Rawlins_Barrage_Placeholder");
@@ -173,6 +179,24 @@ using namespace BwayBarrageTransport;
 
 struct FBwayBarrageTransportState
 {
+	struct FLifecycle
+	{
+		TArray<FObjectKey> OldKeys, NewKeys;
+		TArray<FString> OldPaths;
+		TArray<uint64> OldGuids;
+		TArray<FPlayer> CurrentRoster;
+		FObjectKey ActivePawnKey;
+		FString ActivePawnPath;
+		FGameplayAbilitySpecHandle OldHandle;
+		FActiveGameplayEffectHandle CooldownHandle;
+		FPredictionKey CooldownKey;
+		float CooldownStart = 0, CooldownDuration = 0, PreparedHealth = 0, AfterHeal = 0;
+		double FirstShotWorld = -1, ActionWorld = -1, EndWorld = -1, SettleStart = -1;
+		int32 SettledSamples = 0, SettlementSerial = 0;
+		bool bApplied = false, bApplyingHealth = false, bEnded = false, bRestored = false, bReuse = false;
+		bool bDeathObserved = false, bEarlyReject = false, bRemovedNaturally = false, bFirstEndCancelled = false;
+	};
+	FLifecycle Lifecycle;
 	TArray<FPlayer> Roster;
 	int32 SourceIndex = INDEX_NONE;
 	TWeakObjectPtr<APlayerController> LocalController;
@@ -281,6 +305,12 @@ void ABwayBarrageTransportProbe::BeginPlay()
 #if !UE_BUILD_SHIPPING
 	State = MakeShared<FBwayBarrageTransportState>();
 	State->bChangingAim = FParse::Param(FCommandLine::Get(), TEXT("BwayBarrageTransportChangingAim"));
+	FString Scenario;
+	if (FParse::Value(FCommandLine::Get(), TEXT("BwayBarrageLifecycle="), Scenario))
+	{
+		Frame.Lifecycle = Scenario == TEXT("damage-only") ? DamageOnly : Scenario == TEXT("heal-damage") ? HealDamage
+			: Scenario == TEXT("heal-only") ? HealOnly : Scenario == TEXT("death") ? Death : Scenario == TEXT("round-reset") ? RoundReset : -1;
+	}
 #endif
 }
 
@@ -298,6 +328,7 @@ bool ABwayBarrageTransportProbe::WaitFor(const TCHAR* Reason)
 bool ABwayBarrageTransportProbe::SetupAuthority()
 {
 #if !UE_BUILD_SHIPPING
+	if (Frame.Lifecycle < 0 || (Frame.Lifecycle && State->bChangingAim)) { Fail(TEXT("unsupported-lifecycle-mode")); return false; }
 	auto* GS = GetWorld()->GetGameState<ABwayGameState>();
 	auto* Round = GS ? GS->GetRoundManagement() : nullptr;
 	if (!GS) return WaitFor(TEXT("authority-game-state-missing"));
@@ -452,7 +483,7 @@ bool ABwayBarrageTransportProbe::SetupLocal()
 	for (const auto& P : State->Roster)
 		UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: Roster witness=%d source=%d player=%d pawn=%s guid=%llu state=%s asc=%s team=%d round=%d health=%.6f maximum=%.6f net=%d role=%d local=%d controller=%s"),
 			Frame.Witness, Frame.Source, P.Id, *P.Pawn->GetPathName(), Guid(P.Pawn.Get()), *P.State->GetPathName(), *P.ASC->GetPathName(), P.Team, Frame.Round, P.Health, P.Maximum, int32(P.Pawn->GetNetMode()), int32(P.Pawn->GetLocalRole()), P.Pawn->IsLocallyControlled(), *GetPathNameSafe(P.Controller.Get()));
-	Bind();
+	if (Frame.Lifecycle) BindLifecycle(); else Bind();
 	// These Windows counters share the host QPC domain; UTC log prefixes are asynchronous.
 	const double SecondsPerCycle = FPlatformTime::GetSecondsPerCycle64();
 	if (!FMath::IsFinite(SecondsPerCycle) || SecondsPerCycle <= 0.) { Fail(TEXT("invalid-event-clock-frequency")); return false; }
@@ -882,7 +913,12 @@ void ABwayBarrageTransportProbe::ServerReport_Implementation(int32 Serial, int32
 		|| !PC->PlayerState || PC->PlayerState->GetPlayerId() != Frame.Witness
 		|| Serial != Frame.Serial || Stage != Frame.Stage || C->Frame.Serial != Serial || C->Frame.Stage != Stage || !C->State->Witnesses.Contains(this)) return;
 	const auto* Roster = C->State->Roster.FindByPredicate([this](const FPlayer& P) { return P.Id == Frame.Witness; });
-	if (!Roster || Roster->State.Get() != PC->PlayerState || !Roster->Pawn.IsValid() || Roster->Pawn->GetController() != PC || PC->GetPawn() != Roster->Pawn.Get())
+	const bool PawnChain = Frame.Lifecycle
+		? Roster && Roster->State.IsValid() && Roster->ASC.IsValid() && Roster->State->GetLyraAbilitySystemComponent() == Roster->ASC.Get()
+			&& ((Frame.Stage == LifeCast || Frame.Stage == LifeReuse) // Receipt only; settlement separately proves the replacement chain.
+				|| (PC->GetPawn() && PC->GetPawn() == Roster->State->GetPawn() && Roster->ASC->GetAvatarActor() == PC->GetPawn()))
+		: Roster && Roster->Pawn.IsValid() && Roster->Pawn->GetController() == PC && PC->GetPawn() == Roster->Pawn.Get();
+	if (!Roster || Roster->State.Get() != PC->PlayerState || !PawnChain)
 	{ C->Fail(TEXT("witness-owner-identity-changed")); return; }
 	if (!bSuccess) { C->Fail(*FString::Printf(TEXT("witness-%d-%s"), Frame.Witness, *Reason.Left(96))); return; }
 	const int32 Previous = C->State->Acks.FindRef(Frame.Witness);
@@ -1095,6 +1131,7 @@ void ABwayBarrageTransportProbe::Sample(const TCHAR* Phase)
 void ABwayBarrageTransportProbe::Observe()
 {
 #if !UE_BUILD_SHIPPING
+	if (Frame.Lifecycle) { ObserveLifecycle(); return; }
 	if (!State->bLocalReady)
 	{
 		if (Frame.Stage == Ready) SetupLocal();
@@ -1268,6 +1305,7 @@ void ABwayBarrageTransportProbe::Observe()
 void ABwayBarrageTransportProbe::AuthorityTick()
 {
 #if !UE_BUILD_SHIPPING
+	if (Frame.Lifecycle) { AuthorityLifecycle(); return; }
 	if (!State->bCoordinator) return;
 	const double Now = FPlatformTime::Seconds();
 	if (Frame.Stage == Failed)
@@ -1379,10 +1417,525 @@ void ABwayBarrageTransportProbe::AuthorityTick()
 #endif
 }
 
+// Lifecycle scenarios deliberately use separate observers. In particular, a permitted
+// source-health transition or expected avatar replacement never weakens normal Live().
+bool ABwayBarrageTransportProbe::LifecycleRoster(bool bRequireReplacement, bool bLog)
+{
+	if (!State || !State->bLocalReady || !State->Round.IsValid() || !State->LocalController.IsValid()
+		|| !State->LocalState.IsValid() || GetOwner() != State->LocalController.Get()
+		|| State->LocalController->PlayerState != State->LocalState.Get()) return false;
+	auto* GS = GetWorld()->GetGameState<ABwayGameState>();
+	if (!GS || GS->PlayerArray.Num() != 4 || GS->GetRoundManagement() != State->Round.Get()
+		|| State->Round->GetCurrentRoundNumber() != Frame.Round || State->Round->GetCurrentMatchPhase() != EBwayMatchPhase::Playing
+		|| State->Round->GetCurrentRoundState() != ERoundState::RoundActive) return false;
+	auto& L = State->Lifecycle;
+	TArray<FPlayer> Current;
+	for (int32 I = 0; I < State->Roster.Num(); ++I)
+	{
+		const auto& Old = State->Roster[I];
+		if (!Old.State.IsValid() || !Old.ASC.IsValid() || !GS->PlayerArray.Contains(Old.State.Get())
+			|| Old.State->GetPlayerId() != Old.Id || GS->GetPlayerTeam(Old.State.Get()) != Old.Team
+			|| Old.State->GetLyraAbilitySystemComponent() != Old.ASC.Get() || Old.ASC->GetOwnerActor() != Old.State.Get())
+		{ Fail(TEXT("lifecycle-persistent-player-chain-changed")); return false; }
+		auto* Pawn = Cast<ABwayCharacterWithAbilities>(Old.State->GetPawn());
+		if (!Pawn) return false; // Expected unpossessed intervals are not a settled pass.
+		const FObjectKey Key(Pawn);
+		const bool ExpectedReplacement = Frame.Lifecycle == RoundReset || (Frame.Lifecycle == Death && Old.Id == Frame.Source);
+		const bool Replaced = Key != L.OldKeys[I];
+		if (Replaced && (!ExpectedReplacement || Frame.Stage < LifeCast))
+		{ Fail(TEXT("lifecycle-unexpected-avatar-replacement")); return false; }
+		if (Replaced)
+		{
+			if (L.NewKeys[I] != FObjectKey() && L.NewKeys[I] != Key) { Fail(TEXT("lifecycle-third-avatar")); return false; }
+			L.NewKeys[I] = Key;
+		}
+		if (bRequireReplacement && Replaced != ExpectedReplacement) return false;
+		auto* H = ULyraHealthComponent::FindHealthComponent(Pawn);
+		const uint64 PawnGuid = Guid(Pawn);
+		if (!H || H->IsDeadOrDying() || Pawn->GetPlayerState() != Old.State.Get() || Pawn->GetLyraAbilitySystemComponent() != Old.ASC.Get()
+			|| Old.ASC->GetAvatarActor() != Pawn || PawnGuid == 0) return false;
+		if (Frame.ReplacementGuids.Num() == 4 && Frame.ReplacementGuids[I] != PawnGuid) return false;
+		FPlayer P = Old; P.Pawn = Pawn; P.Controller = Cast<APlayerController>(Pawn->GetController());
+		P.Health = Health(P); P.Maximum = Old.ASC->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute());
+		if (!FMath::IsFinite(P.Health) || P.Health <= 0 || !FMath::IsNearlyEqual(P.Maximum, Frame.Maximum[I], .01f))
+		{ Fail(TEXT("lifecycle-invalid-live-health-or-maximum")); return false; }
+		if (HasAuthority() || Pawn->IsLocallyControlled())
+		{
+			if (!P.Controller.IsValid() || P.Controller != Old.Controller || P.Controller->PlayerState != Old.State.Get()
+				|| P.Controller->GetPawn() != Pawn) return false;
+		}
+		if (bLog)
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Roster witness=%d source=%d scenario=%d stage=%d serial=%d player=%d oldPawn=%s pawn=%s oldGuid=%llu guid=%llu state=%s asc=%s team=%d health=%.6f maximum=%.6f replaced=%d expectedReplacement=%d round=%d"),
+				Frame.Witness, Frame.Source, Frame.Lifecycle, Frame.Stage, Frame.Serial, P.Id, *L.OldPaths[I], *Pawn->GetPathName(), L.OldGuids[I], PawnGuid,
+				*P.State->GetPathName(), *P.ASC->GetPathName(), P.Team, P.Health, P.Maximum, Replaced, ExpectedReplacement, Frame.Round);
+		Current.Add(P);
+	}
+	L.CurrentRoster = MoveTemp(Current);
+	return L.CurrentRoster.Num() == 4;
+}
+
+bool ABwayBarrageTransportProbe::ApplyLifecycleHealth(bool bHeal, float Amount, const TCHAR* Reason)
+{
+#if !UE_BUILD_SHIPPING
+	if (!State || !HasAuthority() || GAllowActorScriptExecutionInEditor || !FMath::IsFinite(Amount) || Amount <= 0) return false;
+	const auto* P = State->Source();
+	if (!P || !P->Pawn.IsValid() || !P->Controller.IsValid() || !P->ASC.IsValid()
+		|| P->State->GetPawn() != P->Pawn.Get() || P->ASC->GetAvatarActor() != P->Pawn.Get()) return false;
+	auto* Cheat = Cast<ULyraCheatManager>(P->Controller->CheatManager);
+	if (!Cheat) { Fail(TEXT("lifecycle-production-cheat-route-unavailable")); return false; }
+	const float Before = Health(*P);
+	State->Lifecycle.bApplyingHealth = true;
+	if (bHeal) Cheat->HealSelf(Amount); else Cheat->DamageSelf(Amount);
+	State->Lifecycle.bApplyingHealth = false;
+	const float After = Health(*P);
+	UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: HealthEffect witness=%d source=%d scenario=%d stage=%d reason=%s heal=%d requested=%.6f before=%.6f after=%.6f effect=%s guard=%d worldTime=%.6f"),
+		Frame.Witness, Frame.Source, Frame.Lifecycle, Frame.Stage, Reason, bHeal, Amount, Before, After,
+		*(bHeal ? ULyraGameData::Get().HealGameplayEffect_SetByCaller.ToString() : ULyraGameData::Get().DamageGameplayEffect_SetByCaller.ToString()), GAllowActorScriptExecutionInEditor, GetWorld()->GetTimeSeconds());
+	return FMath::IsFinite(After) && After > 0 && (bHeal ? After > Before : After < Before);
+#else
+	return false;
+#endif
+}
+
+void ABwayBarrageTransportProbe::BindLifecycle()
+{
+#if !UE_BUILD_SHIPPING
+	if (State->bBound) return;
+	State->bBound = true;
+	auto& L = State->Lifecycle;
+	L.OldHandle = State->Handle;
+	for (const auto& P : State->Roster) { L.OldKeys.Add(FObjectKey(P.Pawn.Get())); L.OldPaths.Add(P.Pawn->GetPathName()); L.OldGuids.Add(Guid(P.Pawn.Get())); }
+	L.NewKeys.SetNum(4);
+	L.ActivePawnKey = FObjectKey(State->Source()->Pawn.Get()); L.ActivePawnPath = State->Source()->Pawn->GetPathName();
+	const TWeakObjectPtr<ABwayBarrageTransportProbe> Weak(this);
+	for (int32 I = 0; I < State->Roster.Num(); ++I)
+		State->Roster[I].HealthDelegate = State->Roster[I].ASC->GetGameplayAttributeValueChangeDelegate(ULyraHealthSet::GetHealthAttribute()).AddLambda([Weak, I](const FOnAttributeChangeData& D)
+		{
+			auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned) return;
+			auto& S = *P->State; auto& Life = S.Lifecycle;
+			if (D.NewValue == D.OldValue) return;
+			++S.HealthChanges;
+			const bool Source = S.Roster[I].Id == P->Frame.Source;
+			const bool HealthCase = P->Frame.Lifecycle >= DamageOnly && P->Frame.Lifecycle <= HealOnly;
+			const bool DeathCase = P->Frame.Lifecycle == Death && P->Frame.Stage >= LifeCast && P->Frame.Stage <= LifeRestored;
+			const bool Allowed = Source && FMath::IsFinite(D.OldValue) && FMath::IsFinite(D.NewValue)
+				&& D.NewValue >= 0 && D.NewValue <= P->Frame.Maximum[I] + .01f
+				&& ((HealthCase && P->Frame.Stage >= LifePrepare && P->Frame.Stage <= LifeRestored
+					&& (!P->HasAuthority() || Life.bApplyingHealth)) || DeathCase);
+			if (DeathCase && D.NewValue <= 0) Life.bDeathObserved = true;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Health witness=%d source=%d scenario=%d stage=%d player=%d before=%.6f after=%.6f allowed=%d applying=%d worldTime=%.6f"),
+				P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, P->Frame.Stage, S.Roster[I].Id, D.OldValue, D.NewValue, Allowed, Life.bApplyingHealth, P->GetWorld()->GetTimeSeconds());
+			if (!Allowed) P->Fail(TEXT("lifecycle-unexpected-health-change"));
+		});
+	State->CueDelegate = State->CueManager->OnGameplayCueRouted().AddLambda([Weak](AActor* Target, FGameplayTag Tag, EGameplayCueEvent::Type Event, const FGameplayCueParameters& Params, EGameplayCueExecutionOptions)
+	{
+		auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned || Tag != BwayGameplayCueTags::RawlinsBarrageFire) return;
+		auto& S = *P->State; auto& Life = S.Lifecycle;
+		if (!Target || FObjectKey(Target) != Life.ActivePawnKey)
+		{
+			// Only this fixture's Rawlins exists. A cue rebased onto a replacement is a failure.
+			P->Fail(TEXT("lifecycle-cue-wrong-avatar")); return;
+		}
+		++S.Cues;
+		const bool Exact = Event == EGameplayCueEvent::Executed && Params.Instigator.Get() == Target && Params.EffectCauser.Get() == Target && CueReady(S.CueManager.Get());
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Cue witness=%d source=%d scenario=%d stage=%d cycle=%d index=%d pawn=%s guid=%llu exact=%d worldTime=%.6f"),
+			P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, P->Frame.Stage, Life.bReuse ? 2 : 1, S.Cues, *Target->GetPathName(), Guid(Target), Exact, P->GetWorld()->GetTimeSeconds());
+		if (!Exact || S.Cues > P->Frame.Count + (Life.bReuse ? P->Frame.TerminalShots : 0)) { P->Fail(TEXT("lifecycle-unexpected-cue-count")); return; }
+		if (P->HasAuthority())
+		{
+			if (S.TunedActivation != S.Activations)
+			{
+				FBwayBarrageTransportFrame Loaded; const UObject* Config = nullptr;
+				const bool Matched = Tuning(S.Instance.Get(), Loaded, Config) && Loaded.KitPath == P->Frame.KitPath
+					&& Loaded.Count == P->Frame.Count && FMath::IsNearlyEqual(Loaded.Interval, P->Frame.Interval, .000001f)
+					&& FMath::IsNearlyEqual(Loaded.Life, P->Frame.Life, .000001f) && FMath::IsNearlyEqual(Loaded.Cooldown, P->Frame.Cooldown, .000001f)
+					&& FMath::IsNearlyEqual(Loaded.Speed, P->Frame.Speed, .001f) && FMath::IsNearlyEqual(Loaded.Offset, P->Frame.Offset, .000001f);
+				UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Tuning witness=%d source=%d scenario=%d cycle=%d matched=%d count=%d interval=%.6f life=%.6f cooldown=%.6f speed=%.6f offset=%.6f config=%s"),
+					P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, Life.bReuse ? 2 : 1, Matched, Loaded.Count, Loaded.Interval, Loaded.Life, Loaded.Cooldown, Loaded.Speed, Loaded.Offset, *GetPathNameSafe(Config));
+				if (!Matched) { P->Fail(TEXT("lifecycle-loaded-tuning-mismatch")); return; }
+				S.TunedActivation = S.Activations;
+			}
+			if (S.Shots.IsEmpty()) { P->Fail(TEXT("lifecycle-cue-without-projectile")); return; }
+			auto& Shot = S.Shots.Last(); auto* A = Shot.Actor.Get();
+			const auto* M = A ? A->FindComponentByClass<UProjectileMovementComponent>() : nullptr;
+			const FVector V = M ? M->Velocity : FVector::ZeroVector;
+			const bool Initialized = A && M && !Shot.bFinalized && FMath::IsNearlyEqual(V.Size(), P->Frame.Speed, .01) && A->GetInstigator() == S.Source()->Pawn.Get();
+			Shot.bFinalized = Initialized;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: ShotInitialized witness=%d source=%d scenario=%d cycle=%d index=%d projectile=%s pawn=%s speed=%.6f expectedSpeed=%.6f initialized=%d age=%.6f worldTime=%.6f"),
+				P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, Shot.Cycle, Shot.Index, *Shot.Path, *Life.ActivePawnPath, V.Size(), P->Frame.Speed, Initialized, P->GetWorld()->GetTimeSeconds() - Shot.WorldAt, P->GetWorld()->GetTimeSeconds());
+			if (!Initialized) P->Fail(TEXT("lifecycle-projectile-not-initialized"));
+		}
+	});
+	if (State->bEndpoint)
+	{
+		auto* ASC = State->Source()->ASC.Get();
+		State->ActivationDelegate = ASC->AbilityActivatedCallbacks.AddLambda([Weak](UGameplayAbility* A)
+		{
+			auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned || !A || A->GetCurrentAbilitySpecHandle() != P->State->Handle) return;
+			auto& S = *P->State; auto& Life = S.Lifecycle;
+			++S.Activations; S.Instance = Cast<ULyraGameplayAbility>(A); S.Key = A->GetCurrentActivationInfo().GetActivationPredictionKey();
+			const int32 Cycle = Life.bReuse ? 2 : 1;
+			const bool Exact = S.Instance.IsValid() && S.Key.IsValidKey() && S.Activations == Cycle && S.Ends == Cycle - 1
+				&& P->Frame.Stage == (Life.bReuse ? LifeReuse : LifeCast) && P->LifecycleRoster(Life.bReuse && (P->Frame.Lifecycle == Death || P->Frame.Lifecycle == RoundReset), false);
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Activation witness=%d source=%d scenario=%d cycle=%d endpoint=%s pawn=%s instance=%s handle=%s key=%d exact=%d health=%.6f worldTime=%.6f"),
+				P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, Cycle, P->HasAuthority() ? TEXT("authority") : TEXT("owner"), *Life.ActivePawnPath,
+				*GetPathNameSafe(A), *S.Handle.ToString(), S.Key.Current, Exact, Health(*S.Source()), P->GetWorld()->GetTimeSeconds());
+			if (!Exact) { P->Fail(TEXT("lifecycle-unexpected-activation")); return; }
+			Life.bEnded = false;
+			if (P->HasAuthority()) { S.bFlightBoundArmed = true; S.FlightBoundCycle = Cycle; S.LastFrameObserved = MAX_uint64; P->CheckFrameQuantum(); }
+		});
+		State->EndDelegate = ASC->OnAbilityEnded.AddLambda([Weak](const FAbilityEndedData& D)
+		{
+			auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned || D.AbilitySpecHandle != P->State->Handle) return;
+			auto& S = *P->State; auto& Life = S.Lifecycle; auto* A = D.AbilityThatEnded.Get(); auto* C = S.Source()->ASC.Get();
+			const auto* Spec = C ? C->FindAbilitySpecFromHandle(S.Handle) : nullptr;
+			const bool Exact = A && A == S.Instance.Get() && A->GetCurrentActivationInfo().GetActivationPredictionKey() == S.Key
+				&& C && C == S.Source()->State->GetLyraAbilitySystemComponent() && S.Ends + 1 == S.Activations;
+			const bool Natural = Life.bReuse || P->Frame.Lifecycle == HealOnly;
+			const bool EndPolicy = Natural ? !D.bWasCancelled : P->Frame.Lifecycle == RoundReset || D.bWasCancelled;
+			++S.Ends; Life.bEnded = true; Life.EndWorld = P->GetWorld()->GetTimeSeconds();
+			if (!Life.bReuse) Life.bFirstEndCancelled = D.bWasCancelled;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: End witness=%d source=%d scenario=%d cycle=%d endpoint=%s pawn=%s instance=%s handle=%s key=%d exact=%d cancelled=%d expectedNatural=%d activeAfter=%d movementTag=%d shots=%d actionApplied=%d worldTime=%.6f"),
+				P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, Life.bReuse ? 2 : 1, P->HasAuthority() ? TEXT("authority") : TEXT("owner"), *Life.ActivePawnPath,
+				*GetPathNameSafe(A), *S.Handle.ToString(), S.Key.Current, Exact, D.bWasCancelled, Natural, Spec ? int32(Spec->IsActive()) : -1,
+				C ? C->GetTagCount(TAG_Gameplay_MovementStopped) : -1, S.Shots.Num(), Life.bApplied, Life.EndWorld);
+			if (!Exact || !EndPolicy || (Spec && Spec->IsActive()) || (P->HasAuthority() && !Life.bReuse && !Life.bApplied))
+				P->Fail(TEXT("lifecycle-unexpected-end"));
+		});
+	}
+	if (HasAuthority())
+		State->SpawnDelegate = GetWorld()->AddOnActorSpawnedHandler(FOnActorSpawned::FDelegate::CreateLambda([Weak](AActor* A)
+		{
+			auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned || !A) return;
+			auto& S = *P->State; auto& Life = S.Lifecycle;
+			auto* Family = FindObject<UClass>(nullptr, BulletPath);
+			if (!Family || !A->IsA(Family)) return;
+			if (!A->GetOwner() || FObjectKey(A->GetOwner()) != Life.ActivePawnKey) { P->Fail(TEXT("lifecycle-projectile-wrong-avatar")); return; }
+			const bool Exact = !Life.bEnded && S.Instance.IsValid() && S.Instance->IsActive()
+				&& S.Instance->GetCurrentActivationInfo().GetActivationPredictionKey() == S.Key
+				&& P->Frame.Stage == (Life.bReuse ? LifeReuse : LifeCast) && P->CheckFrameQuantum() && P->SafeLane();
+			FBwayBarrageTransportState::FShot Shot; Shot.Actor = A; Shot.Path = A->GetPathName(); Shot.Cycle = Life.bReuse ? 2 : 1;
+			Shot.Index = S.Shots.Num() + 1; Shot.WorldAt = P->GetWorld()->GetTimeSeconds(); Shot.At = FPlatformTime::Seconds(); S.Shots.Add(Shot);
+			if (!Life.bReuse && S.Shots.Num() == 1) Life.FirstShotWorld = Shot.WorldAt;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Shot witness=%d source=%d scenario=%d cycle=%d index=%d projectile=%s pawn=%s handle=%s key=%d exact=%d afterEnd=%d worldTime=%.6f"),
+				P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, Shot.Cycle, Shot.Index, *Shot.Path, *Life.ActivePawnPath, *S.Handle.ToString(), S.Key.Current, Exact, Life.bEnded, Shot.WorldAt);
+			if (!Exact) P->Fail(TEXT("lifecycle-shot-after-end-or-wrong-activation"));
+		}));
+	UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Mode witness=%d source=%d scenario=%d endpoint=%s oldPawn=%s oldGuid=%llu oldHandle=%s frameLimit=%.6f guard=%d"),
+		Frame.Witness, Frame.Source, Frame.Lifecycle, HasAuthority() ? TEXT("authority") : State->bOwner ? TEXT("owner") : TEXT("proxy"), *L.ActivePawnPath,
+		L.OldGuids[State->SourceIndex], *L.OldHandle.ToString(), Frame.FrameQuantum, GAllowActorScriptExecutionInEditor);
+#endif
+}
+
+bool ABwayBarrageTransportProbe::LifecycleCooldown()
+{
+	auto& L = State->Lifecycle; const auto* Source = State->Source(); auto* ASC = Source ? Source->ASC.Get() : nullptr;
+	if (!ASC) return false;
+	FGameplayTagContainer CooldownTags(CooldownTag());
+	const auto Effects = ASC->GetActiveEffects(FGameplayEffectQuery::MakeQuery_MatchAllOwningTags(CooldownTags));
+	if (HasAuthority() && State->Activations > 0 && !L.bReuse)
+	{
+		if (!L.CooldownHandle.IsValid())
+		{
+			if (Effects.Num() != 1) { Fail(TEXT("lifecycle-first-cooldown-missing")); return false; }
+			const auto* E = ASC->GetActiveGameplayEffect(Effects[0]);
+			if (!E || !FMath::IsNearlyEqual(E->GetDuration(), Frame.Cooldown, .01f)) { Fail(TEXT("lifecycle-cooldown-duration")); return false; }
+			L.CooldownHandle = Effects[0]; L.CooldownStart = E->StartWorldTime; L.CooldownDuration = E->GetDuration(); L.CooldownKey = E->PredictionKey;
+			State->FirstEffect = Effects[0];
+			const TWeakObjectPtr<ABwayBarrageTransportProbe> Weak(this);
+			auto* Removed = ASC->OnGameplayEffectRemoved_InfoDelegate(L.CooldownHandle);
+			if (!Removed) { Fail(TEXT("lifecycle-cooldown-delegate-missing")); return false; }
+			State->RemovalDelegate = Removed->AddLambda([Weak](const FGameplayEffectRemovalInfo& Info)
+			{
+				auto* P = Weak.Get(); if (!P || !P->State || P->State->bCleaned) return;
+				auto& Life = P->State->Lifecycle; const auto* E = Info.ActiveEffect;
+				const float Age = P->GetWorld()->GetTimeSeconds() - Life.CooldownStart;
+				Life.bRemovedNaturally = E && E->Handle == Life.CooldownHandle && E->StartWorldTime == Life.CooldownStart
+					&& E->GetDuration() == Life.CooldownDuration && E->PredictionKey == Life.CooldownKey
+					&& Info.OwningASC.Get() == P->State->Source()->ASC.Get() && !Info.bPrematureRemoval && !Info.bPredictionRejected
+					&& Age >= Life.CooldownDuration && Age <= Life.CooldownDuration + .25f;
+				UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: CooldownExpired witness=%d source=%d scenario=%d handle=%s age=%.6f duration=%.6f premature=%d rejected=%d natural=%d worldTime=%.6f"),
+					P->Frame.Witness, P->Frame.Source, P->Frame.Lifecycle, *Life.CooldownHandle.ToString(), Age, Life.CooldownDuration, Info.bPrematureRemoval, Info.bPredictionRejected, Life.bRemovedNaturally, P->GetWorld()->GetTimeSeconds());
+				if (!Life.bRemovedNaturally) P->Fail(TEXT("lifecycle-cooldown-removed-early"));
+			});
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: CooldownCaptured witness=%d source=%d scenario=%d handle=%s start=%.6f duration=%.6f key=%d"), Frame.Witness, Frame.Source, Frame.Lifecycle, *L.CooldownHandle.ToString(), L.CooldownStart, L.CooldownDuration, L.CooldownKey.Current);
+		}
+		if (!L.bRemovedNaturally)
+		{
+			const auto* E = ASC->GetActiveGameplayEffect(L.CooldownHandle);
+			if (Effects.Num() != 1 || Effects[0] != L.CooldownHandle || !E || E->StartWorldTime != L.CooldownStart || E->GetDuration() != L.CooldownDuration)
+			{ Fail(TEXT("lifecycle-cooldown-identity-changed")); return false; }
+		}
+	}
+	return !ASC->HasMatchingGameplayTag(CooldownTag()) && (!State->bEndpoint || Effects.IsEmpty()) && (!HasAuthority() || L.bRemovedNaturally);
+}
+
+void ABwayBarrageTransportProbe::ObserveLifecycle()
+{
+#if !UE_BUILD_SHIPPING
+	if (!State->bLocalReady) { if (Frame.Stage == Ready) SetupLocal(); return; }
+	auto& L = State->Lifecycle;
+	if (Frame.Stage == Failed || !State->Failure.IsEmpty())
+	{
+		if (HasAuthority() && Frame.Lifecycle <= HealOnly && State->Source()->Pawn.IsValid() && Health(*State->Source()) > 0
+			&& Health(*State->Source()) < Frame.Maximum[State->SourceIndex] && !L.bRestored)
+		{ L.bRestored = ApplyLifecycleHealth(true, Frame.Maximum[State->SourceIndex], TEXT("failure-restore")); }
+		RemoveObservers(true);
+		if (!State->bComplete)
+		{
+			State->bComplete = true;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Complete witness=%d source=%d scenario=%d pass=0 cleanup=%d reason=%s"), Frame.Witness, Frame.Source, Frame.Lifecycle, State->bCleaned, State->Failure.IsEmpty() ? TEXT("authority-failure") : *State->Failure);
+		}
+		return;
+	}
+	if (Frame.Stage == Ready) { ObserveStartup(); return; }
+	if (Frame.Stage == LifePrepare)
+	{
+		if (!HandoffStartup(TEXT("lifecycle-prepare"), true)) return;
+		// First-shot interventions need every game frame, not a 50ms sampled phase.
+		SetActorTickInterval(0.f);
+		if (!LifecycleRoster(false, false)) return;
+		Report(true, TEXT("lifecycle-prepared-for-stimulus")); return;
+	}
+	if (State->bEndpoint && State->Activations && !L.bReuse) LifecycleCooldown();
+	if (!State->Failure.IsEmpty()) return;
+	const bool Replacement = Frame.Lifecycle == Death || Frame.Lifecycle == RoundReset;
+	if (Frame.Stage == LifePrepared)
+	{
+		if (!LifecycleRoster(false, false)) return;
+		if (!FMath::IsNearlyEqual(Health(*State->Source()), Frame.ExpectedHealth, .01f)) return;
+		L.PreparedHealth = Frame.ExpectedHealth;
+		LifecycleRoster(false, true); Report(true, TEXT("lifecycle-health-prepared")); return;
+	}
+	if (Frame.Stage == LifeCast || Frame.Stage == LifeReuse)
+	{
+		if (State->SeenSerial == Frame.Serial) return;
+		if (Frame.Stage == LifeReuse)
+		{
+			if (!LifecycleRoster(Replacement, false)) return;
+			State->Roster = L.CurrentRoster;
+			if (State->bEndpoint)
+			{
+				auto* NewSpec = UniqueSpec(State->Source()->ASC.Get());
+				if (!NewSpec || NewSpec->IsActive() || (Replacement && NewSpec->Handle == L.OldHandle)) { Fail(TEXT("lifecycle-new-spec-not-unique")); return; }
+				State->Handle = NewSpec->Handle;
+			}
+			L.bReuse = true; L.bEnded = false; L.ActivePawnKey = FObjectKey(State->Source()->Pawn.Get()); L.ActivePawnPath = State->Source()->Pawn->GetPathName();
+		}
+		State->SeenSerial = Frame.Serial;
+		Report(true, TEXT("lifecycle-cast-stage-received"));
+		if (State->bOwner)
+		{
+			auto* ASC = State->Source()->ASC.Get(); const auto* Spec = ASC->FindAbilitySpecFromHandle(State->Handle);
+			const bool ReadyToCast = Spec && !Spec->IsActive() && Spec->Ability && Spec->Ability->CheckCooldown(State->Handle, ASC->AbilityActorInfo.Get())
+				&& LifecycleRoster(L.bReuse && Replacement, false) && SafeLane();
+			const bool Accepted = ReadyToCast && ASC->TryActivateAbility(State->Handle);
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Dispatch witness=%d source=%d scenario=%d cycle=%d pawn=%s handle=%s accepted=%d ready=%d guard=%d worldTime=%.6f"),
+				Frame.Witness, Frame.Source, Frame.Lifecycle, L.bReuse ? 2 : 1, *L.ActivePawnPath, *State->Handle.ToString(), Accepted, ReadyToCast, GAllowActorScriptExecutionInEditor, GetWorld()->GetTimeSeconds());
+			if (!Accepted) Fail(TEXT("lifecycle-owner-activation-rejected"));
+		}
+		return;
+	}
+	if (Frame.Stage == LifeSettled || Frame.Stage == LifeRestored || Frame.Stage == LifeFinish)
+	{
+		if (L.SettlementSerial != Frame.Serial) { L.SettlementSerial = Frame.Serial; L.SettledSamples = 0; L.SettleStart = -1; }
+		if (!LifecycleRoster(Replacement, false)) { L.SettledSamples = 0; L.SettleStart = -1; return; }
+		const auto& Current = L.CurrentRoster[State->SourceIndex]; auto* ASC = Current.ASC.Get();
+		const auto* CurrentSpec = State->bEndpoint ? UniqueSpec(ASC) : nullptr;
+		auto* Anim = Current.Pawn->GetMesh() ? Current.Pawn->GetMesh()->GetAnimInstance() : nullptr;
+		const int32 ExpectedCues = Frame.TerminalShots + (L.bReuse ? Frame.Count : 0);
+		bool Settled = State->Cues == ExpectedCues && !ASC->HasMatchingGameplayTag(TAG_Gameplay_MovementStopped)
+			&& Anim && !Anim->Montage_IsActive(State->Montage.Get()) && SlotsSettled(Anim)
+			&& FMath::IsNearlyEqual(Current.Health, Frame.ExpectedHealth, .01f)
+			&& (!State->bEndpoint || (CurrentSpec && !CurrentSpec->IsActive() && State->Ends == (L.bReuse ? 2 : 1)));
+		for (int32 I = 0; I < L.CurrentRoster.Num(); ++I)
+			if (I != State->SourceIndex) Settled &= FMath::IsNearlyEqual(L.CurrentRoster[I].Health, Frame.Health[I], .01f);
+		if (Replacement && State->bEndpoint && !L.bReuse) Settled &= !ASC->FindAbilitySpecFromHandle(L.OldHandle) && CurrentSpec && CurrentSpec->Handle != L.OldHandle;
+		if (HasAuthority()) for (const auto& Shot : State->Shots) if (Shot.Actor.IsValid()) Settled = false;
+		// Count the local family on every witness, including bullets whose old owner
+		// was destroyed during death/reset. Authority weak references alone cannot
+		// prove that replicated projectiles have disappeared on the proxies.
+		auto* Family = FindObject<UClass>(nullptr, BulletPath);
+		if (!Family) { Fail(TEXT("lifecycle-projectile-family-missing")); return; }
+		int32 LocalBullets = 0;
+		for (TActorIterator<AActor> It(GetWorld(), Family); It; ++It) ++LocalBullets;
+		Settled &= LocalBullets == 0;
+		if (!Settled) { L.SettledSamples = 0; L.SettleStart = -1; return; }
+		if (L.SettleStart < 0) L.SettleStart = GetWorld()->GetTimeSeconds();
+		++L.SettledSamples;
+		if (L.SettledSamples < 5 || GetWorld()->GetTimeSeconds() - L.SettleStart < .25) return;
+		if (State->ReportedSerial != Frame.Serial)
+		{
+			LifecycleRoster(Replacement, true);
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Settled witness=%d source=%d scenario=%d stage=%d serial=%d cycle=%d cues=%d expectedCues=%d activations=%d ends=%d health=%.6f expectedHealth=%.6f movementTag=0 active=0 montageActive=0 bullets=%d samples=%d span=%.6f oldHandle=%s handle=%s deathObserved=%d worldTime=%.6f"),
+				Frame.Witness, Frame.Source, Frame.Lifecycle, Frame.Stage, Frame.Serial, L.bReuse ? 2 : 1, State->Cues, ExpectedCues, State->Activations, State->Ends,
+				Current.Health, Frame.ExpectedHealth, LocalBullets, L.SettledSamples, GetWorld()->GetTimeSeconds() - L.SettleStart, *L.OldHandle.ToString(), CurrentSpec ? *CurrentSpec->Handle.ToString() : TEXT("proxy"), L.bDeathObserved, GetWorld()->GetTimeSeconds());
+		}
+		Report(true, TEXT("lifecycle-settled")); return;
+	}
+	if (Frame.Stage == LifeCooldown)
+	{
+		if (!LifecycleRoster(Replacement, false)) return;
+		auto* ASC = State->Source()->ASC.Get(); auto* Spec = State->bEndpoint ? UniqueSpec(ASC) : nullptr;
+		if (State->bEndpoint && !L.bEarlyReject && ASC->HasMatchingGameplayTag(CooldownTag()))
+		{
+			const int32 Before = State->Activations;
+			const bool Accepted = Spec && ASC->TryActivateAbility(Spec->Handle);
+			L.bEarlyReject = !Accepted && State->Activations == Before;
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: EarlyReject witness=%d source=%d scenario=%d endpoint=%s rejected=%d activationsBefore=%d activationsAfter=%d cooldownTag=%d"), Frame.Witness, Frame.Source, Frame.Lifecycle,
+				HasAuthority() ? TEXT("authority") : TEXT("owner"), L.bEarlyReject, Before, State->Activations, ASC->GetTagCount(CooldownTag()));
+			if (!L.bEarlyReject) { Fail(TEXT("lifecycle-early-reuse-accepted")); return; }
+		}
+		if (!LifecycleCooldown() || (State->bEndpoint && (!L.bEarlyReject || !Spec || !Spec->Ability->CheckCooldown(Spec->Handle, ASC->AbilityActorInfo.Get())))) return;
+		if (State->ReportedSerial != Frame.Serial)
+			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: CooldownReady witness=%d source=%d scenario=%d tag=0 naturalAuthority=%d oldHandle=%s newHandle=%s worldTime=%.6f"), Frame.Witness, Frame.Source, Frame.Lifecycle, L.bRemovedNaturally, *L.OldHandle.ToString(), Spec ? *Spec->Handle.ToString() : TEXT("proxy"), GetWorld()->GetTimeSeconds());
+		if (!State->bEndpoint)
+		{
+			// Fresh cues and this probe's stage replicate on different actors. Bind
+			// the approved replacement before ACK so a cue may safely arrive first.
+			L.ActivePawnKey = FObjectKey(L.CurrentRoster[State->SourceIndex].Pawn.Get());
+			L.ActivePawnPath = L.CurrentRoster[State->SourceIndex].Pawn->GetPathName();
+			L.bReuse = true;
+		}
+		Report(true, TEXT("lifecycle-real-cooldown-expired")); return;
+	}
+	if (Frame.Stage == Complete && !State->bComplete)
+	{
+		RemoveObservers(false); State->bComplete = true;
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Complete witness=%d source=%d scenario=%d pass=1 cleanup=%d callbacksRemoved=%d cues=%d expectedCues=%d activations=%d ends=%d terminalShots=%d finalShots=%d oldPawn=%s pawn=%s framePeak=%.6f frameLimit=%.6f"),
+			Frame.Witness, Frame.Source, Frame.Lifecycle, State->bCleaned, State->Removed, State->Cues, Frame.TerminalShots + Frame.Count, State->Activations, State->Ends, Frame.TerminalShots, State->Shots.Num(),
+			*L.OldPaths[State->SourceIndex], *L.ActivePawnPath, State->ObservedFramePeak, Frame.FrameQuantum);
+		Report(true, TEXT("lifecycle-complete"));
+	}
+#endif
+}
+
+void ABwayBarrageTransportProbe::AuthorityLifecycle()
+{
+#if !UE_BUILD_SHIPPING
+	if (!State->bCoordinator) return;
+	auto& L = State->Lifecycle;
+	const double Now = FPlatformTime::Seconds();
+	if (Frame.Stage == Failed)
+	{
+		if (Now - State->StageAt > 2. + 2. * Frame.Lag / 1000.)
+		{ const auto Witnesses = State->Witnesses; for (const auto& W : Witnesses) if (W.IsValid() && W.Get() != this) W->Destroy(); Destroy(); }
+		return;
+	}
+	if (Now - State->Started > 90.) { Fail(TEXT("lifecycle-gameplay-timeout")); return; }
+	if (!State->bLocalReady) return;
+	bool AllAck = State->Witnesses.Num() == 4;
+	for (const auto& W : State->Witnesses) if (!W.IsValid() || State->Acks.FindRef(W->Frame.Witness) != Frame.Serial) AllAck = false;
+	if (Frame.Stage == LifeCast && State->Activations == 1 && !L.bApplied && !State->Shots.IsEmpty())
+	{
+		const float Age = GetWorld()->GetTimeSeconds() - State->Shots[0].WorldAt;
+		const auto* Spec = State->Source()->ASC->FindAbilitySpecFromHandle(State->Handle);
+		if (State->Shots.Num() != 1 || !State->Shots[0].bFinalized || Age < 0 || Age >= Frame.Interval || !Spec || !Spec->IsActive())
+		{ Fail(TEXT("lifecycle-first-initialized-shot-window-missed")); return; }
+		if (!LifecycleRoster(false, false) || (!LifecycleCooldown() && !L.CooldownHandle.IsValid()))
+		{ if (State->Failure.IsEmpty()) Fail(TEXT("lifecycle-intervention-precondition")); return; }
+		L.bApplied = true; L.ActionWorld = GetWorld()->GetTimeSeconds();
+		bool Applied = true;
+		const float Before = Health(*State->Source());
+		if (Frame.Lifecycle == DamageOnly) Applied = ApplyLifecycleHealth(false, 1.f, TEXT("damage"));
+		else if (Frame.Lifecycle == HealDamage || Frame.Lifecycle == HealOnly)
+		{
+			Applied = ApplyLifecycleHealth(true, (Frame.Maximum[State->SourceIndex] - L.PreparedHealth) * .9f, TEXT("heal"));
+			L.AfterHeal = Health(*State->Source());
+			const auto* AfterHealSpec = State->Source()->ASC->FindAbilitySpecFromHandle(State->Handle);
+			Applied &= AfterHealSpec && AfterHealSpec->IsActive() && State->Ends == 0;
+			if (Applied && Frame.Lifecycle == HealDamage)
+			{
+				Applied = ApplyLifecycleHealth(false, 1.f, TEXT("damage-after-heal"));
+				Applied &= Health(*State->Source()) > L.PreparedHealth && Health(*State->Source()) < L.AfterHeal;
+			}
+		}
+		else if (Frame.Lifecycle == Death)
+		{
+			auto* H = ULyraHealthComponent::FindHealthComponent(State->Source()->Pawn.Get());
+			Applied = H != nullptr; if (H) H->DamageSelfDestruct();
+			Applied &= L.bDeathObserved;
+		}
+		else if (Frame.Lifecycle == RoundReset) State->Round->ResetRoundState();
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Intervention witness=%d source=%d scenario=%d applied=%d shots=%d age=%.6f interval=%.6f before=%.6f after=%.6f prepared=%.6f afterHeal=%.6f deathObserved=%d guard=%d worldTime=%.6f"),
+			Frame.Witness, Frame.Source, Frame.Lifecycle, Applied, State->Shots.Num(), Age, Frame.Interval, Before, Health(*State->Source()), L.PreparedHealth, L.AfterHeal, L.bDeathObserved, GAllowActorScriptExecutionInEditor, L.ActionWorld);
+		if (!Applied) { Fail(TEXT("lifecycle-production-intervention-failed")); return; }
+		if (Frame.Lifecycle != HealOnly && (State->Ends != 1 || !L.bEnded)) { Fail(TEXT("lifecycle-intervention-did-not-end-channel")); return; }
+	}
+	if (!AllAck || !State->Failure.IsEmpty()) return;
+	if (Frame.Stage == Ready)
+	{
+		for (const auto& W : State->Witnesses)
+			if (!W->State || W->State->StartupReceived.Serial != Frame.Serial || !W->State->StartupReceived.Sequence
+				|| Now - W->State->StartupReceivedAt > .3 + Frame.Lag / 1000.) return;
+		if (!HandoffStartup(TEXT("lifecycle-authority-ready"), true)) return;
+		Publish(LifePrepare);
+	}
+	else if (Frame.Stage == LifePrepare)
+	{
+		if (Frame.Lifecycle == HealDamage || Frame.Lifecycle == HealOnly)
+		{
+			if (!ApplyLifecycleHealth(false, Frame.Maximum[State->SourceIndex] * .25f, TEXT("prepare-deficit"))) { Fail(TEXT("lifecycle-health-preparation-failed")); return; }
+		}
+		Frame.ExpectedHealth = Health(*State->Source()); L.PreparedHealth = Frame.ExpectedHealth; Publish(LifePrepared);
+	}
+	else if (Frame.Stage == LifePrepared) Publish(LifeCast);
+	else if (Frame.Stage == LifeCast && L.bApplied && State->Ends == 1)
+	{
+		Frame.TerminalShots = State->Shots.Num();
+		if ((Frame.Lifecycle == HealOnly && Frame.TerminalShots != Frame.Count) || (Frame.Lifecycle != HealOnly && Frame.TerminalShots != 1))
+		{ Fail(TEXT("lifecycle-terminal-shot-count")); return; }
+		Frame.ExpectedHealth = (Frame.Lifecycle == Death || Frame.Lifecycle == RoundReset) ? Frame.Maximum[State->SourceIndex] : Health(*State->Source());
+		Publish(LifeSettled); L.SettledSamples = 0; L.SettleStart = -1;
+	}
+	else if (Frame.Stage == LifeSettled)
+	{
+		if (!CheckFrameQuantum()) return;
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: FrameRetired source=%d scenario=%d cycle=1 shots=%d acknowledged=4 peak=%.6f limit=%.6f samples=%d worldTime=%.6f"), Frame.Source, Frame.Lifecycle, State->Shots.Num(), State->ObservedFramePeak, Frame.FrameQuantum, State->FrameSamples, GetWorld()->GetTimeSeconds());
+		State->bFlightBoundArmed = false;
+		Frame.ReplacementGuids.Reset(); for (const auto& P : L.CurrentRoster) Frame.ReplacementGuids.Add(Guid(P.Pawn.Get()));
+		if (Frame.Lifecycle <= HealOnly && Health(*State->Source()) < Frame.Maximum[State->SourceIndex])
+		{
+			if (!ApplyLifecycleHealth(true, Frame.Maximum[State->SourceIndex], TEXT("restore"))) { Fail(TEXT("lifecycle-health-restore-failed")); return; }
+		}
+		L.bRestored = true; Frame.ExpectedHealth = Frame.Maximum[State->SourceIndex]; Publish(LifeRestored); L.SettledSamples = 0; L.SettleStart = -1;
+	}
+	else if (Frame.Stage == LifeRestored) Publish(LifeCooldown);
+	else if (Frame.Stage == LifeCooldown && L.bRemovedNaturally)
+	{
+		// An owning-client activation RPC can arrive before this actor's next Tick.
+		// Bind the approved replacement now, before publishing the activation stage.
+		State->Roster = L.CurrentRoster;
+		auto* Spec = UniqueSpec(State->Source()->ASC.Get());
+		if (!Spec || Spec->IsActive()) { Fail(TEXT("lifecycle-authority-fresh-spec-unavailable")); return; }
+		State->Handle = Spec->Handle; L.bReuse = true; L.bEnded = false;
+		L.ActivePawnKey = FObjectKey(State->Source()->Pawn.Get()); L.ActivePawnPath = State->Source()->Pawn->GetPathName();
+		Publish(LifeReuse);
+	}
+	else if (Frame.Stage == LifeReuse && State->Ends == 2)
+	{
+		if (State->Shots.Num() != Frame.TerminalShots + Frame.Count) { Fail(TEXT("lifecycle-fresh-cast-shot-count")); return; }
+		Publish(LifeFinish); L.SettledSamples = 0; L.SettleStart = -1;
+	}
+	else if (Frame.Stage == LifeFinish)
+	{
+		if (!CheckFrameQuantum()) return;
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: FrameRetired source=%d scenario=%d cycle=2 shots=%d acknowledged=4 peak=%.6f limit=%.6f samples=%d worldTime=%.6f"), Frame.Source, Frame.Lifecycle, State->Shots.Num(), State->ObservedFramePeak, Frame.FrameQuantum, State->FrameSamples, GetWorld()->GetTimeSeconds());
+		State->bFlightBoundArmed = false; Publish(Complete);
+	}
+	else if (Frame.Stage == Complete)
+	{
+		UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: AllComplete source=%d scenario=%d witnesses=4 shots=%d ends=%d cleanup=1"), Frame.Source, Frame.Lifecycle, State->Shots.Num(), State->Ends);
+		const auto Witnesses = State->Witnesses; for (const auto& W : Witnesses) if (W.IsValid() && W.Get() != this) W->Destroy(); Destroy();
+	}
+#endif
+}
+
 void ABwayBarrageTransportProbe::RemoveObservers(bool bCancelCapturedActivation)
 {
 #if !UE_BUILD_SHIPPING
 	RestoreStartupTick(TEXT("cleanup"));
+	if (State && Frame.Lifecycle && State->bLocalReady) SetActorTickInterval(State->StartupOriginalTickInterval);
 	if (!State || State->bCleaned) return;
 	State->bCleaned = true; // Synchronous cancellation callbacks are cleanup evidence, never a new accepted end.
 	if (!State->bBound) return; // Other players' witness replicas have no local observers.
@@ -1454,7 +2007,7 @@ void ABwayBarrageTransportProbe::Tick(float DeltaSeconds)
 		return;
 	}
 	CheckFrameQuantum();
-	if (State->bCoordinator && State->bStartupHandoff && Frame.Stage == CastOne && State->Activations == 0 && !CheckStartupActivation(true)) return;
+	if (!Frame.Lifecycle && State->bCoordinator && State->bStartupHandoff && Frame.Stage == CastOne && State->Activations == 0 && !CheckStartupActivation(true)) return;
 	auto* PC = Cast<APlayerController>(GetOwner());
 	if (PC && PC->IsLocalController()) Observe();
 	if (PC && PC->IsLocalController() && !State->bLocalReady && FPlatformTime::Seconds() - State->LastWait > 1.)

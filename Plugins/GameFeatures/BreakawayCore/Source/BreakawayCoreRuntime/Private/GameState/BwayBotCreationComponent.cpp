@@ -5,6 +5,7 @@
 #include "BwayPlayerState.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
+#include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "GameModes/LyraGameMode.h"
 #include "GameModes/BwayMatchFlowLibrary.h"
 #include "GameModes/BwayGameplayUrlLibrary.h"
@@ -300,7 +301,12 @@ void UBwayBotCreationComponent::SpawnOneBot()
 				SelectionManager->RegisterPlayer(BotPlayerState);
 			}
 
-			if (!BotPlayerState->GetSelectedHeroId().IsValid() || !BotPlayerState->IsHeroLocked())
+			const bool bDeferBotHeroForHumanSelection =
+				UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")) &&
+				GameState && GameState->HeroSelectionPhaseComponent &&
+				!GameState->HeroSelectionPhaseComponent->HasHeroSelectionCompleted();
+
+			if (!bDeferBotHeroForHumanSelection && (!BotPlayerState->GetSelectedHeroId().IsValid() || !BotPlayerState->IsHeroLocked()))
 			{
 				const bool bLockImmediately = SelectionManager->IsSelectionActive()
 					|| !UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
@@ -363,6 +369,11 @@ void UBwayBotCreationComponent::ApplyRelicAIToBot(AAIController* BotController)
 
 	if (ABwayRelicBotController* RelicBot = Cast<ABwayRelicBotController>(BotController))
 	{
+		FString DifficultyStr;
+		if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionString(this, TEXT("BotDifficulty"), DifficultyStr) && !DifficultyStr.IsEmpty())
+		{
+			RelicBot->SetBotDifficultyTier(FName(*DifficultyStr));
+		}
 		RelicBot->ConfigureRelicAI(BehaviorTree, Blackboard);
 		RelicBot->StartRelicBotLogic();
 	}

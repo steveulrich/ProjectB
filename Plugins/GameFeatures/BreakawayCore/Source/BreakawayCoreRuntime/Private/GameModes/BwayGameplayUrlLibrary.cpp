@@ -23,7 +23,8 @@ void UBwayGameplayUrlLibrary::AppendMatchRulesToTravelUrl(FString& TravelUrl, co
 {
 	// Absolute travel intentionally removes the staging experience and route. Match rules
 	// belong to the hosted session and must be carried explicitly to the selected arena.
-	static const TCHAR* Keys[] = { TEXT("NumBots"), TEXT("PointsToWin"), TEXT("MatchFlowConfig"),
+	static const TCHAR* Keys[] = { TEXT("NumBots"), TEXT("BotDifficulty"), TEXT("HostTeam"), TEXT("ArenaIntro"),
+		TEXT("PointsToWin"), TEXT("MatchFlowConfig"),
 		TEXT("PrematchDuration"), TEXT("WarmupDuration"), TEXT("PostRoundDuration"),
 		TEXT("PostMatchSummaryDuration"), TEXT("RoundDuration"), TEXT("BaseRespawnDelay"),
 		TEXT("PerDeathRespawnIncrement"), TEXT("MaxRespawnDelay"), TEXT("RespawnDelay"),
@@ -71,6 +72,9 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		// Preserve the engine's listen-server marker when rebuilding options from PIE/LAN sources.
 		TEXT("listen"),
 		TEXT("NumBots"),
+		TEXT("BotDifficulty"),
+		TEXT("HostTeam"),
+		TEXT("ArenaIntro"),
 		TEXT("PointsToWin"),
 		TEXT("SkipHeroSelection"),
 		TEXT("ForceHumanoid"),
@@ -252,8 +256,38 @@ void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOp
 		? GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull)
 		: nullptr;
 
+	auto AddWorldUrlSources = [&]()
+	{
+		if (World)
+		{
+			AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
+			if (GEngine)
+			{
+				if (const FWorldContext* WorldContext = GEngine->GetWorldContextFromWorld(World))
+				{
+					// LastURL can still describe the source map during seamless travel.
+					if (WorldContext->LastURL.Map == World->URL.Map)
+					{
+						AddSourceIfNonEmpty(OutSources, TEXT("WorldContext.LastURL"), WorldContext->LastURL.ToString());
+					}
+				}
+			}
+		}
+	};
+
+	const bool bIsExplicitLobbyOrMatchTravel = World && (
+		World->URL.HasOption(TEXT("ArenaIntro"))
+		|| World->URL.HasOption(TEXT("HostTeam"))
+		|| World->URL.HasOption(TEXT("HeroSelectStaging"))
+		|| World->URL.HasOption(TEXT("SeamlessTravel")));
+
+	if (bIsExplicitLobbyOrMatchTravel)
+	{
+		AddWorldUrlSources();
+	}
+
 #if WITH_EDITOR
-	// Highest priority: toolbar / play URL the user typed in the editor.
+	// Highest priority for direct map launch: toolbar / play URL the user typed in the editor.
 	if (GEditor && !GEditor->UserEditedPlayWorldURL.IsEmpty())
 	{
 		const FString Normalized = NormalizeOptionsFragment(GEditor->UserEditedPlayWorldURL);
@@ -280,20 +314,9 @@ void GatherNamedOptionSources(const UObject* WorldContextObject, TArray<FNamedOp
 
 #endif
 
-	if (World)
+	if (!bIsExplicitLobbyOrMatchTravel)
 	{
-		AddSourceIfNonEmpty(OutSources, TEXT("World.URL"), World->URL.ToString());
-		if (GEngine)
-		{
-			if (const FWorldContext* WorldContext = GEngine->GetWorldContextFromWorld(World))
-			{
-				// LastURL can still describe the source map during seamless travel.
-				if (WorldContext->LastURL.Map == World->URL.Map)
-				{
-					AddSourceIfNonEmpty(OutSources, TEXT("WorldContext.LastURL"), WorldContext->LastURL.ToString());
-				}
-			}
-		}
+		AddWorldUrlSources();
 	}
 
 	AddSourceIfNonEmpty(OutSources, TEXT("CommandLine"), FCommandLine::Get());

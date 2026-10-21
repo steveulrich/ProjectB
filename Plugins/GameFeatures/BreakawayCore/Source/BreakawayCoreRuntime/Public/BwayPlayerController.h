@@ -41,6 +41,8 @@ public:
 	ABwayPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	UFUNCTION(Exec, BlueprintCallable, Category="Breakaway|Economy")
 	void ToggleUpgradeShop();
+	UFUNCTION(BlueprintCallable, Category="Breakaway|Economy")
+	void OpenUpgradeShop();
 	const class UInputAction* GetUpgradeShopInputAction() const { return UpgradeShopInputAction; }
 
 	/**
@@ -83,6 +85,10 @@ public:
 	/** Hide hero selection UI on the owning client. */
 	UFUNCTION(Client, Reliable)
 	void Client_HideHeroSelection();
+
+	/** Start the 5-8 second Arena Intro cinematic camera pan across the Shrine of Auros / center Relic spawn. */
+	UFUNCTION(Client, Reliable)
+	void Client_StartArenaIntroFlyThrough(float DurationSeconds);
 
 	// ========================================
 	// Post-Match Results
@@ -224,4 +230,15 @@ private:
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UBwayRoundManagementComponent> BoundRoundManagementComponent;
+
+	void TickArenaIntroFlyThrough();
+	void StopArenaIntroFlyThrough();
+
+	UPROPERTY(Transient)
+	TObjectPtr<class ACameraActor> ArenaIntroCameraActor;
+
+	FTimerHandle ArenaIntroTickTimerHandle;
+	double ArenaIntroStartTime = 0.0;
+	float ArenaIntroTotalDuration = 5.5f;
+	FVector ArenaIntroCenterLocation = FVector::ZeroVector;
 };

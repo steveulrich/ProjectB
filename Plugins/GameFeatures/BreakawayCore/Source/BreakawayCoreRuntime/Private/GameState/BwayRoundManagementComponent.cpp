@@ -14,6 +14,8 @@
 #include "BwayGameState.h"
 #include "BreakawayGameMode.h"
 #include "BwayPlayerState.h"
+#include "BwayPlayerController.h"
+#include "Economy/BwayEconomyLibrary.h"
 #include "Relic/RelicActor.h"
 #include "BwayCharacterWithAbilities.h"
 #include "Character/LyraHealthComponent.h"
@@ -91,6 +93,10 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UBwayRoundManagementComponent, MaxRespawnDelaySeconds);
 	DOREPLIFETIME(UBwayRoundManagementComponent, bResetRespawnEscalationEachRound);
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
+	DOREPLIFETIME(UBwayRoundManagementComponent, WarmupStartTime);
+	DOREPLIFETIME(UBwayRoundManagementComponent, WarmupDurationSeconds);
+	DOREPLIFETIME(UBwayRoundManagementComponent, bArenaIntroActive);
+	DOREPLIFETIME(UBwayRoundManagementComponent, bArenaIntroPlayed);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentMatchPhase);
 	DOREPLIFETIME(UBwayRoundManagementComponent, ReplicatedPostRoundSummary);
@@ -413,8 +419,101 @@ void UBwayRoundManagementComponent::CompletePrematchPhase()
 		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
 	}
 
+	if (UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")) && !bArenaIntroPlayed)
+	{
+		float IntroDuration = 5.5f;
+		FString SourceLabel;
+		if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionFloatWithSource(this, TEXT("ArenaIntroDuration"), IntroDuration, SourceLabel))
+		{
+			IntroDuration = FMath::Clamp(IntroDuration, 0.1f, 30.0f);
+		}
+		StartArenaIntroSequence(IntroDuration);
+		return;
+	}
+
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Prematch complete — advancing to Warmup (11-4)"));
 	EnterWarmup();
+}
+
+void UBwayRoundManagementComponent::StartArenaIntroSequence(float DurationSeconds)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	bArenaIntroPlayed = true;
+	bArenaIntroActive = true;
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		EnterWarmup();
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Starting Arena Intro fly-through sequence (%.1fs) across The Shrine of Auros / center Relic spawn"), DurationSeconds);
+
+	for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(It->Get()))
+		{
+			BwayPC->Client_StartArenaIntroFlyThrough(DurationSeconds);
+		}
+	}
+
+	World->GetTimerManager().SetTimer(
+		ArenaIntroTimerHandle,
+		this,
+		&UBwayRoundManagementComponent::FinishArenaIntroSequence,
+		DurationSeconds,
+		false);
+}
+
+void UBwayRoundManagementComponent::FinishArenaIntroSequence()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	bArenaIntroActive = false;
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ArenaIntroTimerHandle);
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Arena Intro complete — advancing to Warmup & Pre-Round Shop"));
+	EnterWarmup();
+}
+
+void UBwayRoundManagementComponent::SeedArenaIntroStartingGold()
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		return;
+	}
+
+	if (!UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")) && !bArenaIntroPlayed)
+	{
+		return;
+	}
+
+	ABwayGameState* BwayGS = GetBwayGameState();
+	if (!BwayGS)
+	{
+		return;
+	}
+
+	for (APlayerState* PS : BwayGS->PlayerArray)
+	{
+		if (IsValid(PS))
+		{
+			UBwayEconomyLibrary::GrantStartingMatchGold(PS, 1000);
+		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Seeded 1000 starting match gold for %d players in Warmup"), BwayGS->PlayerArray.Num());
 }
 
 void UBwayRoundManagementComponent::TryCompletePrematchAfterHeroLocks()
@@ -440,6 +539,11 @@ bool UBwayRoundManagementComponent::ShouldWaitForDirectPieHeroLocks() const
 	if (UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
 	{
 		return false;
+	}
+
+	if (UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")))
+	{
+		return true;
 	}
 
 	return UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayMatchMap(this);
@@ -481,11 +585,24 @@ void UBwayRoundManagementComponent::EnterWarmup()
 	}
 
 	bWarmupCompletionHandled = false;
-	SetMatchPhase(EBwayMatchPhase::Warmup);
-	StartWarmupPhaseAbility();
-	RestartDeferredPlayersForWarmup();
+	bArenaIntroActive = false;
 
-	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterWarmup — pawn spawn unblocked; warmup runs once per match"));
+	if (UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")) && ResolvedMatchFlowSettings.WarmupDuration < 15.0f)
+	{
+		ResolvedMatchFlowSettings.WarmupDuration = 15.0f;
+	}
+	WarmupDurationSeconds = FMath::Max(0.0f, ResolvedMatchFlowSettings.WarmupDuration);
+	WarmupStartTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f;
+
+	// Update phase state first so ShouldBlockPawnSpawning() is false during RestartDeferredPlayersForWarmup,
+	// then seed starting gold and broadcast OnRep_MatchPhase once pawns and wallets are ready.
+	CurrentMatchPhase = EBwayMatchPhase::Warmup;
+	RestartDeferredPlayersForWarmup();
+	SeedArenaIntroStartingGold();
+	OnRep_MatchPhase();
+	StartWarmupPhaseAbility();
+
+	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: EnterWarmup — pawn spawn unblocked; warmup runs once per match (%.1fs)"), WarmupDurationSeconds);
 }
 
 void UBwayRoundManagementComponent::StartWarmupPhaseAbility()
@@ -808,6 +925,7 @@ void UBwayRoundManagementComponent::StopRoundFSM()
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(MatchPhaseTimerHandle);
+		World->GetTimerManager().ClearTimer(ArenaIntroTimerHandle);
 		World->GetTimerManager().ClearTimer(BetweenRoundTimerHandle);
 		World->GetTimerManager().ClearTimer(PreRoundTimerHandle);
 	}
@@ -1211,6 +1329,21 @@ int32 UBwayRoundManagementComponent::GetRoundTimeRemaining() const
 	return FMath::CeilToInt(RemainingTime);
 }
 
+int32 UBwayRoundManagementComponent::GetWarmupTimeRemaining() const
+{
+	if (CurrentMatchPhase != EBwayMatchPhase::Warmup || WarmupDurationSeconds <= 0.0f)
+	{
+		return 0;
+	}
+
+	const AGameStateBase* GameState = GetOwner<AGameStateBase>();
+	const double CurrentServerTime = GameState
+		? GameState->GetServerWorldTimeSeconds() : (GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0);
+	const double ElapsedTime = FMath::Max(0.0, CurrentServerTime - static_cast<double>(WarmupStartTime));
+	const double RemainingTime = FMath::Max(0.0, static_cast<double>(WarmupDurationSeconds) - ElapsedTime);
+	return FMath::CeilToInt(RemainingTime);
+}
+
 // ========================================
 // Round Lifecycle
 // ========================================
@@ -1434,6 +1567,7 @@ void UBwayRoundManagementComponent::ResetRoundState()
 	{
 		return;
 	}
+	OnRoundResetStarting.Broadcast();
 	ClearRespawnTimers();
 	if (bResetRespawnEscalationEachRound)
 	{
@@ -1537,6 +1671,7 @@ void UBwayRoundManagementComponent::ResetForNextMatch()
 		return;
 	}
 
+	OnRoundResetStarting.Broadcast();
 	ClearBetweenRoundTimer();
 	ClearRespawnTimers();
 	ResetRoundRespawnEscalation();

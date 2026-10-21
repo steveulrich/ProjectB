@@ -803,6 +803,15 @@ void ABreakawayGameMode::AssignControllerToTeam(AController* Controller)
 		{
 			TeamIndex = CarriedTeamId - 1;
 		}
+		else if (const APlayerController* PC = Cast<APlayerController>(Controller); PC && PC->IsLocalController())
+		{
+			int32 UrlHostTeam = INDEX_NONE;
+			if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionInt(this, TEXT("HostTeam"), UrlHostTeam)
+				&& (UrlHostTeam == 0 || UrlHostTeam == 1))
+			{
+				TeamIndex = UrlHostTeam;
+			}
+		}
 	}
 	BwayGS->AddPlayerToTeam(Controller->PlayerState, TeamIndex);
 

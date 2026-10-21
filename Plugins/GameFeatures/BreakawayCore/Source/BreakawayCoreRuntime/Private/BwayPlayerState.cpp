@@ -420,6 +420,11 @@ FBwayPlayerMatchStats ABwayPlayerState::GetMatchStatsSnapshot() const
 
 void ABwayPlayerState::HandleGoldChanged(const FOnAttributeChangeData& Change)
 {
+	if (bSuppressMatchGoldEarningsTracking)
+	{
+		return;
+	}
+
 	// Attribute notifications contain the actual clamped wallet change, so
 	// overflow at MaxGold and failed/rejected awards do not inflate earnings.
 	if (HasAuthority() && FMath::IsFinite(Change.NewValue) && FMath::IsFinite(Change.OldValue)

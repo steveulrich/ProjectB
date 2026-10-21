@@ -67,7 +67,7 @@ struct FProbe
 		};
 		ABwayPlayerState* CarrierPS = Players[1];
 		auto* Carrier = Cast<ABwayCharacterWithAbilities>(CarrierPS->GetPawn());
-		const int32 FumblesBefore = CarrierPS->GetForcedFumbles();
+		const int32 CarrierFumblesBefore = CarrierPS->GetForcedFumbles();
 		Relic->OnDropped();
 		Relic->OnPickedUp(Carrier);
 		if (Relic->CurrentCarrier != Carrier) return Stop(TEXT("pickup-not-carried"));
@@ -79,6 +79,8 @@ struct FProbe
 			ULyraAbilitySystemComponent* ASC = Target->GetLyraAbilitySystemComponent();
 			const float Before = ASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute());
 			const float Expected = UBwayDamageLibrary::ResolveFinalDamage(13.0f, ASC);
+			const float AccumulatedDamageBefore = Relic->GetAccumulatedCarrierDamage();
+			const int32 AttackerFumblesBefore = Source->GetForcedFumbles();
 			const bool Applied = UBwayDamageLibrary::ApplyDamageFromSource(Source->GetLyraAbilitySystemComponent(), Target->GetPawn(), 13.0f, Source->GetPawn(), Source->GetPawn());
 			const float After = ASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute());
 			if (!Applied || Expected < 1.0f || !FMath::IsNearlyEqual(Before - After, Expected, 0.01f)) return Stop(TEXT("production-damage-delta"));
@@ -100,8 +102,16 @@ struct FProbe
 			if (Target == CarrierPS)
 			{
 				const bool Dropped = !Relic->CurrentCarrier && Relic->GetCurrentState() != ERelicState::Carried;
-				UE_LOG(LogTemp, Display, TEXT("BwayListenerDelivery: Fumble epoch=%d player=%d dropped=%d before=%d after=%d"), Epoch, CarrierPS->GetPlayerId(), Dropped, FumblesBefore, CarrierPS->GetForcedFumbles());
-				if (!Dropped || CarrierPS->GetForcedFumbles() != FumblesBefore + 1) return Stop(TEXT("carrier-damage-listener"));
+				const bool ExpectedDrop = AccumulatedDamageBefore + Expected + KINDA_SMALL_NUMBER >= Settings->FumbleDamageThreshold;
+				UE_LOG(LogTemp, Display, TEXT("BwayListenerDelivery: Fumble epoch=%d player=%d dropped=%d expectedDrop=%d source=%d before=%d after=%d"),
+					Epoch, CarrierPS->GetPlayerId(), Dropped, ExpectedDrop, Source->GetPlayerId(), AttackerFumblesBefore, Source->GetForcedFumbles());
+				if (Dropped != ExpectedDrop || Source->GetForcedFumbles() != AttackerFumblesBefore + (ExpectedDrop ? 1 : 0)
+					|| CarrierPS->GetForcedFumbles() != CarrierFumblesBefore) return Stop(TEXT("carrier-damage-listener"));
+				if (!ExpectedDrop && (Relic->CurrentCarrier != Carrier
+					|| !FMath::IsNearlyEqual(Relic->GetAccumulatedCarrierDamage(), AccumulatedDamageBefore + Expected, 0.01f)))
+				{
+					return Stop(TEXT("carrier-damage-accumulation"));
+				}
 			}
 		}
 		UE_LOG(LogTemp, Display, TEXT("BwayListenerDelivery: EpochPassed epoch=%d players=4"), Epoch);

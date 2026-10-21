@@ -22,6 +22,9 @@ UCLASS(config=Game)
 class BREAKAWAYCORERUNTIME_API ABwayCharacterWithAbilities : public ALyraCharacter
 {
 	GENERATED_BODY()
+#if !UE_BUILD_SHIPPING
+	friend class ABwayAllKitCombatProbe;
+#endif
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
 	TObjectPtr<UBwayCharacterMovementComponent> BwayCharacterMovementComponent;

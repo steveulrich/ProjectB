@@ -4,18 +4,28 @@
 
 #include "Engine/AssetManager.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "GameModes/LyraExperienceActionSet.h"
 #include "GameModes/LyraExperienceDefinition.h"
 #include "LyraLogChannels.h"
 
 namespace BwayExperienceLibraryPrivate
 {
 	static const FName ExperienceTypeName(TEXT("LyraExperienceDefinition"));
+	static const FName ActionSetTypeName(TEXT("LyraExperienceActionSet"));
 	static const TCHAR* ExperienceRootPath = TEXT("/BreakawayCore/Experiences");
 
 	static const TArray<FName> KnownExperienceNames = {
 		TEXT("B_BW_Experience_Dev"),
 		TEXT("B_BW_Experience_CaptureTheRelic"),
 		TEXT("B_BW_Experience_HeroSelectStaging"),
+		TEXT("B_BW_Experience_BallMode"),
+	};
+
+	static const TArray<FName> KnownActionSetNames = {
+		TEXT("EAS_BW_CaptureTheRelic"),
+		TEXT("LAS_BW_MatchHUD"),
+		TEXT("LAS_BW_SharedInput"),
+		TEXT("LAS_BW_StandardComponents"),
 	};
 
 	static FSoftObjectPath MakeExperienceObjectPath(FName AssetName)
@@ -77,9 +87,32 @@ void UBwayExperienceLibrary::RegisterPackagedBreakawayExperiences()
 	AssetManager.ScanPathsSynchronous({BwayExperienceLibraryPrivate::ExperienceRootPath});
 
 	const FPrimaryAssetType ExperienceType(BwayExperienceLibraryPrivate::ExperienceTypeName);
+	const FPrimaryAssetType ActionSetType(BwayExperienceLibraryPrivate::ActionSetTypeName);
+
+	AssetManager.ScanPathsForPrimaryAssets(
+		ExperienceType,
+		{BwayExperienceLibraryPrivate::ExperienceRootPath},
+		ULyraExperienceDefinition::StaticClass(),
+		/*bHasBlueprintClasses*/ true,
+		/*bIsEditorOnly*/ false,
+		/*bForceSynchronousScan*/ true);
+
+	AssetManager.ScanPathsForPrimaryAssets(
+		ActionSetType,
+		{BwayExperienceLibraryPrivate::ExperienceRootPath},
+		ULyraExperienceActionSet::StaticClass(),
+		/*bHasBlueprintClasses*/ false,
+		/*bIsEditorOnly*/ false,
+		/*bForceSynchronousScan*/ true);
+
 	for (const FName& ExperienceName : BwayExperienceLibraryPrivate::KnownExperienceNames)
 	{
 		BwayExperienceLibraryPrivate::RegisterExperienceFromRegistry(FPrimaryAssetId(ExperienceType, ExperienceName));
+	}
+
+	for (const FName& ActionSetName : BwayExperienceLibraryPrivate::KnownActionSetNames)
+	{
+		BwayExperienceLibraryPrivate::RegisterExperienceFromRegistry(FPrimaryAssetId(ActionSetType, ActionSetName));
 	}
 }
 

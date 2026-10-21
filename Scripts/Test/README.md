@@ -892,6 +892,128 @@ contract records `candidateSourceIdentity`, the packet also warns when the selec
 artifact is older than the current source snapshot; reuse then remains limited to the
 candidate's recorded frozen scope.
 
+## AllKit owning-client transport
+
+`Run-AllKitOwnerTransport.ps1` runs the development AllKit fixture on four owned
+processes: a rendered host and selected remote owner at 640×360/30 FPS, plus two
+NullRHI witnesses. `-RenderedRemoteRole client1|client2|client3` defaults to client1.
+It uses fresh per-process settings directories and verifies the frozen package,
+source archive, artifact hashes, process exits, and staged settings restoration.
+It refuses concurrent Unreal processes, an occupied listen port, or reused evidence
+paths. The caller must first complete the applicable headless and PIE checks.
+
+```powershell
+& Scripts/Test/Run-AllKitOwnerTransport.ps1 `
+  -Candidate <candidate> -Attempt <fresh-attempt> -ExpectedLagMs 100 `
+  -ExpectedExeSHA256 <frozen-exe-hash> -PackageResultPath <package-result.json> `
+  -GateContractPath <selected-gate-contract.json>
+python Scripts/Test/Verify-AllKitOwnerTransport.py <run-result.json> `
+  --expected-lag 100 --reviewed-native-sha256 <frozen-probe-cpp-hash> `
+  --controls --output <fresh-verification.json>
+```
+
+Rotate the rendered remote role through client1 (Rawlins), client2 (Alona), and
+client3 (Korryn). Use `-RemoteArgus -RenderedRemoteRole client1` for remote Argus.
+Each run retains the complete action suite; only its selected owners have rendered
+coverage. The verifier records observed coverage by hero. `-ValidateOnly` performs
+preflight without starting processes. The
+verifier requires all 20 actions, 20 negative controls, the lethal/assist chain,
+actual owner activation, independent local observations, and four-peer cleanup.
+Corruption controls require a successful real capture; parser checks alone do not
+establish gameplay acceptance. Record the result and build/run counts in the
+selected Goal 1 contract. Physical input, presentation, and second-PC LAN proof
+remain separate requirements.
+
+### AllKit four-world PIE verification
+
+`Verify-AllKitPIE.py` checks a fresh same-process capture using the same gameplay
+assertions as the packaged verifier. Start from initialized Dorado worlds and
+capture independent topology before dispatch, during the fixture, and after its
+normal teardown. Bind the capture to the successful Editor build, archived
+source, loaded DLL, owned editor process, and exact pre-dispatch log byte range.
+
+```powershell
+python Scripts/Test/Verify-AllKitPIE.py <capture.json> `
+  --expected-lag 100 --reviewed-native-sha256 <frozen-probe-cpp-hash> `
+  --output <fresh-verification.json>
+```
+
+The capture uses schema `allkit-pie-1`. The checker requires all 42 cases,
+independent local baseline and outcome samples, credit and respawn evidence,
+four-peer cleanup, and zero probe/witness actors after teardown. Any in-range
+native failure rejects the attempt. Preserve startup errors outside that range
+separately. A PIE pass covers four worlds in one process; packaged transport,
+physical input, and presentation still require their own evidence.
+
+### AllKit asynchronous lifecycle in PIE
+
+For independent topology, run `Capture-AllKitPIETopology.py` inside Editor Python
+and call `capture_allkit_pie_topology(output_path, process_record_path, token, stage)`.
+Use a fresh output path and stage `before`, `active`, or `final`. An active capture
+with witnesses also requires `native_log_path=<owned editor log>`: the helper
+reads their protected links through exact-object native `OBJ DUMP` observations
+and preserves the fresh output in a sibling `.witness-dump.log`. Require
+`captureComplete: true`; a capture of a retained failed fixture proves topology
+only. The helper does not activate abilities or send gameplay RPCs.
+
+`Verify-AllKitAsyncPIE.py` verifies one native
+`bway.Test.AllKitAsyncPIE <token> <case> <death|reset> <remote-player-id>` request.
+Use four initialized Dorado worlds with zero packet lag, a fresh token, and the
+`allkit-async-pie-1` capture schema. Bind the source archive, successful Editor
+compile, loaded DLL, pre-dispatch log range, and independent before/final topology
+using the same provenance rules as `Verify-AllKitPIE.py`.
+
+```powershell
+python Scripts/Test/Verify-AllKitAsyncPIE.py <capture.json> `
+  --reviewed-native-sha256 <frozen-async-fixture-cpp-hash> `
+  --output <fresh-verification.json>
+```
+
+Cover cases 0–8 with both triggers. Each capture must prove actual pawn
+replacement, retained cooldown expiry, absence of old callbacks, a completed
+fresh owner action, settled peer outcomes, and fixture cleanup. Preserve natural
+combat statistics and cooldowns; use disposable PIE sessions. This verifier
+does not establish packaged transport, rendered presentation, or physical input.
+
+## Barrage packaged lifecycle and regressions
+
+Use `Run-BarrageLifecycleGuard.ps1` for the `normal`, `aim`, `damage-only`,
+`heal-damage`, `heal-only`, `death`, and `round-reset` scenarios. Run each required
+scenario at 0 and 100 ms on the same compatible frozen candidate. The guard binds
+the source archive, snapshot, successful Editor/Game compile records, full staged
+payload, reviewed native probe, and launch helper before starting four processes.
+It renders the host and Rawlins owner at 640×360/30 FPS and uses two NullRHI
+witnesses. It restores staged settings after owned processes exit.
+
+```powershell
+& Scripts/Test/Run-BarrageLifecycleGuard.ps1 `
+  -Candidate <candidate> -Attempt <fresh-attempt> -ExpectedLagMs 100 `
+  -ExpectedExeSHA256 <frozen-exe-hash> -PackageResultPath <package-result.json> `
+  -ReviewedNativeSHA256 <reviewed-probe-cpp-hash> -Scenario damage-only `
+  -GateContractPath <selected-gate-contract.json>
+python Scripts/Test/Verify-BarrageLifecycleTransport.py <run-result.json> `
+  --expected-lag 100 --reviewed-native-sha256 <reviewed-probe-cpp-hash> `
+  --controls --output <fresh-lifecycle-verification.json>
+```
+
+`-ValidateOnly` checks preflight without launching. Keep the adjacent preflight and
+settings-guard records with the returned run result. Record each actual launch in
+the selected gate's `packagedRuns` count; a preflight check does not consume a run.
+
+For `normal` and `aim`, use `Saved/verify-packaged-rawlins-barrage.py <run-result.json>
+--expected-lag <0|100> --output <fresh-normal-verification.json>`. For `aim`, also run
+`Saved/verify-barrage-changing-aim.py <run-result.json> --normal-verification
+<same-capture-normal-verification.json> --controls --output <fresh-aim-verification.json>`.
+The aim verifier requires the normal verifier's pass on that same capture and all
+27 corruption controls. Retain the 200 ms frame bound. Lifecycle captures use the
+lifecycle verifier instead; neither path substitutes for the other.
+
+For the existing all-16 cooldown suite on a new candidate, follow
+[AllKitCooldownTransport.md](./AllKitCooldownTransport.md). It documents the
+authored-configuration export, source/compile/artifact guard, rendered-owner
+rotations, exact evidence counts, and corruption controls. A historical cooldown
+pass does not cover changed dependencies without a matching reuse audit.
+
 ## Travel GUID & Dorado VSM helpers (Goal 3)
 
 Use `Get-TravelGuidBrief.ps1 -LogFile <log1>,<log2>,... -OutputJson <brief.json>` to

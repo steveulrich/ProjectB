@@ -556,6 +556,48 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 
 void UBwayHeroSelectionManager::CheckAllPlayersReady()
 {
+	if (!bSelectionActive)
+	{
+		return;
+	}
+
+	static bool bAutoAssigningBotHeroes = false;
+	if (!bAutoAssigningBotHeroes && !AreAllPlayersReady())
+	{
+		bool bHasHumanPlayer = false;
+		bool bAllHumansReady = true;
+		bool bHasUnlockedBot = false;
+		for (const FPlayerHeroSelectionState& Selection : PlayerSelections)
+		{
+			const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(Selection.PlayerState);
+			if (!BwayPS || BwayPS->IsInactive() || BwayPS->IsOnlyASpectator())
+			{
+				continue;
+			}
+			if (IsBotPlayerState(BwayPS))
+			{
+				if (!Selection.bIsLocked || !Selection.SelectedHeroId.IsValid())
+				{
+					bHasUnlockedBot = true;
+				}
+			}
+			else
+			{
+				bHasHumanPlayer = true;
+				if (!Selection.bIsLocked || !Selection.SelectedHeroId.IsValid())
+				{
+					bAllHumansReady = false;
+				}
+			}
+		}
+
+		if (bHasHumanPlayer && bAllHumansReady && bHasUnlockedBot)
+		{
+			TGuardValue<bool> AutoAssignGuard(bAutoAssigningBotHeroes, true);
+			AssignRandomHeroToPlayers(/*bOnlyBots=*/true, FPrimaryAssetId(), /*bLockImmediately=*/true);
+		}
+	}
+
 	if (bSelectionActive && AreAllPlayersReady())
 	{
 		OnAllPlayersReady.Broadcast();

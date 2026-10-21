@@ -38,11 +38,7 @@ void ABwayKorrynPrimaryProjectile::ConfigureProjectile(
 	DamageAmount = InDamage;
 	ArmorShredEffectClass = InArmorShredEffectClass;
 
-	if (InInstigator)
-	{
-		SetOwner(InInstigator);
-		SetInstigator(InInstigator);
-	}
+	ConfigureDamageSource(InInstigator);
 
 	ConfigureMovement(InSpeed, InLifeSpan);
 }
@@ -55,48 +51,31 @@ bool ABwayKorrynPrimaryProjectile::HandleDamageHit(const FHitResult& Hit)
 		return false;
 	}
 
-	if (UBwayDamageLibrary::ApplyDamageToEnemyBuildable(InstigatorCharacter, HitActor, DamageAmount, this))
+	if (ApplyDamageToEnemyBuildable(HitActor, DamageAmount))
 	{
 		bHasAppliedHit = true;
 		return true;
 	}
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
-	if (!HitCharacter || !InstigatorCharacter)
+	if (!IsEnemyCharacter(HitCharacter))
 	{
 		return false;
 	}
 
-	bool bIsEnemy = false;
-	if (UWorld* World = GetWorld())
-	{
-		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			bIsEnemy = !GameState->AreOnSameTeam(InstigatorCharacter, HitCharacter);
-		}
-		else if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			bIsEnemy = TeamSubsystem->CompareTeams(InstigatorCharacter, HitCharacter) == ELyraTeamComparison::DifferentTeams;
-		}
-	}
-
-	if (!bIsEnemy)
-	{
-		return false;
-	}
-
-	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
+	UAbilitySystemComponent* SourceASC = GetDamageSourceASC();
 	if (DamageAmount > 0.f)
 	{
-		UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter);
+		UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, GetDamageInstigator());
 	}
 
-	if (ArmorShredEffectClass && SourceASC)
+	// Damage can synchronously finish the round and destroy this projectile.
+	if (ArmorShredEffectClass && GetDamageSourceASC() && IsEnemyCharacter(HitCharacter))
 	{
 		if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitCharacter))
 		{
 			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
 			Context.AddSourceObject(this);
-			Context.AddInstigator(InstigatorCharacter, this);
+			Context.AddInstigator(GetDamageInstigator(), this);
 
 			const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(ArmorShredEffectClass, 1.f, Context);
 			if (SpecHandle.IsValid())

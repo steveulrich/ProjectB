@@ -104,6 +104,8 @@
 | R | Blessing of the Sun | Support | Alona casts a healing circle on the ground in front of her. Allies within the circle gain an initial burst of health and then gain a smaller amount of health until it ends. | 25s | — | — | N/A | Initial Heal: 70; Heal over Time: 35/s |
 | 1 | Sun Shrine | Buildable | A healing shrine that regenerates health for all teammates that stand within its radius. Does not stack with other Sun Shrines. | — | — | — | — | Health: 750; Effect: Heals 35 health/s; Range: 5m radius |
 
+**Blessing lifecycle policy (project decision, October 16, 2026):** A placed circle keeps healing after Alona dies until its original expiry. Round transitions, direct round resets, and rematch resets remove existing circles. This user-approved behavior does not establish historical final-alpha parity.
+
 ---
 
 ## Merrick
@@ -183,6 +185,8 @@
 | E | Circle of Spite | AoE Debuff | Korryn summons a hex circle on the ground in front of her. Enemies within its radius take additional damage from all sources and are slowed. | 20s | — | — | N/A | Slow: 15%; Damage Increase: 35%; Radius: 7m; Duration: 5s |
 | R | Aura of Silence | AoE Debuff | Korryn silences enemies around her. Silenced enemies cannot use their abilities for 5 seconds. | 30s | 13 | — | 0.5 | Radius: 8m; Silence Duration: 5s |
 | 1 | Cursed Ward | Buildable | Slows enemies within its area of effect. | — | — | — | — | Health: 600; Effect: 50% slow; Range: 6m |
+
+**Circle lifecycle policy (project decision, October 17, 2026):** A placed Circle of Spite persists after Korryn dies until its original expiry. Round transitions, direct round resets, and rematch resets remove existing circles. This user-approved behavior does not establish historical final-alpha parity.
 
 ---
 

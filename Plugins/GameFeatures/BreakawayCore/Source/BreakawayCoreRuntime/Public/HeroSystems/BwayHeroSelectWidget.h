@@ -14,6 +14,11 @@ class ULyraButtonBase;
 class ABwayPlayerState;
 class UBwayFrontendStateSubsystem;
 class UCommonTextBlock;
+class ABwayHeroPreviewActor;
+class UUniformGridPanel;
+class UTextBlock;
+class UButton;
+class UBorder;
 
 // Delegate for when hero selection is confirmed (for dev tools)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroConfirmedDelegate);
@@ -75,7 +80,7 @@ struct FHeroDisplayInfo
  * Handles communication with PlayerState and HeroSelectionManager
  * Designed to be extended in Blueprint for visual implementation
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayHeroSelectWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
@@ -85,6 +90,7 @@ public:
 
 protected:
 	//~UUserWidget interface
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeConstruct() override;
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 	virtual void NativeDestruct() override;
@@ -197,6 +203,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
 	bool GetSelectedHeroDisplayInfo(FHeroDisplayInfo& OutDisplayInfo) const;
 
+	/** Toggle the bottom-right ABILITIES info panel */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	void ToggleAbilitiesPanel();
+
+	/** Returns the spawned 3D character preview actor (if active) */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection|Preview")
+	ABwayHeroPreviewActor* GetPreviewActor() const { return PreviewActor; }
+
+	/** Select a hero by its index in GetAvailableHeroes() */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	bool SelectHeroByIndex(int32 Index);
+
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 
 	/**
@@ -298,11 +316,58 @@ private:
 	// Update timer display
 	void UpdateSelectionTimer();
 	void RefreshHeroDetails();
+	void RefreshFallbackHeroSelectLayout();
+	void EnsureAndUpdatePreviewActor(FPrimaryAssetId HeroId);
+	void CleanupPreviewActor();
+
+	UFUNCTION() void OnFallbackReadyClicked();
+	UFUNCTION() void OnFallbackAbilitiesToggleClicked();
+	UFUNCTION() void OnPortrait0Clicked();
+	UFUNCTION() void OnPortrait1Clicked();
+	UFUNCTION() void OnPortrait2Clicked();
+	UFUNCTION() void OnPortrait3Clicked();
+	UFUNCTION() void OnPortrait4Clicked();
+	UFUNCTION() void OnPortrait5Clicked();
 
 	// Cache of hero data for quick access
 	UPROPERTY()
 	TArray<TObjectPtr<UBwayHeroDataAsset>> CachedHeroData;
 
+	UPROPERTY(Transient)
+	TObjectPtr<ABwayHeroPreviewActor> PreviewActor;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackHeroNameText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackHeroClassText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackHeroLevelText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UUniformGridPanel> FallbackPortraitGrid;
+
+	UPROPERTY(Transient)
+	TArray<FPrimaryAssetId> FallbackGridHeroIds;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> FallbackReadyButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackReadyLabel;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackTimerText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> FallbackAbilitiesPanel;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> FallbackAbilitiesText;
+
+	bool bUsingFallbackLayout = false;
+	bool bAbilitiesPanelVisible = false;
 	bool bIsInitialized = false;
 	bool bShowingTravelFailure = false;
 	bool bTravelRetryAvailable = false;

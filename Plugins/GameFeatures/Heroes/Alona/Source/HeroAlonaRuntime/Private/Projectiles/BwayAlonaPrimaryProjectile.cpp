@@ -35,11 +35,7 @@ void ABwayAlonaPrimaryProjectile::ConfigureProjectile(
 	InstigatorCharacter = InInstigatorCharacter;
 	DamageAmount = InDamageAmount;
 
-	if (InInstigatorCharacter)
-	{
-		SetInstigator(InInstigatorCharacter);
-		SetOwner(InInstigatorCharacter);
-	}
+	ConfigureDamageSource(InInstigatorCharacter);
 
 	ConfigureMovement(InSpeed, InLifeSpan);
 }
@@ -52,37 +48,19 @@ bool ABwayAlonaPrimaryProjectile::HandleDamageHit(const FHitResult& Hit)
 		return false;
 	}
 
-	if (UBwayDamageLibrary::ApplyDamageToEnemyBuildable(InstigatorCharacter, HitActor, DamageAmount, this))
+	if (ApplyDamageToEnemyBuildable(HitActor, DamageAmount))
 	{
 		bHasAppliedDamage = true;
 		return true;
 	}
 	ABwayCharacterWithAbilities* HitCharacter = Cast<ABwayCharacterWithAbilities>(HitActor);
-	if (!HitCharacter || !InstigatorCharacter)
+	if (!IsEnemyCharacter(HitCharacter) || DamageAmount <= 0.f)
 	{
 		return false;
 	}
 
-	bool bIsEnemy = false;
-	if (UWorld* World = GetWorld())
-	{
-		if (const ABwayGameState* GameState = World->GetGameState<ABwayGameState>())
-		{
-			bIsEnemy = !GameState->AreOnSameTeam(InstigatorCharacter, HitCharacter);
-		}
-		else if (const ULyraTeamSubsystem* TeamSubsystem = World->GetSubsystem<ULyraTeamSubsystem>())
-		{
-			bIsEnemy = TeamSubsystem->CompareTeams(InstigatorCharacter, HitCharacter) == ELyraTeamComparison::DifferentTeams;
-		}
-	}
-
-	if (!bIsEnemy || DamageAmount <= 0.f)
-	{
-		return false;
-	}
-
-	UAbilitySystemComponent* SourceASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorCharacter);
-	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, InstigatorCharacter))
+	UAbilitySystemComponent* SourceASC = GetDamageSourceASC();
+	if (UBwayDamageLibrary::ApplyDamageFromSource(SourceASC, HitCharacter, DamageAmount, this, GetDamageInstigator()))
 	{
 		bHasAppliedDamage = true;
 		return true;

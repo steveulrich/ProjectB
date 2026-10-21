@@ -1,4 +1,5 @@
 #include "Development/BwaySlideLifecycleProbe.h"
+#include "Development/BwaySlideReviewCourse.h"
 
 #include "AbilitySystem/Abilities/LyraGameplayAbility_Jump.h"
 #include "AbilitySystem/BwayGameplayCueTags.h"
@@ -31,7 +32,7 @@
 
 bool FBwaySlideLifecycleFrame::NetSerialize(FArchive& Ar, UPackageMap*, bool& bOutSuccess)
 {
-	Ar << Serial << Phase << Case << Peer << Source << Passed << Trajectory << SupportDiagnostic << GroundAirDiagnostic << Token << AuthoredMinSpeed << Position << Rotation << Direction << RestoreScale << RestoreVelocity << RestoreMode << RestoreCustom;
+	Ar << Serial << Phase << Case << Peer << Source << Passed << Trajectory << SupportDiagnostic << GroundAirDiagnostic << ReviewRegression << Token << AuthoredMinSpeed << ReviewCourseRadius << Position << Rotation << Direction << RestoreScale << RestoreVelocity << RestoreMode << RestoreCustom;
 	bOutSuccess = !Ar.IsError();
 	return true;
 }
@@ -44,8 +45,9 @@ constexpr double SupportDiagnosticSeconds = 1.0;
 // This is an observation deadline only. It is intentionally not an acceptance
 // threshold and it does not widen the normal 15 cm trajectory support rule.
 constexpr double GroundAirDiagnosticSeconds = 4.0;
-const TCHAR* CaseName(int32 Case, bool bTrajectory = false)
+const TCHAR* CaseName(int32 Case, bool bTrajectory = false, bool bReview = false)
 {
+	if (bReview) return Case == 0 ? TEXT("HeldJumpReview") : TEXT("ConcaveContactReview");
 	if (bTrajectory) return Case == 0 ? TEXT("FlatRelease") : Case == 1 ? TEXT("FlatJump") : Case == 2 ? TEXT("RampRouteRelease") : TEXT("RampRouteJump");
 	return Case == 0 ? TEXT("AuthoredLowSpeed") : Case == 1 ? TEXT("LowSpeed") : Case == 2 ? TEXT("Release") : TEXT("Jump");
 }
@@ -245,6 +247,16 @@ struct FBwaySlideLifecycleProbeState
 	double GroundAirGroundTravel = 0;
 	int32 GroundAirCoverageMask = 0, GroundAirGroundSamples = 0, GroundAirAirSamples = 0, GroundAirSlideJumpAirSamples = 0, GroundAirInvalidSamples = 0;
 	bool bGroundAirSawAir = false, bGroundAirSawReturn = false, bGroundAirGroundContiguous = false, bGroundAirObservationEnded = false;
+	TArray<TWeakObjectPtr<AActor>> ReviewCourse;
+	FDelegateHandle ReviewObserver;
+	float OriginalJumpHold = 0.f;
+	bool bReviewHoldSaved = false;
+	int32 ReviewBoosts = 0, ReviewHeldCalls = 0, ReviewConcaveSteps = 0, ReviewDecisiveSteps = 0;
+	double ReviewHeldSeconds = 0, ReviewFirstJumpTime = 0;
+	float ReviewFirstHeldTimestamp = -1.f, ReviewLastHeldTimestamp = -1.f;
+	double ReviewRelocationStartedAt = 0;
+	float ReviewLaunchSpeed = 0.f;
+	FString ReviewError;
 };
 #else
 struct FBwaySlideLifecycleProbeState {};
@@ -296,6 +308,7 @@ void ABwaySlideLifecycleProbe::EndPlay(const EEndPlayReason::Type Reason)
 		CleanupLocal();
 		if (State->bCoordinator) RestoreAuthority();
 		if (Frame.Trajectory && !State->bPeerOrientationRestored && State->Pawn.IsValid()) RestorePeerOrientation();
+		if (Frame.ReviewRegression) BwaySlideReviewCourse::Destroy(State->ReviewCourse);
 		UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Teardown peer=%d player=%d confirmed=%d passed=%d"), Frame.Peer, Frame.Source, State->bFinalConfirmed, Frame.Passed);
 		if (!HasAuthority() && State->bFinalConfirmed && Frame.Passed && Reason == EEndPlayReason::Destroyed
 			&& (!Frame.Trajectory || GetWorld()->WorldType == EWorldType::Game)) FPlatformMisc::RequestExit(false);
@@ -306,8 +319,9 @@ void ABwaySlideLifecycleProbe::EndPlay(const EEndPlayReason::Type Reason)
 }
 
 #if !UE_BUILD_SHIPPING && DO_ENABLE_NET_TEST
-bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, const FString& Token, bool bSupportDiagnostic, bool bGroundAirDiagnostic)
+bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, const FString& Token, bool bSupportDiagnostic, bool bGroundAirDiagnostic, bool bReviewRegression)
 {
+	if (bReviewRegression && (!bTrajectory || bSupportDiagnostic || bGroundAirDiagnostic)) return false;
 	if ((bSupportDiagnostic || bGroundAirDiagnostic) && (!bTrajectory || !World || World->WorldType != EWorldType::PIE)) return false;
 	if (bSupportDiagnostic && bGroundAirDiagnostic) return false;
 	if (!World || World->GetNetMode() != NM_ListenServer || !World->GetMapName().Contains(TEXT("L_BW_Dorado")) || !Playing(World)) return false;
@@ -335,8 +349,10 @@ bool ABwaySlideLifecycleProbe::StartInWorld(UWorld* World, bool bTrajectory, con
 	Root->Coordinator = Root; Root->State->bCoordinator = true;
 	Root->Frame.Trajectory = bTrajectory; Root->Frame.Token = Token;
 	Root->Frame.SupportDiagnostic = bSupportDiagnostic; Root->Frame.GroundAirDiagnostic = bGroundAirDiagnostic;
+	Root->Frame.ReviewRegression = bReviewRegression;
 	Root->Frame.Source = Controllers[1]->PlayerState->GetPlayerId();
 	Root->Frame.AuthoredMinSpeed = FindPawn(World, Root->Frame.Source)->GetBwayCharacterMovement()->MinSlideSpeed;
+	Root->Frame.ReviewCourseRadius = bReviewRegression ? FindPawn(World, Root->Frame.Source)->GetCapsuleComponent()->GetScaledCapsuleRadius() : 0.f;
 	Root->State->Relays.Add(Root);
 	for (int32 Index = 1; Index < 4; ++Index)
 	{
@@ -359,7 +375,7 @@ void ABwaySlideLifecycleProbe::Publish(int32 Phase)
 	State->Acks.Init(false, 4); State->Published = FPlatformTime::Seconds();
 	for (int32 Index = 0; Index < State->Relays.Num(); ++Index)
 		if (auto* Relay = State->Relays[Index].Get()) { Relay->Frame = Frame; Relay->Frame.Peer = Index; Relay->ForceNetUpdate(); }
-	UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Phase serial=%d case=%d name=%s phase=%d player=%d"), Frame.Serial, Frame.Case, CaseName(Frame.Case, Frame.Trajectory), Frame.Phase, Frame.Source);
+	UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Phase serial=%d case=%d name=%s phase=%d player=%d"), Frame.Serial, Frame.Case, CaseName(Frame.Case, Frame.Trajectory, Frame.ReviewRegression), Frame.Phase, Frame.Source);
 }
 
 bool ABwaySlideLifecycleProbe::BindSource()
@@ -456,6 +472,17 @@ bool ABwaySlideLifecycleProbe::BindSource()
 	GEngine->Exec(GetWorld(), TEXT("Net PktLag=100"));
 	if (State->Driver->PacketSimulationSettings.PktLag != 100) { Fail(TEXT("setup"), TEXT("packet-lag-not-applied")); return false; }
 	const TWeakObjectPtr<ABwaySlideLifecycleProbe> Weak(this);
+	if (Frame.ReviewRegression)
+	{
+		State->OriginalJumpHold = Pawn->JumpMaxHoldTime; State->bReviewHoldSaved = true;
+		Pawn->JumpMaxHoldTime = 0.3f;
+		if (!BwaySlideReviewCourse::Spawn(GetWorld(), State->ReviewCourse, Frame.ReviewCourseRadius, Frame.Token))
+		{ Fail(TEXT("setup"), TEXT("review-course-spawn-failed")); return false; }
+		State->ReviewObserver = Move->SlideReviewObserver.AddLambda([Weak](const FBwaySlideReviewObservation& Observation)
+		{
+			if (auto* Probe = Weak.Get()) Probe->OnReviewStep(Observation);
+		});
+	}
 	if (HasAuthority() || State->bOwner)
 	{
 		State->Activated = ASC->AbilityActivatedCallbacks.AddLambda([Weak](UGameplayAbility* Ability)
@@ -470,16 +497,36 @@ bool ABwaySlideLifecycleProbe::BindSource()
 		{
 			auto* P = Weak.Get();
 			if (!P || !P->State || P->State->bCleaned || Target != P->State->Pawn.Get() || Tag != BwayGameplayCueTags::MovementSlide || Event != EGameplayCueEvent::Executed || Params.Instigator.Get() != Target) return;
-			const auto* Move = P->State->Pawn->GetBwayCharacterMovement();
+			auto* Move = P->State->Pawn->GetBwayCharacterMovement();
 			if (Move->IsSliding())
 			{
 				++P->State->Entries; P->State->EntryAt = FPlatformTime::Seconds();
+				if (P->Frame.ReviewRegression && P->Frame.Case == 1 && P->State->Entries == 1)
+				{
+					// Dedicated collision fixture: stage identical incoming state only
+					// after the first natural GAS slide-entry cue on owner/authority.
+					// PhysSliding and all subsequent movement/prediction remain production.
+					auto* ReviewPawn = P->State->Pawn.Get();
+					const float HalfHeight = ReviewPawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+					const FVector InitialPosition = BwaySlideReviewCourse::ConcaveStart(HalfHeight);
+					ReviewPawn->SetActorLocation(InitialPosition, false, nullptr, ETeleportType::TeleportPhysics);
+					Move->Velocity = BwaySlideReviewCourse::ConcaveVelocity();
+					Move->FindFloor(InitialPosition, Move->CurrentFloor, false);
+					P->TrajectoryRecord(TEXT("ReviewConcaveSeed"), FString::Printf(TEXT("\"seededCollisionFixture\":1,\"productionGasEntry\":1,\"entries\":%d,\"sliding\":%d,\"courseVersion\":2,\"radius\":%.6f,\"halfHeight\":%.6f,\"position\":%s,\"velocity\":%s,\"floorDistance\":%.6f,\"floorNormal\":%s"),
+						P->State->Entries, Move->IsSliding(), ReviewPawn->GetCapsuleComponent()->GetScaledCapsuleRadius(), HalfHeight,
+						*JsonVector(ReviewPawn->GetActorLocation()), *JsonVector(Move->Velocity), Move->CurrentFloor.GetDistanceToFloor(), *JsonVector(Move->CurrentFloor.HitResult.ImpactNormal)));
+					if (P->Frame.Phase != Execute || !FMath::IsNearlyEqual(ReviewPawn->GetCapsuleComponent()->GetScaledCapsuleRadius(), P->Frame.ReviewCourseRadius, 0.001f)
+						|| !Move->CurrentFloor.IsWalkableFloor() || Move->CurrentFloor.HitResult.bStartPenetrating
+						|| Move->CurrentFloor.HitResult.ImpactNormal.Z < 0.999f || CapsulePenetrating(ReviewPawn))
+						P->State->ReviewError = TEXT("review-concave-seed-invalid");
+				}
 				if (P->Frame.Trajectory && P->State->Entries == 1) P->State->TrajectoryEntryPosition = Target->GetActorLocation();
 			}
 			UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Entry serial=%d case=%d peer=%d player=%d sliding=%d entries=%d"), P->Frame.Serial, P->Frame.Case, P->Frame.Peer, P->Frame.Source, Move->IsSliding(), P->State->Entries);
 		});
 	}
 	State->bBound = true;
+	if (Frame.ReviewRegression) TrajectoryRecord(TEXT("ReviewSetup"), FString::Printf(TEXT("\"reviewSchema\":1,\"originalJumpHold\":%.6f,\"fixtureJumpHold\":%.6f,\"courseActors\":%d,\"courseRadius\":%.6f,\"courseVersion\":2,\"seededConcaveFixture\":1,\"authoritativeInput\":1,\"physicalInput\":0"), State->OriginalJumpHold, Pawn->JumpMaxHoldTime, State->ReviewCourse.Num(), Frame.ReviewCourseRadius));
 	if (Frame.Trajectory) TrajectoryRecord(TEXT("Setup"), FString::Printf(TEXT("\"tuning\":\"%s\",\"radius\":%.3f,\"positionTolerance\":10,\"velocityTolerance\":60,\"convergenceTolerance\":10,\"penetrationToleranceCm\":0.5,\"customFloorDistanceMin\":-0.5,\"customFloorDistanceMax\":15,\"customFloorNormalMinZ\":0.80,\"lagMs\":%d,\"pawnName\":\"%s\",\"correctionsEnabled\":%d,\"orientationCaptured\":%d,\"originalRotation\":%s,\"hadController\":%d,\"originalController\":\"%s\",\"originalControlRotation\":%s"),
 		*State->AuthoredTuning, Pawn->GetCapsuleComponent()->GetScaledCapsuleRadius(), State->Driver->PacketSimulationSettings.PktLag,
 		*Pawn->GetName().ReplaceCharWithEscapedChar(), State->bCorrectionsSaved, State->bPeerOrientationSaved, *JsonVector(State->OriginalPeerRotation.Euler()),
@@ -554,13 +601,17 @@ void ABwaySlideLifecycleProbe::Observe()
 			State->Activations = 0; State->Ends = 0; State->Entries = 0; State->EntryAt = 0; State->bExecuted = false; State->bJumpProof = false;
 			if (State->Pawn.IsValid() && !Frame.Trajectory) State->Pawn->GetBwayCharacterMovement()->MinSlideSpeed = Frame.Case == 1 ? 100.f : State->ConfiguredMinSpeed;
 			UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Tuning serial=%d case=%d name=%s peer=%d player=%d originalMin=%.2f activeMin=%.2f conditionalOverride=%d"),
-				Frame.Serial, Frame.Case, CaseName(Frame.Case, Frame.Trajectory), Frame.Peer, Frame.Source, State->ConfiguredMinSpeed,
+				Frame.Serial, Frame.Case, CaseName(Frame.Case, Frame.Trajectory, Frame.ReviewRegression), Frame.Peer, Frame.Source, State->ConfiguredMinSpeed,
 				State->Pawn.IsValid() ? State->Pawn->GetBwayCharacterMovement()->MinSlideSpeed : -1.f, !Frame.Trajectory && Frame.Case == 1);
 			if (Frame.Trajectory)
 			{
 				State->SlideSeconds = 0; State->FirstSlideTimestamp = -1; State->LastSlideTimestamp = -1;
 				State->LastMoveTimestamp = -1; State->GeometryMask = 0; State->TrajectorySamples = 0; State->ApproachInputFrames = 0;
 				State->bTerminalIssued = false; State->bAirborne = false; State->bLanded = false;
+				State->ReviewBoosts = 0; State->ReviewHeldCalls = 0; State->ReviewConcaveSteps = 0; State->ReviewDecisiveSteps = 0;
+				State->ReviewHeldSeconds = 0; State->ReviewFirstJumpTime = 0; State->ReviewLaunchSpeed = 0;
+				State->ReviewFirstHeldTimestamp = -1.f; State->ReviewLastHeldTimestamp = -1.f;
+				State->ReviewError.Reset();
 				State->GroundAirExpectedComponent.Reset(); State->GroundAirRouteComponents.Reset(); State->GroundAirStartedAt = 0; State->GroundAirLastGroundTimestamp = -1;
 				State->GroundAirReturnAt = 0; State->GroundAirLastGroundPosition = FVector::ZeroVector; State->GroundAirGroundTravel = 0;
 				State->GroundAirCoverageMask = 0; State->GroundAirGroundSamples = 0; State->GroundAirAirSamples = 0; State->GroundAirSlideJumpAirSamples = 0; State->GroundAirInvalidSamples = 0;
@@ -597,7 +648,7 @@ void ABwaySlideLifecycleProbe::Observe()
 	{
 		if (!State->bAckSent)
 		{
-			State->bFinalConfirmed = Frame.Passed && !State->bFailed && State->bCleanupOkay && State->CompletedCases == 4;
+			State->bFinalConfirmed = Frame.Passed && !State->bFailed && State->bCleanupOkay && State->CompletedCases == (Frame.ReviewRegression ? 2 : 4);
 			UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: %s %s peer=%d player=%d cases=%d cleanup=1 physicalInput=0 trajectoryParity=0"),
 				HasAuthority() ? TEXT("Host") : TEXT("Client"), State->bFinalConfirmed ? TEXT("PASS") : TEXT("FAIL"), Frame.Peer, Frame.Source, State->CompletedCases);
 			if (Frame.Trajectory) TrajectoryRecord(TEXT("Complete"), FString::Printf(TEXT("\"passed\":%d,\"cases\":%d,\"cleanup\":%d,\"physicalInput\":0,\"trajectoryParity\":0"), State->bFinalConfirmed, State->CompletedCases, State->bCleanupOkay));
@@ -610,7 +661,8 @@ void ABwaySlideLifecycleProbe::Observe()
 	if (State->bFailed && Frame.Phase < Stop) return;
 	if (Frame.Trajectory && Frame.Phase >= Armed && Frame.Phase <= Settled)
 	{
-		if (Frame.GroundAirDiagnostic) ObserveGroundAirDiagnostic();
+		if (Frame.ReviewRegression) ObserveReviewRegression();
+		else if (Frame.GroundAirDiagnostic) ObserveGroundAirDiagnostic();
 		else ObserveTrajectory();
 		return;
 	}
@@ -776,7 +828,7 @@ void ABwaySlideLifecycleProbe::TrajectoryRecord(const TCHAR* Event, const FStrin
 	}
 	UE_LOG(LogTemp, Display, TEXT("BwaySlideTrajectory: {\"schema\":1,\"token\":\"%s\",\"event\":\"%s\",\"serial\":%d,\"phaseId\":%d,\"seq\":%d,\"wallSeconds\":%.6f,\"case\":%d,\"caseName\":\"%s\",\"peer\":%d,\"player\":%d,\"role\":\"%s\",%s}"),
 		*Frame.Token.ReplaceCharWithEscapedChar(), Event, Frame.Serial, Frame.Phase, ++State->EventSequence, FPlatformTime::Seconds() - State->Started,
-		Frame.Case, CaseName(Frame.Case, true), Frame.Peer, Frame.Source,
+		Frame.Case, CaseName(Frame.Case, true, Frame.ReviewRegression), Frame.Peer, Frame.Source,
 		HasAuthority() ? TEXT("authority") : State->bOwner ? TEXT("owner") : TEXT("proxy"), *Fields);
 }
 
@@ -785,12 +837,176 @@ void ABwaySlideLifecycleProbe::GroundAirRecord(const TCHAR* Event, const FString
 	if (!Frame.GroundAirDiagnostic || !State) return;
 	UE_LOG(LogTemp, Display, TEXT("BwaySlideGroundAirDiagnostic: {\"schema\":1,\"token\":\"%s\",\"event\":\"%s\",\"serial\":%d,\"phaseId\":%d,\"seq\":%d,\"wallSeconds\":%.6f,\"case\":%d,\"caseName\":\"%s\",\"peer\":%d,\"player\":%d,\"role\":\"%s\",\"diagnosticOnly\":1,\"acceptancePassed\":0,%s}"),
 		*Frame.Token.ReplaceCharWithEscapedChar(), Event, Frame.Serial, Frame.Phase, ++State->EventSequence, FPlatformTime::Seconds() - State->Started,
-		Frame.Case, CaseName(Frame.Case, true), Frame.Peer, Frame.Source,
+		Frame.Case, CaseName(Frame.Case, true, Frame.ReviewRegression), Frame.Peer, Frame.Source,
 		HasAuthority() ? TEXT("authority") : State->bOwner ? TEXT("owner") : TEXT("proxy"), *Fields);
+}
+
+void ABwaySlideLifecycleProbe::OnReviewStep(const FBwaySlideReviewObservation& O)
+{
+	if (!State || !Frame.ReviewRegression || State->bCleaned || State->bFailed || !State->Pawn.IsValid()
+		|| Frame.Phase < RunUp || Frame.Phase > ReleaseHeld || (!HasAuthority() && !State->bOwner)) return;
+	auto* Pawn = State->Pawn.Get(); auto* Move = Pawn->GetBwayCharacterMovement();
+	const bool bReplay = State->bOwner && Pawn->bClientUpdating;
+	const float Timestamp = HasAuthority() ? Move->GetPredictionData_Server_Character()->CurrentClientTimeStamp
+		: Move->GetPredictionData_Client_Character()->CurrentTimeStamp;
+	const auto Reject = [this](const TCHAR* Reason) { if (State->ReviewError.IsEmpty()) State->ReviewError = Reason; };
+	if (O.bJump)
+	{
+		if (!bReplay)
+		{
+			if (O.bBoostApplied)
+			{
+				++State->ReviewBoosts; State->ReviewLaunchSpeed = O.AfterVelocity.Size2D();
+				if (State->ReviewFirstJumpTime == 0) State->ReviewFirstJumpTime = FPlatformTime::Seconds();
+				const float Expected = FMath::Clamp(float(O.BeforeVelocity.Size2D()) * Move->SlideJumpMomentumBoost,
+					Move->SlideJumpMinHorizontalSpeed, Move->SlideJumpMaxHorizontalSpeed);
+				if (State->ReviewBoosts != 1 || O.bWasJumping || !FMath::IsNearlyEqual(State->ReviewLaunchSpeed, Expected, 0.1f)) Reject(TEXT("review-jump-first-boost-invalid"));
+			}
+			if (O.bWasJumping)
+			{
+				// UE's legacy DoJump overload forwards DeltaTime=0. Measure only
+				// the observed span between distinct non-replay held-jump moves.
+				if (!FMath::IsFinite(Timestamp) || Timestamp < 0.f || Timestamp <= State->ReviewLastHeldTimestamp)
+					Reject(TEXT("review-held-jump-timestamp-not-advancing"));
+				else
+				{
+					if (State->ReviewFirstHeldTimestamp < 0.f) State->ReviewFirstHeldTimestamp = Timestamp;
+					State->ReviewLastHeldTimestamp = Timestamp;
+					++State->ReviewHeldCalls;
+					State->ReviewHeldSeconds = Timestamp - State->ReviewFirstHeldTimestamp;
+				}
+				if (O.bBoostApplied || State->ReviewBoosts != 1 || O.AfterVelocity.Size2D() > State->ReviewLaunchSpeed + 1.f)
+					Reject(TEXT("review-held-jump-compounded"));
+			}
+		}
+		TrajectoryRecord(TEXT("ReviewJump"), FString::Printf(TEXT("\"moveTs\":%.7f,\"dt\":%.7f,\"replay\":%d,\"wasJumping\":%d,\"boostApplied\":%d,\"pressed\":%d,\"jumpCount\":%d,\"beforeSpeed\":%.6f,\"afterSpeed\":%.6f,\"boost\":%.6f,\"minSpeed\":%.6f,\"maxSpeed\":%.6f"),
+			Timestamp, O.DeltaSeconds, bReplay, O.bWasJumping, O.bBoostApplied, Pawn->bPressedJump, Pawn->JumpCurrentCount,
+			O.BeforeVelocity.Size2D(), O.AfterVelocity.Size2D(), Move->SlideJumpMomentumBoost, Move->SlideJumpMinHorizontalSpeed, Move->SlideJumpMaxHorizontalSpeed));
+	}
+	else
+	{
+		const float FirstRemaining = 1.f - O.FirstHitFraction;
+		const float Budget = O.FirstHitFraction + FirstRemaining * O.SlideConsumedFraction + O.ContinuationFraction;
+		const float LegacyBudget = O.FirstHitFraction + FirstRemaining * O.SlideConsumedFraction + FirstRemaining * (1.f - O.FinalHitFraction);
+		const bool bDecisive = LegacyBudget > 1.001f && O.SlideConsumedFraction > O.FinalHitFraction + 0.001f;
+		const float Distance = FVector::Dist2D(O.Start, O.End), Bound = O.BeforeVelocity.Size() * O.DeltaSeconds + 1.f;
+		if (!bReplay)
+		{
+			++State->ReviewConcaveSteps; if (bDecisive) ++State->ReviewDecisiveSteps;
+			if (!FMath::IsFinite(Budget) || Budget > 1.0001f || O.ContinuationFraction < -KINDA_SMALL_NUMBER || Distance > Bound)
+				Reject(TEXT("review-concave-time-or-distance-overrun"));
+		}
+		TrajectoryRecord(TEXT("ReviewConcave"), FString::Printf(TEXT("\"moveTs\":%.7f,\"dt\":%.7f,\"replay\":%d,\"firstHit\":%.7f,\"slideConsumed\":%.7f,\"finalHit\":%.7f,\"continuation\":%.7f,\"budget\":%.7f,\"legacyBudget\":%.7f,\"decisive\":%d,\"distance2D\":%.6f,\"distanceBound\":%.6f,\"beforeVelocity\":%s,\"start\":%s,\"end\":%s,\"firstNormal\":%s,\"finalNormal\":%s"),
+			Timestamp, O.DeltaSeconds, bReplay, O.FirstHitFraction, O.SlideConsumedFraction, O.FinalHitFraction, O.ContinuationFraction,
+			Budget, LegacyBudget, bDecisive, Distance, Bound, *JsonVector(O.BeforeVelocity), *JsonVector(O.Start), *JsonVector(O.End), *JsonVector(O.FirstNormal), *JsonVector(O.FinalNormal)));
+	}
+}
+
+void ABwaySlideLifecycleProbe::ReviewMovementSample(float DeltaSeconds, const FVector& OldPosition, const FVector& OldVelocity)
+{
+	if (!State || State->bCleaned || State->bFailed || !State->Pawn.IsValid() || Frame.Phase < RunUp || Frame.Phase > Settled
+		|| (HasAuthority() && !State->bCoordinator)) return;
+	auto* Pawn = State->Pawn.Get(); auto* Move = Pawn->GetBwayCharacterMovement();
+	const double Now = FPlatformTime::Seconds();
+	if (!HasAuthority() && !State->bOwner && Now - State->LastProxySample < 0.1) return;
+	State->LastProxySample = Now;
+	const bool bReplay = State->bOwner && Pawn->bClientUpdating;
+	const float Timestamp = HasAuthority() ? Move->GetPredictionData_Server_Character()->CurrentClientTimeStamp
+		: State->bOwner ? Move->GetPredictionData_Client_Character()->CurrentTimeStamp : -1.f;
+	if (++State->TrajectorySamples > 2000 || DeltaSeconds <= 0 || !FMath::IsFinite(DeltaSeconds)
+		|| Pawn->GetActorLocation().ContainsNaN() || Move->Velocity.ContainsNaN())
+	{ Fail(TEXT("gameplay"), TEXT("invalid-review-movement-sample")); return; }
+	const bool bPenetrating = CapsulePenetrating(Pawn);
+	if (bPenetrating) { Fail(TEXT("gameplay"), TEXT("review-capsule-penetration")); return; }
+	TrajectoryRecord(TEXT("ReviewSample"), FString::Printf(TEXT("\"moveTs\":%.7f,\"dt\":%.7f,\"replay\":%d,\"position\":%s,\"velocity\":%s,\"oldPosition\":%s,\"oldVelocity\":%s,\"mode\":%d,\"custom\":%d,\"sliding\":%d,\"slideJump\":%d,\"pressed\":%d,\"wasJumping\":%d,\"jumpCount\":%d,\"penetrating\":%d"),
+		Timestamp, DeltaSeconds, bReplay, *JsonVector(Pawn->GetActorLocation()), *JsonVector(Move->Velocity), *JsonVector(OldPosition), *JsonVector(OldVelocity),
+		int32(Move->MovementMode), Move->CustomMovementMode, Move->IsSliding(), Move->IsSlideJumping(), Pawn->bPressedJump, Pawn->bWasJumping, Pawn->JumpCurrentCount, bPenetrating));
+}
+
+void ABwaySlideLifecycleProbe::ObserveReviewRegression()
+{
+	const double Now = FPlatformTime::Seconds();
+	auto* Pawn = State->Pawn.Get(); auto* Move = Pawn->GetBwayCharacterMovement();
+	const bool bExecutor = HasAuthority() || State->bOwner;
+	const bool bClean = !Move->IsSliding() && !Active(State->ASC.Get(), State->Slide) && !State->ASC->HasMatchingGameplayTag(State->SlidingTag);
+	if (!State->ReviewError.IsEmpty()) { Fail(TEXT("gameplay"), *State->ReviewError); return; }
+	if (SlideTuning(Move) != State->AuthoredTuning || Pawn->JumpMaxHoldTime != 0.3f || !State->Driver.IsValid()
+		|| State->Driver->PacketSimulationSettings.PktLag != 100)
+	{ Fail(TEXT("setup"), TEXT("review-tuning-or-network-settings-changed")); return; }
+	if (Frame.Phase == Armed)
+	{
+		if (State->ReviewCourse.Num() != 4 || CapsulePenetrating(Pawn) || !Move->CurrentFloor.IsWalkableFloor())
+		{ Fail(TEXT("setup"), TEXT("review-course-or-capsule-invalid")); return; }
+		Report(true, TEXT("review-observer-armed"));
+	}
+	else if (Frame.Phase == RunUp && State->bOwner)
+	{
+		Pawn->AddMovementInput(Frame.Direction, 1.f);
+		if (Move->Velocity.Size2D() >= 300.f) Report(true, TEXT("review-owner-speed-ready"));
+	}
+	else if (Frame.Phase == Execute)
+	{
+		if (State->bOwner && !State->bExecuted)
+		{
+			State->bExecuted = true; State->bSlidePressed = true; Input(false, true);
+			if (!Move->IsSliding()) { Fail(TEXT("gameplay"), TEXT("review-slide-activation-failed")); return; }
+		}
+		if (Frame.Case == 0)
+		{
+			if (State->bOwner && State->Entries == 1 && !State->bTerminalIssued && Now - State->EntryAt >= 0.1)
+			{ State->bTerminalIssued = true; State->bJumpPressed = true; Input(true, true); }
+			if (bExecutor && Move->IsFalling()) State->bAirborne = true;
+			if (State->bOwner && State->bAirborne && State->bSlidePressed) { Input(false, false); State->bSlidePressed = false; }
+			if (State->bOwner && State->ReviewFirstJumpTime > 0 && Now - State->ReviewFirstJumpTime >= 0.25 && State->bJumpPressed)
+			{ Input(true, false); State->bJumpPressed = false; }
+			if (bExecutor && State->bAirborne && State->ReviewBoosts == 1 && State->ReviewHeldCalls >= 3
+				&& State->ReviewHeldSeconds >= 0.08 && !Pawn->bPressedJump && bClean)
+				Report(true, TEXT("review-held-input-momentum-proved"));
+		}
+		else if (bExecutor && State->ReviewConcaveSteps > 0 && State->ReviewDecisiveSteps > 0)
+			Report(true, TEXT("review-cumulative-contact-time-proved"));
+	}
+	else if (Frame.Phase == ReleaseHeld)
+	{
+		if (State->bOwner && State->bSlidePressed) { Input(false, false); State->bSlidePressed = false; }
+		if (bExecutor && bClean && Move->IsMovingOnGround() && Move->Velocity.Size() <= 10.f && State->Activations == 1 && State->Ends == 1 && State->Entries == 1)
+		{
+			if (State->StableSince == 0) State->StableSince = Now;
+			if (!State->bAckSent && Now - State->StableSince >= 0.5)
+			{
+				TrajectoryRecord(TEXT("ReviewProof"), FString::Printf(TEXT("\"boosts\":%d,\"heldCalls\":%d,\"heldSeconds\":%.7f,\"concaveSteps\":%d,\"decisiveSteps\":%d,\"activations\":%d,\"ends\":%d,\"entries\":%d,\"position\":%s"),
+					State->ReviewBoosts, State->ReviewHeldCalls, State->ReviewHeldSeconds, State->ReviewConcaveSteps, State->ReviewDecisiveSteps,
+					State->Activations, State->Ends, State->Entries, *JsonVector(Pawn->GetActorLocation())));
+				Report(true, TEXT("review-terminal-lifecycle-proved"));
+			}
+		}
+		else State->StableSince = 0;
+	}
+	else if (Frame.Phase == Settled)
+	{
+		const bool bSettled = bClean && !Pawn->bPressedJump && Move->IsMovingOnGround() && Move->Velocity.Size() <= 10.f
+			&& FVector::Dist(Pawn->GetActorLocation(), Frame.Position) <= 10.f && !CapsulePenetrating(Pawn);
+		if (bSettled)
+		{
+			if (State->StableSince == 0) State->StableSince = Now;
+			if (!State->bAckSent && Now - State->StableSince >= 0.5)
+			{
+				TrajectoryRecord(TEXT("Settled"), FString::Printf(TEXT("\"position\":%s,\"targetPosition\":%s,\"velocity\":%s,\"clean\":1,\"supported\":1,\"penetrating\":0"),
+					*JsonVector(Pawn->GetActorLocation()), *JsonVector(Frame.Position), *JsonVector(Move->Velocity)));
+				++State->CompletedCases;
+				UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: PeerCasePASS serial=%d case=%d name=%s peer=%d player=%d thresholdRestored=1 minSlide=%.2f"),
+					Frame.Serial, Frame.Case, CaseName(Frame.Case, true, true), Frame.Peer, Frame.Source, Move->MinSlideSpeed);
+				Report(true, TEXT("review-owner-authority-proxy-settled"));
+			}
+		}
+		else State->StableSince = 0;
+	}
+	if (Now - State->PhaseStarted > 12.0 && !State->bAckSent) Fail(TEXT("gameplay"), TEXT("review-phase-or-required-branch-timeout"));
 }
 
 void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float DeltaSeconds, FVector OldPosition, FVector OldVelocity)
 {
+	if (Frame.ReviewRegression) { ReviewMovementSample(DeltaSeconds, OldPosition, OldVelocity); return; }
 	if (!Frame.Trajectory || !State || State->bCleaned || State->bFailed || !State->Pawn.IsValid()
 		|| Frame.Phase < RunUp || Frame.Phase > Settled || (Frame.Phase == Settled && State->bAckSent) || (HasAuthority() && !State->bCoordinator)) return;
 	const double Now = FPlatformTime::Seconds();
@@ -1086,9 +1302,20 @@ bool ABwaySlideLifecycleProbe::ValidateTrajectoryGeometry(FVector& OutStart, FVe
 bool ABwaySlideLifecycleProbe::PrepareTrajectoryCase()
 {
 	FVector Start, Direction;
-	if (!ValidateTrajectoryGeometry(Start, Direction)) { Fail(TEXT("setup"), TEXT("authored-route-capsule-clearance-or-floor-invalid")); return false; }
+	if (Frame.ReviewRegression)
+	{
+		Start = BwaySlideReviewCourse::Origin(Frame.Case == 1) + FVector(-300.f, 0.f, State->Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 5.f);
+		Direction = FVector::ForwardVector;
+	}
+	else if (!ValidateTrajectoryGeometry(Start, Direction)) { Fail(TEXT("setup"), TEXT("authored-route-capsule-clearance-or-floor-invalid")); return false; }
 	Frame.Position = Start; Frame.Direction = Direction;
 	auto* Pawn = State->Pawn.Get();
+	if (Frame.ReviewRegression)
+	{
+		State->ReviewRelocationStartedAt = FPlatformTime::Seconds();
+		TrajectoryRecord(TEXT("ReviewRelocationBegin"), FString::Printf(TEXT("\"nextSerial\":%d,\"targetPhase\":2,\"from\":%s,\"to\":%s,\"pawnName\":\"%s\",\"maxSeconds\":12,\"positionTolerance\":10,\"intentionalTeleport\":1"),
+			Frame.Serial + 1, *JsonVector(Pawn->GetActorLocation()), *JsonVector(Start), *Pawn->GetName().ReplaceCharWithEscapedChar()));
+	}
 	Pawn->GetBwayCharacterMovement()->StopMovementImmediately();
 	Pawn->SetActorLocation(Start, false, nullptr, ETeleportType::TeleportPhysics); Pawn->ForceNetUpdate();
 	Publish(Relocated);
@@ -1256,7 +1483,7 @@ void ABwaySlideLifecycleProbe::ObserveTrajectory()
 				TrajectoryRecord(TEXT("Tuning"), FString::Printf(TEXT("\"phase\":\"after\",\"tuning\":\"%s\",\"unchanged\":1"), *SlideTuning(Move)));
 				++State->CompletedCases;
 				UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: PeerCasePASS serial=%d case=%d name=%s peer=%d player=%d thresholdRestored=1 minSlide=%.2f"),
-					Frame.Serial, Frame.Case, CaseName(Frame.Case, true), Frame.Peer, Frame.Source, Move->MinSlideSpeed);
+					Frame.Serial, Frame.Case, CaseName(Frame.Case, true, Frame.ReviewRegression), Frame.Peer, Frame.Source, Move->MinSlideSpeed);
 				Report(true, TEXT("trajectory-position-and-state-converged"));
 			}
 		}
@@ -1470,6 +1697,11 @@ void ABwaySlideLifecycleProbe::AuthorityTick()
 	}
 	if (Frame.Phase == Relocated && bAll)
 	{
+		if (Frame.ReviewRegression)
+		{
+			TrajectoryRecord(TEXT("ReviewRelocationEnd"), FString::Printf(TEXT("\"position\":%s,\"targetPosition\":%s,\"elapsedSeconds\":%.7f,\"peerAcks\":4"),
+				*JsonVector(State->Pawn->GetActorLocation()), *JsonVector(Frame.Position), Now - State->ReviewRelocationStartedAt));
+		}
 		if (Frame.Trajectory) { Publish(Armed); return; }
 		if (Frame.Case >= 2 && !Runway(State->Pawn.Get(), Frame.Direction)) { Fail(TEXT("setup"), TEXT("no-flat-clear-runway")); return; }
 		if (Frame.Case >= 2) UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Runway case=%d player=%d direction=%s length=1400"), Frame.Case, Frame.Source, *Frame.Direction.ToCompactString());
@@ -1489,8 +1721,8 @@ void ABwaySlideLifecycleProbe::AuthorityTick()
 	}
 	if (Frame.Phase == Settled && bAll)
 	{
-		UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: CasePASS case=%d name=%s player=%d peers=4 lagMs=100"), Frame.Case, CaseName(Frame.Case, Frame.Trajectory), Frame.Source);
-		if (Frame.Case == 3) { Publish(Stop); return; }
+		UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: CasePASS case=%d name=%s player=%d peers=4 lagMs=100"), Frame.Case, CaseName(Frame.Case, Frame.Trajectory, Frame.ReviewRegression), Frame.Source);
+		if (Frame.Case == (Frame.ReviewRegression ? 1 : 3)) { Publish(Stop); return; }
 		++Frame.Case;
 		if (Frame.Trajectory) { PrepareTrajectoryCase(); return; }
 		// Each case begins from the same authority-only lane teleport after the previous case settled.
@@ -1540,6 +1772,19 @@ void ABwaySlideLifecycleProbe::CleanupLocal()
 {
 	if (!State || State->bCleaned) return;
 	State->bCleaned = true;
+	bool bReviewRestored = true;
+	if (Frame.ReviewRegression)
+	{
+		if (State->Pawn.IsValid())
+		{
+			State->Pawn->GetBwayCharacterMovement()->SlideReviewObserver.Remove(State->ReviewObserver);
+			if (State->bReviewHoldSaved) State->Pawn->JumpMaxHoldTime = State->OriginalJumpHold;
+			bReviewRestored = !State->bReviewHoldSaved || State->Pawn->JumpMaxHoldTime == State->OriginalJumpHold;
+		}
+		else bReviewRestored = !State->bReviewHoldSaved;
+		State->ReviewObserver.Reset();
+		TrajectoryRecord(TEXT("ReviewCleanup"), FString::Printf(TEXT("\"jumpHoldRestored\":%d,\"observerRemoved\":1,\"courseActorsPendingRestore\":%d"), bReviewRestored, State->ReviewCourse.Num()));
+	}
 	bool bMovementUnbound = !State->bMovementBound;
 	if (State->Pawn.IsValid() && State->bMovementBound)
 	{
@@ -1581,7 +1826,7 @@ void ABwaySlideLifecycleProbe::CleanupLocal()
 			&& State->Pawn->GetPendingMovementInputVector().IsNearlyZero()));
 	const bool bAbilitiesInactive = !Active(State->ASC.Get(), State->Slide) && !Active(State->ASC.Get(), State->Jump)
 		&& (!State->ASC.IsValid() || !State->ASC->HasMatchingGameplayTag(State->SlidingTag));
-	State->bCleanupOkay = bPacketsRestored && bThresholdRestored && bTuningUnchanged && bMovementUnbound && bCorrectionsRestored
+	State->bCleanupOkay = bPacketsRestored && bThresholdRestored && bTuningUnchanged && bMovementUnbound && bCorrectionsRestored && bReviewRestored
 		&& (!Frame.Trajectory || (bInputReleased && bAbilitiesInactive));
 	if (Frame.Trajectory) TrajectoryRecord(TEXT("Cleanup"), FString::Printf(TEXT("\"packetsRestored\":%d,\"tuningUnchanged\":%d,\"movementCallbackRemoved\":%d,\"correctionsRestored\":%d,\"inputReleased\":%d,\"abilitiesInactive\":%d,\"observerCallbacksRemoved\":1,\"lagMs\":%d,\"expectedLagMs\":%d"),
 		bPacketsRestored, bTuningUnchanged, bMovementUnbound, bCorrectionsRestored, bInputReleased, bAbilitiesInactive,
@@ -1651,6 +1896,13 @@ bool ABwaySlideLifecycleProbe::RestorePeerOrientation()
 	State->Pawn->SetActorRotation(State->OriginalPeerRotation, ETeleportType::TeleportPhysics);
 	State->bPeerOrientationRestored = State->Pawn->GetActorRotation().Equals(State->OriginalPeerRotation, 1.f)
 		&& (!SourceController || SourceController->GetControlRotation().Equals(State->OriginalControlRotation, 1.f));
+	if (Frame.ReviewRegression)
+	{
+		const bool bCourseRemoved = BwaySlideReviewCourse::Destroy(State->ReviewCourse);
+		State->bPeerOrientationRestored = State->bPeerOrientationRestored && bCourseRemoved;
+		TrajectoryRecord(TEXT("ReviewRestored"), FString::Printf(TEXT("\"courseRemoved\":%d,\"courseActors\":%d,\"jumpHold\":%.6f,\"originalJumpHold\":%.6f"),
+			bCourseRemoved, State->ReviewCourse.Num(), State->Pawn->JumpMaxHoldTime, State->OriginalJumpHold));
+	}
 	return State->bPeerOrientationRestored;
 }
 void ABwaySlideLifecycleProbe::DestroyRelays()
@@ -1663,7 +1915,7 @@ namespace BwaySlidePackaged
 {
 bool bStarting = false;
 bool bClientStarting = false;
-void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagnostic = false, bool bGroundAirDiagnostic = false)
+void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagnostic = false, bool bGroundAirDiagnostic = false, bool bReviewRegression = false)
 {
 	bool bValid = Args.Num() == 1 && !Args[0].IsEmpty() && Args[0].Len() <= 48;
 	if (bValid) for (const TCHAR C : Args[0]) if (!((C >= 'a' && C <= 'z') || (C >= '0' && C <= '9') || C == '-')) bValid = false;
@@ -1685,7 +1937,7 @@ void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagno
 	// pending startup callback may survive PIE stop and mutate a later play session.
 	if (bPIE)
 	{
-		if (!ABwaySlideLifecycleProbe::StartInWorld(StartingWorld, true, Token, bSupportDiagnostic, bGroundAirDiagnostic))
+		if (!ABwaySlideLifecycleProbe::StartInWorld(StartingWorld, true, Token, bSupportDiagnostic, bGroundAirDiagnostic, bReviewRegression))
 			UE_LOG(LogTemp, Error, TEXT("BwaySlidePackaged: FAIL category=setup reason=trajectory-pie-gameplay-not-ready token=%s"), *Token);
 		return;
 	}
@@ -1693,7 +1945,7 @@ void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagno
 	const TWeakObjectPtr<UGameInstance> StartingInstance(StartingWorld->GetGameInstance());
 	const double Started = FPlatformTime::Seconds();
 	const TSharedRef<bool> Selected = MakeShared<bool>(false);
-	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Started, Selected, Token, StartingInstance](float)
+	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([Started, Selected, Token, StartingInstance, bReviewRegression](float)
 	{
 		if (!StartingInstance.IsValid())
 		{ bStarting = false; UE_LOG(LogTemp, Error, TEXT("BwaySlidePackaged: FAIL category=setup reason=trajectory-starting-session-ended token=%s"), *Token); return false; }
@@ -1720,7 +1972,7 @@ void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagno
 					UE_LOG(LogTemp, Display, TEXT("BwaySlidePackaged: Selection humans=4 registered=4 syntheticSetup=1 physicalFrontend=0"));
 				}
 			}
-			if (ABwaySlideLifecycleProbe::StartInWorld(World, true, Token)) { bStarting = false; return false; }
+			if (ABwaySlideLifecycleProbe::StartInWorld(World, true, Token, false, false, bReviewRegression)) { bStarting = false; return false; }
 		}
 		return true;
 	}), 0.25f);
@@ -1728,6 +1980,12 @@ void StartTrajectory(const TArray<FString>& Args, bool bPIE, bool bSupportDiagno
 FAutoConsoleCommand TrajectoryHostCommand(TEXT("bway.Test.SlideTrajectoryHost"),
 	TEXT("Development packaged sustained authored slide trajectory probe; requires one fresh attempt token."),
 	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, false); }));
+FAutoConsoleCommand ReviewRegressionHostCommand(TEXT("bway.Test.SlideReviewHost"),
+	TEXT("Development held-jump and actual concave multi-contact regression; requires fresh token and four peers; original trajectory cases are unchanged."),
+	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, false, false, false, true); }));
+FAutoConsoleCommand ReviewRegressionPIECommand(TEXT("bway.Test.SlideReviewPIE"),
+	TEXT("Development four-world PIE slide review regression; ready Dorado Playing and fresh token required."),
+	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, true, false, false, true); }));
 FAutoConsoleCommand TrajectoryPIECommand(TEXT("bway.Test.SlideTrajectoryPIE"),
 	TEXT("Development four-world PIE sustained slide trajectory probe; requires ready Dorado Playing and one fresh attempt token; never exits the editor."),
 	FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args) { StartTrajectory(Args, true); }));
@@ -1808,6 +2066,6 @@ FAutoConsoleCommand ClientCommand(TEXT("bway.Test.SlideLifecycleClient"),
 	}));
 }
 #else
-bool ABwaySlideLifecycleProbe::StartInWorld(UWorld*, bool, const FString&, bool, bool) { return false; }
+bool ABwaySlideLifecycleProbe::StartInWorld(UWorld*, bool, const FString&, bool, bool, bool) { return false; }
 void ABwaySlideLifecycleProbe::OnTrajectoryMovement(float, FVector, FVector) {}
 #endif

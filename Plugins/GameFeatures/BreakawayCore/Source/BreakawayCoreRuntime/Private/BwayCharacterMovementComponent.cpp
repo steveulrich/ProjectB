@@ -13,6 +13,7 @@
 #include "Engine/World.h"
 #include "Movement/BwayMovementFeelConfig.h"
 #include "HeroSystems/BwayHeroStatsLibrary.h"
+#include "Misc/ScopeExit.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogBreakawayMovement, Log, All);
 
@@ -324,6 +325,19 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	bJustTeleported = false;
 	const FVector OldLocation = UpdatedComponent->GetComponentLocation();
+#if !UE_BUILD_SHIPPING
+	FBwaySlideReviewObservation Review;
+	bool bReviewConcave = false;
+	Review.Start = OldLocation; Review.BeforeVelocity = Velocity; Review.DeltaSeconds = deltaTime;
+	ON_SCOPE_EXIT
+	{
+		if (bReviewConcave && SlideReviewObserver.IsBound() && HasValidData())
+		{
+			Review.End = UpdatedComponent->GetComponentLocation(); Review.AfterVelocity = Velocity;
+			SlideReviewObserver.Broadcast(Review);
+		}
+	};
+#endif
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
@@ -336,7 +350,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		const float FirstRemaining = 1.f - Hit.Time;
 		const FVector FirstFloorNormal = Hit.ImpactNormal;
 		HandleImpact(Hit, deltaTime, Adjusted);
-		SlideAlongSurface(Adjusted, FirstRemaining, Hit.Normal, Hit, true);
+		const float SlideTimeApplied = SlideAlongSurface(Adjusted, FirstRemaining, Hit.Normal, Hit, true);
 		if (!HasValidData()) return;
 
 		bool bConcaveFloorTransition = false;
@@ -347,7 +361,15 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		{
 			bConcaveFloorTransition = true;
 			ConcaveFloorNormal = Hit.ImpactNormal;
-			const float SecondRemaining = FirstRemaining * (1.f - Hit.Time);
+			const float SecondRemaining = FirstRemaining * (1.f - SlideTimeApplied);
+#if !UE_BUILD_SHIPPING
+			bReviewConcave = true;
+			Review.FirstHitFraction = 1.f - FirstRemaining;
+			Review.SlideConsumedFraction = SlideTimeApplied;
+			Review.FinalHitFraction = Hit.Time;
+			Review.ContinuationFraction = SecondRemaining;
+			Review.FirstNormal = FirstFloorNormal; Review.FinalNormal = Hit.ImpactNormal;
+#endif
 			const FVector SecondTangentDir = FVector::VectorPlaneProject(Velocity, ConcaveFloorNormal).GetSafeNormal();
 			if (!SecondTangentDir.IsNearlyZero() && SecondRemaining > KINDA_SMALL_NUMBER)
 			{
@@ -564,7 +586,12 @@ bool UBwayCharacterMovementComponent::CanAttemptJump() const
 
 bool UBwayCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTime)
 {
-	const bool bJumpingFromSlide = IsSliding() || bIsSlideJumping;
+#if !UE_BUILD_SHIPPING
+	const FVector ReviewBefore = Velocity;
+	const bool bReviewWasJumping = CharacterOwner && CharacterOwner->bWasJumping;
+#endif
+	const bool bJumpingFromSlide = (IsSliding() || bIsSlideJumping)
+		&& CharacterOwner && !CharacterOwner->bWasJumping;
 
 	if (!Super::DoJump(bReplayingMoves, DeltaTime))
 	{
@@ -587,6 +614,17 @@ bool UBwayCharacterMovementComponent::DoJump(bool bReplayingMoves, float DeltaTi
 
 		bIsSlideJumping = true;
 	}
+
+#if !UE_BUILD_SHIPPING
+	if (SlideReviewObserver.IsBound())
+	{
+		FBwaySlideReviewObservation Review;
+		Review.bJump = true; Review.bWasJumping = bReviewWasJumping; Review.bBoostApplied = bJumpingFromSlide;
+		Review.DeltaSeconds = DeltaTime; Review.BeforeVelocity = ReviewBefore; Review.AfterVelocity = Velocity;
+		Review.Start = Review.End = UpdatedComponent ? UpdatedComponent->GetComponentLocation() : FVector::ZeroVector;
+		SlideReviewObserver.Broadcast(Review);
+	}
+#endif
 
 	return true;
 }

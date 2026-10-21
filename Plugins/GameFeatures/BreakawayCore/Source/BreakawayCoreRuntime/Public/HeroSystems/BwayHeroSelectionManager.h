@@ -201,7 +201,7 @@ public:
 	 * Maximum selection time in seconds (0 = no limit)
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Hero Selection Rules")
-	float SelectionTimeLimit = 60.0f;
+	float SelectionTimeLimit = 99.0f;
 
 	/**
 	 * Whether to automatically lock selections when time expires

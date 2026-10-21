@@ -1,6 +1,7 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
+#include "HeroSystems/BwayHeroSelectWidget.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
 #include "BwayPlayerController.h"
@@ -141,7 +142,8 @@ void UBwayHeroSelectionPhaseComponent::BeginPlay()
 				FTimerDelegate::CreateUObject(this, &ThisClass::StartHeroSelectionPhase));
 		}
 	}
-	else if (UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this))
+	else if (UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this)
+		|| UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")))
 	{
 		if (ULyraExperienceManagerComponent* ExperienceManager = GetOwner()->FindComponentByClass<ULyraExperienceManagerComponent>())
 		{
@@ -250,8 +252,13 @@ void UBwayHeroSelectionPhaseComponent::StartHeroSelectionPhase()
 		}
 	}
 
-	// Bots do not have a local hero-selection UI, so assign and lock them immediately.
-	AssignRandomHeroes(/*bOnlyBots=*/true, /*bLockImmediately=*/true);
+	// Bots do not have a local hero-selection UI. When launched via ArenaIntro from the
+	// Front-End Lobby, defer bot hero locking until all human players lock in (or timeout)
+	// so human players have first choice of all heroes on W_HeroSelection.
+	if (!UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")))
+	{
+		AssignRandomHeroes(/*bOnlyBots=*/true, /*bLockImmediately=*/true);
+	}
 
 	// Let Blueprint run cosmetic/audio/camera hooks, but always perform the C++
 	// CommonUI push as well so overrides cannot swallow the client RPC.
@@ -415,11 +422,26 @@ void UBwayHeroSelectionPhaseComponent::PushHeroSelectionUIToPlayers()
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Pushing hero selection UI to players"));
 
-	// Base C++ implementation: ask each owning client to create its local widget.
-	if (HeroSelectionWidgetClass.IsNull())
+	TSoftClassPtr<UCommonActivatableWidget> ResolvedWidgetClass = HeroSelectionWidgetClass;
+	if (UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BwayHeroSelectionPhaseComponent: No HeroSelectionWidgetClass configured"));
-		return;
+		const FSoftClassPath WHeroSelectionPath(TEXT("/BreakawayCore/UI/HeroSelect/W_HeroSelection.W_HeroSelection_C"));
+		if (UClass* LoadedWHeroSelect = WHeroSelectionPath.TryLoadClass<UCommonActivatableWidget>())
+		{
+			ResolvedWidgetClass = LoadedWHeroSelect;
+		}
+	}
+	if (ResolvedWidgetClass.IsNull())
+	{
+		const FSoftClassPath WHeroSelectionPath(TEXT("/BreakawayCore/UI/HeroSelect/W_HeroSelection.W_HeroSelection_C"));
+		if (UClass* LoadedWHeroSelect = WHeroSelectionPath.TryLoadClass<UCommonActivatableWidget>())
+		{
+			ResolvedWidgetClass = LoadedWHeroSelect;
+		}
+		else
+		{
+			ResolvedWidgetClass = UBwayHeroSelectWidget::StaticClass();
+		}
 	}
 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
@@ -435,7 +457,7 @@ void UBwayHeroSelectionPhaseComponent::PushHeroSelectionUIToPlayers()
 				}
 			}
 
-			PC->Client_ShowHeroSelection(HeroSelectionWidgetClass);
+			PC->Client_ShowHeroSelection(ResolvedWidgetClass);
 			UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Sent hero select widget RPC to %s"), *PC->GetName());
 		}
 	}

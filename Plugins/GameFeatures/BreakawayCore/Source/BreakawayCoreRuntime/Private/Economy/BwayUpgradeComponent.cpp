@@ -25,6 +25,7 @@ void UBwayUpgradeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(UBwayUpgradeComponent, Catalog, COND_OwnerOnly);
 	DOREPLIFETIME_CONDITION(UBwayUpgradeComponent, OwnedUpgrades, COND_OwnerOnly);
+	DOREPLIFETIME_CONDITION(UBwayUpgradeComponent, ReplicatedUndoCount, COND_OwnerOnly);
 }
 
 void UBwayUpgradeComponent::BeginPlay()
@@ -264,11 +265,215 @@ bool UBwayUpgradeComponent::TryPurchaseUpgrade(FName Id, int32 ExpectedCurrentRa
 	if (!Owned) Owned = &OwnedUpgrades.AddDefaulted_GetRef();
 	Owned->Id = Id;
 	Owned->Rank = CurrentRank + 1;
+
+	FBwayUpgradeTransactionRecord& Record = TransactionHistory.AddDefaulted_GetRef();
+	Record.Id = Id;
+	Record.PreviousRank = CurrentRank;
+	Record.NewRank = CurrentRank + 1;
+	Record.GoldCost = Rank.Cost;
+	Record.bWasPurchase = true;
+	ReplicatedUndoCount = TransactionHistory.Num();
+
 	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
 	{
 		// Read only the committed modifier: rank replacement briefly has both
 		// effects, and a rejected debit must not shorten an existing death timer.
 		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement()) Rounds->RefreshRespawnSchedule(Player);
+	}
+	Player->ForceNetUpdate();
+	OnRep_OwnedUpgrades();
+	return true;
+}
+
+bool UBwayUpgradeComponent::ApplyOwnedRankInternal(
+	FName Id,
+	int32 TargetRank,
+	UAbilitySystemComponent* ASC,
+	const FBwayUpgradeDefinition* Definition)
+{
+	if (!ASC || !Definition)
+	{
+		return false;
+	}
+
+	if (TargetRank <= 0)
+	{
+		if (const FActiveGameplayEffectHandle* OldHandle = EffectHandles.Find(Id))
+		{
+			ASC->RemoveActiveGameplayEffect(*OldHandle);
+			EffectHandles.Remove(Id);
+		}
+		OwnedUpgrades.RemoveAll([Id](const FBwayOwnedUpgrade& Entry) { return Entry.Id == Id; });
+		return true;
+	}
+
+	if (!Definition->Ranks.IsValidIndex(TargetRank - 1))
+	{
+		return false;
+	}
+
+	const UBwayUpgradeEffect* Effect = Definition->EffectClass.GetDefaultObject();
+	for (const FGameplayModifierInfo& Modifier : Effect->Modifiers)
+	{
+		if (!ASC->HasAttributeSetForAttribute(Modifier.Attribute))
+		{
+			return false;
+		}
+	}
+
+	FGameplayEffectSpec Spec(Effect, ASC->MakeEffectContext(), 1.0f);
+	Spec.SetSetByCallerMagnitude(UBwayUpgradeEffect::MagnitudeName, Definition->Ranks[TargetRank - 1].Magnitude);
+	const FActiveGameplayEffectHandle NewHandle = ASC->ApplyGameplayEffectSpecToSelf(Spec);
+	if (!NewHandle.IsValid())
+	{
+		return false;
+	}
+
+	if (const FActiveGameplayEffectHandle* OldHandle = EffectHandles.Find(Id))
+	{
+		ASC->RemoveActiveGameplayEffect(*OldHandle);
+	}
+	EffectHandles.Add(Id, NewHandle);
+
+	FBwayOwnedUpgrade* Owned = OwnedUpgrades.FindByPredicate([Id](const FBwayOwnedUpgrade& Entry) { return Entry.Id == Id; });
+	if (!Owned)
+	{
+		Owned = &OwnedUpgrades.AddDefaulted_GetRef();
+		Owned->Id = Id;
+	}
+	Owned->Rank = TargetRank;
+	return true;
+}
+
+bool UBwayUpgradeComponent::CanSellUpgrade(FName Id) const
+{
+	return IsPurchaseWindowOpen() && GetOwnedRank(Id) > 0 && IsValid(Catalog) && Catalog->FindUpgrade(Id) != nullptr;
+}
+
+bool UBwayUpgradeComponent::CanUndoLastTransaction() const
+{
+	return IsPurchaseWindowOpen() && ReplicatedUndoCount > 0;
+}
+
+void UBwayUpgradeComponent::ServerSellUpgrade_Implementation(FName Id)
+{
+	ClientPurchaseResult(Id, TrySellUpgrade(Id));
+}
+
+bool UBwayUpgradeComponent::TrySellUpgrade(FName Id)
+{
+	APlayerState* Player = Cast<APlayerState>(GetOwner());
+	FString Error;
+	if (!Player || !Player->HasAuthority() || bTransactionInProgress || !IsPurchaseWindowOpen()
+		|| !IsValid(Catalog) || !Catalog->ValidateCatalog(Error))
+	{
+		return false;
+	}
+
+	TGuardValue<bool> TransactionGuard(bTransactionInProgress, true);
+	const FBwayUpgradeDefinition* Definition = Catalog->FindUpgrade(Id);
+	const int32 CurrentRank = GetOwnedRank(Id);
+	if (!Definition || CurrentRank <= 0 || !Definition->Ranks.IsValidIndex(CurrentRank - 1))
+	{
+		return false;
+	}
+
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	if (!ASC)
+	{
+		return false;
+	}
+
+	const int32 RefundAmount = Definition->Ranks[CurrentRank - 1].Cost;
+	const int32 NewRank = CurrentRank - 1;
+	if (!ApplyOwnedRankInternal(Id, NewRank, ASC, Definition))
+	{
+		return false;
+	}
+
+	UBwayEconomyLibrary::TryRefundGold(Player, RefundAmount);
+
+	FBwayUpgradeTransactionRecord& Record = TransactionHistory.AddDefaulted_GetRef();
+	Record.Id = Id;
+	Record.PreviousRank = CurrentRank;
+	Record.NewRank = NewRank;
+	Record.GoldCost = RefundAmount;
+	Record.bWasPurchase = false;
+	ReplicatedUndoCount = TransactionHistory.Num();
+
+	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement())
+		{
+			Rounds->RefreshRespawnSchedule(Player);
+		}
+	}
+	Player->ForceNetUpdate();
+	OnRep_OwnedUpgrades();
+	return true;
+}
+
+void UBwayUpgradeComponent::ServerUndoLastTransaction_Implementation()
+{
+	const FName LastId = !TransactionHistory.IsEmpty() ? TransactionHistory.Last().Id : NAME_None;
+	ClientPurchaseResult(LastId, TryUndoLastTransaction());
+}
+
+bool UBwayUpgradeComponent::TryUndoLastTransaction()
+{
+	APlayerState* Player = Cast<APlayerState>(GetOwner());
+	FString Error;
+	if (!Player || !Player->HasAuthority() || bTransactionInProgress || !IsPurchaseWindowOpen()
+		|| TransactionHistory.IsEmpty() || !IsValid(Catalog) || !Catalog->ValidateCatalog(Error))
+	{
+		return false;
+	}
+
+	TGuardValue<bool> TransactionGuard(bTransactionInProgress, true);
+	const FBwayUpgradeTransactionRecord Record = TransactionHistory.Last();
+	const FBwayUpgradeDefinition* Definition = Catalog->FindUpgrade(Record.Id);
+	UAbilitySystemComponent* ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(Player, true);
+	if (!Definition || !ASC || GetOwnedRank(Record.Id) != Record.NewRank)
+	{
+		return false;
+	}
+
+	if (Record.bWasPurchase)
+	{
+		// Undo a purchase: revert rank to PreviousRank and refund GoldCost
+		if (!ApplyOwnedRankInternal(Record.Id, Record.PreviousRank, ASC, Definition))
+		{
+			return false;
+		}
+		UBwayEconomyLibrary::TryRefundGold(Player, Record.GoldCost);
+	}
+	else
+	{
+		// Undo a sell: spend GoldCost back and restore rank to PreviousRank
+		if (Record.NewRank == 0 && OwnedUpgrades.Num() >= Catalog->MaxOwnedUpgrades)
+		{
+			return false;
+		}
+		if (!UBwayEconomyLibrary::TrySpendGold(Player, Record.GoldCost))
+		{
+			return false;
+		}
+		if (!ApplyOwnedRankInternal(Record.Id, Record.PreviousRank, ASC, Definition))
+		{
+			UBwayEconomyLibrary::TryRefundGold(Player, Record.GoldCost);
+			return false;
+		}
+	}
+
+	TransactionHistory.Pop();
+	ReplicatedUndoCount = TransactionHistory.Num();
+
+	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
+	{
+		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement())
+		{
+			Rounds->RefreshRespawnSchedule(Player);
+		}
 	}
 	Player->ForceNetUpdate();
 	OnRep_OwnedUpgrades();
@@ -285,6 +490,8 @@ void UBwayUpgradeComponent::ResetUpgrades()
 	}
 	EffectHandles.Reset();
 	OwnedUpgrades.Reset();
+	TransactionHistory.Reset();
+	ReplicatedUndoCount = 0;
 	if (ABwayGameState* GS = GetWorld()->GetGameState<ABwayGameState>())
 	{
 		if (UBwayRoundManagementComponent* Rounds = GS->GetRoundManagement()) Rounds->RefreshRespawnSchedule(Cast<APlayerState>(GetOwner()));

@@ -5,6 +5,9 @@
 #include "BwayKorrynSpiteZone.generated.h"
 
 class ABwayCharacterWithAbilities;
+class ABwayPlayerState;
+class UAbilitySystemComponent;
+class UBwayRoundManagementComponent;
 class USphereComponent;
 class UGameplayEffect;
 
@@ -47,6 +50,10 @@ protected:
 	void RemoveZoneEffects(ABwayCharacterWithAbilities* Enemy);
 	void ClearAllZoneEffects();
 
+	UFUNCTION()
+	void OnRoundStateChanged(FName NewRoundState);
+	void RemoveForRoundTransition();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Korryn|Circle")
 	TObjectPtr<USphereComponent> EffectSphere;
 
@@ -54,7 +61,14 @@ protected:
 	float ReplicatedRadius = 700.f;
 
 	UPROPERTY(Transient)
-	TObjectPtr<ABwayCharacterWithAbilities> CasterCharacter;
+	TWeakObjectPtr<ABwayPlayerState> CasterPlayerState;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UAbilitySystemComponent> CasterAbilitySystem;
+
+	TWeakObjectPtr<UBwayRoundManagementComponent> RoundManager;
+	FDelegateHandle RoundResetHandle;
+	bool bRemovingForRoundTransition = false;
 
 	UPROPERTY(Transient)
 	TSubclassOf<UGameplayEffect> SlowEffectClass;
@@ -67,9 +81,11 @@ protected:
 
 	struct FZoneEffectHandles
 	{
+		TWeakObjectPtr<UAbilitySystemComponent> TargetAbilitySystem;
 		FActiveGameplayEffectHandle SlowHandle;
 		FActiveGameplayEffectHandle AmpHandle;
 	};
+	static void RemoveEffectHandles(const FZoneEffectHandles& Handles);
 
 	TMap<TWeakObjectPtr<ABwayCharacterWithAbilities>, FZoneEffectHandles> ActiveEnemyEffects;
 };

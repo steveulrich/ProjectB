@@ -10,6 +10,7 @@
 #include "Abilities/BwayGameplayAbility_MeleePrimary.h"
 #include "Abilities/BwayGameplayAbility_RelicPass.h"
 #include "BwayCharacterWithAbilities.h"
+#include "BwayGameplayTags.h"
 #include "BwayGameState.h"
 #include "BwayGoalVolume.h"
 #include "BwayPlayerController.h"
@@ -879,7 +880,7 @@ void PrepareRemotePass(const TSharedPtr<FRemoteFixtureContext>& Context)
 		return;
 	}
 	Context->Relic = Relic;
-	FGameplayTag RequestTag = Relic->GetRelicSettings() ? Relic->GetRelicSettings()->RequestingTag : FGameplayTag();
+	FGameplayTag RequestTag = BwayGameplayTags::State_Relic_PreparingCatch;
 	if (!RequestTag.IsValid())
 	{
 		RequestTag = FGameplayTag::RequestGameplayTag(FName("State.RequestingRelic"), false);
