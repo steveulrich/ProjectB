@@ -5,6 +5,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayEffect_AlonaCooldowns)
 
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Alona_PrimaryAttack, "Cooldown.Alona.PrimaryAttack");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Alona_SunsGrace, "Cooldown.Alona.SunsGrace");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Alona_Radiance, "Cooldown.Alona.Radiance");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Alona_SunBurst, "Cooldown.Alona.SunBurst");
@@ -39,6 +40,12 @@ void UGE_Bway_Cooldown_AlonaBase::PostInitProperties()
 
 	UTargetTagsGameplayEffectComponent& TargetTags = FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
 	TargetTags.SetAndApplyTargetTagChanges(TagChanges);
+}
+
+UGE_Bway_Cooldown_AlonaPrimaryAttack::UGE_Bway_Cooldown_AlonaPrimaryAttack()
+{
+	ConfigureDuration(0.5f);
+	ConfigureGrantedCooldownTag(TAG_Cooldown_Alona_PrimaryAttack);
 }
 
 UGE_Bway_Cooldown_AlonaSunsGrace::UGE_Bway_Cooldown_AlonaSunsGrace()

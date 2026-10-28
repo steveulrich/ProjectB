@@ -35,6 +35,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|Primary", meta = (ClampMin = "0.0"))
 	float PrimaryTraceDistance = 175.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|Primary", meta = (ClampMin = "0.05"))
+	float PrimaryCooldown = 0.5f;
+
 	// --- Slide ---
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Argus|Slide", meta = (ClampMin = "0.0"))
 	float SlideDashDistance = 900.f;

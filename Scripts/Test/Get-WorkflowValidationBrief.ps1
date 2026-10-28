@@ -62,7 +62,10 @@ foreach ($file in Get-ChildItem -LiteralPath (Join-Path $root 'Scripts/Test') -F
     $relativePath = $file.FullName.Substring($root.Length).TrimStart([char[]]@('\','/')).Replace('\','/')
     $scriptInventory += "$relativePath|$((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToUpperInvariant())"
 }
-$scriptInventoryHash = Get-Sha256Hex (($scriptInventory | Sort-Object) -join "`n")
+# Culture-sensitive sorting differs between Windows PowerShell and PowerShell 7.
+$sortedScriptInventory = [string[]]$scriptInventory
+[Array]::Sort($sortedScriptInventory, [StringComparer]::Ordinal)
+$scriptInventoryHash = Get-Sha256Hex ($sortedScriptInventory -join "`n")
 
 $jsonRecords = @($JsonPath | ForEach-Object { Read-JsonRecord $_ })
 $previousErrorAction = $ErrorActionPreference

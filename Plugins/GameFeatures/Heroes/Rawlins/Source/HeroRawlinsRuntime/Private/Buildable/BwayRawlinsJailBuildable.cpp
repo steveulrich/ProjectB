@@ -6,7 +6,9 @@
 #include "BwayRawlinsKitConfig.h"
 #include "Buildable/BwayRawlinsJailCage.h"
 #include "Character/LyraHealthComponent.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/SceneComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
@@ -22,6 +24,11 @@ ABwayRawlinsJailBuildable::ABwayRawlinsJailBuildable()
 	BuildTime = 0.f;
 	bUsePlacementAttackBounds = false;
 	PrimaryActorTick.bCanEverTick = false;
+	PresentationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PresentationRoot"));
+	PresentationRoot->SetupAttachment(RootComponent);
+	PresentationRoot->SetIsReplicated(false);
+	Presentation = CreateDefaultSubobject<UBwayCuePresentationComponent>(TEXT("Presentation"));
+	Presentation->CueAttachComponent = PresentationRoot;
 
 	KitConfig = TSoftObjectPtr<UBwayRawlinsKitConfig>(
 		FSoftObjectPath(TEXT("/Hero_Rawlins/Kit/DA_BW_RawlinsKitConfig.DA_BW_RawlinsKitConfig")));
@@ -102,6 +109,7 @@ void ABwayRawlinsJailBuildable::BeginPlay()
 
 void ABwayRawlinsJailBuildable::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Presentation->StopPresentation(false);
 	if (HealthSet)
 	{
 		HealthSet->OnOutOfHealth.RemoveAll(this);
@@ -137,6 +145,7 @@ void ABwayRawlinsJailBuildable::ArmTrap()
 	}
 
 	SetCanBeDamaged(false);
+	Presentation->StartPresentation();
 	if (TriggerVolume)
 	{
 		TriggerVolume->SetSphereRadius(TriggerRadius);
@@ -180,6 +189,7 @@ void ABwayRawlinsJailBuildable::TriggerJailCapture(ABwayCharacterWithAbilities* 
 	}
 
 	bHasTriggered = true;
+	Presentation->StopPresentation();
 
 	if (TriggerVolume)
 	{

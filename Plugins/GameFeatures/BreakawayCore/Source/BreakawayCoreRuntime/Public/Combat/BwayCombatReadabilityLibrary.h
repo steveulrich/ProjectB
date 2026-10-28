@@ -7,6 +7,7 @@
 
 class UBwayCombatReadabilityConfig;
 class ULyraExperienceDefinition;
+class ABwayPlayerState;
 
 UCLASS()
 class BREAKAWAYCORERUNTIME_API UBwayCombatReadabilityLibrary : public UBlueprintFunctionLibrary
@@ -26,4 +27,9 @@ public:
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Combat Readability")
 	static FVector ResolveNumberPopWorldLocation(const UObject* TargetObject, const FVector& WorldOffset);
+
+	/** Source credit can belong to a buildable owner; a damaged buildable is never its owner's health. */
+	static ABwayPlayerState* ResolveFeedbackInstigator(UObject* Object);
+	static ABwayPlayerState* ResolveFeedbackPlayerTarget(UObject* Object);
+	static bool ResolveFeedbackSourceLocation(const UObject* Object, FVector& OutLocation);
 };

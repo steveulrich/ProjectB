@@ -33,6 +33,14 @@ protected:
 };
 
 UCLASS()
+class HEROMORGANRUNTIME_API UGE_Bway_Cooldown_KorrynPrimaryAttack : public UGE_Bway_KorrynEffectBase
+{
+	GENERATED_BODY()
+public:
+	UGE_Bway_Cooldown_KorrynPrimaryAttack();
+};
+
+UCLASS()
 class HEROMORGANRUNTIME_API UGE_Bway_Cooldown_KorrynFlock : public UGE_Bway_KorrynEffectBase
 {
 	GENERATED_BODY()

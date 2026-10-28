@@ -20,6 +20,7 @@ EDataValidationResult UBwayArgusKitConfig::IsDataValid(FDataValidationContext& C
 		}
 	};
 
+	FailIfNonPositive(TEXT("PrimaryCooldown"), PrimaryCooldown);
 	FailIfNonPositive(TEXT("SlideDashDuration"), SlideDashDuration);
 	FailIfNonPositive(TEXT("SlideCooldown"), SlideCooldown);
 	FailIfNonPositive(TEXT("NoRetreatChargeDuration"), NoRetreatChargeDuration);

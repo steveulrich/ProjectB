@@ -24,6 +24,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	ActivationBlockedTags.AddTag(BwayGameplayTags::State_BuildablePlacement);
+	CooldownGameplayEffectClass = UGE_Bway_Cooldown_KorrynPrimaryAttack::StaticClass();
 	ProjectileClass = ABwayKorrynPrimaryProjectile::StaticClass();
 	ArmorShredEffectClass = UGE_Bway_KorrynArmorShred::StaticClass();
 
@@ -42,6 +43,19 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 	StoredSpecHandle = Handle;
 	CachedCharacter = GetBwayCharacterFromActorInfo();
 	if (!CachedCharacter)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World || !ProjectileClass)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
@@ -70,13 +84,6 @@ void UBwayGameplayAbility_KorrynPrimary::ActivateAbility(
 	{
 		PlayFireCue();
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (!World || !ProjectileClass)
-	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 

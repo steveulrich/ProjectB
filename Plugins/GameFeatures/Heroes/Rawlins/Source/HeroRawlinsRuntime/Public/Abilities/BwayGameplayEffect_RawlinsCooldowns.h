@@ -29,6 +29,14 @@ protected:
 };
 
 UCLASS()
+class HERORAWLINSRUNTIME_API UGE_Bway_Cooldown_RawlinsPrimaryAttack : public UGE_Bway_Cooldown_RawlinsBase
+{
+	GENERATED_BODY()
+public:
+	UGE_Bway_Cooldown_RawlinsPrimaryAttack();
+};
+
+UCLASS()
 class HERORAWLINSRUNTIME_API UGE_Bway_Cooldown_RawlinsDoubleDown : public UGE_Bway_Cooldown_RawlinsBase
 {
 	GENERATED_BODY()

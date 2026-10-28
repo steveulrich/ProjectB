@@ -10,6 +10,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameplayCueManager.h"
 #include "GameplayCueSet.h"
+#include "GameplayTagsManager.h"
 #include "HAL/IConsoleManager.h"
 #include "Misc/CoreDelegates.h"
 #include "GameState/BwayRoundManagementComponent.h"
@@ -25,10 +26,17 @@ static TAutoConsoleVariable<float> CVarCueAuditTimeoutSeconds(
 
 TArray<FGameplayTag> Tags()
 {
-    return {BwayGameplayCueTags::CombatHit, BwayGameplayCueTags::CombatHitConfirm,
-        BwayGameplayCueTags::MovementSlide,
-        BwayGameplayCueTags::ScoringGoal, BwayGameplayCueTags::AlonaPrimaryFire,
-        FGameplayTag::RequestGameplayTag(TEXT("GameplayCue.Weapon.Pistol.Fire"), false)};
+    FGameplayTagContainer Dictionary;
+    UGameplayTagsManager::Get().RequestAllGameplayTags(Dictionary, true);
+    const FGameplayTag Root = FGameplayTag::RequestGameplayTag(TEXT("GameplayCue.Breakaway"));
+    TArray<FGameplayTag> Result;
+    for (const FGameplayTag Tag : Dictionary)
+    {
+        if (Tag.MatchesTag(Root)) Result.Add(Tag);
+    }
+    const FGameplayTag LegacyPistol = FGameplayTag::RequestGameplayTag(TEXT("GameplayCue.Weapon.Pistol.Fire"), false);
+    if (LegacyPistol.IsValid()) Result.AddUnique(LegacyPistol);
+    return Result;
 }
 struct FObserver : TSharedFromThis<FObserver>
 {
@@ -37,6 +45,7 @@ struct FObserver : TSharedFromThis<FObserver>
     double Started = FPlatformTime::Seconds();
     bool Stopped = false, Mapped = false;
     int32 Routed = 0;
+    TArray<FGameplayTag> ObservedTags;
 
     void Stop(const TCHAR* Reason)
     {
@@ -50,12 +59,13 @@ struct FObserver : TSharedFromThis<FObserver>
     {
         Manager = UAbilitySystemGlobals::Get().GetGameplayCueManager();
         if (!Manager.IsValid()) { Stop(TEXT("missing-manager")); return; }
+        ObservedTags = Tags();
         const TWeakPtr<FObserver> Weak = AsShared();
         ExitHandle = FCoreDelegates::OnPreExit.AddLambda([Weak]() { if (auto Run = Weak.Pin()) Run->Stop(TEXT("process-exit")); });
         RouteHandle = Manager->OnGameplayCueRouted().AddLambda([Weak](AActor* Target, FGameplayTag Tag, EGameplayCueEvent::Type Event, const FGameplayCueParameters& Params, EGameplayCueExecutionOptions)
         {
             auto Run = Weak.Pin();
-            if (!Run || Run->Stopped || !Target || !Tags().Contains(Tag)) return;
+            if (!Run || Run->Stopped || !Target || !Run->ObservedTags.Contains(Tag)) return;
             auto* Pawn = Cast<APawn>(Target);
             auto* PS = Pawn ? Pawn->GetPlayerState<ABwayPlayerState>() : nullptr;
             const auto* Driver = Target->GetWorld()->GetNetDriver();
@@ -90,7 +100,7 @@ struct FObserver : TSharedFromThis<FObserver>
             if (!GS || !GS->GetRoundManagement() || GS->GetRoundManagement()->GetCurrentMatchPhase() != EBwayMatchPhase::Playing) continue;
             const UGameplayCueSet* Set = Manager->GetRuntimeCueSet();
             if (!Set) continue;
-            for (FGameplayTag Tag : Tags())
+            for (FGameplayTag Tag : ObservedTags)
             {
                 int32 Count = 0; FString Path = TEXT("None"); bool Loaded = false, Cached = false, Pending = false;
                 for (const auto& Entry : Set->GameplayCueData) if (Entry.GameplayCueTag == Tag)

@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary", meta = (ClampMin = "0.0"))
 	float PrimarySpawnForwardOffset = 80.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary", meta = (ClampMin = "0.05"))
+	float PrimaryCooldown = 0.5f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary|Presentation")
 	TSoftObjectPtr<UBwayProjectilePresentationData> PrimaryProjectilePresentation;
 

@@ -4,6 +4,9 @@
 
 #include "Combat/BwayCombatReadabilityConfig.h"
 #include "Combat/BwayGameFeatureAction_CombatReadabilityConfig.h"
+#include "Buildable/BuildableBase.h"
+#include "BwayPlayerState.h"
+#include "Messages/LyraVerbMessageHelpers.h"
 #include "Engine/AssetManager.h"
 #include "GameModes/LyraExperienceActionSet.h"
 #include "GameModes/LyraExperienceDefinition.h"
@@ -146,4 +149,34 @@ FVector UBwayCombatReadabilityLibrary::ResolveNumberPopWorldLocation(const UObje
 	}
 
 	return WorldOffset;
+}
+
+ABwayPlayerState* UBwayCombatReadabilityLibrary::ResolveFeedbackPlayerTarget(UObject* Object)
+{
+	return Cast<ABwayPlayerState>(ULyraVerbMessageHelpers::GetPlayerStateFromObject(Object));
+}
+
+ABwayPlayerState* UBwayCombatReadabilityLibrary::ResolveFeedbackInstigator(UObject* Object)
+{
+	if (ABwayPlayerState* Player = ResolveFeedbackPlayerTarget(Object)) return Player;
+	if (const ABuildableActor* Buildable = Cast<ABuildableActor>(Object))
+	{
+		if (ABwayPlayerState* Player = Cast<ABwayPlayerState>(Buildable->GetPlacingPlayerState())) return Player;
+	}
+	if (const AActor* Actor = Cast<AActor>(Object))
+	{
+		if (ABwayPlayerState* Player = ResolveFeedbackPlayerTarget(Actor->GetInstigator())) return Player;
+		return ResolveFeedbackPlayerTarget(Actor->GetInstigatorController());
+	}
+	return nullptr;
+}
+
+bool UBwayCombatReadabilityLibrary::ResolveFeedbackSourceLocation(const UObject* Object, FVector& OutLocation)
+{
+	const AActor* Actor = Cast<AActor>(Object);
+	if (const APlayerState* Player = Cast<APlayerState>(Object)) Actor = Player->GetPawn();
+	else if (const AController* Controller = Cast<AController>(Object)) Actor = Controller->GetPawn();
+	if (!IsValid(Actor)) return false;
+	OutLocation = Actor->GetActorLocation();
+	return !OutLocation.ContainsNaN();
 }

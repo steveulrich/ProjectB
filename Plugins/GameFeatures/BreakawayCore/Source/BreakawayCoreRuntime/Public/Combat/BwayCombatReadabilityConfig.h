@@ -11,6 +11,7 @@
 #include "BwayCombatReadabilityConfig.generated.h"
 
 class ULyraDamagePopStyle;
+class UMaterialInterface;
 
 /**
  * Data-driven combat readability: floating numbers, nameplate range/LOS/scale.
@@ -69,6 +70,10 @@ public:
 	/** Base world size of the floating number text (scaled up with camera distance). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers", meta = (ClampMin = "8.0"))
 	float NumberPopWorldSize = 72.f;
+
+	/** Optional text material (normally unlit and driven by vertex color). Null restores the engine text default, including pooled components. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers")
+	TObjectPtr<UMaterialInterface> NumberPopMaterial = nullptr;
 
 	/** Mesh-text styles matched via TargetTags on FLyraNumberPopRequest. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat Numbers")
@@ -129,7 +134,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Accessibility", meta = (ClampMin = "0.25", ClampMax = "2.0"))
 	float CombatFeedbackScaleMultiplier = 1.0f;
 
-	/** When true, camera shakes from UGCN_BwayCombatFeedback are skipped. */
+	/** Suppress optional Breakaway combat, projectile and slide camera shakes; stop an owned slide shake immediately. Does not change slide FOV or unrelated camera effects. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Accessibility")
 	bool bReduceCameraShake = false;
 

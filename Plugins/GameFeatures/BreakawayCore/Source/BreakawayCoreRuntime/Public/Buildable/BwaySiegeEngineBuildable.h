@@ -2,10 +2,24 @@
 
 #include "CoreMinimal.h"
 #include "Buildable/BuildableBase.h"
+#include "UObject/ObjectKey.h"
 #include "BwaySiegeEngineBuildable.generated.h"
 
 class USphereComponent;
+class UStaticMeshComponent;
+class UNiagaraComponent;
+class UAudioComponent;
+class UBwaySiegePresentationData;
 struct FGameplayEffectSpec;
+
+UENUM()
+enum class EBwaySiegePresentationEvent : uint8
+{
+	Launch,
+	BuildableImpact,
+	TerminalImpact,
+	Expiry
+};
 
 /**
  * Argus Siege Engine — one-use rolling barrel that damages enemy buildables.
@@ -28,6 +42,8 @@ public:
 #endif
 
 protected:
+	friend class FBwaySiegePresentationLifecycleTest;
+	virtual void BeginPlay() override;
 	virtual void InitializeAbilitySystem() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void FinishBuilding() override;
@@ -35,12 +51,43 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	void StartRoll();
-	void StopRollAndExpire();
+	void StopRollAndExpire(bool bImpact = false, const FVector& ImpactLocation = FVector::ZeroVector,
+		const FVector& ImpactNormal = FVector::UpVector);
 	void ApplyDamageToOverlappingEnemyBuildables(float DeltaTime);
 	bool IsEnemyBuildable(const ABuildableActor* OtherBuildable) const;
 	void ApplyDamageToBuildable(ABuildableActor* TargetBuildable, float DamageAmount);
 	void HandleOutOfHealth(AActor* InstigatorActor, AActor* Causer, const FGameplayEffectSpec* Spec,
 		float Magnitude, float OldValue, float NewValue);
+	void RefreshPresentation();
+	void StopPresentation();
+	bool CanRenderPresentation() const;
+	void DispatchPresentationEvent(EBwaySiegePresentationEvent Event, const FVector& Location,
+		const FVector& Normal, const AActor* ContactTarget = nullptr);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayPresentationEvent(uint16 Sequence, EBwaySiegePresentationEvent Event,
+		UBwaySiegePresentationData* Data, FVector_NetQuantize10 Location, FVector_NetQuantizeNormal Normal);
+	UFUNCTION()
+	void OnRep_PresentationData();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_PresentationData, Category="SiegeEngine|Presentation")
+	TObjectPtr<UBwaySiegePresentationData> PresentationData;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="SiegeEngine|Presentation")
+	TObjectPtr<UStaticMeshComponent> PresentationMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="SiegeEngine|Presentation")
+	TObjectPtr<UNiagaraComponent> RollingVFX;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="SiegeEngine|Presentation")
+	TObjectPtr<UAudioComponent> RollingAudio;
+	UPROPERTY(Transient)
+	TObjectPtr<UBwaySiegePresentationData> AppliedPresentationData;
+	TSet<TObjectKey<AActor>> PresentedContactTargets;
+	uint16 DispatchedPresentationSequence = 0;
+	uint16 ReceivedPresentationSequence = 0;
+	bool bLaunchPresentationDispatched = false;
+	bool bTerminalPresentationDispatched = false;
+	bool bTerminalPresentationReceived = false;
+	bool bRollingPresentationActive = false;
+	bool bSavedRootVisibility = false;
+	bool bRootWasVisible = true;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SiegeEngine")
 	TObjectPtr<USphereComponent> DamageSphere;

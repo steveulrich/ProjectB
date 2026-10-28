@@ -4,6 +4,7 @@
 
 #include "Combat/BwayCombatReadabilityConfig.h"
 #include "Combat/BwayCombatReadabilityLibrary.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Camera/PlayerCameraManager.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
@@ -25,6 +26,12 @@ UGCN_BwayCombatFeedback::UGCN_BwayCombatFeedback()
 {
 }
 
+bool UGCN_BwayCombatFeedback::ShouldPlayFeedbackSound(bool bLocalFeedback) const
+{
+	return bLocalFeedback || (GameplayCueTag != BwayGameplayCueTags::CombatHitConfirm
+		&& GameplayCueTag != BwayGameplayCueTags::CombatHit);
+}
+
 bool UGCN_BwayCombatFeedback::OnExecute_Implementation(AActor* MyTarget, const FGameplayCueParameters& Parameters) const
 {
 	if (!MyTarget)
@@ -41,16 +48,22 @@ bool UGCN_BwayCombatFeedback::OnExecute_Implementation(AActor* MyTarget, const F
 		EffectLocation = FVector(Parameters.Location);
 	}
 
-	if (FeedbackSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(MyTarget, FeedbackSound, EffectLocation);
-	}
-
 	const bool bSkipShake = FeedbackConfig && FeedbackConfig->bReduceCameraShake;
 	const bool bSkipHaptics = FeedbackConfig && FeedbackConfig->bReduceMotionHaptics;
 	const APawn* TargetPawn = Cast<APawn>(MyTarget);
 	APlayerController* FeedbackPC = TargetPawn ? Cast<APlayerController>(TargetPawn->GetController()) : nullptr;
 	const bool bLocalFeedback = FeedbackPC && FeedbackPC->IsLocalController();
+	if (FeedbackSound && ShouldPlayFeedbackSound(bLocalFeedback))
+	{
+		if (GameplayCueTag == BwayGameplayCueTags::CombatHitConfirm || GameplayCueTag == BwayGameplayCueTags::CombatHit)
+		{
+			UGameplayStatics::PlaySound2D(MyTarget, FeedbackSound);
+		}
+		else
+		{
+			UGameplayStatics::PlaySoundAtLocation(MyTarget, FeedbackSound, EffectLocation);
+		}
+	}
 	bool bCameraStarted = false;
 	bool bHapticsDispatched = false;
 

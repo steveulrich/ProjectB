@@ -19,7 +19,9 @@
 #include "Components/SphereComponent.h"
 #include "Containers/Ticker.h"
 #include "CoreGlobals.h"
+#include "Economy/BwayBaseZone.h"
 #include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/NetDriver.h"
 #include "Engine/PackageMapClient.h"
 #include "Engine/World.h"
@@ -85,6 +87,7 @@ bool Capture(ABwayGameState* GS, ABwayPlayerState* PS, FPlayer& Out)
 		|| GS->GetPlayerTeam(PS) == INDEX_NONE) return false;
 	Out.State = PS; Out.Pawn = Pawn; Out.ASC = ASC; Out.Id = PS->GetPlayerId(); Out.Team = GS->GetPlayerTeam(PS);
 	Out.Controller = Cast<APlayerController>(Pawn->GetController());
+	if (Pawn->GetMesh()) Pawn->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 	Out.Health = Health(Out); Out.Maximum = ASC->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute());
 	return FMath::IsFinite(Out.Health) && Out.Health > 0 && FMath::IsNearlyEqual(Out.Health, Out.Maximum, .01f);
 }
@@ -181,6 +184,7 @@ struct FBwayBarrageTransportState
 {
 	struct FLifecycle
 	{
+		TMap<TWeakObjectPtr<ABwayBaseZone>, float> Bases;
 		TArray<FObjectKey> OldKeys, NewKeys;
 		TArray<FString> OldPaths;
 		TArray<uint64> OldGuids;
@@ -218,6 +222,7 @@ struct FBwayBarrageTransportState
 		TWeakObjectPtr<AActor> Actor;
 		FString Path;
 		int32 Cycle = 0, Index = 0;
+		uint64 Frame = 0;
 		double At = 0, WorldAt = 0;
 		FVector Origin = FVector::ZeroVector, Start = FVector::ZeroVector, Direction = FVector::ZeroVector;
 		bool bFinalized = false, bMotionObserved = false;
@@ -303,6 +308,24 @@ void ABwayBarrageTransportProbe::BeginPlay()
 {
 	Super::BeginPlay();
 #if !UE_BUILD_SHIPPING
+	if (UGameViewportClient* VP = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+	{
+		VP->EngineShowFlags.SetLighting(false);
+		VP->EngineShowFlags.SetPostProcessing(false);
+		VP->EngineShowFlags.SetDynamicShadows(false);
+		VP->EngineShowFlags.SetGlobalIllumination(false);
+		VP->EngineShowFlags.SetLumenGlobalIllumination(false);
+		VP->EngineShowFlags.SetLumenReflections(false);
+		VP->EngineShowFlags.SetStaticMeshes(false);
+		VP->EngineShowFlags.SetNaniteMeshes(false);
+		VP->EngineShowFlags.SetInstancedStaticMeshes(false);
+		VP->EngineShowFlags.SetLandscape(false);
+		VP->EngineShowFlags.SetParticles(false);
+		VP->EngineShowFlags.SetTranslucency(false);
+		VP->EngineShowFlags.SetVolumetricFog(false);
+		VP->EngineShowFlags.SetAtmosphere(false);
+		VP->EngineShowFlags.SetFog(false);
+	}
 	State = MakeShared<FBwayBarrageTransportState>();
 	State->bChangingAim = FParse::Param(FCommandLine::Get(), TEXT("BwayBarrageTransportChangingAim"));
 	FString Scenario;
@@ -531,7 +554,11 @@ bool ABwayBarrageTransportProbe::Live() const
 
 bool ABwayBarrageTransportProbe::SafeLane()
 {
-	const auto* Source = State->Source();
+	const bool LiveOk = Frame.Lifecycle
+		? (!State->bBound ? Live() : LifecycleRoster(State->Lifecycle.bReuse && (Frame.Lifecycle == Death || Frame.Lifecycle == RoundReset), false))
+		: Live();
+	const auto& Roster = (Frame.Lifecycle && State->Lifecycle.CurrentRoster.Num() == 4) ? State->Lifecycle.CurrentRoster : State->Roster;
+	const auto* Source = Roster.IsValidIndex(State->SourceIndex) ? &Roster[State->SourceIndex] : nullptr;
 	const auto* Spec = Source && Source->ASC.IsValid() ? Source->ASC->FindAbilitySpecFromHandle(State->Handle) : nullptr;
 	const auto* A = AbilityObject(Spec);
 	const UObject* Config = nullptr; FString KitPath;
@@ -544,7 +571,7 @@ bool ABwayBarrageTransportProbe::SafeLane()
 	const auto* ProjectileDefault = ProjectileClass ? Cast<AActor>(ProjectileClass->GetDefaultObject(false)) : nullptr;
 	const auto* Sphere = ProjectileDefault ? ProjectileDefault->FindComponentByClass<USphereComponent>() : nullptr;
 	const float Radius = Sphere ? Sphere->GetScaledSphereRadius() : 0.f;
-	if (!PC || !FMath::IsFinite(Radius) || Radius <= 0 || !Live() || Frame.Speed != 3600.f || Frame.Offset != 80.f
+	if (!PC || !FMath::IsFinite(Radius) || Radius <= 0 || !LiveOk || Frame.Speed != 3600.f || Frame.Offset != 80.f
 		|| Frame.Life != 1.5f || Frame.FrameQuantum != .2f) return false;
 	FVector ViewLocation; FRotator View; PC->GetPlayerViewPoint(ViewLocation, View);
 	const FVector Direction = View.Vector();
@@ -557,7 +584,7 @@ bool ABwayBarrageTransportProbe::SafeLane()
 	// segment starting at the center is conservative, including that offset. Two
 	// bounded world-frame quanta cover pending lifespan activation and expiry.
 	// These expected values remain unverified until production loads the kit.
-	for (const auto& P : State->Roster) if (P.Id != Frame.Source)
+	for (const auto& P : Roster) if (P.Id != Frame.Source)
 	{
 		const FVector Position = P.Pawn->GetActorLocation();
 		const float CapsuleBound = P.Pawn->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
@@ -838,6 +865,9 @@ void ABwayBarrageTransportProbe::Bind()
 				UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: FrameBoundArm witness=%d source=%d stage=%d cycle=%d instance=%s handle=%s key=%d frame=%llu delta=%.6f limit=%.6f ownedBullets=%d elapsed=%.6f worldTime=%.6f"),
 					P->Frame.Witness, P->Frame.Source, P->Frame.Stage, S.FlightBoundCycle, *GetPathNameSafe(A), *S.Handle.ToString(), S.Key.Current, GFrameCounter, P->GetWorld()->GetDeltaSeconds(), P->Frame.FrameQuantum, OwnedBullets(P->GetWorld(), S.Source()->Pawn.Get()), FPlatformTime::Seconds() - S.Started, P->GetWorld()->GetTimeSeconds());
 				P->CheckFrameQuantum();
+				P->PrimaryActorTick.SetTickFunctionEnable(false);
+				P->SetActorTickInterval(0.f);
+				P->PrimaryActorTick.SetTickFunctionEnable(true);
 			}
 		});
 		State->EndDelegate = ASC->OnAbilityEnded.AddLambda([Weak](const FAbilityEndedData& D)
@@ -897,7 +927,9 @@ void ABwayBarrageTransportProbe::Publish(int32 Stage)
 		UE_LOG(LogTemp, Display, TEXT("BwayBarrageTransport: FrameBoundRetired witness=%d source=%d stage=%d nextStage=%d serial=%d cycle=%d instance=%s handle=%s key=%d exact=%d active=0 ownedBullets=%d shots=%d ends=%d witnesses=%d acknowledged=%d frame=%llu delta=%.6f limit=%.6f observedPeak=%.6f samples=%d elapsed=%.6f worldTime=%.6f reason=all-witness-cast-settled"),
 			Frame.Witness, Frame.Source, Frame.Stage, Stage, Frame.Serial, State->FlightBoundCycle, *GetPathNameSafe(State->Instance.Get()), *State->Handle.ToString(), State->Key.Current, Exact, Bullets, State->Shots.Num(), State->Ends, State->Witnesses.Num(), Acknowledged, GFrameCounter, GetWorld()->GetDeltaSeconds(), Frame.FrameQuantum, State->ObservedFramePeak, State->FrameSamples, FPlatformTime::Seconds() - State->Started, GetWorld()->GetTimeSeconds());
 		State->bFlightBoundArmed = false; State->LastFrameObserved = MAX_uint64;
+		SetActorTickInterval(State->StartupOriginalTickInterval);
 	}
+	if (Stage == CastTwo) SetActorTickInterval(0.f);
 	++Frame.Serial; Frame.Stage = Stage; State->StageAt = FPlatformTime::Seconds();
 	for (const auto& Weak : State->Witnesses) if (auto* W = Weak.Get())
 	{
@@ -1265,7 +1297,7 @@ void ABwayBarrageTransportProbe::Observe()
 			State->bEarlyRejected = true; return;
 		}
 		const bool EndpointReady = !State->bEndpoint || (Spec && !Spec->IsActive() && Spec->Ability->CheckCooldown(State->Handle, ASC->AbilityActorInfo.Get()));
-		if (State->bSawCooldown && !CoolingNow && EndpointReady && (!State->bOwner || State->bEarlyRejected)
+		if (bSampled && State->bSawCooldown && !CoolingNow && EndpointReady && (!State->bOwner || State->bEarlyRejected)
 			&& (!HasAuthority() || State->bNaturalExpiry)) Report(true, TEXT("natural-cooldown-ready"));
 	}
 	else if (Frame.Stage == Cleanup)
@@ -1456,6 +1488,7 @@ bool ABwayBarrageTransportProbe::LifecycleRoster(bool bRequireReplacement, bool 
 			|| Old.ASC->GetAvatarActor() != Pawn || PawnGuid == 0) return false;
 		if (Frame.ReplacementGuids.Num() == 4 && Frame.ReplacementGuids[I] != PawnGuid) return false;
 		FPlayer P = Old; P.Pawn = Pawn; P.Controller = Cast<APlayerController>(Pawn->GetController());
+		if (Pawn->GetMesh()) Pawn->GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones;
 		P.Health = Health(P); P.Maximum = Old.ASC->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute());
 		if (!FMath::IsFinite(P.Health) || P.Health <= 0 || !FMath::IsNearlyEqual(P.Maximum, Frame.Maximum[I], .01f))
 		{ Fail(TEXT("lifecycle-invalid-live-health-or-maximum")); return false; }
@@ -1503,6 +1536,12 @@ void ABwayBarrageTransportProbe::BindLifecycle()
 	if (State->bBound) return;
 	State->bBound = true;
 	auto& L = State->Lifecycle;
+	if (HasAuthority())
+		for (TActorIterator<ABwayBaseZone> It(GetWorld()); It; ++It)
+		{
+			L.Bases.Add(*It, It->HealingPerSecond);
+			It->HealingPerSecond = 0.f;
+		}
 	L.OldHandle = State->Handle;
 	for (const auto& P : State->Roster) { L.OldKeys.Add(FObjectKey(P.Pawn.Get())); L.OldPaths.Add(P.Pawn->GetPathName()); L.OldGuids.Add(Guid(P.Pawn.Get())); }
 	L.NewKeys.SetNum(4);
@@ -1614,7 +1653,7 @@ void ABwayBarrageTransportProbe::BindLifecycle()
 			const bool Exact = !Life.bEnded && S.Instance.IsValid() && S.Instance->IsActive()
 				&& S.Instance->GetCurrentActivationInfo().GetActivationPredictionKey() == S.Key
 				&& P->Frame.Stage == (Life.bReuse ? LifeReuse : LifeCast) && P->CheckFrameQuantum() && P->SafeLane();
-			FBwayBarrageTransportState::FShot Shot; Shot.Actor = A; Shot.Path = A->GetPathName(); Shot.Cycle = Life.bReuse ? 2 : 1;
+			FBwayBarrageTransportState::FShot Shot; Shot.Actor = A; Shot.Path = A->GetPathName(); Shot.Cycle = Life.bReuse ? 2 : 1; Shot.Frame = GFrameCounter;
 			Shot.Index = S.Shots.Num() + 1; Shot.WorldAt = P->GetWorld()->GetTimeSeconds(); Shot.At = FPlatformTime::Seconds(); S.Shots.Add(Shot);
 			if (!Life.bReuse && S.Shots.Num() == 1) Life.FirstShotWorld = Shot.WorldAt;
 			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Shot witness=%d source=%d scenario=%d cycle=%d index=%d projectile=%s pawn=%s handle=%s key=%d exact=%d afterEnd=%d worldTime=%.6f"),
@@ -1710,7 +1749,7 @@ void ABwayBarrageTransportProbe::ObserveLifecycle()
 	if (Frame.Stage == LifeCast || Frame.Stage == LifeReuse)
 	{
 		if (State->SeenSerial == Frame.Serial) return;
-		if (Frame.Stage == LifeReuse)
+		if (Frame.Stage == LifeReuse && !HasAuthority())
 		{
 			if (!LifecycleRoster(Replacement, false)) return;
 			State->Roster = L.CurrentRoster;
@@ -1766,10 +1805,11 @@ void ABwayBarrageTransportProbe::ObserveLifecycle()
 		if (L.SettledSamples < 5 || GetWorld()->GetTimeSeconds() - L.SettleStart < .25) return;
 		if (State->ReportedSerial != Frame.Serial)
 		{
+			const float SettledHealth = Current.Health;
 			LifecycleRoster(Replacement, true);
 			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: Settled witness=%d source=%d scenario=%d stage=%d serial=%d cycle=%d cues=%d expectedCues=%d activations=%d ends=%d health=%.6f expectedHealth=%.6f movementTag=0 active=0 montageActive=0 bullets=%d samples=%d span=%.6f oldHandle=%s handle=%s deathObserved=%d worldTime=%.6f"),
 				Frame.Witness, Frame.Source, Frame.Lifecycle, Frame.Stage, Frame.Serial, L.bReuse ? 2 : 1, State->Cues, ExpectedCues, State->Activations, State->Ends,
-				Current.Health, Frame.ExpectedHealth, LocalBullets, L.SettledSamples, GetWorld()->GetTimeSeconds() - L.SettleStart, *L.OldHandle.ToString(), CurrentSpec ? *CurrentSpec->Handle.ToString() : TEXT("proxy"), L.bDeathObserved, GetWorld()->GetTimeSeconds());
+				SettledHealth, Frame.ExpectedHealth, LocalBullets, L.SettledSamples, GetWorld()->GetTimeSeconds() - L.SettleStart, *L.OldHandle.ToString(), CurrentSpec ? *CurrentSpec->Handle.ToString() : TEXT("proxy"), L.bDeathObserved, GetWorld()->GetTimeSeconds());
 		}
 		Report(true, TEXT("lifecycle-settled")); return;
 	}
@@ -1780,7 +1820,7 @@ void ABwayBarrageTransportProbe::ObserveLifecycle()
 		if (State->bEndpoint && !L.bEarlyReject && ASC->HasMatchingGameplayTag(CooldownTag()))
 		{
 			const int32 Before = State->Activations;
-			const bool Accepted = Spec && ASC->TryActivateAbility(Spec->Handle);
+			const bool Accepted = Spec && (State->bOwner ? ASC->TryActivateAbility(Spec->Handle) : Spec->Ability->CanActivateAbility(Spec->Handle, ASC->AbilityActorInfo.Get()));
 			L.bEarlyReject = !Accepted && State->Activations == Before;
 			UE_LOG(LogTemp, Display, TEXT("BwayBarrageLifecycle: EarlyReject witness=%d source=%d scenario=%d endpoint=%s rejected=%d activationsBefore=%d activationsAfter=%d cooldownTag=%d"), Frame.Witness, Frame.Source, Frame.Lifecycle,
 				HasAuthority() ? TEXT("authority") : TEXT("owner"), L.bEarlyReject, Before, State->Activations, ASC->GetTagCount(CooldownTag()));
@@ -1826,7 +1866,7 @@ void ABwayBarrageTransportProbe::AuthorityLifecycle()
 	if (!State->bLocalReady) return;
 	bool AllAck = State->Witnesses.Num() == 4;
 	for (const auto& W : State->Witnesses) if (!W.IsValid() || State->Acks.FindRef(W->Frame.Witness) != Frame.Serial) AllAck = false;
-	if (Frame.Stage == LifeCast && State->Activations == 1 && !L.bApplied && !State->Shots.IsEmpty())
+	if (Frame.Stage == LifeCast && State->Activations == 1 && !L.bApplied && !State->Shots.IsEmpty() && GFrameCounter > State->Shots[0].Frame)
 	{
 		const float Age = GetWorld()->GetTimeSeconds() - State->Shots[0].WorldAt;
 		const auto* Spec = State->Source()->ASC->FindAbilitySpecFromHandle(State->Handle);
@@ -1935,10 +1975,16 @@ void ABwayBarrageTransportProbe::RemoveObservers(bool bCancelCapturedActivation)
 {
 #if !UE_BUILD_SHIPPING
 	RestoreStartupTick(TEXT("cleanup"));
-	if (State && Frame.Lifecycle && State->bLocalReady) SetActorTickInterval(State->StartupOriginalTickInterval);
+	if (State && State->bLocalReady) SetActorTickInterval(State->StartupOriginalTickInterval);
 	if (!State || State->bCleaned) return;
 	State->bCleaned = true; // Synchronous cancellation callbacks are cleanup evidence, never a new accepted end.
 	if (!State->bBound) return; // Other players' witness replicas have no local observers.
+	if (HasAuthority())
+	{
+		for (const auto& Pair : State->Lifecycle.Bases)
+			if (ABwayBaseZone* Base = Pair.Key.Get()) Base->HealingPerSecond = Pair.Value;
+		State->Lifecycle.Bases.Empty();
+	}
 	auto* Source = State->Source(); auto* ASC = Source ? Source->ASC.Get() : nullptr;
 	bool CancelDispatched = false;
 	if (bCancelCapturedActivation && !GAllowActorScriptExecutionInEditor && State->bEndpoint && ASC && Source->State.IsValid() && Source->Pawn.IsValid()
@@ -2034,6 +2080,10 @@ namespace BwayBarrageTransport
 {
 void Start(bool bClient)
 {
+	for (const auto& Pair : TArray<TPair<const TCHAR*, int32>>{
+		{TEXT("r.Lumen.HardwareRayTracing"), 0}, {TEXT("r.DynamicGlobalIlluminationMethod"), 0},
+		{TEXT("r.ReflectionMethod"), 0}, {TEXT("r.Shadow.Virtual.Enable"), 0}, {TEXT("r.VSync"), 0}})
+		if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(Pair.Key)) CVar->Set(Pair.Value, ECVF_SetByCode);
 	const double Started = FPlatformTime::Seconds(); const TSharedRef<bool> Selected = MakeShared<bool>(false);
 	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([bClient, Started, Selected](float)
 	{
@@ -2042,6 +2092,24 @@ void Start(bool bClient)
 		{
 			UWorld* W = Context.World();
 			if (!W || !W->IsGameWorld() || (bClient ? W->GetNetMode() != NM_Client : W->GetNetMode() != NM_ListenServer)) continue;
+			if (UGameViewportClient* VP = W->GetGameViewport())
+			{
+				VP->EngineShowFlags.SetLighting(false);
+				VP->EngineShowFlags.SetPostProcessing(false);
+				VP->EngineShowFlags.SetDynamicShadows(false);
+				VP->EngineShowFlags.SetGlobalIllumination(false);
+				VP->EngineShowFlags.SetLumenGlobalIllumination(false);
+				VP->EngineShowFlags.SetLumenReflections(false);
+				VP->EngineShowFlags.SetStaticMeshes(false);
+				VP->EngineShowFlags.SetNaniteMeshes(false);
+				VP->EngineShowFlags.SetInstancedStaticMeshes(false);
+				VP->EngineShowFlags.SetLandscape(false);
+				VP->EngineShowFlags.SetParticles(false);
+				VP->EngineShowFlags.SetTranslucency(false);
+				VP->EngineShowFlags.SetVolumetricFog(false);
+				VP->EngineShowFlags.SetAtmosphere(false);
+				VP->EngineShowFlags.SetFog(false);
+			}
 			auto* GS = W->GetGameState<ABwayGameState>(); if (!GS) continue;
 			if (bClient)
 			{

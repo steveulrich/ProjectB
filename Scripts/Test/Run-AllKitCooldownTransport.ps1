@@ -79,7 +79,7 @@ function Start-Owned([string]$Role,[string]$URL){
         '-LogCmds="LogViewport Verbose,LogPlayerController Verbose"',
         '-ini:GameUserSettings:[/Script/LyraGame.LyraSettingsLocal]:FrameRateLimit=30.0',
         "-UserDir=`"$userDirectory`"","-enginesaveddirsuffix=$token-$Role")
-    if($rendered){$args+=@('-d3d12','-windowed','-ResX=640','-ResY=360','-ForceRes','-WinY=20',$(if($Role -eq 'host'){'-WinX=20'}else{'-WinX=680'}))}else{$args+='-NullRHI'}
+    if($rendered){$args+=@('-d3d12','-NoRayTracing','-NoVSync','-windowed','-ResX=640','-ResY=360','-ForceRes','-WinY=20',$(if($Role -eq 'host'){'-WinX=20'}else{'-WinX=680'}))}else{$args+='-NullRHI'}
     $p=Start-Process -FilePath $exe -ArgumentList $args -WorkingDirectory (Split-Path -Parent $exe) -WindowStyle Hidden -PassThru
     $null=$p.Handle; $owned[$Role]=$p
     $records.Add([ordered]@{role=$Role;hero=$heroByRole[$Role];processId=$p.Id;args=$args;rendered=$rendered;userDir=$userDirectory;log=$logs[$Role];startedUtc=$p.StartTime.ToUniversalTime().ToString('o');normalExit=$false;closeRequested=$false;forcedKill=$false;exited=$false;exitCode=$null})

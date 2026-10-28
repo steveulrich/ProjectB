@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_MeleePrimary.h"
 
+#include "Abilities/BwayGameplayEffect_ArgusCooldowns.h"
 #include "AbilitySystem/BwayGameplayCueTags.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameplayTags.h"
@@ -23,6 +24,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	ActivationBlockedTags.AddTag(BwayGameplayTags::State_BuildablePlacement);
 	CancelAbilitiesWithTag.Reset();
+	CooldownGameplayEffectClass = UGE_Bway_Cooldown_ArgusPrimaryAttack::StaticClass();
 
 	DisplayData.AbilityName = NSLOCTEXT("Argus", "PrimaryName", "Primary Attack");
 	DisplayData.Description = NSLOCTEXT("Argus", "PrimaryDesc", "Slashing melee attack.");
@@ -42,6 +44,12 @@ void UBwayGameplayAbility_MeleePrimary::ActivateAbility(
 	if (!Character)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
+
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 

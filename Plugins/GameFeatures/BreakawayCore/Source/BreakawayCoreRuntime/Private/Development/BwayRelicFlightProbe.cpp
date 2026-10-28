@@ -1,4 +1,5 @@
 #include "Development/BwayRelicFlightProbe.h"
+#include "Development/BwayRelicLaunchObservation.h"
 
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "BwayCharacterWithAbilities.h"
@@ -25,6 +26,13 @@
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Net/UnrealNetwork.h"
+#include "Physics/Experimental/PhysScene_Chaos.h"
+#include "PhysicsEngine/PhysicsSettings.h"
+#include "PhysicsEngine/BodyInstance.h"
+#include "PBDRigidsSolver.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "UObject/UnrealType.h"
@@ -135,6 +143,14 @@ struct FBwayRelicFlightState
 	double OwnershipDropAt = 0.0;
 	double RegrantObservedHeld = 0.0;
 	float LaunchSpeed = 0.0f;
+	BwayRelicFlight::FLaunchObservation LaunchObservation;
+	FVector LaunchAim = FVector::ZeroVector;
+	TWeakObjectPtr<ARelicActor> LaunchRelic;
+	TWeakObjectPtr<UPrimitiveComponent> LaunchMesh;
+	double LaunchSolverTime = 0.0;
+	int32 LaunchSolverFrame = INDEX_NONE;
+	FDelegateHandle PhysicsStepHandle;
+	uint64 LastLaunchPhysicsFrame = MAX_uint64;
 	FGameplayAbilitySpecHandle InputHandle;
 	FGameplayAbilitySpecHandle RegrantHandle;
 	FGameplayTag InputTag;
@@ -233,6 +249,51 @@ bool ABwayRelicFlightProbe::Setup()
 	if (State->EnemyIndex == INDEX_NONE) { Fail(TEXT("enemy-required")); return false; }
 	State->bCoordinator = true;
 	Coordinator = this;
+	FPhysScene* PhysicsScene = GetWorld()->GetPhysicsScene();
+	if (!PhysicsScene) { Fail(TEXT("launch-physics-scene-missing")); return false; }
+	State->PhysicsStepHandle = PhysicsScene->OnPhysScenePreTick.AddWeakLambda(this,
+		[this](FPhysScene* Scene, float StepSeconds)
+		{
+			if (!State || State->bDone || State->bCleaned || State->LaunchSpeed > 0.0f || Frame.Stage != BwayRelicFlight::Input || Frame.Scenario >= 3) return;
+			auto* Relic = BwayRelicFlight::RelicFor(GetWorld());
+			if (!Relic || Relic->GetCurrentState() != ERelicState::Thrown || Relic->CurrentCarrier) return;
+			auto* Mesh = Cast<UPrimitiveComponent>(Relic->GetRootComponent());
+			const FBodyInstance* Body = Mesh ? Mesh->GetBodyInstance() : nullptr;
+			const UPhysicsSettings* Physics = UPhysicsSettings::Get();
+			const IConsoleVariable* DragOverride = IConsoleManager::Get().FindConsoleVariable(TEXT("p.LinearEtherDragOverride"));
+			const IConsoleVariable* SpeedOverride = IConsoleManager::Get().FindConsoleVariable(TEXT("p.HackMaxVelocity2"));
+			if (!Mesh || !Body || !Mesh->IsSimulatingPhysics() || !Scene || !Scene->GetSolver()
+				|| !Body->bNotifyRigidBodyCollision || Body->GravityGroupIndex != 0 || !BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body)
+				|| Mesh->GetCollisionResponseToChannel(ECC_Pawn) != ECR_Overlap
+				|| Scene->GetSolver()->IsPaused_External() || static_cast<const Chaos::FPhysicsSolverBase*>(Scene->GetSolver())->IsResimming()
+				|| Scene->GetSolver()->IsUsingAsyncResults() || Physics->bSubstepping || Physics->bTickPhysicsAsync
+				|| Scene->GetSolver()->GetSolverSubstep_External() || Scene->GetSolver()->GetMaxSubSteps_External() != 1
+				|| StepSeconds <= Scene->GetSolver()->GetMinDeltaTime_External()
+				|| (Scene->GetSolver()->GetMaxDeltaTime_External() > 0.0f && StepSeconds > Scene->GetSolver()->GetMaxDeltaTime_External())
+				|| !DragOverride || !FMath::IsFinite(DragOverride->GetFloat()) || DragOverride->GetFloat() >= 0.0f || State->LastLaunchPhysicsFrame == GFrameCounter)
+			{ State->LaunchObservation.bInvalid = true; return; }
+			double MaxBodySpeed = 0.0;
+			FPhysicsCommand::ExecuteRead(Body->ActorHandle, [&MaxBodySpeed](const FPhysicsActorHandle& Actor)
+			{ MaxBodySpeed = FPhysicsInterface::GetMaxLinearVelocity_AssumesLocked(Actor); });
+			if (!SpeedOverride || !FMath::IsFinite(SpeedOverride->GetFloat()) || SpeedOverride->GetFloat() >= 0.0f || !FMath::IsFinite(MaxBodySpeed)
+				|| MaxBodySpeed <= Relic->GetRelicSettings()->MaxThrowSpeed + 180.0f)
+			{ State->LaunchObservation.bInvalid = true; return; }
+			State->LastLaunchPhysicsFrame = GFrameCounter;
+			if (State->LaunchObservation.Steps.IsEmpty())
+			{
+				State->LaunchRelic = Relic; State->LaunchMesh = Mesh;
+				State->LaunchSolverTime = Scene->GetSolver()->GetSolverTime();
+				State->LaunchSolverFrame = Scene->GetSolver()->GetCurrentFrame();
+				const auto* Controller = State->Players[State->SourceIndex].Controller.Get();
+				State->LaunchAim = Controller ? Controller->GetControlRotation().Vector().GetSafeNormal() : FVector::ZeroVector;
+			}
+			if (State->LaunchRelic.Get() != Relic || State->LaunchMesh.Get() != Mesh
+				|| Scene->GetSolver()->GetCurrentFrame() - State->LaunchSolverFrame != State->LaunchObservation.Steps.Num()
+				|| !FMath::IsNearlyEqual(double(Scene->GetSolver()->GetSolverTime()) - State->LaunchSolverTime, State->LaunchObservation.Seconds, 0.00001))
+			{ State->LaunchObservation.bInvalid = true; return; }
+			const FVector Gravity(0.0, 0.0, Mesh->IsGravityEnabled() ? GetWorld()->GetGravityZ() : 0.0);
+			State->LaunchObservation.AddStep(StepSeconds, Mesh->GetLinearDamping(), Gravity);
+		});
 	Frame.Source = State->Players[State->SourceIndex].Player->GetPlayerId();
 	for (int32 Index = 0; Index < State->Players.Num(); ++Index)
 	{
@@ -502,6 +563,11 @@ void ABwayRelicFlightProbe::AuthorityTick()
 	const bool bAllAcknowledged = Acknowledged == 4;
 	if (Frame.Stage == Input)
 	{
+		if (Frame.Scenario < 3 && State->LaunchSpeed == 0.0f
+			&& (State->LaunchObservation.bInvalid || (!State->LaunchObservation.Steps.IsEmpty()
+				&& (Relic != State->LaunchRelic.Get() || Relic->GetRootComponent() != State->LaunchMesh.Get()
+					|| Relic->GetCurrentState() != ERelicState::Thrown || Relic->CurrentCarrier))))
+		{ Fail(TEXT("launch-physics-state-changed-or-unsupported")); return; }
 		FGameplayAbilitySpecHandle CurrentHandle; FGameplayTag CurrentTag;
 		const int32 Count = ThrowSpecs(SourceASC, CurrentHandle, CurrentTag);
 		const bool bActive = Count == 1 && SourceASC->FindAbilitySpecFromHandle(CurrentHandle)->IsActive();
@@ -541,14 +607,64 @@ void ABwayRelicFlightProbe::AuthorityTick()
 			}
 			if (State->LaunchSpeed == 0.0f)
 			{
-				State->LaunchSpeed = Speed(Relic);
+				auto* Mesh = Cast<UPrimitiveComponent>(Relic->GetRootComponent());
+				auto* Scene = GetWorld()->GetPhysicsScene();
+				auto* Solver = Scene ? Scene->GetSolver() : nullptr;
+				const FVector Observed = Mesh ? Mesh->GetPhysicsLinearVelocity() : FVector::ZeroVector;
+				FVector Initial;
+				if (!Solver || State->LaunchRelic.Get() != Relic || State->LaunchMesh.Get() != Mesh
+					|| Solver->GetCurrentFrame() - State->LaunchSolverFrame != State->LaunchObservation.Steps.Num()
+					|| !FMath::IsNearlyEqual(double(Solver->GetSolverTime()) - State->LaunchSolverTime, State->LaunchObservation.Seconds, 0.00001)
+					|| State->LastLaunchPhysicsFrame != GFrameCounter || !State->LaunchObservation.Reconstruct(Observed, Initial)
+					|| State->LaunchAim.ContainsNaN() || State->LaunchAim.IsNearlyZero())
+				{ Fail(TEXT("launch-physics-observation-invalid")); return; }
+				State->LaunchSpeed = Initial.Size();
 				const URelicSettings* Settings = Relic->GetRelicSettings();
 				const float Expected = Settings->ComputeChargedThrowSpeed(Frame.HoldSeconds);
-				const bool bSpeed = FMath::Abs(State->LaunchSpeed - Expected) <= 180.0f
+				const double VectorError = (Initial - State->LaunchAim * Expected).Size();
+				const bool bSpeed = FMath::Abs(State->LaunchSpeed - Expected) <= 180.0f && VectorError <= 180.0
 					&& (Frame.Scenario > 0 || State->LaunchSpeed < Settings->MaxThrowSpeed - 200.0f)
 					&& (Frame.Scenario != 1 || (State->LaunchSpeed > Settings->MinThrowSpeed + 200.0f && State->LaunchSpeed < Settings->MaxThrowSpeed - 200.0f));
+				// Keep raw physical speed explicit; the companion record proves reconstruction.
+				TSharedRef<FJsonObject> Evidence = MakeShared<FJsonObject>();
+				Evidence->SetNumberField(TEXT("schema"), 1);
+				Evidence->SetNumberField(TEXT("scenario"), Frame.Scenario);
+				Evidence->SetNumberField(TEXT("source"), Frame.Source);
+				Evidence->SetNumberField(TEXT("multiplier"), State->LaunchObservation.Multiplier);
+				Evidence->SetNumberField(TEXT("seconds"), State->LaunchObservation.Seconds);
+				Evidence->SetNumberField(TEXT("expectedSpeed"), Expected);
+				Evidence->SetNumberField(TEXT("minThrowSpeed"), Settings->MinThrowSpeed);
+				Evidence->SetNumberField(TEXT("maxThrowSpeed"), Settings->MaxThrowSpeed);
+				Evidence->SetNumberField(TEXT("maxChargeTime"), Settings->MaxChargeTime);
+				Evidence->SetNumberField(TEXT("holdSeconds"), Frame.HoldSeconds);
+				Evidence->SetNumberField(TEXT("lastPhysicsFrame"), double(State->LastLaunchPhysicsFrame));
+				Evidence->SetNumberField(TEXT("sampleFrame"), double(GFrameCounter));
+				Evidence->SetNumberField(TEXT("startSolverFrame"), State->LaunchSolverFrame);
+				Evidence->SetNumberField(TEXT("sampleSolverFrame"), Solver->GetCurrentFrame());
+				Evidence->SetNumberField(TEXT("solverElapsed"), double(Solver->GetSolverTime()) - State->LaunchSolverTime);
+				Evidence->SetStringField(TEXT("solverMode"), TEXT("synchronous-single-step"));
+				Evidence->SetNumberField(TEXT("vectorError"), VectorError);
+				Evidence->SetBoolField(TEXT("pass"), bSpeed);
+				const auto VectorJson = [](const FVector& V)
+				{ return TArray<TSharedPtr<FJsonValue>>{MakeShared<FJsonValueNumber>(V.X), MakeShared<FJsonValueNumber>(V.Y), MakeShared<FJsonValueNumber>(V.Z)}; };
+				Evidence->SetArrayField(TEXT("observed"), VectorJson(Observed));
+				Evidence->SetArrayField(TEXT("initial"), VectorJson(Initial));
+				Evidence->SetArrayField(TEXT("aim"), VectorJson(State->LaunchAim));
+				Evidence->SetArrayField(TEXT("gravityVelocity"), VectorJson(State->LaunchObservation.GravityVelocity));
+				TArray<TSharedPtr<FJsonValue>> Steps;
+				for (const auto& Step : State->LaunchObservation.Steps)
+				{
+					TSharedRef<FJsonObject> Row = MakeShared<FJsonObject>();
+					Row->SetNumberField(TEXT("seconds"), Step.Seconds); Row->SetNumberField(TEXT("damping"), Step.Damping);
+					Row->SetArrayField(TEXT("gravity"), VectorJson(Step.Gravity));
+					Steps.Add(MakeShared<FJsonValueObject>(Row));
+				}
+				Evidence->SetArrayField(TEXT("steps"), Steps);
+				FString Json;
+				FJsonSerializer::Serialize(Evidence, TJsonWriterFactory<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&Json));
+				UE_LOG(LogTemp, Display, TEXT("BwayRelicFlight: LaunchPhysics %s"), *Json);
 				UE_LOG(LogTemp, Display, TEXT("BwayRelicFlight: Launch scenario=%d source=%d observedSpeed=%.3f expectedSpeed=%.3f physicsTolerance=180 sample=post-physics-next-frame pass=%d"),
-					Frame.Scenario, Frame.Source, State->LaunchSpeed, Expected, bSpeed);
+					Frame.Scenario, Frame.Source, Observed.Size(), Expected, bSpeed);
 				if (!bSpeed) { Fail(TEXT("launch-speed-outside-bound")); return; }
 			}
 			if (bAllAcknowledged) Publish(Released);
@@ -602,6 +718,9 @@ void ABwayRelicFlightProbe::AuthorityTick()
 		Frame.HoldSeconds = Frame.Scenario == 0 ? 0.1f : Frame.Scenario == 1 ? Maximum * 0.5f : Frame.Scenario == 2 ? Maximum + 0.35f
 			: Frame.Scenario == 3 ? 1.7f : 2.5f + Relic->GetRelicSettings()->PickupCooldownAfterDrop;
 		State->LaunchSpeed = 0.0f;
+		State->LaunchObservation = {};
+		State->LaunchAim = FVector::ZeroVector;
+		State->LastLaunchPhysicsFrame = MAX_uint64;
 		State->bAuthoritySawActive = false;
 		State->bCancelRegranted = false;
 		State->bOwnershipDropped = false;
@@ -662,6 +781,12 @@ void ABwayRelicFlightProbe::Cleanup()
 {
 	if (!State || !State->bCoordinator || State->bCleaned) return;
 	State->bCleaned = true;
+	if (State->PhysicsStepHandle.IsValid())
+	{
+		if (UWorld* World = GetWorld())
+			if (FPhysScene* Scene = World->GetPhysicsScene()) Scene->OnPhysScenePreTick.Remove(State->PhysicsStepHandle);
+		State->PhysicsStepHandle.Reset();
+	}
 	for (const auto& Player : State->Players)
 	{
 		if (auto* ASC = Player.Player.IsValid() ? Player.Player->GetLyraAbilitySystemComponent() : nullptr)

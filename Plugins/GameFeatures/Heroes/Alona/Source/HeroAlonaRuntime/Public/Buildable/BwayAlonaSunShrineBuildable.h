@@ -6,6 +6,8 @@
 
 class ABwayCharacterWithAbilities;
 class USphereComponent;
+class UBwayCuePresentationComponent;
+class USceneComponent;
 struct FGameplayEffectSpec;
 
 /**
@@ -19,6 +21,11 @@ class HEROALONARUNTIME_API ABwayAlonaSunShrineBuildable : public ABuildableActor
 
 public:
 	ABwayAlonaSunShrineBuildable();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<UBwayCuePresentationComponent> Presentation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<USceneComponent> PresentationRoot;
 
 protected:
 	virtual void InitializeAbilitySystem() override;

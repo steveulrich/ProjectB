@@ -5,6 +5,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayEffect_RawlinsCooldowns)
 
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Rawlins_PrimaryAttack, "Cooldown.Rawlins.PrimaryAttack");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Rawlins_DoubleDown, "Cooldown.Rawlins.DoubleDown");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Rawlins_PowerShot, "Cooldown.Rawlins.PowerShot");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Rawlins_SlideShot, "Cooldown.Rawlins.SlideShot");
@@ -39,6 +40,12 @@ void UGE_Bway_Cooldown_RawlinsBase::PostInitProperties()
 
 	UTargetTagsGameplayEffectComponent& TargetTags = FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
 	TargetTags.SetAndApplyTargetTagChanges(TagChanges);
+}
+
+UGE_Bway_Cooldown_RawlinsPrimaryAttack::UGE_Bway_Cooldown_RawlinsPrimaryAttack()
+{
+	ConfigureDuration(0.5f);
+	ConfigureGrantedCooldownTag(TAG_Cooldown_Rawlins_PrimaryAttack);
 }
 
 UGE_Bway_Cooldown_RawlinsDoubleDown::UGE_Bway_Cooldown_RawlinsDoubleDown()

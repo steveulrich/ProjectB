@@ -12,6 +12,12 @@ class BREAKAWAYCORERUNTIME_API UBwayGameplayCueNotify_PrimaryAction : public UGa
 {
 	GENERATED_BODY()
 
+public:
+	/** Filter a per-execution copy; never change the shared cue asset for another local player. */
+	static FGameplayCueNotify_BurstEffects ResolveBurstEffects(
+		const FGameplayCueNotify_BurstEffects& AuthoredEffects, bool bLocalOwner,
+		bool bReduceCameraShake, bool bReduceMotionHaptics);
+
 protected:
 	virtual bool OnExecute_Implementation(AActor* Target, const FGameplayCueParameters& Parameters) const override;
 

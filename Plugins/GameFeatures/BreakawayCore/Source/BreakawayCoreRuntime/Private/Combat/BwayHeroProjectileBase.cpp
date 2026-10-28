@@ -10,16 +10,22 @@
 #include "Buildable/BuildableBase.h"
 #include "Character/LyraHealthComponent.h"
 #include "Combat/BwayDamageLibrary.h"
+#include "Combat/BwayCombatReadabilityConfig.h"
+#include "Combat/BwayCombatReadabilityLibrary.h"
 #include "Combat/BwayProjectilePresentationData.h"
+#include "Camera/PlayerCameraManager.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/World.h"
+#include "EngineUtils.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameState/BwayRoundManagementComponent.h"
 #include "GameplayEffectTypes.h"
+#include "GameplayCueManager.h"
+#include "HAL/IConsoleManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "NiagaraComponent.h"
@@ -31,6 +37,11 @@
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHeroProjectileBase)
 
 DEFINE_LOG_CATEGORY_STATIC(LogBwayProjectileCollision, Log, All);
+
+#if !UE_BUILD_SHIPPING
+static TAutoConsoleVariable<int32> CVarBwayProjectilePresentation(TEXT("bway.Debug.ProjectilePresentation"), 0,
+	TEXT("Log received projectile presentation events and actual local camera starts."));
+#endif
 
 ABwayHeroProjectileBase::ABwayHeroProjectileBase()
 {
@@ -138,16 +149,23 @@ void ABwayHeroProjectileBase::BeginPlay()
 	IgnoreInstigatorCollision();
 	BindHitDelegates();
 
-	if (HasAuthority() && !bHasExecutedSpawnCue)
+	if (HasAuthority())
 	{
-		bHasExecutedSpawnCue = true;
-		ExecuteProjectileCue(SpawnCueTag, GetActorLocation());
-		PlayLocalFeedback(CachedSpawnNiagara, CachedSpawnSound, GetActorLocation(), GetActorForwardVector());
+		DispatchPresentationEvent(EBwayProjectilePresentationEvent::Spawn, GetActorLocation(), GetActorForwardVector());
 	}
+}
+
+void ABwayHeroProjectileBase::OnRep_Instigator()
+{
+	Super::OnRep_Instigator();
+	// A replicated firing pawn may resolve after the initial actor bunch.
+	if (HasActorBegunPlay()) IgnoreInstigatorCollision();
 }
 
 void ABwayHeroProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	ClearSiblingCollisionIgnores();
+	if (CollisionSphere) CollisionSphere->ClearMoveIgnoreActors();
 	if (UBwayRoundManagementComponent* Manager = RoundManager.Get())
 	{
 		Manager->OnRoundStateChanged.RemoveDynamic(this, &ABwayHeroProjectileBase::OnRoundStateChanged);
@@ -159,14 +177,12 @@ void ABwayHeroProjectileBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		FiringPawn->MoveIgnoreActorRemove(this);
 	}
-	if (HasAuthority() && !bHasExecutedExpireCue)
-	{
-		bHasExecutedExpireCue = true;
-		ExecuteProjectileCue(ExpireCueTag, GetActorLocation());
-		PlayLocalFeedback(CachedExpireNiagara, CachedExpireSound, GetActorLocation(), FVector::UpVector);
-	}
-
 	Super::EndPlay(EndPlayReason);
+}
+
+void ABwayHeroProjectileBase::LifeSpanExpired()
+{
+	ExpireProjectile();
 }
 
 void ABwayHeroProjectileBase::OnRoundStateChanged(FName NewRoundState)
@@ -332,35 +348,38 @@ void ABwayHeroProjectileBase::OnSphereBeginOverlap(
 
 void ABwayHeroProjectileBase::ProcessHit(const FHitResult& Hit, bool bForceExpire)
 {
-	if (bHasProcessedTerminalHit || bRemovingForRoundTransition || IsActorBeingDestroyed())
+	if (!HasAuthority() || bProcessingHit || bHasProcessedTerminalHit || bRemovingForRoundTransition || IsActorBeingDestroyed())
 	{
 		return;
 	}
+
+	// A queued callback can outlive the sweep that registered an ignore pair.
+	// Sweeps are the primary protection: ignoring only this callback would
+	// still allow ProjectileMovement to stop on the sibling.
+	if (IsSiblingProjectile(Hit.GetActor())) return;
 
 	const FVector ImpactLocation = Hit.bBlockingHit || !Hit.ImpactPoint.IsNearlyZero()
 		? FVector(Hit.ImpactPoint)
 		: GetActorLocation();
 	const FVector ImpactNormal = Hit.ImpactNormal.IsNearlyZero() ? -GetActorForwardVector() : FVector(Hit.ImpactNormal);
 
-	if (HasAuthority())
+	bool bShouldExpire = false;
 	{
-		ExecuteProjectileCue(ImpactCueTag, ImpactLocation, ImpactNormal);
-	}
-
-	PlayLocalFeedback(CachedImpactNiagara, CachedImpactSound, ImpactLocation, ImpactNormal);
-	PlayImpactCameraShake();
-
-	bool bShouldExpire = bForceExpire;
-	if (HasAuthority())
-	{
+		// Damage can synchronously finish the round. Defer our destruction until
+		// the confirmed impact event has left the still-live actor channel.
+		TGuardValue<bool> ProcessingHit(bProcessingHit, true);
 		bShouldExpire = HandleDamageHit(Hit) || bForceExpire;
 		UE_LOG(LogBwayProjectileCollision, Verbose, TEXT("DamageHit projectile=%s target=%s instigator=%s expire=%d"),
 			*GetName(), *GetNameSafe(Hit.GetActor()), *GetNameSafe(GetInstigator()), bShouldExpire);
+		if (bShouldExpire && !IsActorBeingDestroyed())
+		{
+			bHasProcessedTerminalHit = true;
+			DispatchPresentationEvent(EBwayProjectilePresentationEvent::Impact, ImpactLocation, ImpactNormal);
+		}
 	}
 
-	if (bShouldExpire)
+	if (bShouldExpire || bExpiryRequestedDuringHit)
 	{
-		bHasProcessedTerminalHit = true;
 		ExpireProjectile();
 	}
 }
@@ -378,7 +397,7 @@ bool ABwayHeroProjectileBase::ShouldIgnoreActor(const AActor* OtherActor) const
 		return true;
 	}
 
-	if (OtherActor == GetOwner() || OtherActor == GetInstigator())
+	if (OtherActor == GetOwner() || OtherActor == GetInstigator() || IsSiblingProjectile(OtherActor))
 	{
 		return true;
 	}
@@ -390,31 +409,88 @@ void ABwayHeroProjectileBase::ExpireProjectile()
 {
 	if (HasAuthority() && !IsActorBeingDestroyed())
 	{
+		if (bProcessingHit)
+		{
+			bExpiryRequestedDuringHit = true;
+			return;
+		}
+		if (!bRemovingForRoundTransition)
+		{
+			DispatchPresentationEvent(EBwayProjectilePresentationEvent::Expire, GetActorLocation(), FVector::UpVector);
+		}
 		Destroy();
 	}
+}
+
+void ABwayHeroProjectileBase::DispatchPresentationEvent(EBwayProjectilePresentationEvent Event,
+	const FVector& Location, const FVector& Normal)
+{
+	if (!HasAuthority() || IsActorBeingDestroyed()) return;
+	const uint8 EventBit = 1 << uint8(Event);
+	if ((DispatchedPresentationEvents & EventBit) != 0) return;
+	DispatchedPresentationEvents |= EventBit;
+
+	FGameplayTag CueTag;
+	UNiagaraSystem* Niagara = nullptr;
+	USoundBase* Sound = nullptr;
+	switch (Event)
+	{
+	case EBwayProjectilePresentationEvent::Spawn:
+		CueTag = SpawnCueTag; Niagara = CachedSpawnNiagara; Sound = CachedSpawnSound;
+		break;
+	case EBwayProjectilePresentationEvent::Impact:
+		CueTag = ImpactCueTag; Niagara = CachedImpactNiagara; Sound = CachedImpactSound;
+		break;
+	case EBwayProjectilePresentationEvent::Expire:
+		CueTag = ExpireCueTag; Niagara = CachedExpireNiagara; Sound = CachedExpireSound;
+		break;
+	}
+	const bool bImpact = Event == EBwayProjectilePresentationEvent::Impact;
+	// Carry resolved event data so presentation does not depend on PresentData's
+	// RepNotify ordering. Valid cue tags exclusively own their authored sound/VFX.
+	if (CueTag.IsValid()) { Niagara = nullptr; Sound = nullptr; }
+	if (!CueTag.IsValid() && !Niagara && !Sound && !(bImpact && CachedImpactCameraShake)) return;
+	Multicast_PlayPresentationEvent(Event, CueTag, Niagara, Sound, Location, Normal.GetSafeNormal(),
+		GetInstigator(), SourcePlayerState.IsValid() ? GetDamageInstigator() : GetInstigator(),
+		bImpact ? CachedImpactCameraShake : TSubclassOf<UCameraShakeBase>(), CachedImpactCameraShakeScale);
+}
+
+void ABwayHeroProjectileBase::Multicast_PlayPresentationEvent_Implementation(EBwayProjectilePresentationEvent Event,
+	FGameplayTag CueTag, UNiagaraSystem* Niagara, USoundBase* Sound, FVector_NetQuantize10 Location,
+	FVector_NetQuantizeNormal Normal, APawn* FeedbackPawn, AActor* CueInstigator,
+	TSubclassOf<UCameraShakeBase> CameraShake, float CameraShakeScale)
+{
+	const uint8 EventBit = 1 << uint8(Event);
+	if ((ReceivedPresentationEvents & EventBit) != 0) return;
+	ReceivedPresentationEvents |= EventBit;
+	if (CueTag.IsValid())
+	{
+		ExecuteProjectileCue(CueTag, Location, Normal, FeedbackPawn, CueInstigator);
+	}
+	else
+	{
+		PlayLocalFeedback(Niagara, Sound, Location, Normal);
+	}
+	const bool bCameraStarted = Event == EBwayProjectilePresentationEvent::Impact
+		&& PlayImpactCameraShake(FeedbackPawn, CameraShake, CameraShakeScale);
+#if !UE_BUILD_SHIPPING
+	if (CVarBwayProjectilePresentation.GetValueOnGameThread() != 0)
+	{
+		UE_LOG(LogBwayProjectileCollision, Display, TEXT("BwayProjectilePresentation: Event projectile=%s event=%d net=%d cue=%s fallbackVfx=%d fallbackSound=%d cameraStarted=%d location=%s"),
+			*GetName(), int32(Event), int32(GetNetMode()), *CueTag.ToString(), !CueTag.IsValid() && Niagara != nullptr,
+			!CueTag.IsValid() && Sound != nullptr, bCameraStarted, *FVector(Location).ToCompactString());
+	}
+#endif
 }
 
 void ABwayHeroProjectileBase::ExecuteProjectileCue(
 	FGameplayTag CueTag,
 	const FVector& Location,
 	const FVector& Normal,
-	float Magnitude) const
+	APawn* FeedbackPawn,
+	AActor* CueInstigator) const
 {
 	if (!CueTag.IsValid())
-	{
-		return;
-	}
-
-	UAbilitySystemComponent* ASC = SourceAbilitySystem.Get();
-	if (!ASC)
-	{
-		ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetInstigator());
-	}
-	if (!ASC)
-	{
-		ASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(GetOwner());
-	}
-	if (!ASC)
 	{
 		return;
 	}
@@ -425,19 +501,18 @@ void ABwayHeroProjectileBase::ExecuteProjectileCue(
 	{
 		Params.Normal = FVector_NetQuantizeNormal(Normal.GetSafeNormal());
 	}
-	Params.RawMagnitude = Magnitude;
-	Params.NormalizedMagnitude = Magnitude;
-	AActor* CueInstigator = SourcePlayerState.IsValid() ? GetDamageInstigator() : GetInstigator();
 	Params.Instigator = CueInstigator;
 	Params.EffectCauser = const_cast<ABwayHeroProjectileBase*>(this);
 	Params.SourceObject = this;
-
-	FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+	FGameplayEffectContextHandle Context(UAbilitySystemGlobals::Get().AllocGameplayEffectContext());
 	Context.AddInstigator(CueInstigator, const_cast<ABwayHeroProjectileBase*>(this));
 	Context.AddSourceObject(this);
 	Params.EffectContext = Context;
 
-	ASC->ExecuteGameplayCue(CueTag, Params);
+	// This multicast is the sole transport. Executing through the ASC here would
+	// multicast again on authority and can suppress a predicting owner's receipt.
+	AActor* Target = FeedbackPawn ? static_cast<AActor*>(FeedbackPawn) : const_cast<ABwayHeroProjectileBase*>(this);
+	UAbilitySystemGlobals::Get().GetGameplayCueManager()->HandleGameplayCue(Target, CueTag, EGameplayCueEvent::Executed, Params);
 }
 
 void ABwayHeroProjectileBase::PlayLocalFeedback(
@@ -466,23 +541,23 @@ void ABwayHeroProjectileBase::PlayLocalFeedback(
 	}
 }
 
-void ABwayHeroProjectileBase::PlayImpactCameraShake() const
+bool ABwayHeroProjectileBase::PlayImpactCameraShake(APawn* FeedbackPawn, TSubclassOf<UCameraShakeBase> CameraShake, float Scale) const
 {
-	if (!CachedImpactCameraShake)
+	if (!CameraShake || !FeedbackPawn)
 	{
-		return;
+		return false;
 	}
 
-	const APawn* InstigatorPawn = GetInstigator();
-	if (!InstigatorPawn)
+	APlayerController* PC = Cast<APlayerController>(FeedbackPawn->GetController());
+	if (PC && PC->IsLocalController() && PC->PlayerCameraManager)
 	{
-		return;
+		const UBwayCombatReadabilityConfig* Config = UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(FeedbackPawn);
+		if (!Config || !Config->bReduceCameraShake)
+		{
+			return PC->PlayerCameraManager->StartCameraShake(CameraShake, Scale) != nullptr;
+		}
 	}
-
-	if (APlayerController* PC = Cast<APlayerController>(InstigatorPawn->GetController()))
-	{
-		PC->ClientStartCameraShake(CachedImpactCameraShake, CachedImpactCameraShakeScale);
-	}
+	return false;
 }
 
 void ABwayHeroProjectileBase::ApplyPresentationInternal(const UBwayProjectilePresentationData* Data)
@@ -578,8 +653,34 @@ void ABwayHeroProjectileBase::BindHitDelegates()
 	}
 }
 
+bool ABwayHeroProjectileBase::IsSiblingProjectile(const AActor* OtherActor) const
+{
+	const auto* OtherProjectile = Cast<ABwayHeroProjectileBase>(OtherActor);
+	// Never treat unrelated or unowned shots as siblings.
+	return GetInstigator() && OtherProjectile && OtherProjectile != this
+		&& OtherProjectile->GetInstigator() == GetInstigator();
+}
+
+void ABwayHeroProjectileBase::ClearSiblingCollisionIgnores()
+{
+	for (const auto& WeakSibling : IgnoredSiblingProjectiles)
+	{
+		if (ABwayHeroProjectileBase* Sibling = WeakSibling.Get())
+		{
+			if (CollisionSphere) CollisionSphere->IgnoreActorWhenMoving(Sibling, false);
+			if (Sibling->CollisionSphere) Sibling->CollisionSphere->IgnoreActorWhenMoving(this, false);
+			Sibling->IgnoredSiblingProjectiles.RemoveAll([this](const TWeakObjectPtr<ABwayHeroProjectileBase>& Entry)
+			{
+				return !Entry.IsValid() || Entry.Get() == this;
+			});
+		}
+	}
+	IgnoredSiblingProjectiles.Reset();
+}
+
 void ABwayHeroProjectileBase::IgnoreInstigatorCollision()
 {
+	ClearSiblingCollisionIgnores();
 	AActor* InstigatorActor = GetInstigator();
 	if (!InstigatorActor)
 	{
@@ -593,5 +694,19 @@ void ABwayHeroProjectileBase::IgnoreInstigatorCollision()
 		{
 			InstigatorPawn->MoveIgnoreActorAdd(this);
 		}
+	}
+
+	if (!CollisionSphere || !GetInstigator() || !GetWorld()) return;
+	// Timer catch-up can spawn multiple rounds before any projectile moves.
+	// Preserve WorldDynamic collision; ignore only explicit same-pawn pairs.
+	for (TActorIterator<ABwayHeroProjectileBase> It(GetWorld()); It; ++It)
+	{
+		ABwayHeroProjectileBase* Sibling = *It;
+		if (!IsValid(Sibling) || Sibling->IsActorBeingDestroyed() || !Sibling->CollisionSphere
+			|| !IsSiblingProjectile(Sibling)) continue;
+		CollisionSphere->IgnoreActorWhenMoving(Sibling, true);
+		Sibling->CollisionSphere->IgnoreActorWhenMoving(this, true);
+		IgnoredSiblingProjectiles.AddUnique(Sibling);
+		Sibling->IgnoredSiblingProjectiles.AddUnique(this);
 	}
 }

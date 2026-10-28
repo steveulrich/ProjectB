@@ -7,6 +7,7 @@ public class BreakawayCoreRuntime : ModuleRules
 	public BreakawayCoreRuntime(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		bUseUnity = false;
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -49,12 +50,14 @@ public class BreakawayCoreRuntime : ModuleRules
 			new string[] {
 				"ApplicationCore", // Platform-user input device routing in development fixtures.
 				"AssetRegistry",
+				"Chaos", // Direct solver runtime API used by the RelicFlight development fixture.
 				"CommonGame",
 				"CommonInput",
 				"CommonUser",
 				"DeveloperSettings",
 				"GameplayMessageRuntime",
 				"MediaAssets",
+				"Json", // Structured development-fixture physics evidence.
 				"NetCore",
 				"PhysicsCore",
 				"RHI", // Effective renderer telemetry in development transport fixtures.
@@ -75,6 +78,8 @@ public class BreakawayCoreRuntime : ModuleRules
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("UnrealEd");
+			PrivateDependencyModuleNames.Add("NiagaraEditor");
+			PrivateDependencyModuleNames.Add("AssetTools");
 		}
 	}
 }

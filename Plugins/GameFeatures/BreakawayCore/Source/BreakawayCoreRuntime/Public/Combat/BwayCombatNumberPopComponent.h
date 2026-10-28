@@ -10,6 +10,10 @@
 class APlayerController;
 class UBwayCombatReadabilityConfig;
 class UTextRenderComponent;
+class UBwayCombatFeedbackWidget;
+class ULyraHealthComponent;
+class APawn;
+class APlayerState;
 
 /** One live world-space combat number. */
 USTRUCT()
@@ -25,6 +29,9 @@ struct FBwayLiveCombatNumberPop
 	FVector OutwardDirection = FVector::RightVector;
 	FLinearColor BaseColor = FLinearColor::White;
 	float SpawnWorldTime = 0.f;
+	FVector LayoutOffset = FVector::ZeroVector;
+	float LayoutHalfWidth = 0.f;
+	float LayoutHeight = 0.f;
 };
 
 /**
@@ -58,7 +65,25 @@ public:
 		FVector& OutLocation,
 		float& OutScaleMultiplier);
 
+	/** Reserve a non-overlapping motion envelope against still-visible numbers in this target cluster. */
+	static void ArrangeNumberPop(FBwayLiveCombatNumberPop& Pop, TConstArrayView<FBwayLiveCombatNumberPop> Existing,
+		const FVector& CameraRight, float WorldSize, float TextWidth, float LateralOffset,
+		float OutwardDistance, float RiseDistance, float Lifespan);
+
+	/** Perspective depth scale; zero for invalid/behind-near-plane positions. */
+	static float EvaluateNumberPopDepthScale(const FVector& WorldLocation, const FVector& CameraLocation,
+		const FVector& CameraForward, float NearClipPlane);
+
+	/** Shared recipient filter for listen-host broadcasts and remote owner delivery. */
+	static bool IsMessageForPlayer(FGameplayTag NumberTag, const FLyraVerbMessage& Payload, const APlayerState* Player);
+	static bool IsPawnPresentationActive(const APawn* Pawn);
+
 protected:
+	friend class FBwayCombatNumberEventPositionTest;
+	friend class FBwayCombatFractionalHealRoutingTest;
+	friend class FBwayCombatFractionalNumberFormatTest;
+	friend class FBwayCombatNumberMaterialPoolingTest;
+	friend class FBwayCombatNumberCameraDepthTest;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -69,8 +94,15 @@ protected:
 	FLinearColor ResolveColor(const FGameplayTagContainer& TargetTags) const;
 	UTextRenderComponent* AcquireTextComponent();
 	void RecycleTextComponent(UTextRenderComponent* TextComponent);
-	void UpdateLiveNumber(FBwayLiveCombatNumberPop& LivePop, float Now, const FVector& CameraLocation, const FRotator& BillboardRotation) const;
+	void UpdateLiveNumber(FBwayLiveCombatNumberPop& LivePop, float Now, const FVector& CameraLocation, const FRotator& BillboardRotation,
+		const FVector& CameraForward, float NearClipPlane) const;
 	FVector ResolveOutwardDirection(const APlayerController* PC, int32 SideSign) const;
+	void EnsureFeedbackWidget();
+	void ClearLocalFeedback();
+	UFUNCTION()
+	void OnPossessedPawnChanged(APawn* OldPawn, APawn* NewPawn);
+	UFUNCTION()
+	void OnOwnerDeathStarted(AActor* OwningActor);
 
 	FGameplayMessageListenerHandle IncomingDamageHandle;
 	FGameplayMessageListenerHandle OutgoingDamageHandle;
@@ -85,9 +117,16 @@ protected:
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UTextRenderComponent>> PooledTextComponents;
 
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCombatFeedbackWidget> FeedbackWidget;
+	UPROPERTY(Transient)
+	TWeakObjectPtr<ULyraHealthComponent> BoundHealthComponent;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Number Pop", meta = (ClampMin = "4"))
 	int32 MaxPooledNumbers = 24;
 
-	/** +1 = camera right, -1 = camera left. Flipped after each spawn. */
-	int32 NextLateralSideSign = 1;
+private:
+	/** Empty for invalid amounts; never invents a minimum whole-number heal. */
+	static FText FormatCombatNumber(double Magnitude);
+	void AddFormattedNumberPop(const FLyraNumberPopRequest& NewRequest, const FText& DisplayText);
 };

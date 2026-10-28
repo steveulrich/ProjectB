@@ -3,6 +3,8 @@
 
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameplayTags.h"
+#include "Combat/BwayCombatReadabilityConfig.h"
+#include "Combat/BwayCombatReadabilityLibrary.h"
 #include "Camera/LyraCameraComponent.h"
 #include "Camera/CameraShakeBase.h"
 #include "Camera/CameraModifier_CameraShake.h"
@@ -41,6 +43,11 @@
 ABwayCharacterWithAbilities::ABwayCharacterWithAbilities(const FObjectInitializer& ObjectInitializer)
 : Super(ObjectInitializer.SetDefaultSubobjectClass<UBwayCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
+	// Lyra disables actor ticking; local slide camera presentation needs it.
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bAllowTickOnDedicatedServer = false;
+
 	BwayCharacterMovementComponent = Cast<UBwayCharacterMovementComponent>(GetCharacterMovement());
 	BwayCharacterMovementComponent->SetIsReplicated(true);
 	RelicRequestIndicatorComponent = CreateDefaultSubobject<UBwayRelicRequestIndicatorComponent>(TEXT("RelicRequestIndicatorComponent"));
@@ -397,6 +404,12 @@ bool ABwayCharacterWithAbilities::ConsumeCombatCredit(ABwayPlayerState*& OutKill
 void ABwayCharacterWithAbilities::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (!IsLocallyControlled())
+	{
+		CurrentSlideFOVOffset = 0.f;
+		StopSlideCameraShake(true);
+		return;
+	}
 
 	if (UBwayCharacterMovementComponent* MoveComp = GetBwayCharacterMovement())
 	{
@@ -446,13 +459,18 @@ void ABwayCharacterWithAbilities::UpdateSlideCameraShake()
 	APlayerCameraManager* Manager = PC ? PC->PlayerCameraManager.Get() : nullptr;
 	const ULyraHealthComponent* Health = ULyraHealthComponent::FindHealthComponent(this);
 	const bool bAlive = !Health || !Health->IsDeadOrDying();
-	const bool bWantsShake = bAlive && MoveComp && MoveComp->IsSliding() && MoveComp->SlideCameraShakeClass && Manager;
+	// Resolve the current local-world policy while starting or owning a shake;
+	// this also honors a setting change during its authored blend-out.
+	const UBwayCombatReadabilityConfig* Readability = Manager && (ActiveSlideCameraShake || (MoveComp && MoveComp->IsSliding()))
+		? UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(this) : nullptr;
+	const bool bReduceShake = Readability && Readability->bReduceCameraShake;
+	const bool bWantsShake = bAlive && !bReduceShake && MoveComp && MoveComp->IsSliding() && MoveComp->SlideCameraShakeClass && Manager;
 	if (UCameraShakeBase* Shake = ActiveSlideCameraShake.Get())
 	{
 		const bool bOwnerOrClassChanged = SlideCameraShakeController.Get() != PC
 			|| SlideCameraShakeManager.Get() != Manager || !MoveComp
 			|| Shake->GetClass() != MoveComp->SlideCameraShakeClass.Get();
-		if (!bAlive || bOwnerOrClassChanged || (bSlideCameraShakeStopping && (bWantsShake || Shake->IsFinished())))
+		if (!bAlive || bReduceShake || bOwnerOrClassChanged || (bSlideCameraShakeStopping && (bWantsShake || Shake->IsFinished())))
 		{
 			StopSlideCameraShake(true);
 		}

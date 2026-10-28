@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_RawlinsPrimary.h"
 
+#include "Abilities/BwayGameplayEffect_RawlinsCooldowns.h"
 #include "AbilitySystem/BwayGameplayCueTags.h"
 #include "BwayGameplayTags.h"
 #include "Combat/BwayProjectilePresentationData.h"
@@ -24,6 +25,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	ActivationBlockedTags.AddTag(BwayGameplayTags::State_BuildablePlacement);
+	CooldownGameplayEffectClass = UGE_Bway_Cooldown_RawlinsPrimaryAttack::StaticClass();
 	ProjectileClass = ABwayRawlinsBulletProjectile::StaticClass();
 
 	DisplayData.AbilityName = NSLOCTEXT("Rawlins", "PrimaryName", "Primary Attack");
@@ -43,18 +45,6 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 	if (!CachedCharacter)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
-
-	if (!HasAuthority(&ActivationInfo))
-	{
-		FGameplayCueParameters Parameters;
-		Parameters.Instigator = CachedCharacter;
-		Parameters.EffectCauser = CachedCharacter;
-		Parameters.Location = CachedCharacter->GetActorLocation();
-		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsPrimaryFire, Parameters);
-		// The server ends both instances after the last shot. Replicating an immediate
-		// client end here would cancel its burst timer before the second shot.
 		return;
 	}
 
@@ -81,6 +71,24 @@ void UBwayGameplayAbility_RawlinsPrimary::ActivateAbility(
 	if (!ProjectileClass || ActiveShotCount < 1)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	if (!HasAuthority(&ActivationInfo))
+	{
+		FGameplayCueParameters Parameters;
+		Parameters.Instigator = CachedCharacter;
+		Parameters.EffectCauser = CachedCharacter;
+		Parameters.Location = CachedCharacter->GetActorLocation();
+		K2_ExecuteGameplayCueWithParams(BwayGameplayCueTags::RawlinsPrimaryFire, Parameters);
+		// The server ends both instances after the last shot. Replicating an immediate
+		// client end here would cancel its burst timer before the second shot.
 		return;
 	}
 

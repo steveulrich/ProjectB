@@ -23,6 +23,7 @@ EDataValidationResult UBwayRawlinsKitConfig::IsDataValid(FDataValidationContext&
 	FailIfNonPositive(TEXT("PrimaryProjectileSpeed"), PrimaryProjectileSpeed);
 	FailIfNonPositive(TEXT("PrimaryProjectileLifeSpan"), PrimaryProjectileLifeSpan);
 	FailIfNonPositive(TEXT("PrimaryShotInterval"), PrimaryShotInterval);
+	FailIfNonPositive(TEXT("PrimaryCooldown"), PrimaryCooldown);
 	FailIfNonPositive(TEXT("DoubleDownDashDuration"), DoubleDownDashDuration);
 	FailIfNonPositive(TEXT("DoubleDownCooldown"), DoubleDownCooldown);
 	FailIfNonPositive(TEXT("PowerShotCooldown"), PowerShotCooldown);

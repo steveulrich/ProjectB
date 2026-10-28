@@ -7,6 +7,8 @@
 
 class ABwayCharacterWithAbilities;
 class UBwayRawlinsKitConfig;
+class UBwayCuePresentationComponent;
+class USceneComponent;
 
 /**
  * Rawlins Jail floor trap — one-shot ATrapBase.
@@ -20,6 +22,11 @@ class HERORAWLINSRUNTIME_API ABwayRawlinsJailBuildable : public ATrapBase
 
 public:
 	ABwayRawlinsJailBuildable();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<UBwayCuePresentationComponent> Presentation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<USceneComponent> PresentationRoot;
 
 protected:
 	virtual void InitializeAbilitySystem() override;

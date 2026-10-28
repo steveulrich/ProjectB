@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|Primary", meta = (ClampMin = "0.01"))
 	float PrimaryShotInterval = 0.12f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|Primary", meta = (ClampMin = "0.05"))
+	float PrimaryCooldown = 0.5f;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Rawlins|Primary|Presentation")
 	TSoftObjectPtr<UBwayProjectilePresentationData> PrimaryProjectilePresentation;
 

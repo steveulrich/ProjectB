@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayEffect_RawlinsJail.h"
 
 #include "BwayGameplayTags.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Character/LyraCharacterMovementComponent.h"
 #include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
 #include "NativeGameplayTags.h"
@@ -9,6 +10,7 @@
 
 UGE_Bway_RawlinsJailed::UGE_Bway_RawlinsJailed()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusRooted, 0.f, 1.f);
 	DurationPolicy = EGameplayEffectDurationType::Infinite;
 	PendingGrantedTags.Add(TAG_Gameplay_MovementStopped);
 	PendingGrantedTags.Add(BwayGameplayTags::State_Status_Jailed);

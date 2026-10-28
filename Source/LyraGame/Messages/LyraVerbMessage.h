@@ -34,6 +34,19 @@ struct FLyraVerbMessage
 	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
 	double Magnitude = 1.0;
 
+	/** Optional event-time positions. Flags preserve the object-based behavior of older messages. */
+	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
+	bool bHasWorldLocation = false;
+
+	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
+	FVector WorldLocation = FVector::ZeroVector;
+
+	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
+	bool bHasInstigatorWorldLocation = false;
+
+	UPROPERTY(BlueprintReadWrite, Category=Gameplay)
+	FVector InstigatorWorldLocation = FVector::ZeroVector;
+
 	// Returns a debug string representation of this message
 	LYRAGAME_API FString ToString() const;
 };

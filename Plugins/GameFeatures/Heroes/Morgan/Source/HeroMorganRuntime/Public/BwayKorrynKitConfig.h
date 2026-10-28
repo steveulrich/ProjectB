@@ -20,6 +20,10 @@ public:
 		return FPrimaryAssetId(TEXT("BwayKorrynKitConfig"), GetFName());
 	}
 
+#if WITH_EDITOR
+	virtual EDataValidationResult IsDataValid(class FDataValidationContext& Context) const override;
+#endif
+
 	// --- Primary ---
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary", meta = (ClampMin = "0.0"))
 	float PrimaryBaseDamage = 22.f;
@@ -32,6 +36,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary", meta = (ClampMin = "0.1"))
 	float PrimaryProjectileLifeSpan = 3.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary", meta = (ClampMin = "0.05"))
+	float PrimaryCooldown = 0.5f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Korryn|Primary")
 	float ArmorShredPerHit = -2.f;

@@ -3,6 +3,8 @@
 #include "Abilities/BwayGameplayEffect_KorrynEffects.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
@@ -30,6 +32,10 @@ ABwayKorrynSpiteZone::ABwayKorrynSpiteZone()
 	EffectSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	EffectSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	EffectSphere->SetGenerateOverlapEvents(true);
+	Presentation = CreateDefaultSubobject<UBwayCuePresentationComponent>(TEXT("Presentation"));
+	Presentation->bFollowOwnerLifetime = true;
+	Presentation->Cue_Active = BwayGameplayCueTags::ZoneHarmful;
+	Presentation->CueAttachComponent = EffectSphere;
 }
 
 void ABwayKorrynSpiteZone::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

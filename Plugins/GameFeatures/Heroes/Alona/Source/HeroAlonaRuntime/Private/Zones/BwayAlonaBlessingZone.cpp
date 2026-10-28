@@ -2,6 +2,8 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
@@ -33,6 +35,10 @@ ABwayAlonaBlessingZone::ABwayAlonaBlessingZone()
 	HealSphere->SetCollisionResponseToAllChannels(ECR_Ignore);
 	HealSphere->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	HealSphere->SetGenerateOverlapEvents(true);
+	Presentation = CreateDefaultSubobject<UBwayCuePresentationComponent>(TEXT("Presentation"));
+	Presentation->bFollowOwnerLifetime = true;
+	Presentation->Cue_Active = BwayGameplayCueTags::ZoneHealing;
+	Presentation->CueAttachComponent = HealSphere;
 }
 
 void ABwayAlonaBlessingZone::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -23,6 +23,11 @@ protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	virtual float GetKitCooldownSeconds(const UBwayAlonaKitConfig& Config) const override
+	{
+		return Config.PrimaryCooldown;
+	}
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Alona|Primary")
 	TSubclassOf<ABwayAlonaPrimaryProjectile> ProjectileClass;
 

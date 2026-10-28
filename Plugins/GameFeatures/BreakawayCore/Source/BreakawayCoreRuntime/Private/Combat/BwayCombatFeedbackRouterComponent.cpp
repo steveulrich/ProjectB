@@ -71,26 +71,25 @@ void UBwayCombatFeedbackRouterComponent::OnHealMessage(FGameplayTag Channel, con
 	RouteHealFeedback(Payload);
 }
 
-ABwayPlayerState* UBwayCombatFeedbackRouterComponent::ResolvePlayerState(UObject* Object)
+FBwayDamageFeedbackRecipients UBwayCombatFeedbackRouterComponent::ResolveDamageRecipients(
+	UObject* Instigator, UObject* Target, const ABwayGameState* GameState)
 {
-	if (ABwayPlayerState* DirectPS = Cast<ABwayPlayerState>(ULyraVerbMessageHelpers::GetPlayerStateFromObject(Object)))
+	FBwayDamageFeedbackRecipients Recipients;
+	Recipients.IncomingPlayer = UBwayCombatReadabilityLibrary::ResolveFeedbackPlayerTarget(Target);
+	ABwayPlayerState* SourcePlayer = UBwayCombatReadabilityLibrary::ResolveFeedbackInstigator(Instigator);
+	// Structure allegiance matters for outgoing confirmation, but never makes its owner a damaged player.
+	const ABwayPlayerState* TargetAllegiance = UBwayCombatReadabilityLibrary::ResolveFeedbackInstigator(Target);
+	bool bSameTeam = SourcePlayer && SourcePlayer == TargetAllegiance;
+	if (GameState && SourcePlayer && TargetAllegiance)
 	{
-		return DirectPS;
+		const int32 SourceTeam = GameState->GetPlayerTeam(SourcePlayer);
+		bSameTeam |= SourceTeam != INDEX_NONE && SourceTeam == GameState->GetPlayerTeam(TargetAllegiance);
 	}
-
-	if (AActor* Actor = Cast<AActor>(Object))
+	if (SourcePlayer && SourcePlayer != Recipients.IncomingPlayer && !bSameTeam)
 	{
-		if (APawn* InstigatorPawn = Cast<APawn>(Actor->GetInstigator()))
-		{
-			return Cast<ABwayPlayerState>(InstigatorPawn->GetPlayerState());
-		}
-		if (const AController* Controller = Actor->GetInstigatorController())
-		{
-			return Cast<ABwayPlayerState>(Controller->PlayerState);
-		}
+		Recipients.OutgoingPlayer = SourcePlayer;
 	}
-
-	return nullptr;
+	return Recipients;
 }
 
 FVector UBwayCombatFeedbackRouterComponent::ResolveWorldLocation(UObject* TargetObject) const
@@ -104,22 +103,27 @@ FVector UBwayCombatFeedbackRouterComponent::ResolveWorldLocation(UObject* Target
 void UBwayCombatFeedbackRouterComponent::SendNumberPopToPlayer(
 	ABwayPlayerState* RecipientPS,
 	FGameplayTag NumberTag,
-	int32 Magnitude,
 	const FVector& WorldLocation,
-	UObject* InstigatorObject,
-	UObject* TargetObject)
+	const FLyraVerbMessage& Payload)
 {
-	if (!RecipientPS || Magnitude <= 0 || !NumberTag.IsValid())
+	if (!RecipientPS || !FMath::IsFinite(Payload.Magnitude) || Payload.Magnitude <= 0.0 || !NumberTag.IsValid())
 	{
 		return;
 	}
 
-	FLyraVerbMessage ClientMessage;
+	// Keep the effective post-clamp amount; integer match stats are a separate concern.
+	FLyraVerbMessage ClientMessage = Payload;
 	ClientMessage.Verb = NumberTag;
-	ClientMessage.Instigator = InstigatorObject;
-	ClientMessage.Target = TargetObject;
-	ClientMessage.Magnitude = static_cast<double>(Magnitude);
+	// Preserve stable source identity when a projectile/buildable disappears before this RPC arrives.
+	if (ABwayPlayerState* SourcePlayer = UBwayCombatReadabilityLibrary::ResolveFeedbackInstigator(Payload.Instigator))
+	{
+		ClientMessage.Instigator = SourcePlayer;
+	}
 	ClientMessage.ContextTags.AddTag(NumberTag);
+	ClientMessage.bHasWorldLocation = !WorldLocation.ContainsNaN();
+	ClientMessage.WorldLocation = WorldLocation;
+	ClientMessage.bHasInstigatorWorldLocation = UBwayCombatReadabilityLibrary::ResolveFeedbackSourceLocation(
+		Payload.Instigator, ClientMessage.InstigatorWorldLocation);
 
 	// ClientBroadcastMessage_Implementation only broadcasts when NetMode == NM_Client.
 	// Listen-server hosts and standalone never take that path, so present locally instead.
@@ -140,7 +144,8 @@ void UBwayCombatFeedbackRouterComponent::SendNumberPopToPlayer(
 		if (UBwayCombatNumberPopComponent* NumberPop =
 			RecipientPC->FindComponentByClass<UBwayCombatNumberPopComponent>())
 		{
-			NumberPop->PresentCombatNumber(NumberTag, ClientMessage);
+			// Use the same owner-filtered local message route as remote ClientBroadcastMessage.
+			UGameplayMessageSubsystem::Get(this).BroadcastMessage(NumberTag, ClientMessage);
 		}
 		else
 		{
@@ -152,48 +157,39 @@ void UBwayCombatFeedbackRouterComponent::SendNumberPopToPlayer(
 		if (CVarBwayDebugCombatNumbersRouter.GetValueOnGameThread() > 0)
 		{
 			UE_LOG(LogBwayCombatFeedback, Log,
-				TEXT("Local number pop %s mag=%d loc=%s for %s"),
-				*NumberTag.ToString(), Magnitude, *WorldLocation.ToCompactString(),
+				TEXT("Local number pop %s mag=%.3f loc=%s for %s"),
+				*NumberTag.ToString(), Payload.Magnitude, *WorldLocation.ToCompactString(),
 				*GetNameSafe(RecipientPS));
 		}
 		return;
 	}
 
-	(void)WorldLocation;
 	RecipientPS->ClientBroadcastMessage(ClientMessage);
 
 	if (CVarBwayDebugCombatNumbersRouter.GetValueOnGameThread() > 0)
 	{
 		UE_LOG(LogBwayCombatFeedback, Log,
-			TEXT("RPC number pop %s mag=%d for %s"),
-			*NumberTag.ToString(), Magnitude, *GetNameSafe(RecipientPS));
+			TEXT("RPC number pop %s mag=%.3f for %s"),
+			*NumberTag.ToString(), Payload.Magnitude, *GetNameSafe(RecipientPS));
 	}
 }
 
 void UBwayCombatFeedbackRouterComponent::RouteDamageFeedback(const FLyraVerbMessage& Payload)
 {
-	const int32 Magnitude = FMath::RoundToInt(static_cast<float>(Payload.Magnitude));
-	if (Magnitude <= 0)
+	if (!FMath::IsFinite(Payload.Magnitude) || Payload.Magnitude <= 0.0)
 	{
 		return;
 	}
 
-	ABwayPlayerState* InstigatorPS = ResolvePlayerState(Payload.Instigator);
-	ABwayPlayerState* TargetPS = ResolvePlayerState(Payload.Target);
+	const FBwayDamageFeedbackRecipients Recipients = ResolveDamageRecipients(
+		Payload.Instigator, Payload.Target, GetGameState<ABwayGameState>());
+	ABwayPlayerState* InstigatorPS = Recipients.OutgoingPlayer;
+	ABwayPlayerState* TargetPS = Recipients.IncomingPlayer;
 	const FVector WorldLocation = ResolveWorldLocation(Payload.Target);
 
 	if (InstigatorPS && InstigatorPS != TargetPS)
 	{
-		InstigatorPS->AddDamageDealt(Magnitude);
-	}
-
-	const ABwayGameState* BwayGS = GetGameState<ABwayGameState>();
-	bool bSameTeam = false;
-	if (BwayGS && InstigatorPS && TargetPS)
-	{
-		const int32 InstigatorTeam = BwayGS->GetPlayerTeam(InstigatorPS);
-		const int32 TargetTeam = BwayGS->GetPlayerTeam(TargetPS);
-		bSameTeam = (InstigatorTeam != INDEX_NONE && InstigatorTeam == TargetTeam);
+		InstigatorPS->AddDamageDealt(FMath::RoundToInt32(FMath::Min(Payload.Magnitude, static_cast<double>(MAX_int32))));
 	}
 
 	// Incoming damage (red): owning client of the damaged player.
@@ -202,36 +198,32 @@ void UBwayCombatFeedbackRouterComponent::RouteDamageFeedback(const FLyraVerbMess
 		SendNumberPopToPlayer(
 			TargetPS,
 			BwayCombatFeedbackTags::Number_IncomingDamage,
-			Magnitude,
 			WorldLocation,
-			Payload.Instigator,
-			Payload.Target);
+			Payload);
 	}
 
 	// Outgoing damage (white): owning client of the attacker, enemies only.
-	if (InstigatorPS && InstigatorPS != TargetPS && !bSameTeam)
+	if (InstigatorPS)
 	{
 		SendNumberPopToPlayer(
 			InstigatorPS,
 			BwayCombatFeedbackTags::Number_OutgoingDamage,
-			Magnitude,
 			WorldLocation,
-			Payload.Instigator,
-			Payload.Target);
+			Payload);
 
 		if (const UBwayCombatReadabilityConfig* Config =
 			UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(this))
 		{
 			if (Config->HitConfirmationCueTag.IsValid())
 			{
-				if (AActor* InstigatorActor = Cast<AActor>(Payload.Instigator))
+				if (AActor* InstigatorActor = InstigatorPS)
 				{
 					if (UAbilitySystemComponent* InstigatorASC =
 						UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(InstigatorActor))
 					{
 						FGameplayCueParameters CueParams;
 						CueParams.Location = FVector(WorldLocation);
-						CueParams.NormalizedMagnitude = static_cast<float>(Magnitude);
+						CueParams.NormalizedMagnitude = static_cast<float>(Payload.Magnitude);
 						// Damage confirmation is emitted only by authority. It was not
 						// predicted by the attacker, even when damage happens inside a
 						// predicted ability's scope (for example a projectile spawn hit).
@@ -258,19 +250,18 @@ void UBwayCombatFeedbackRouterComponent::RouteDamageFeedback(const FLyraVerbMess
 
 void UBwayCombatFeedbackRouterComponent::RouteHealFeedback(const FLyraVerbMessage& Payload)
 {
-	const int32 Magnitude = FMath::RoundToInt(static_cast<float>(Payload.Magnitude));
-	if (Magnitude <= 0)
+	if (!FMath::IsFinite(Payload.Magnitude) || Payload.Magnitude <= 0.0)
 	{
 		return;
 	}
 
-	ABwayPlayerState* InstigatorPS = ResolvePlayerState(Payload.Instigator);
-	ABwayPlayerState* TargetPS = ResolvePlayerState(Payload.Target);
+	ABwayPlayerState* InstigatorPS = UBwayCombatReadabilityLibrary::ResolveFeedbackInstigator(Payload.Instigator);
+	ABwayPlayerState* TargetPS = UBwayCombatReadabilityLibrary::ResolveFeedbackPlayerTarget(Payload.Target);
 	const FVector WorldLocation = ResolveWorldLocation(Payload.Target);
 
 	if (InstigatorPS)
 	{
-		InstigatorPS->AddHealingDone(Magnitude);
+		InstigatorPS->AddHealingDone(FMath::RoundToInt32(FMath::Min(Payload.Magnitude, static_cast<double>(MAX_int32))));
 	}
 
 	// Healing numbers only for the healed player (never enemies).
@@ -279,9 +270,7 @@ void UBwayCombatFeedbackRouterComponent::RouteHealFeedback(const FLyraVerbMessag
 		SendNumberPopToPlayer(
 			TargetPS,
 			BwayCombatFeedbackTags::Number_IncomingHeal,
-			Magnitude,
 			WorldLocation,
-			Payload.Instigator,
-			Payload.Target);
+			Payload);
 	}
 }

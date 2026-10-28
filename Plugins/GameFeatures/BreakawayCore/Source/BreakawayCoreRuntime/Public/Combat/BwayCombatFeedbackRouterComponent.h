@@ -9,6 +9,13 @@
 
 class ABwayPlayerState;
 class UBwayCombatReadabilityConfig;
+class ABwayGameState;
+
+struct FBwayDamageFeedbackRecipients
+{
+	ABwayPlayerState* IncomingPlayer = nullptr;
+	ABwayPlayerState* OutgoingPlayer = nullptr;
+};
 
 /**
  * Server-authoritative combat feedback router.
@@ -23,7 +30,11 @@ class BREAKAWAYCORERUNTIME_API UBwayCombatFeedbackRouterComponent : public UGame
 public:
 	UBwayCombatFeedbackRouterComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	/** Shared recipient policy for player/buildable hits. No presentation or stat side effects. */
+	static FBwayDamageFeedbackRecipients ResolveDamageRecipients(UObject* Instigator, UObject* Target, const ABwayGameState* GameState);
+
 protected:
+	friend class FBwayCombatFractionalHealRoutingTest;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
@@ -33,16 +44,13 @@ protected:
 	void RouteDamageFeedback(const FLyraVerbMessage& Payload);
 	void RouteHealFeedback(const FLyraVerbMessage& Payload);
 
-	static ABwayPlayerState* ResolvePlayerState(UObject* Object);
 	FVector ResolveWorldLocation(UObject* TargetObject) const;
 
 	void SendNumberPopToPlayer(
 		ABwayPlayerState* RecipientPS,
 		FGameplayTag NumberTag,
-		int32 Magnitude,
 		const FVector& WorldLocation,
-		UObject* InstigatorObject,
-		UObject* TargetObject);
+		const FLyraVerbMessage& Payload);
 
 	FGameplayMessageListenerHandle DamageListenerHandle;
 	FGameplayMessageListenerHandle HealListenerHandle;

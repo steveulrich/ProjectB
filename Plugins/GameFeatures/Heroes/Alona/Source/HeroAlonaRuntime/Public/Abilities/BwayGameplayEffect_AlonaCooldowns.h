@@ -29,6 +29,14 @@ protected:
 };
 
 UCLASS()
+class HEROALONARUNTIME_API UGE_Bway_Cooldown_AlonaPrimaryAttack : public UGE_Bway_Cooldown_AlonaBase
+{
+	GENERATED_BODY()
+public:
+	UGE_Bway_Cooldown_AlonaPrimaryAttack();
+};
+
+UCLASS()
 class HEROALONARUNTIME_API UGE_Bway_Cooldown_AlonaSunsGrace : public UGE_Bway_Cooldown_AlonaBase
 {
 	GENERATED_BODY()

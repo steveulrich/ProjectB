@@ -1067,6 +1067,10 @@ public:
 
 	bool ReviewEnemyStrike()
 	{
+		for (const FActiveGameplayEffectHandle H : Enemy.ASC->GetActiveEffects(FGameplayEffectQuery()))
+		{
+			Enemy.ASC->RemoveActiveGameplayEffect(H);
+		}
 		Enemy.Pawn->SetActorLocationAndRotation(Source.Pawn->GetActorLocation() - FVector(160.f, 0.f, 0.f), FRotator::ZeroRotator, false, nullptr, ETeleportType::TeleportPhysics);
 		Enemy.PC->SetControlRotation(FRotator::ZeroRotator);
 		return Test->TestTrue(TEXT("Real opposing primary strike accepted"), Enemy.ASC->TryActivateAbility(ReviewStrikeHandle));
@@ -1368,6 +1372,7 @@ public:
 					if (Spec.GetSetByCallerMagnitude(LyraGameplayTags::SetByCaller_Damage, false, 0.f) > 0.f) ++ReviewDamageEffects;
 				});
 				if (!Test->TestTrue(TEXT("First real shred projectile accepted"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+				ReviewShotsFired = 1;
 			}
 			else if (ReviewCase == 4)
 			{
@@ -1414,7 +1419,16 @@ public:
 					ReviewEffectHandles = Effects;
 				}
 				else ReviewOldStart = Effect->StartWorldTime;
-				if (ReviewObservedHits < 5 && !Test->TestTrue(TEXT("Next real shred primary activates"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+			}
+			if (ReviewObservedHits < 5 && ReviewShotsFired == ReviewObservedHits)
+			{
+				const FGameplayAbilitySpec* PrimarySpec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+				const UGameplayAbility* PrimaryAbility = PrimarySpec ? (PrimarySpec->GetPrimaryInstance() ? PrimarySpec->GetPrimaryInstance() : PrimarySpec->Ability.Get()) : nullptr;
+				if (PrimaryAbility && PrimaryAbility->CheckCooldown(ActiveHandle, Source.ASC->AbilityActorInfo.Get()))
+				{
+					if (!Test->TestTrue(TEXT("Next real shred primary activates"), Source.ASC->TryActivateAbility(ActiveHandle))) return true;
+					++ReviewShotsFired;
+				}
 			}
 			if (ReviewObservedHits == 5 && PhaseElapsed >= ReviewRefreshAt && !bSubCheckDone)
 			{
@@ -1869,6 +1883,7 @@ public:
 				ResetArena(200.f, 500.f);
 				ActiveHandle = FindAbilityHandle(Source.ASC, TEXT("BwayGameplayAbility_RawlinsPrimary"));
 				Test->TestTrue(TEXT("Rawlins Primary activated"), Source.ASC->TryActivateAbility(ActiveHandle));
+				Test->TestFalse(TEXT("Rawlins Primary commits cooldown on initial input press"), Source.ASC->TryActivateAbility(ActiveHandle));
 				bPhaseInitialized = true;
 				return false;
 			}
@@ -1876,6 +1891,9 @@ public:
 			if (PhaseElapsed < 0.30f) return false;
 			Test->TestTrue(TEXT("Rawlins Primary 2-shot burst total damage (2 * 19 = 38)"), FMath::IsNearlyEqual(Health(Enemy), 462.f, 0.05f));
 			Test->TestTrue(TEXT("Rawlins Primary 2-shot life leech (+3.8)"), FMath::IsNearlyEqual(Health(Source), 203.8f, 0.05f));
+			const FGameplayAbilitySpec* RawlinsPrimarySpec = Source.ASC->FindAbilitySpecFromHandle(ActiveHandle);
+			Test->TestFalse(TEXT("Rawlins Primary burst finished before 0.5s cooldown expiry"), RawlinsPrimarySpec && RawlinsPrimarySpec->IsActive());
+			Test->TestFalse(TEXT("Rawlins Primary cooldown still blocks second press at 0.30s"), Source.ASC->TryActivateAbility(ActiveHandle));
 			AdvancePhase();
 			return false;
 		}
@@ -2014,6 +2032,7 @@ private:
 	int32 ReviewContributionCount = 0;
 	int32 ReviewHealApplications = 0;
 	int32 ReviewObservedHits = 0;
+	int32 ReviewShotsFired = 0;
 	float ReviewRefreshAt = 0.f;
 	float ReviewOldStart = 0.f;
 	float ReviewExpectedHeal = 0.f;

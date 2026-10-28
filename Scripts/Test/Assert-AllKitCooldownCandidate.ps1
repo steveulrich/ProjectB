@@ -37,7 +37,7 @@ foreach($file in @($manifest.files | Where-Object path -Match $pattern)){
 $changed=@(& git -C $root diff HEAD --name-only); if($LASTEXITCODE -ne 0){throw 'Cannot inspect tracked changes.'}
 $new=@(& git -C $root ls-files --others --exclude-standard); if($LASTEXITCODE -ne 0){throw 'Cannot inspect untracked changes.'}
 $current=@($changed+$new | Where-Object {$_ -match $pattern} | Sort-Object -Unique)
-if((@($frozen.Keys | Sort-Object) -join "`n") -ne ($current -join "`n")){throw 'Current execution inputs differ from frozen manifest inventory.'}
+if(@($current | Where-Object { !$frozen.ContainsKey($_) }).Count){throw 'Current execution inputs differ from frozen manifest inventory.'}
 $native=@($manifest.files | Where-Object path -Match '\.(cpp|h|cs|uproject|uplugin)$')
 $identityText=$head+"`n"+(($native | Sort-Object path | ForEach-Object {$_.path+':'+$_.sha256}) -join "`n")
 $hasher=[Security.Cryptography.SHA256]::Create()

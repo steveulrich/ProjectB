@@ -13,6 +13,7 @@ param(
     [switch]$ValidateOnly
 )
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'PackagedTransportCommon.ps1')
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '../..'))
 $exe=Join-Path $root "Saved/StagedBuilds/$Candidate/Windows/ProjectB/Binaries/Win64/LyraGame.exe"
 $evidence=[IO.Path]::GetFullPath((Join-Path $root $EvidenceDirectory))
@@ -42,6 +43,46 @@ function AssertBytes([string]$Path,$Record){
     if($Record.sha256 -notmatch '^[A-Fa-f0-9]{64}$' -or !(Test-Path -LiteralPath $Path -PathType Leaf) -or
         (Get-Item -LiteralPath $Path).Length -ne [long]$Record.bytes -or (Hash $Path) -ne $Record.sha256){throw "Manifest bytes changed: $Path"}
 }
+function Get-NativeInputsOrdinal($Files) {
+    $ordered = [Collections.Generic.List[object]]::new()
+    foreach ($file in $Files) {
+        if ($file.path -match '\.(cpp|h|cs|uproject|uplugin)$') { $ordered.Add($file) }
+    }
+    $ordered.Sort([Comparison[object]]{ param($left, $right)
+        [StringComparer]::Ordinal.Compare([string]$left.path, [string]$right.path)
+    })
+    return $ordered
+}
+function Assert-AllKitFixtureSources($Manifest,[string]$Repository,[string]$Head) {
+    $base='Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime'
+    $cppRelative="$base/Private/Development/BwayAllKitCombatProbe.cpp"
+    $headerRelative="$base/Public/Development/BwayAllKitCombatProbe.h"
+    $cpp=@($Manifest.files|Where-Object path -EQ $cppRelative)
+    $header=@($Manifest.files|Where-Object path -EQ $headerRelative)
+    if($cpp.Count -ne 1 -or $header.Count -gt 1){throw 'Exactly one archived AllKit implementation and at most one header entry are required.'}
+    foreach($file in @($cpp)+@($header)){
+        AssertBytes (ChildPath $Repository $file.path) $file
+        AssertBytes (ChildPath $Manifest.archive $file.path) $file
+    }
+    if($header.Count -eq 1){return}
+    # The archive records changed inputs only. An omitted header must be the exact
+    # tracked blob at the frozen commit; no clean filter or line-ending waiver.
+    if($Head -notmatch '^(?:[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$'){throw 'Frozen commit identity is required for an unarchived AllKit header.'}
+    $path=ChildPath $Repository $headerRelative
+    if(!(Test-Path -LiteralPath $path -PathType Leaf)){throw 'AllKit header is absent.'}
+    $node=Get-Item -LiteralPath $path
+    $repositoryPath=[IO.Path]::GetFullPath($Repository).TrimEnd('/','\')
+    while($node -and $node.FullName -ne $repositoryPath){
+        if($node.Attributes -band [IO.FileAttributes]::ReparsePoint){throw 'Reparse point in unarchived AllKit header path.'}
+        $node=if($node -is [IO.FileInfo]){$node.Directory}else{$node.Parent}
+    }
+    $tree=@(& git -C $Repository ls-tree $Head -- $headerRelative 2>$null)
+    $treePattern='^(100644|100755) blob (?<blob>[a-fA-F0-9]{40}|[a-fA-F0-9]{64})\t'+[regex]::Escape($headerRelative)+'$'
+    if($LASTEXITCODE -ne 0 -or $tree.Count -ne 1 -or $tree[0] -notmatch $treePattern){throw 'AllKit header is not a regular tracked blob at the frozen commit.'}
+    $frozenBlob=$Matches.blob
+    $currentBlob=@(& git -C $Repository hash-object --no-filters -- $path 2>$null)
+    if($LASTEXITCODE -ne 0 -or $currentBlob.Count -ne 1 -or $currentBlob[0] -cne $frozenBlob){throw 'Unarchived AllKit header differs from the frozen commit.'}
+}
 function Get-LiveUnrealProcesses {
     @(Get-CimInstance Win32_Process -ErrorAction Stop|Where-Object {
         $_.Name -match '^(LyraGame|UnrealEditor|UnrealEditor-Cmd|UnrealBuildTool)\.exe$' -or
@@ -59,7 +100,6 @@ $manifestHashBefore=Hash $manifestPath
 if((Hash $manifestPath) -ne $package.sourceManifestSha256){throw 'Package source manifest changed.'}
 $manifest=Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
 if(!$manifest.effectiveSourceIdentity -or $manifest.effectiveSourceIdentity -ne $package.effectiveSourceIdentity -or $manifest.sourceHead -ne $package.sourceHead -or !$manifest.archive){throw 'Package/source identity mismatch.'}
-if(@($manifest.files | Where-Object {$_.path -match '/(Private|Public)/Development/BwayAllKitCombatProbe\.(cpp|h)$'}).Count -ne 2){throw 'The frozen package does not contain the new AllKit owner fixture.'}
 $snapshotPath=(Resolve-Path -LiteralPath $package.sourceSnapshot).Path
 $snapshotHashBefore=Hash $snapshotPath
 if(!$package.sourceSnapshotSha256 -or $snapshotHashBefore -ne $package.sourceSnapshotSha256){throw 'Frozen source snapshot JSON bytes changed.'}
@@ -79,14 +119,15 @@ foreach($file in @($manifest.files)){
     $frozenInputs[$file.path]=$true
 }
 if(!$frozenInputs.Count -or (TextHash ($head+"`n"+(($manifest.files|ForEach-Object {$_.path+':'+$_.sha256}) -join "`n"))) -ne $manifest.effectiveSourceIdentity){throw 'Effective archived source identity changed.'}
+Assert-AllKitFixtureSources $manifest $root $head
 $changed=@(& git -C $root diff HEAD --name-only)
 if($LASTEXITCODE -ne 0){throw 'Cannot enumerate modified inputs.'}
 $untracked=@(& git -C $root ls-files --others --exclude-standard)
 if($LASTEXITCODE -ne 0){throw 'Cannot enumerate new inputs.'}
 $currentInputs=@($changed+$untracked|Where-Object {$_ -match $inputPattern}|Sort-Object -Unique)
 $recordedInputs=@($manifest.files.path|Where-Object {$_ -match $inputPattern}|Sort-Object -Unique)
-if(Compare-Object $recordedInputs $currentInputs){throw 'Build input set differs from the frozen package.'}
-$nativeInputs=@($manifest.files|Where-Object path -Match '\.(cpp|h|cs|uproject|uplugin)$'|Sort-Object path)
+if(@($currentInputs|Where-Object {$_ -notin $recordedInputs}).Count){throw 'Build input set differs from the frozen package.'}
+$nativeInputs=@(Get-NativeInputsOrdinal $manifest.files)
 $nativeIdentity=TextHash ($head+"`n"+(($nativeInputs|ForEach-Object {$_.path+':'+$_.sha256}) -join "`n"))
 $compileTargets=@{}
 foreach($entry in @($package.compileRecords)){
@@ -100,13 +141,13 @@ foreach($entry in @($package.compileRecords)){
     $original=Get-Content -LiteralPath $record.originalCompileRecord -Raw|ConvertFrom-Json
     foreach($field in @('status','exitCode','sourceHead','target','startedUtc','generatedUtc','log')){if($original.$field -ne $record.$field){throw "Bound compile changed original field: $field"}}
     $compileManifest=Get-Content -LiteralPath $record.nativeSourceManifest -Raw|ConvertFrom-Json
-    if($compileManifest.sourceHead -ne $head -or [datetime]$compileManifest.createdUtc -gt [datetime]$record.startedUtc){throw 'Native archive must predate its compile.'}
+    if($compileManifest.sourceHead -ne $head -or ([datetimeoffset]$compileManifest.createdUtc).UtcDateTime -gt ([datetimeoffset]$record.startedUtc).UtcDateTime){throw 'Native archive must predate its compile.'}
     foreach($file in @($compileManifest.files)){AssertBytes (ChildPath $compileManifest.archive $file.path) $file}
-    $compiledInputs=@($compileManifest.files|Where-Object path -Match '\.(cpp|h|cs|uproject|uplugin)$'|Sort-Object path)
+    $compiledInputs=@(Get-NativeInputsOrdinal $compileManifest.files)
     $compiledIdentity=TextHash ($head+"`n"+(($compiledInputs|ForEach-Object {$_.path+':'+$_.sha256}) -join "`n"))
     if($compiledIdentity -ne $nativeIdentity -or $record.nativeSourceIdentity -ne $nativeIdentity -or
         $record.nativeInputCount -ne $nativeInputs.Count -or $compiledInputs.Count -ne $nativeInputs.Count -or
-        $record.binarySha256 -notmatch '^[A-Fa-f0-9]{64}$' -or !$record.binaryLastWriteUtc -or [datetime]$record.binaryLastWriteUtc -lt [datetime]$record.startedUtc -or
+        $record.binarySha256 -notmatch '^[A-Fa-f0-9]{64}$' -or !$record.binaryLastWriteUtc -or ([datetimeoffset]$record.binaryLastWriteUtc).UtcDateTime -lt ([datetimeoffset]$record.startedUtc).UtcDateTime -or
         ($entry.target -eq 'LyraGame' -and $record.binarySha256 -ne $exeHash)){throw 'Final native inputs or produced game binary differ from bound compile.'}
     $compileTargets[$entry.target]=$true
 }
@@ -147,9 +188,10 @@ $udpBefore=@(Get-NetUDPEndpoint -ErrorAction Stop|Where-Object LocalPort -eq 777
 if($udpBefore.Count){throw 'UDP port 7777 is already owned.'}
 $contractPath=(Resolve-Path -LiteralPath $GateContractPath).Path
 $contract=Get-Content -LiteralPath $contractPath -Raw | ConvertFrom-Json
-if($contract.candidate -ne $Candidate -or !$contract.counts.PSObject.Properties['packagedRuns']){throw 'Selected gate candidate and packagedRuns count must match.'}
+if($contract.candidate -ne $Candidate){throw 'Selected gate candidate must match.'}
+$null=Get-BwayPackagedRunBudget $contract $(if($ValidateOnly){0}else{1})
 if($ValidateOnly){[ordered]@{status='preflight-only';candidate=$Candidate;token=$token;renderedRemoteRole=$RenderedRemoteRole;remoteArgus=[bool]$RemoteArgus;executableSHA256=$exeHash;effectiveSourceIdentity=$manifest.effectiveSourceIdentity;result=$resultPath}|ConvertTo-Json -Compress;return}
-$contract.counts.packagedRuns=[int]$contract.counts.packagedRuns+1
+$packagedRunNumber=Add-BwayPackagedRun $contract
 $contract | ConvertTo-Json -Depth 16 | Set-Content -LiteralPath $contractPath -Encoding UTF8
 $null=New-Item -ItemType Directory -Path $evidence -Force
 $settingsExisted=Test-Path -LiteralPath $settings -PathType Leaf
@@ -240,7 +282,7 @@ try{
     Assert-Artifacts
 }catch{if(!$runError){$runError=$_.Exception.Message}}
 $result=[ordered]@{schema='allkit-owner-1';candidate=$Candidate;attempt=$Attempt;token=$token;expectedLagMs=$ExpectedLagMs;remoteArgus=[bool]$RemoteArgus;renderedRemoteRole=$RenderedRemoteRole;
-    gateContract=$contractPath;packagedRunNumber=$contract.counts.packagedRuns;
+    gateContract=$contractPath;packagedRunNumber=$packagedRunNumber;
     packageResult=$packagePath;packageResultSHA256=$packageHash;sourceManifest=$manifestPath;sourceManifestSHA256=$manifestHash;effectiveSourceIdentity=$manifest.effectiveSourceIdentity;
     sourceHead=$head;sourceSnapshot=$snapshotPath;sourceSnapshotSHA256=$snapshotHashBefore;sourceIdentity=$snapshot.sourceIdentity;nativeSourceIdentity=$nativeIdentity;artifactManifest=$artifactManifest;artifactManifestSHA256=$artifactManifestHashBefore;
     executable=$exe;executableSHA256=$exeHash;executableSHA256After=$hashAfter;runner=$PSCommandPath;runnerSHA256=(Hash $PSCommandPath);processes=@($records);

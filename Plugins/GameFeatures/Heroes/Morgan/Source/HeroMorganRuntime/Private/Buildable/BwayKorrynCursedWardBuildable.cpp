@@ -7,7 +7,9 @@
 #include "BwayCharacterWithAbilities.h"
 #include "BwayKorrynKitConfig.h"
 #include "Character/LyraHealthComponent.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/SceneComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "GameFramework/Controller.h"
@@ -22,6 +24,11 @@ ABwayKorrynCursedWardBuildable::ABwayKorrynCursedWardBuildable()
 	bPersistsBetweenRounds = true;
 	BuildTime = 0.f;
 	PrimaryActorTick.bCanEverTick = false;
+	PresentationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PresentationRoot"));
+	PresentationRoot->SetupAttachment(RootComponent);
+	PresentationRoot->SetIsReplicated(false);
+	Presentation = CreateDefaultSubobject<UBwayCuePresentationComponent>(TEXT("Presentation"));
+	Presentation->CueAttachComponent = PresentationRoot;
 
 	KitConfig = TSoftObjectPtr<UBwayKorrynKitConfig>(
 		FSoftObjectPath(TEXT("/Hero_Morgan/Kit/DA_BW_KorrynKitConfig.DA_BW_KorrynKitConfig")));
@@ -98,6 +105,7 @@ void ABwayKorrynCursedWardBuildable::BeginPlay()
 
 void ABwayKorrynCursedWardBuildable::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Presentation->StopPresentation(false);
 	StopSlowAura();
 	ClearAllSlowEffects();
 
@@ -132,6 +140,7 @@ void ABwayKorrynCursedWardBuildable::StartSlowAura()
 	}
 
 	bSlowAuraActive = true;
+	Presentation->StartPresentation();
 	SeedEnemiesAlreadyInRadius();
 	// Overlaps may precede pawn ASC/team initialization; later team/avatar changes
 	// do not necessarily produce another begin/end overlap pair.
@@ -398,6 +407,7 @@ void ABwayKorrynCursedWardBuildable::HandleDeathStarted(AActor* OwningActor)
 	}
 
 	bDeathHandled = true;
+	Presentation->StopPresentation();
 	StopSlowAura();
 	ClearAllSlowEffects();
 	Destroy();

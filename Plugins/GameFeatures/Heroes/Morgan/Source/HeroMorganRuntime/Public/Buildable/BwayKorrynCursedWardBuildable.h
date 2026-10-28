@@ -9,6 +9,8 @@ class ABwayCharacterWithAbilities;
 class UBwayKorrynKitConfig;
 class USphereComponent;
 class UGameplayEffect;
+class UBwayCuePresentationComponent;
+class USceneComponent;
 struct FGameplayEffectSpec;
 
 /**
@@ -22,6 +24,11 @@ class HEROMORGANRUNTIME_API ABwayKorrynCursedWardBuildable : public ABuildableAc
 
 public:
 	ABwayKorrynCursedWardBuildable();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<UBwayCuePresentationComponent> Presentation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<USceneComponent> PresentationRoot;
 
 protected:
 	virtual void InitializeAbilitySystem() override;

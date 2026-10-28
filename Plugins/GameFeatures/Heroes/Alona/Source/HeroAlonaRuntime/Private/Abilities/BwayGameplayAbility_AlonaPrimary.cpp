@@ -1,5 +1,6 @@
 #include "Abilities/BwayGameplayAbility_AlonaPrimary.h"
 
+#include "Abilities/BwayGameplayEffect_AlonaCooldowns.h"
 #include "BwayGameplayTags.h"
 #include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Combat/BwayProjectilePresentationData.h"
@@ -23,6 +24,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 	ActivationBlockedTags.AddTag(BwayGameplayTags::State_BuildablePlacement);
+	CooldownGameplayEffectClass = UGE_Bway_Cooldown_AlonaPrimaryAttack::StaticClass();
 	ProjectileClass = ABwayAlonaPrimaryProjectile::StaticClass();
 
 	DisplayData.AbilityName = NSLOCTEXT("Alona", "PrimaryName", "Primary Attack");
@@ -47,6 +49,12 @@ void UBwayGameplayAbility_AlonaPrimary::ActivateAbility(
 
 	UWorld* World = GetWorld();
 	if (!World || !ProjectileClass)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;

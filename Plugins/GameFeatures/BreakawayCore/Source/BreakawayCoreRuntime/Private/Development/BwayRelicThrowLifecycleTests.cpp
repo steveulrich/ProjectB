@@ -2,6 +2,8 @@
 
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Abilities/BwayGameplayAbility_RelicThrow.h"
+#include "Development/BwayRelicLaunchObservation.h"
+#include "Misc/ScopeExit.h"
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
 #include "BwayCharacterWithAbilities.h"
@@ -23,6 +25,7 @@
 #include "InputMappingContext.h"
 #include "InputTriggers.h"
 #include "Physics/Experimental/PhysScene_Chaos.h"
+#include "PhysicsEngine/PhysicsSettings.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "UObject/UnrealType.h"
@@ -315,4 +318,120 @@ bool FBwayRelicThrowAssetInputTest::RunTest(const FString&)
 	}
 	return true;
 }
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayRelicLaunchObservationTest, "Breakaway.Relic.ChargedThrow.DampedLaunchObservation",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayRelicLaunchObservationTest::RunTest(const FString&)
+{
+    // Exercise production Enhanced Input release and real Chaos integration with
+    // different actual step durations. This is independent of the inverse model.
+    for (const double StepSeconds : { 0.016, 0.0255, 0.033333 })
+    {
+        BwayRelicThrowTest::FFixture Fixture(*this);
+        if (!Fixture.Setup()) return false;
+        Fixture.Settings->MaxThrowSpeed = 2000.f;
+        Fixture.Mesh->SetEnableGravity(true);
+        Fixture.Mesh->SetLinearDamping(1.5f);
+        if (!Fixture.Press()) return false;
+        Fixture.World->TimeSeconds += Fixture.Settings->MaxChargeTime + 0.35f;
+        const FVector Aim = FRotator(60.f, 0.f, 0.f).Vector();
+        Fixture.Controller->SetControlRotation(FRotator(60.f, 0.f, 0.f));
+        Fixture.Release();
+        FPhysScene* Scene = Fixture.World->GetPhysicsScene();
+        if (!TestNotNull(TEXT("Observed physics scene"), Scene)) return false;
+        const FBodyInstance* LaunchBody = Fixture.Mesh->GetBodyInstance();
+        if (!TestNotNull(TEXT("Observed real launch body"), LaunchBody)
+            || !TestTrue(TEXT("Real damped launch passes the live DOF guard"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*LaunchBody))) return false;
+        BwayRelicFlight::FLaunchObservation Observation;
+        const FVector Gravity(0.f, 0.f, -980.f);
+        FDelegateHandle Handle = Scene->OnPhysScenePreTick.AddLambda([&](FPhysScene*, float ActualSeconds)
+        { Observation.AddStep(ActualSeconds, Fixture.Mesh->GetLinearDamping(), Gravity); });
+        ON_SCOPE_EXIT { Scene->OnPhysScenePreTick.Remove(Handle); };
+        for (int32 Index = 0; Index < 2; ++Index)
+        {
+            Scene->ProcessDeferredCreatePhysicsState();
+            Scene->SetUpForFrame(&Gravity, StepSeconds, 0.f, StepSeconds, StepSeconds, 1, false);
+            Scene->StartFrame(); Scene->WaitPhysScenes(); Scene->EndFrame();
+        }
+        const FVector Observed = Fixture.Mesh->GetPhysicsLinearVelocity();
+        FVector Initial;
+        if (!TestTrue(TEXT("Observed real steps reconstruct a launch"), Observation.Reconstruct(Observed, Initial))) return false;
+        TestEqual(TEXT("Exactly two actual solver steps observed"), Observation.Steps.Num(), 2);
+        TestTrue(TEXT("Recovered actual release vector matches the2000cm/s contract"), Initial.Equals(Aim * 2000.0, 1.0));
+        if (StepSeconds > 0.025)
+            TestTrue(TEXT("Normal damped motion demonstrates the former fixed-tolerance rejection"), 2000.0 - Observed.Size() > 180.0);
+        FVector WrongInitial;
+        TestTrue(TEXT("Wrong observed velocity remains measurable"), Observation.Reconstruct(Observed * 0.5, WrongInitial));
+        TestTrue(TEXT("Half-speed physical launch is not accepted by correction"), (WrongInitial - Aim * 2000.0).Size() > 180.0);
+        TestFalse(TEXT("No physical motion is not launch proof"), Observation.Reconstruct(FVector::ZeroVector, WrongInitial));
+    }
+    BwayRelicFlight::FLaunchObservation Empty;
+    FVector Initial;
+    TestFalse(TEXT("Missing actual step record is rejected"), Empty.Reconstruct(FVector(1000,0,0), Initial));
+    TestFalse(TEXT("Stale step is rejected"), Empty.AddStep(0.2, 1.5, FVector(0,0,-980)));
+    BwayRelicFlight::FLaunchObservation Negative;
+    TestFalse(TEXT("Negative damping is rejected"), Negative.AddStep(0.02, -1.0, FVector::ZeroVector));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwayRelicLaunchDOFTest, "Breakaway.Relic.ChargedThrow.UnconstrainedLaunchDegreesOfFreedom",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBwayRelicLaunchDOFTest::RunTest(const FString&)
+{
+    BwayRelicThrowTest::FFixture Fixture(*this);
+    if (!Fixture.Setup() || !Fixture.Press()) return false;
+    Fixture.Release();
+    FPhysScene* Scene = Fixture.World->GetPhysicsScene();
+    if (!TestNotNull(TEXT("DOF fixture physics scene"), Scene)) return false;
+    Scene->ProcessDeferredCreatePhysicsState();
+    FBodyInstance* Body = Fixture.Mesh->GetBodyInstance();
+    if (!TestNotNull(TEXT("DOF fixture real body"), Body) || !TestTrue(TEXT("Released body is dynamic"), Body->IsDynamic())) return false;
+    const auto ClearAxisLocks = [Body]()
+    {
+        Body->bLockXTranslation = Body->bLockYTranslation = Body->bLockZTranslation = false;
+        Body->bLockXRotation = Body->bLockYRotation = Body->bLockZRotation = false;
+    };
+    ON_SCOPE_EXIT { ClearAxisLocks(); Body->SetDOFLock(EDOFMode::Default); };
+    if (!TestTrue(TEXT("Project Default DOF is Full3D"), UPhysicsSettings::Get()->DefaultDegreesOfFreedom == ESettingsDOF::Full3D)
+        || !TestTrue(TEXT("Body retains Default DOF"), Body->DOFMode == EDOFMode::Default)
+        || !TestTrue(TEXT("Default generic translation lock is true"), Body->bLockTranslation)
+        || !TestTrue(TEXT("Default generic rotation lock is true"), Body->bLockRotation)) return false;
+    TestNull(TEXT("Engine creates no constraint for unrestricted defaults"), Body->DOFConstraint);
+    TestTrue(TEXT("Dormant default plane flags do not reject a real unrestricted body"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+
+    // Real engine constraint creation is the oracle; no synthetic constraint pointer is supplied.
+    for (int32 Axis = 0; Axis < 6; ++Axis)
+    {
+        ClearAxisLocks();
+        Body->bLockXTranslation = Axis == 0; Body->bLockYTranslation = Axis == 1; Body->bLockZTranslation = Axis == 2;
+        Body->bLockXRotation = Axis == 3; Body->bLockYRotation = Axis == 4; Body->bLockZRotation = Axis == 5;
+        TestFalse(FString::Printf(TEXT("Pending axis constraint%d is rejected"), Axis), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+        Body->SetDOFLock(EDOFMode::SixDOF);
+        TestNotNull(FString::Printf(TEXT("Engine creates real axis constraint%d"), Axis), Body->DOFConstraint);
+        TestFalse(FString::Printf(TEXT("Actual axis constraint%d is rejected"), Axis), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+        ClearAxisLocks();
+        TestFalse(TEXT("Existing constraint survives cleared flags until engine refresh and stays rejected"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+        Body->SetDOFLock(EDOFMode::SixDOF);
+        TestNull(TEXT("Engine removes the cleared axis constraint"), Body->DOFConstraint);
+        TestTrue(TEXT("Recreated unconstrained body is accepted"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+    }
+    for (const EDOFMode::Type Mode : { EDOFMode::XYPlane, EDOFMode::XZPlane, EDOFMode::YZPlane, EDOFMode::CustomPlane })
+    {
+        Body->CustomDOFPlaneNormal = FVector::UpVector;
+        Body->SetDOFLock(Mode);
+        TestNotNull(TEXT("Engine creates a real planar constraint"), Body->DOFConstraint);
+        TestFalse(TEXT("Planar and custom-plane constraints stay unsupported"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+    }
+    Body->SetDOFLock(EDOFMode::None);
+    TestNull(TEXT("None removes the actual DOF constraint"), Body->DOFConstraint);
+    TestTrue(TEXT("Unconstrained None mode is supported"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+    Body->DOFMode = EDOFMode::XYPlane;
+    TestNull(TEXT("Pending mode assignment alone creates no constraint"), Body->DOFConstraint);
+    TestFalse(TEXT("Pending planar mode is still rejected"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+    Body->DOFMode = static_cast<EDOFMode::Type>(255);
+    TestFalse(TEXT("Unknown mode stays unsupported"), BwayRelicFlight::HasSupportedLaunchDegreesOfFreedom(*Body));
+    return true;
+}
+
 #endif

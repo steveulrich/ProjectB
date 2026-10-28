@@ -82,10 +82,10 @@ bool FBwayCooldownUpgradeTest::RunTest(const FString&)
 			Cases.Add({Handle, Ability});
 			++KitCooldowns;
 		}
-		TestEqual(FString::Printf(TEXT("Four configured cooldown abilities in %s"), Path), KitCooldowns, 4);
+		TestEqual(FString::Printf(TEXT("Five configured cooldown abilities in %s"), Path), KitCooldowns, 5);
 	}
-	TestEqual(TEXT("All four kits covered"), Cases.Num(), 16);
-	TestEqual(TEXT("Four primary and four placement abilities have no cooldown"), NoCooldownCount, 8);
+	TestEqual(TEXT("All four kits covered"), Cases.Num(), 20);
+	TestEqual(TEXT("Four placement abilities have no cooldown"), NoCooldownCount, 4);
 
 	// A concrete fixture ability without a kit override exercises the GE-defined
 	// fallback. Modify only this granted instance, never a shared class default.
@@ -150,6 +150,27 @@ bool FBwayCooldownUpgradeTest::RunTest(const FString&)
 	for (const FCase& Case : Cases) TestEqual(TEXT("Full reduction creates no cooldown"), Apply(Case).Num(), 0);
 	ASC->SetNumericAttributeBase(UBwayHeroAttributeSet::GetCooldownReductionAttribute(), -1.f);
 	TestEqual(TEXT("Negative reduction clamped"), ASC->GetNumericAttribute(UBwayHeroAttributeSet::GetCooldownReductionAttribute()), 0.f);
+
+	// Verify variable kit-driven PrimaryCooldown across all four hero primary attack abilities.
+	for (const FCase& Case : Cases)
+	{
+		if (!Case.Ability->GetClass()->GetName().Contains(TEXT("Primary"))) continue;
+		const FSoftObjectProperty* ConfigProp = FindFProperty<FSoftObjectProperty>(Case.Ability->GetClass(), TEXT("KitConfig"));
+		UObject* Config = ConfigProp ? ConfigProp->GetPropertyValue_InContainer(Case.Ability).LoadSynchronous() : nullptr;
+		FFloatProperty* PrimaryCooldownProp = Config ? FindFProperty<FFloatProperty>(Config->GetClass(), TEXT("PrimaryCooldown")) : nullptr;
+		if (!TestNotNull(TEXT("Primary ability KitConfig loaded"), Config) || !TestNotNull(TEXT("KitConfig PrimaryCooldown property"), PrimaryCooldownProp)) continue;
+		const float OriginalCooldown = PrimaryCooldownProp->GetPropertyValue_InContainer(Config);
+		PrimaryCooldownProp->SetPropertyValue_InContainer(Config, 1.25f);
+		const auto CustomHandles = Apply(Case);
+		if (TestEqual(Case.Ability->GetClass()->GetName() + TEXT(" custom kit PrimaryCooldown applied"), CustomHandles.Num(), 1))
+		{
+			TestTrue(Case.Ability->GetClass()->GetName() + TEXT(" uses variable KitConfig.PrimaryCooldown"),
+				FMath::IsNearlyEqual(ASC->GetActiveGameplayEffect(CustomHandles[0])->Spec.GetDuration(), 1.25f, 0.001f));
+			ASC->RemoveActiveGameplayEffect(CustomHandles[0]);
+		}
+		PrimaryCooldownProp->SetPropertyValue_InContainer(Config, OriginalCooldown);
+	}
+
 	ASC->ClearAllAbilities();
 	World->DestroyWorld(false);
 	return true;

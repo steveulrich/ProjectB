@@ -1,6 +1,7 @@
 #include "Abilities/BwayGameplayEffect_KorrynEffects.h"
 
 #include "AbilitySystem/Attributes/LyraHealthSet.h"
+#include "AbilitySystem/BwayGameplayCueTags.h"
 #include "Attributes/BwayHeroAttributeSet.h"
 #include "BwayGameplayTags.h"
 #include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
@@ -8,6 +9,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayEffect_KorrynEffects)
 
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_PrimaryAttack, "Cooldown.Korryn.PrimaryAttack");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_Flock, "Cooldown.Korryn.Flock");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_BurdenOfSin, "Cooldown.Korryn.BurdenOfSin");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Korryn_CircleOfSpite, "Cooldown.Korryn.CircleOfSpite");
@@ -72,6 +74,12 @@ void UGE_Bway_KorrynEffectBase::PostInitProperties()
 	TargetTags.SetAndApplyTargetTagChanges(TagChanges);
 }
 
+UGE_Bway_Cooldown_KorrynPrimaryAttack::UGE_Bway_Cooldown_KorrynPrimaryAttack()
+{
+	ConfigureDuration(0.5f);
+	ConfigureGrantedTag(TAG_Cooldown_Korryn_PrimaryAttack);
+}
+
 UGE_Bway_Cooldown_KorrynFlock::UGE_Bway_Cooldown_KorrynFlock()
 {
 	ConfigureDuration(22.f);
@@ -98,6 +106,7 @@ UGE_Bway_Cooldown_KorrynAuraOfSilence::UGE_Bway_Cooldown_KorrynAuraOfSilence()
 
 UGE_Bway_KorrynArmorShred::UGE_Bway_KorrynArmorShred()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusArmorShred, 0.f, 1.f);
 	ConfigureDuration(2.f);
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_ArmorShred);
 
@@ -118,6 +127,7 @@ PRAGMA_ENABLE_DEPRECATION_WARNINGS
 
 UGE_Bway_KorrynBurdenSlow::UGE_Bway_KorrynBurdenSlow()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusSlowed, 0.f, 1.f);
 	ConfigureDuration(2.f);
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_Slowed);
 
@@ -129,6 +139,7 @@ UGE_Bway_KorrynBurdenSlow::UGE_Bway_KorrynBurdenSlow()
 
 UGE_Bway_KorrynCircleSlow::UGE_Bway_KorrynCircleSlow()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusSlowed, 0.f, 1.f);
 	DurationPolicy = EGameplayEffectDurationType::Infinite;
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_Slowed);
 
@@ -140,6 +151,7 @@ UGE_Bway_KorrynCircleSlow::UGE_Bway_KorrynCircleSlow()
 
 UGE_Bway_KorrynCircleDamageAmp::UGE_Bway_KorrynCircleDamageAmp()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusDamageAmplified, 0.f, 1.f);
 	DurationPolicy = EGameplayEffectDurationType::Infinite;
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_DamageAmplified);
 
@@ -151,6 +163,7 @@ UGE_Bway_KorrynCircleDamageAmp::UGE_Bway_KorrynCircleDamageAmp()
 
 UGE_Bway_KorrynCursedWardSlow::UGE_Bway_KorrynCursedWardSlow()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusSlowed, 0.f, 1.f);
 	DurationPolicy = EGameplayEffectDurationType::Infinite;
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_Slowed);
 
@@ -162,6 +175,7 @@ UGE_Bway_KorrynCursedWardSlow::UGE_Bway_KorrynCursedWardSlow()
 
 UGE_Bway_KorrynSilence::UGE_Bway_KorrynSilence()
 {
+	GameplayCues.Emplace(BwayGameplayCueTags::StatusSilenced, 0.f, 1.f);
 	ConfigureDuration(5.f);
 	ConfigureGrantedTag(BwayGameplayTags::State_Status_Silenced);
 }

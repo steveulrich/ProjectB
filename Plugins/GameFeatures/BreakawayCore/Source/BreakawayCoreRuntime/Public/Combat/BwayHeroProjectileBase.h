@@ -9,6 +9,7 @@
 #include "BwayHeroProjectileBase.generated.h"
 
 class UBwayProjectilePresentationData;
+class APawn;
 class ABwayCharacterWithAbilities;
 class ABwayPlayerState;
 class UAbilitySystemComponent;
@@ -20,6 +21,14 @@ class USkeletalMeshComponent;
 class USoundBase;
 class USphereComponent;
 class UStaticMeshComponent;
+
+UENUM()
+enum class EBwayProjectilePresentationEvent : uint8
+{
+	Spawn,
+	Impact,
+	Expire
+};
 
 /**
  * Shared Breakaway hero projectile: collision, movement, optional visuals, and cue hooks.
@@ -51,7 +60,9 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnRep_Instigator() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void LifeSpanExpired() override;
 
 	UFUNCTION()
 	void OnRep_PresentData();
@@ -68,14 +79,14 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	/**
-	 * Shared hit entry: impact cue, then subclass damage, then optional expire.
+	 * Authority hit entry: apply damage, present an accepted terminal hit, then expire.
 	 * @param bForceExpire Destroy after processing (e.g. world stop) even if HandleDamageHit returns false.
 	 */
 	void ProcessHit(const FHitResult& Hit, bool bForceExpire);
 
 	/**
 	 * Subclass damage / status logic. Return true to destroy the projectile after this hit.
-	 * Called on authority after the impact cue is executed.
+	 * Called on authority. Reentrant collision callbacks are ignored during damage application.
 	 */
 	virtual bool HandleDamageHit(const FHitResult& Hit);
 
@@ -90,19 +101,35 @@ protected:
 	void OnRoundStateChanged(FName NewRoundState);
 	void RemoveForRoundTransition();
 
-	/** True when OtherActor should be ignored (self, owner, instigator). */
+	/** True for self, owner, instigator, or another hero projectile from the same firing pawn. */
 	virtual bool ShouldIgnoreActor(const AActor* OtherActor) const;
 
-	/** Authority destroy. Expire cue fires from EndPlay. */
+	/** Present natural expiry before destruction; teardown and round cleanup are silent. */
 	virtual void ExpireProjectile();
 
-	void ExecuteProjectileCue(FGameplayTag CueTag, const FVector& Location, const FVector& Normal = FVector::ZeroVector, float Magnitude = 0.f) const;
-	void PlayLocalFeedback(UNiagaraSystem* Niagara, USoundBase* Sound, const FVector& Location, const FVector& Normal) const;
-	void PlayImpactCameraShake() const;
+	void DispatchPresentationEvent(EBwayProjectilePresentationEvent Event, const FVector& Location, const FVector& Normal);
+
+	// Reliable events open the projectile channel even for a short-lived shot. They are
+	// not replicated state: a peer arriving after an event does not replay that event.
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayPresentationEvent(EBwayProjectilePresentationEvent Event, FGameplayTag CueTag,
+		UNiagaraSystem* Niagara, USoundBase* Sound, FVector_NetQuantize10 Location, FVector_NetQuantizeNormal Normal,
+		APawn* FeedbackPawn, AActor* CueInstigator, TSubclassOf<UCameraShakeBase> CameraShake, float CameraShakeScale);
+
+	virtual void ExecuteProjectileCue(FGameplayTag CueTag, const FVector& Location, const FVector& Normal,
+		APawn* FeedbackPawn, AActor* CueInstigator) const;
+	virtual void PlayLocalFeedback(UNiagaraSystem* Niagara, USoundBase* Sound, const FVector& Location, const FVector& Normal) const;
+	bool PlayImpactCameraShake(APawn* FeedbackPawn, TSubclassOf<UCameraShakeBase> CameraShake, float Scale) const;
 
 	void ApplyPresentationInternal(const UBwayProjectilePresentationData* Data);
 	void BindHitDelegates();
 	void IgnoreInstigatorCollision();
+	bool IsSiblingProjectile(const AActor* OtherActor) const;
+	void ClearSiblingCollisionIgnores();
+
+	// MoveIgnoreActors contains strong references. Track pairs weakly and remove
+	// both directions explicitly when either projectile ends play.
+	TArray<TWeakObjectPtr<ABwayHeroProjectileBase>> IgnoredSiblingProjectiles;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
 	TObjectPtr<USphereComponent> CollisionSphere;
@@ -165,7 +192,9 @@ protected:
 	bool bRemovingForRoundTransition = false;
 
 	bool bHasProcessedTerminalHit = false;
-	bool bHasExecutedSpawnCue = false;
-	bool bHasExecutedExpireCue = false;
+	bool bProcessingHit = false;
+	bool bExpiryRequestedDuringHit = false;
+	uint8 DispatchedPresentationEvents = 0;
+	uint8 ReceivedPresentationEvents = 0;
 	bool bPresentationApplied = false;
 };

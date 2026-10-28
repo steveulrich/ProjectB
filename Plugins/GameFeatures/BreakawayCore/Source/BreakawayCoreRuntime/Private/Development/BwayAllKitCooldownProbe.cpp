@@ -18,6 +18,7 @@
 #include "Economy/BwayUpgradeCatalog.h"
 #include "Economy/BwayUpgradeComponent.h"
 #include "Engine/Engine.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -28,6 +29,7 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "Net/UnrealNetwork.h"
 #include "Relic/RelicActor.h"
+#include "UI/BwayAbilityBarHUDWidget.h"
 #include "UI/BwayMatchAbilitySlotWidget.h"
 #include "UObject/UObjectIterator.h"
 #include "UObject/UnrealType.h"
@@ -181,6 +183,7 @@ struct FBwayAllKitCooldownState
 	TWeakObjectPtr<ULyraAbilitySystemComponent> RemovalASC;
 	FDelegateHandle RemovalObserver;
 	FMovement AuthorityMovement, OwnerMovement;
+	TWeakObjectPtr<UBwayAbilityBarHUDWidget> Bar;
 	TWeakObjectPtr<UBwayMatchAbilitySlotWidget> Slot;
 };
 
@@ -200,6 +203,24 @@ void ABwayAllKitCooldownProbe::BeginPlay()
 {
 	Super::BeginPlay();
 #if !UE_BUILD_SHIPPING
+	if (UGameViewportClient* VP = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+	{
+		VP->EngineShowFlags.SetLighting(false);
+		VP->EngineShowFlags.SetPostProcessing(false);
+		VP->EngineShowFlags.SetDynamicShadows(false);
+		VP->EngineShowFlags.SetGlobalIllumination(false);
+		VP->EngineShowFlags.SetLumenGlobalIllumination(false);
+		VP->EngineShowFlags.SetLumenReflections(false);
+		VP->EngineShowFlags.SetStaticMeshes(false);
+		VP->EngineShowFlags.SetNaniteMeshes(false);
+		VP->EngineShowFlags.SetInstancedStaticMeshes(false);
+		VP->EngineShowFlags.SetLandscape(false);
+		VP->EngineShowFlags.SetParticles(false);
+		VP->EngineShowFlags.SetTranslucency(false);
+		VP->EngineShowFlags.SetVolumetricFog(false);
+		VP->EngineShowFlags.SetAtmosphere(false);
+		VP->EngineShowFlags.SetFog(false);
+	}
 	State = MakeShared<FBwayAllKitCooldownState>();
 	UE_LOG(LogTemp, Display, TEXT("BwayAllKitCooldown: Connected role=%s"), HasAuthority() ? TEXT("host") : TEXT("client"));
 #endif
@@ -499,7 +520,7 @@ void ABwayAllKitCooldownProbe::Observe()
 	if (Source->GetPlayerId() != Frame.Source) { Fail(TEXT("source-roster-mismatch")); return; }
 	if (State->LastSerial != Frame.Serial)
 	{
-		State->LastSerial = Frame.Serial; State->OwnerStep = 0; State->Slot.Reset(); State->StableAt = 0; State->bPeersObserved = false;
+		State->LastSerial = Frame.Serial; State->OwnerStep = 0; State->Bar.Reset(); State->Slot.Reset(); State->StableAt = 0; State->bPeersObserved = false;
 		State->LastOwnerTime = Time; State->MaxOwnerGap = 0;
 	}
 	if (!State->bPeersObserved)
@@ -519,6 +540,12 @@ void ABwayAllKitCooldownProbe::Observe()
 	FGameplayAbilitySpec* Spec = Ability(Source, Frame.Case);
 	if (!Spec) return;
 	const float Expected = Frame.Base * (1.f - Frame.Bonus);
+	if (!State->Bar.IsValid())
+	{
+		for (TObjectIterator<UBwayAbilityBarHUDWidget> It; It; ++It)
+			if (It->GetWorld() == GetWorld() && It->GetOwningPlayer() == PC && It->GetCachedWidget().IsValid()) { State->Bar = *It; break; }
+	}
+	if (State->Bar.IsValid()) State->Bar->RefreshAbilityBar();
 	if (!State->Slot.IsValid())
 	{
 		for (TObjectIterator<UBwayMatchAbilitySlotWidget> It; It; ++It)
@@ -645,6 +672,10 @@ namespace BwayAllKitCooldown
 {
 void Start(bool bClient)
 {
+	for (const auto& Pair : TArray<TPair<const TCHAR*, int32>>{
+		{TEXT("r.Lumen.HardwareRayTracing"), 0}, {TEXT("r.DynamicGlobalIlluminationMethod"), 0},
+		{TEXT("r.ReflectionMethod"), 0}, {TEXT("r.Shadow.Virtual.Enable"), 0}, {TEXT("r.VSync"), 0}})
+		if (IConsoleVariable* CVar = IConsoleManager::Get().FindConsoleVariable(Pair.Key)) CVar->Set(Pair.Value, ECVF_SetByCode);
 	const double Started = FPlatformTime::Seconds();
 	const TSharedRef<bool> Selected = MakeShared<bool>(false);
 	FTSTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateLambda([bClient, Started, Selected](float)
@@ -654,6 +685,24 @@ void Start(bool bClient)
 		{
 			UWorld* World = Context.World();
 			if (!World || !World->IsGameWorld() || (World->GetNetMode() == NM_Client) != bClient) continue;
+			if (UGameViewportClient* VP = World->GetGameViewport())
+			{
+				VP->EngineShowFlags.SetLighting(false);
+				VP->EngineShowFlags.SetPostProcessing(false);
+				VP->EngineShowFlags.SetDynamicShadows(false);
+				VP->EngineShowFlags.SetGlobalIllumination(false);
+				VP->EngineShowFlags.SetLumenGlobalIllumination(false);
+				VP->EngineShowFlags.SetLumenReflections(false);
+				VP->EngineShowFlags.SetStaticMeshes(false);
+				VP->EngineShowFlags.SetNaniteMeshes(false);
+				VP->EngineShowFlags.SetInstancedStaticMeshes(false);
+				VP->EngineShowFlags.SetLandscape(false);
+				VP->EngineShowFlags.SetParticles(false);
+				VP->EngineShowFlags.SetTranslucency(false);
+				VP->EngineShowFlags.SetVolumetricFog(false);
+				VP->EngineShowFlags.SetAtmosphere(false);
+				VP->EngineShowFlags.SetFog(false);
+			}
 			ABwayGameState* GS = World->GetGameState<ABwayGameState>();
 			if (!GS) continue;
 			if (bClient)

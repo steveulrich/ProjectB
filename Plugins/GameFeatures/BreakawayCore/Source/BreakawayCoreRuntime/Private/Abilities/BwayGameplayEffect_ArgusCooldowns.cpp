@@ -5,6 +5,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayGameplayEffect_ArgusCooldowns)
 
+UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Argus_PrimaryAttack, "Cooldown.Argus.PrimaryAttack");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Argus_Slide, "Cooldown.Argus.Slide");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Argus_NoRetreat, "Cooldown.Argus.NoRetreat");
 UE_DEFINE_GAMEPLAY_TAG_STATIC(TAG_Cooldown_Argus_ForGlory, "Cooldown.Argus.ForGlory");
@@ -39,6 +40,12 @@ void UGE_Bway_Cooldown_ArgusBase::PostInitProperties()
 
 	UTargetTagsGameplayEffectComponent& TargetTags = FindOrAddComponent<UTargetTagsGameplayEffectComponent>();
 	TargetTags.SetAndApplyTargetTagChanges(TagChanges);
+}
+
+UGE_Bway_Cooldown_ArgusPrimaryAttack::UGE_Bway_Cooldown_ArgusPrimaryAttack()
+{
+	ConfigureDuration(0.5f);
+	ConfigureGrantedCooldownTag(TAG_Cooldown_Argus_PrimaryAttack);
 }
 
 UGE_Bway_Cooldown_ArgusSlide::UGE_Bway_Cooldown_ArgusSlide()

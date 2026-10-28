@@ -36,6 +36,9 @@ public:
 
 	virtual bool OnExecute_Implementation(AActor* MyTarget, const FGameplayCueParameters& Parameters) const override;
 
+	/** Hit confirmation is personal; launch/impact/score cues remain spatial world feedback. */
+	bool ShouldPlayFeedbackSound(bool bLocalFeedback) const;
+
 protected:
 	/** Sound to play on hit confirmation */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Audio")

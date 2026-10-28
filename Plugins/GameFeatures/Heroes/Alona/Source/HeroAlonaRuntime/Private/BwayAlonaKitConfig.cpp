@@ -22,6 +22,7 @@ EDataValidationResult UBwayAlonaKitConfig::IsDataValid(FDataValidationContext& C
 
 	FailIfNonPositive(TEXT("PrimaryProjectileSpeed"), PrimaryProjectileSpeed);
 	FailIfNonPositive(TEXT("PrimaryProjectileLifeSpan"), PrimaryProjectileLifeSpan);
+	FailIfNonPositive(TEXT("PrimaryCooldown"), PrimaryCooldown);
 	FailIfNonPositive(TEXT("SunsGraceInvulnerabilityDuration"), SunsGraceInvulnerabilityDuration);
 	FailIfNonPositive(TEXT("SunsGraceCooldown"), SunsGraceCooldown);
 	FailIfNonPositive(TEXT("RadianceActiveDuration"), RadianceActiveDuration);

@@ -304,6 +304,9 @@ protected:
     void DestroyTrailEffect();
     void UpdateTeamColorTinting();
     void PlayStateAudio(ERelicState State);
+    void PlayInteractionFeedback(ERelicFeedbackEvent Event);
+    virtual void PlayLocalStateAudio(ERelicState State, USoundBase* Sound, const FVector& Location, uint32 EventId);
+    virtual void PlayLocalInteractionVFX(ERelicFeedbackEvent Event, UNiagaraSystem* Effect, const FVector& Location, uint32 EventId);
 
     // Transient accepted events are not replayed by a state RepNotify or late join.
     // Carry the resolved asset and event location so delivery does not depend on
@@ -311,5 +314,10 @@ protected:
     UFUNCTION(NetMulticast, Unreliable)
     void Multicast_PlayStateAudio(ERelicState State, USoundBase* Sound, FVector_NetQuantize Location, uint32 EventId);
 
+    UFUNCTION(NetMulticast, Reliable)
+    void Multicast_PlayInteractionFeedback(ERelicFeedbackEvent Event, USoundBase* Sound, UNiagaraSystem* Effect,
+        FVector_NetQuantize Location, uint32 EventId);
+
     uint32 NextAudioEventId = 0;
+    uint32 LastReceivedInteractionEventId = 0;
 };

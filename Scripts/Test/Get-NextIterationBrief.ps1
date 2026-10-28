@@ -85,7 +85,10 @@ function Get-ScriptInventoryHash {
         $relativePath = $file.FullName.Substring($root.Length).TrimStart([char[]]@('\','/')).Replace('\','/')
         $inventory += "$relativePath|$((Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToUpperInvariant())"
     }
-    return Get-Sha256Hex (($inventory | Sort-Object) -join "`n")
+    # Culture-sensitive sorting differs between Windows PowerShell and PowerShell 7.
+    $sortedInventory = [string[]]$inventory
+    [Array]::Sort($sortedInventory, [StringComparer]::Ordinal)
+    return Get-Sha256Hex ($sortedInventory -join "`n")
 }
 
 function Get-SourceSnapshotFreshness {

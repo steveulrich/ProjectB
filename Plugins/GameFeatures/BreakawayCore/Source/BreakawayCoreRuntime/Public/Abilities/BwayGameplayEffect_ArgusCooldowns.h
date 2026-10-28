@@ -31,6 +31,14 @@ protected:
 };
 
 UCLASS()
+class BREAKAWAYCORERUNTIME_API UGE_Bway_Cooldown_ArgusPrimaryAttack : public UGE_Bway_Cooldown_ArgusBase
+{
+	GENERATED_BODY()
+public:
+	UGE_Bway_Cooldown_ArgusPrimaryAttack();
+};
+
+UCLASS()
 class BREAKAWAYCORERUNTIME_API UGE_Bway_Cooldown_ArgusSlide : public UGE_Bway_Cooldown_ArgusBase
 {
 	GENERATED_BODY()

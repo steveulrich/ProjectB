@@ -9,6 +9,7 @@ class ABwayPlayerState;
 class UAbilitySystemComponent;
 class UBwayRoundManagementComponent;
 class USphereComponent;
+class UBwayCuePresentationComponent;
 class UGameplayEffect;
 
 /**
@@ -21,6 +22,8 @@ class HEROMORGANRUNTIME_API ABwayKorrynSpiteZone : public AActor
 
 public:
 	ABwayKorrynSpiteZone();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<UBwayCuePresentationComponent> Presentation;
 
 	void ConfigureZone(
 		ABwayCharacterWithAbilities* InCaster,

@@ -945,6 +945,27 @@ native failure rejects the attempt. Preserve startup errors outside that range
 separately. A PIE pass covers four worlds in one process; packaged transport,
 physical input, and presentation still require their own evidence.
 
+### Exact local-view presentation captures
+
+For authored slide support acceptance, use `bway.Test.SlideGroundAirDiagnosticPIE <fresh-token>` on the ready four-world Dorado fixture at 100 ms lag. It runs five cases, including the middle-plateau/ramp2 step-down route, and preserves the four-case `SlideTrajectoryPIE` semantics. `SlideGroundAirObservePIE` is the legacy observation-only command. Verify the new schema-2 evidence with:
+
+```powershell
+python Scripts/Test/Verify-SlideGroundAirAcceptance.py --log <owned-editor-log> --token <fresh-token> --reviewed-native-sha256 <frozen-BwaySlideLifecycleProbe.cpp-hash> --output <fresh-result.json>
+python Scripts/Test/Test-SlideGroundAirAcceptance.py
+```
+
+The verifier requires five cases across four observers, actual floor-query negative controls, support and transition-momentum bounds, timestamp-paired owner/authority samples, jump/landing evidence and restoration. Its control tests do not execute gameplay. Keep rendered capture timing separate from movement acceptance when readback stalls perturb the run.
+
+`New-PresentationCapturePlan.ps1 -Token <fresh-token> -HostPlayerId <actual-id> -RemotePlayerId <actual-id>` writes a command plan under `Saved/Logs/PresentationCaptures/<token>/capture-plan.json`. It does not start PIE or execute commands. The plan covers the 20 source-confirmed AllKit actions, four buildables, slide trajectories and relic observations. Run it after current build/readiness checks, using actual local PlayerState IDs.
+
+`bway.Test.CaptureAllKit <fresh-token> <local-player-id> [second-local-player-id]` arms an observer before `bway.Test.AllKitOwnerHost`. It requests three active frames and one outcome frame for each positive case from each selected view. It does not change the AllKit fixture. Each request rechecks the actual case/stage before rendering; stale phases remain gaps. The separate `bway.Test.CueAudit` observes registered Breakaway cue routes and must be stopped after the fixture.
+
+For other fixtures, arm `bway.Test.CapturePresentationSequence <fresh-token> <local-player-id> <label> <count-per-view> <interval-seconds> [second-local-player-id]` immediately before the native fixture transition. Counts are 2–40 per view, intervals 0.05–2 seconds, and requested sequence duration is at most 30 seconds. A 40-frame, 0.05-second sequence supports review of short body/camera motion; inspect actual recorded frame/world-time spacing instead of claiming the requested rate was achieved. Wait for `BwayPresentationCapture: SessionFinished` before arming another fresh window. `bway.Test.CapturePresentation <fresh-token> <local-player-id> <label>` remains available for a single frame.
+
+Captures resolve the exact local player's visible Slate viewport/window, including its HUD, without desktop input or global screenshot requests. PNG/JSON pairs are saved under `Saved/Logs/PresentationCaptures/<token>/`. Metadata records the observer, action/stage/source where available, world/controller/pawn/view target, RHI, camera pose/FOV, frame/world time and readback cost. Sessions stop at 160 images, 512 MiB of PNG data, or a readback exceeding two seconds. The helper requires a rendered RHI and does not overwrite evidence. In separate processes, pass only that process's local ID.
+
+Readback can perturb fixture timing. Preserve partial/failed results, review raw frames and labeled contact sheets, and keep gameplay acceptance separate when timing is affected. Offscreen effects, skipped phases and missing views remain gaps. Images do not establish audio, haptic, physical-input or network acceptance; a `-nosound` run cannot verify SFX.
+
 ### AllKit asynchronous lifecycle in PIE
 
 For independent topology, run `Capture-AllKitPIETopology.py` inside Editor Python

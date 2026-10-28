@@ -12,6 +12,7 @@
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "Movement/BwayMovementFeelConfig.h"
+#include "Camera/BwaySlideCameraShake.h"
 #include "HeroSystems/BwayHeroStatsLibrary.h"
 #include "Misc/ScopeExit.h"
 
@@ -38,6 +39,7 @@ UBwayCharacterMovementComponent::UBwayCharacterMovementComponent(const FObjectIn
 	: Super(ObjectInitializer)
 {
 	NavAgentProps.bCanCrouch = true;
+	SlideCameraShakeClass = UBwaySlideCameraShake::StaticClass();
 }
 
 // --- Initialization ---
@@ -415,16 +417,27 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		}
 	}
 	FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
+	if (bHasSlideGroundContact && !bJustTeleported && !CurrentFloor.bBlockingHit && CharacterOwner
+		&& CharacterOwner->GetCapsuleComponent()->IsQueryCollisionEnabled())
+	{
+		// FindFloor shortens its query by MAX_FLOOR_DIST outside walking mode.
+		// A grounded slide can still follow a step within MaxStepHeight. Include
+		// the clearance retained after the downward move in this bounded query;
+		// the eligibility checks below still reject steep or penetrating hits.
+		const float StepDownQueryDistance = FMath::Max(0.f, MaxStepHeight) + MIN_FLOOR_DIST;
+		ComputeFloorDist(UpdatedComponent->GetComponentLocation(), StepDownQueryDistance, StepDownQueryDistance,
+			CurrentFloor, CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleRadius());
+	}
 	if (bHasSlideGroundContact && !bJustTeleported && CurrentFloor.bBlockingHit
 		&& CurrentFloor.HitResult.IsValidBlockingHit() && !CurrentFloor.HitResult.bStartPenetrating
 		&& CurrentFloor.HitResult.ImpactNormal.Z >= MinSlideFloorZ)
 	{
 		const float PostFloorDist = CurrentFloor.GetDistanceToFloor();
+		const float StepDownDrop = PostFloorDist - MIN_FLOOR_DIST;
 		bool bSteppedDown = false;
-		if (FMath::IsFinite(PostFloorDist) && PostFloorDist > MAX_FLOOR_DIST && PostFloorDist <= MaxStepHeight)
+		if (FMath::IsFinite(PostFloorDist) && PostFloorDist > MAX_FLOOR_DIST && StepDownDrop <= MaxStepHeight)
 		{
 			FHitResult StepDownHit(1.f);
-			const float StepDownDrop = FMath::Max(0.f, PostFloorDist - MIN_FLOOR_DIST);
 			SafeMoveUpdatedComponent(FVector(0.f, 0.f, -StepDownDrop), UpdatedComponent->GetComponentQuat(), true, StepDownHit);
 			FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
 			bSteppedDown = true;

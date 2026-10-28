@@ -8,6 +8,7 @@ class ABwayPlayerState;
 class UAbilitySystemComponent;
 class UBwayRoundManagementComponent;
 class USphereComponent;
+class UBwayCuePresentationComponent;
 
 /**
  * Temporary ground heal circle for Blessing of the Sun.
@@ -20,6 +21,8 @@ class HEROALONARUNTIME_API ABwayAlonaBlessingZone : public AActor
 
 public:
 	ABwayAlonaBlessingZone();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Presentation")
+	TObjectPtr<UBwayCuePresentationComponent> Presentation;
 
 	void ConfigureZone(
 		ABwayCharacterWithAbilities* InCaster,

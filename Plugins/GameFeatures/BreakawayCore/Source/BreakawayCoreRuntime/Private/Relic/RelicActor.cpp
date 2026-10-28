@@ -785,6 +785,10 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
     }
 
     const bool bWasPassInFlight = bIsPassInFlight && IsRelicPassFlightState(CurrentState);
+    // Capture the held catch state before successful acquisition clears its tag.
+    // The timed call-for-relic indicator alone is not prepared-catch feedback.
+    const bool bPreparedCatch = (CurrentState == ERelicState::Thrown || IsRelicPassFlightState(CurrentState))
+        && HasTagOnCharacterOrPlayerState(NewCarrier, BwayGameplayTags::State_Relic_PreparingCatch);
     const int32 PreviousPassingTeam = PassingTeamIndex;
     const int32 CatcherTeamIndex = ResolveCharacterTeamIndex(NewCarrier);
 
@@ -862,8 +866,7 @@ void ARelicActor::OnPickedUp(ABwayCharacterWithAbilities* NewCarrier)
 
     AttachToCarrier(NewCarrier);
 
-    // Play pickup audio
-    PlayStateAudio(ERelicState::Carried);
+    PlayInteractionFeedback(bPreparedCatch ? ERelicFeedbackEvent::PreparedCatch : ERelicFeedbackEvent::Pickup);
 }
 
 
@@ -1058,7 +1061,14 @@ void ARelicActor::DropFromCarrierInternal(const FVector* InitialVelocity, bool b
     // destination once instead of playing a drop sound or the old-location sound.
     if (bChangedState)
     {
-        PlayStateAudio(bCompletingReset ? ERelicState::Resetting : ERelicState::Dropped);
+        if (bCompletingReset)
+        {
+            PlayStateAudio(ERelicState::Resetting);
+        }
+        else
+        {
+            PlayInteractionFeedback(bRecordForcedFumble ? ERelicFeedbackEvent::Fumble : ERelicFeedbackEvent::Drop);
+        }
     }
 }
 
@@ -1244,6 +1254,7 @@ void ARelicActor::Server_ThrowRelic_Implementation(const FVector& ThrowVelocity)
         CurrentCarrier = nullptr;
 
         SetRelicState(ERelicState::Thrown);
+        PlayInteractionFeedback(ERelicFeedbackEvent::ThrowLaunch);
     }
 }
 
@@ -1276,6 +1287,7 @@ void ARelicActor::Server_PassRelic_Implementation(const FVector& PassVelocity)
         CurrentCarrier = nullptr;
 
         SetRelicState(ERelicState::BeingPassed);
+        PlayInteractionFeedback(ERelicFeedbackEvent::PassLaunch);
     }
 }
 
@@ -1710,6 +1722,59 @@ void ARelicActor::PlayStateAudio(ERelicState State)
 
 void ARelicActor::Multicast_PlayStateAudio_Implementation(ERelicState State, USoundBase* Sound,
     FVector_NetQuantize Location, uint32 EventId)
+{
+    PlayLocalStateAudio(State, Sound, Location, EventId);
+}
+
+void ARelicActor::PlayInteractionFeedback(ERelicFeedbackEvent Event)
+{
+    if (!HasAuthority() || !RelicSettings || !RelicMesh) return;
+    USoundBase* Sound = RelicSettings->ResolveFeedbackSound(Event).LoadSynchronous();
+    UNiagaraSystem* Effect = RelicSettings->ResolveFeedbackEffect(Event).LoadSynchronous();
+    if (!Sound && !Effect) return;
+    // Historical events are never saved in replicated state. Each peer receives
+    // the accepted event's resolved assets and position independently of RepNotifies.
+    Multicast_PlayInteractionFeedback(Event, Sound, Effect, RelicMesh->GetComponentLocation(), ++NextAudioEventId);
+}
+
+void ARelicActor::Multicast_PlayInteractionFeedback_Implementation(ERelicFeedbackEvent Event, USoundBase* Sound,
+    UNiagaraSystem* Effect, FVector_NetQuantize Location, uint32 EventId)
+{
+    // Reliable actor RPCs are ordered; also reject a repeated delivery explicitly.
+    if (static_cast<int32>(EventId - LastReceivedInteractionEventId) <= 0) return;
+    LastReceivedInteractionEventId = EventId;
+    ERelicState AudioState = ERelicState::Dropped;
+    switch (Event)
+    {
+    case ERelicFeedbackEvent::Pickup:
+    case ERelicFeedbackEvent::PreparedCatch: AudioState = ERelicState::Carried; break;
+    case ERelicFeedbackEvent::ThrowLaunch: AudioState = ERelicState::Thrown; break;
+    case ERelicFeedbackEvent::PassLaunch: AudioState = ERelicState::BeingPassed; break;
+    default: break;
+    }
+    if (Sound) PlayLocalStateAudio(AudioState, Sound, Location, EventId);
+    PlayLocalInteractionVFX(Event, Effect, Location, EventId);
+#if !UE_BUILD_SHIPPING
+    if (CVarBwayRelicDebugFeedback.GetValueOnGameThread() != 0)
+    {
+        UE_LOG(LogTemp, Display, TEXT("BwayRelicFeedback: Interaction event=%u kind=%d state=%d net=%d sound=%s effect=%s location=%s"),
+            EventId, int32(Event), int32(AudioState), int32(GetNetMode()), *GetPathNameSafe(Sound), *GetPathNameSafe(Effect), *FVector(Location).ToCompactString());
+    }
+#endif
+}
+
+void ARelicActor::PlayLocalInteractionVFX(ERelicFeedbackEvent Event, UNiagaraSystem* Effect, const FVector& Location, uint32 EventId)
+{
+    if (Effect)
+    {
+        // These slots require finite bursts; persistent state effects keep their
+        // existing actor-owned lifetime and are never borrowed as one-shots.
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(this, Effect, Location, FRotator::ZeroRotator,
+            FVector::OneVector, true, true, ENCPoolMethod::AutoRelease);
+    }
+}
+
+void ARelicActor::PlayLocalStateAudio(ERelicState State, USoundBase* Sound, const FVector& Location, uint32 EventId)
 {
     const bool bSubmitAudio = Sound && GetNetMode() != NM_DedicatedServer;
     if (bSubmitAudio)

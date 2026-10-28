@@ -72,7 +72,7 @@ def identity(head, entries):
 
 
 def native_inputs(manifest):
-    return sorted((e for e in manifest["files"] if re.search(r"\.(cpp|h|cs|uproject|uplugin)$", e["path"], re.I)), key=lambda e: e["path"].casefold())
+    return sorted((e for e in manifest["files"] if re.search(r"\.(cpp|h|cs|uproject|uplugin)$", e["path"], re.I)), key=lambda e: e["path"].encode("utf-16-be", "surrogatepass"))
 
 
 def timestamp(value):

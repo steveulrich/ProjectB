@@ -10,6 +10,17 @@
 #include "AbilitySystem/LyraAbilitySet.h"
 #include "RelicSettings.generated.h"
 
+UENUM(BlueprintType)
+enum class ERelicFeedbackEvent : uint8
+{
+    Pickup,
+    Drop,
+    ThrowLaunch,
+    PassLaunch,
+    PreparedCatch,
+    Fumble
+};
+
 /**
  * Data asset containing configurable settings for the Relic System
  */
@@ -76,6 +87,43 @@ public:
     // Sound played when the relic is respawned/reset
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
     TSoftObjectPtr<USoundBase> ResetSound;
+
+    // Finite one-shot bursts, separate from the looping state effects above.
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Pickup")
+    TSoftObjectPtr<UNiagaraSystem> PickupBurstEffect;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Drop")
+    TSoftObjectPtr<UNiagaraSystem> DropBurstEffect;
+
+    /** Unset launch sounds/effects fall back to DropSound/DropBurstEffect. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Throw")
+    TSoftObjectPtr<USoundBase> ThrowLaunchSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Throw")
+    TSoftObjectPtr<UNiagaraSystem> ThrowLaunchEffect;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Pass")
+    TSoftObjectPtr<USoundBase> PassLaunchSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Pass")
+    TSoftObjectPtr<UNiagaraSystem> PassLaunchEffect;
+
+    /** Successful held catch during flight; unset assets use pickup feedback. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Catch")
+    TSoftObjectPtr<USoundBase> PreparedCatchSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Catch")
+    TSoftObjectPtr<UNiagaraSystem> PreparedCatchEffect;
+
+    /** Forced release; unset assets use drop feedback. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Fumble")
+    TSoftObjectPtr<USoundBase> FumbleSound;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Feedback|Fumble")
+    TSoftObjectPtr<UNiagaraSystem> FumbleEffect;
+
+    TSoftObjectPtr<USoundBase> ResolveFeedbackSound(ERelicFeedbackEvent Event) const;
+    TSoftObjectPtr<UNiagaraSystem> ResolveFeedbackEffect(ERelicFeedbackEvent Event) const;
     
     //-----------------------------------------------------------
     // Gameplay Settings

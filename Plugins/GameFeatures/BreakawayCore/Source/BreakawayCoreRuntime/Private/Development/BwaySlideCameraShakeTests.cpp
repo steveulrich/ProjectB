@@ -8,6 +8,13 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Character/LyraHealthComponent.h"
 #include "Engine/World.h"
+#include "Engine/Engine.h"
+#include "Engine/GameInstance.h"
+#include "Camera/LyraCameraComponent.h"
+#include "Camera/BwaySlideCameraShake.h"
+#include "Combat/BwayCombatReadabilityConfig.h"
+#include "Combat/BwayCombatReadabilityLibrary.h"
+#include "UObject/StrongObjectPtr.h"
 #include "GameFramework/PlayerController.h"
 #include "UObject/GarbageCollection.h"
 
@@ -18,9 +25,19 @@ namespace BwaySlideCameraShakeTest
 struct FFixture
 {
 	explicit FFixture(FAutomationTestBase& InTest) : Test(InTest) {}
-	~FFixture() { if (World) World->DestroyWorld(false); }
+	~FFixture()
+	{
+		if (World)
+		{
+			if (World->HasBegunPlay()) World->EndPlay(EEndPlayReason::Quit);
+			World->DestroyWorld(false);
+		}
+		if (Instance) Instance->Shutdown();
+		if (Instance && World) GEngine->DestroyWorldContext(World);
+	}
 	FAutomationTestBase& Test;
 	UWorld* World = nullptr;
+	TStrongObjectPtr<UGameInstance> Instance;
 	APlayerController* Controller = nullptr;
 	APlayerCameraManager* Manager = nullptr;
 	ABwayCharacterWithAbilities* Pawn = nullptr;
@@ -30,8 +47,8 @@ struct FFixture
 	APlayerController* CreateLocalController()
 	{
 		auto* Result = World->SpawnActor<APlayerController>();
-		// No GameMode login runs in this isolated world. Use the same engine
-		// initialization as SetPlayer(ULocalPlayer), without viewport/input setup.
+		// No GameMode login runs in this isolated world. Mark controller ownership
+		// local; this does not assign the UPlayer used by normal viewport cameras.
 		if (Result) Result->SetAsLocalPlayerController();
 		return Result;
 	}
@@ -46,16 +63,26 @@ struct FFixture
 		return Result;
 	}
 
-	bool Setup()
+	bool Setup(bool bScheduledWorld = false)
 	{
 		const auto Settings = UWorld::InitializationValues().AllowAudioPlayback(false)
 			.CreatePhysicsScene(true).CreateNavigation(false).CreateAISystem(false)
 			.ShouldSimulatePhysics(false).SetTransactional(false);
-		World = UWorld::CreateWorld(EWorldType::Game, false, NAME_None, nullptr, true, ERHIFeatureLevel::Num, &Settings);
+		if (bScheduledWorld)
+		{
+			Instance.Reset(NewObject<UGameInstance>(GEngine));
+			Instance->InitializeStandalone();
+			World = Instance->GetWorld();
+		}
+		else
+		{
+			World = UWorld::CreateWorld(EWorldType::Game, false, NAME_None, nullptr, true, ERHIFeatureLevel::Num, &Settings);
+		}
 		if (!Test.TestNotNull(TEXT("Camera fixture world"), World)) return false;
 		// Native dynamic death delegates enter AActor::ProcessEvent, which does
 		// not dispatch until the world has initialized its actors for play.
 		World->InitializeActorsForPlay(FURL());
+		if (bScheduledWorld) World->SetBegunPlay(true);
 		if (!Test.TestTrue(TEXT("World permits real actor event dispatch"), World->AreActorsInitialized())) return false;
 		Controller = CreateLocalController();
 		FActorSpawnParameters Spawn;
@@ -301,4 +328,165 @@ bool FBwaySlideShakeSingleInstanceTest::RunTest(const FString&)
 	F.ExpectUnrelated();
 	return true;
 }
+namespace BwaySlideCameraShakeTest
+{
+// Latent updates tick on separate engine frames. Only movement simulation is
+// disabled so this fixture can hold each presentation state deterministically.
+// Actor ticking, local ownership, config resolution and camera modification are real.
+class FWorldTickPolicyRun : public IAutomationLatentCommand
+{
+public:
+    explicit FWorldTickPolicyRun(FAutomationTestBase* InTest) : Test(InTest), Fixture(*InTest) {}
+    virtual ~FWorldTickPolicyRun() override
+    {
+        PolicyGuard.Reset();
+    }
+    virtual bool Update() override
+    {
+        if (Step == 0)
+        {
+            if (!Fixture.Setup(true)) return true;
+            Config.Reset(const_cast<UBwayCombatReadabilityConfig*>(UBwayCombatReadabilityLibrary::ResolveCombatReadabilityConfig(Fixture.Pawn)));
+            if (!Test->TestNotNull(TEXT("Resolved local-world readability config"), Config.Get())) return true;
+            // Restored on every exit; no package dirtying or asset save occurs.
+            PolicyGuard = MakeUnique<TGuardValue<bool>>(Config->bReduceCameraShake, false);
+            Test->TestTrue(TEXT("Native character can tick"), Fixture.Pawn->PrimaryActorTick.bCanEverTick);
+            Test->TestTrue(TEXT("Normal BeginPlay registers the actor tick"), Fixture.Pawn->PrimaryActorTick.IsTickFunctionRegistered());
+            Test->TestTrue(TEXT("Normal BeginPlay enables the actor tick"), Fixture.Pawn->IsActorTickEnabled());
+            Test->TestFalse(TEXT("Dedicated server omits presentation tick"), Fixture.Pawn->PrimaryActorTick.bAllowTickOnDedicatedServer);
+            Test->TestTrue(TEXT("Default movement binds production slide shake"), GetDefault<UBwayCharacterMovementComponent>()->SlideCameraShakeClass == UBwaySlideCameraShake::StaticClass());
+            Fixture.Movement->SetComponentTickEnabled(false);
+            Camera = ULyraCameraComponent::FindCameraComponent(Fixture.Pawn);
+            if (!Test->TestNotNull(TEXT("Local camera component"), Camera)) return true;
+            // This viewportless world has no UPlayer to provide a client POV.
+            // Select the engine's local camera calculation path for this fixture.
+            // Real viewport owners satisfy the Player/local branch without this override.
+            if (!Test->TestTrue(TEXT("Viewportless controller remains local"), Fixture.Controller->IsLocalPlayerController())
+                || !Test->TestTrue(TEXT("Viewportless fixture has no Player"), Fixture.Controller->Player == nullptr)
+                || !Test->TestTrue(TEXT("Default camera policy waits for a client POV"), Fixture.Manager->bUseClientSideCameraUpdates)
+                || !Test->TestFalse(TEXT("Camera debug override is inactive"), Fixture.Manager->bDebugClientSideCamera)) return true;
+            Fixture.Manager->bUseClientSideCameraUpdates = false;
+            Fixture.Manager->SetViewTarget(Fixture.Pawn);
+            Fixture.Manager->UpdateCamera(0.f);
+            if (!Test->TestTrue(TEXT("Camera observes this local pawn"), Fixture.Manager->GetViewTarget() == Fixture.Pawn)) return true;
+            BaseFOV = Fixture.Manager->GetFOVAngle();
+            Fixture.Movement->Velocity = FVector(500.f, 0.f, 0.f);
+            Fixture.Movement->SetMovementMode(MOVE_Custom, uint8(ECustomMovementMode::CMOVE_Slide));
+            ++Step;
+            return false;
+        }
+        const float CameraTimeBeforeTick = Fixture.Manager->GetCameraCacheTime();
+        Fixture.World->Tick(LEVELTICK_All, 1.f / 60.f);
+        // World::Tick already evaluated the camera and consumed its FOV offset.
+        // Inspect that cached result; evaluating the component twice would erase evidence.
+        const float ViewFOV = Fixture.Manager->GetFOVAngle();
+        UCameraShakeBase* Current = Fixture.Find(Fixture.Manager, UBwaySlideTestShake::StaticClass());
+        if (Step == 1)
+        {
+            if (!Test->TestNotNull(TEXT("World scheduler starts the configured slide shake"), Current)) return true;
+            Owned.Reset(Current);
+            Test->TestTrue(TEXT("World scheduler refreshes the camera cache"), Fixture.Manager->GetCameraCacheTime() > CameraTimeBeforeTick);
+            Test->TestTrue(TEXT("Camera cache belongs to this world tick"), FMath::IsNearlyEqual(Fixture.Manager->GetCameraCacheTime(), float(Fixture.World->GetTimeSeconds())));
+            Test->AddInfo(FString::Printf(TEXT("Scheduled slide camera: baselineFOV=%.6f slideFOV=%.6f cacheBefore=%.6f cacheAfter=%.6f worldTime=%.6f"),
+                BaseFOV, ViewFOV, CameraTimeBeforeTick, Fixture.Manager->GetCameraCacheTime(), Fixture.World->GetTimeSeconds()));
+            Test->TestTrue(TEXT("World scheduler applies slide FOV"), ViewFOV > BaseFOV);
+            Config->bReduceCameraShake = true;
+        }
+        else if (Step == 2)
+        {
+            Test->TestNull(TEXT("Enabling reduced shake removes active owned effect"), Current);
+            Test->TestTrue(TEXT("Setting applies immediately"), Fixture.Pattern(Owned.Get())->bLastStopImmediate);
+        }
+        else if (Step == 3)
+        {
+            Test->TestNull(TEXT("Reduced setting prevents restart on later world ticks"), Current);
+            Config->bReduceCameraShake = false;
+        }
+        else if (Step == 4)
+        {
+            if (!Test->TestNotNull(TEXT("Clearing setting permits one current owned effect"), Current)) return true;
+            Owned.Reset(Current);
+            Fixture.Movement->SetMovementMode(MOVE_Walking);
+        }
+        else if (Step == 5)
+        {
+            Test->TestTrue(TEXT("Normal exit preserves blend-out"), Current == Owned.Get());
+            Test->TestFalse(TEXT("Normal exit is not an immediate stop"), Fixture.Pattern(Owned.Get())->bLastStopImmediate);
+            Config->bReduceCameraShake = true;
+        }
+        else if (Step == 6)
+        {
+            Test->TestNull(TEXT("Setting change also removes an existing blend-out"), Current);
+            Test->TestTrue(TEXT("Blend-out reduction stops immediately"), Fixture.Pattern(Owned.Get())->bLastStopImmediate);
+            Fixture.Movement->SetMovementMode(MOVE_Custom, uint8(ECustomMovementMode::CMOVE_Slide));
+        }
+        else if (Step == 7)
+        {
+            Test->TestNull(TEXT("Reduced setting blocks a fresh slide entry"), Current);
+            Config->bReduceCameraShake = false;
+            Fixture.Controller->UnPossess();
+        }
+        else
+        {
+            Test->TestNull(TEXT("Unowned pawn cannot create local camera feedback"), Current);
+            Fixture.ExpectUnrelated();
+            return true;
+        }
+        Fixture.ExpectUnrelated();
+        ++Step;
+        return false;
+    }
+private:
+    FAutomationTestBase* Test;
+    FFixture Fixture;
+    TStrongObjectPtr<UBwayCombatReadabilityConfig> Config;
+    TUniquePtr<TGuardValue<bool>> PolicyGuard;
+    ULyraCameraComponent* Camera = nullptr;
+    TStrongObjectPtr<UCameraShakeBase> Owned;
+    float BaseFOV = 0.f;
+    int32 Step = 0;
+};
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideShakeWorldTickPolicyTest, "Breakaway.CombatPolish.Slide.CameraShake.WorldTickAndReducedSetting", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwaySlideShakeWorldTickPolicyTest::RunTest(const FString&)
+{
+    ADD_LATENT_AUTOMATION_COMMAND(BwaySlideCameraShakeTest::FWorldTickPolicyRun(this));
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideShakeProductionPatternTest, "Breakaway.CombatPolish.Slide.CameraShake.ProductionPattern", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwaySlideShakeProductionPatternTest::RunTest(const FString&)
+{
+    using namespace BwaySlideCameraShakeTest;
+    FFixture F(*this);
+    if (!F.Setup()) return false;
+    auto* Shake = F.Manager->StartCameraShake(UBwaySlideCameraShake::StaticClass());
+    if (!TestNotNull(TEXT("Production slide shake"), Shake)) return false;
+    auto* Pattern = Cast<UBwaySlideCameraShakePattern>(Shake->GetRootShakePattern());
+    if (!TestNotNull(TEXT("Configurable production pattern"), Pattern)) return false;
+    FCameraShakeInfo Info;
+    Shake->GetShakeInfo(Info);
+    TestTrue(TEXT("Pattern lasts until owner requests stop"), Info.Duration.IsInfinite());
+    float MaxPitch = 0.f, MaxYaw = 0.f;
+    for (int32 Index = 0; Index < 60; ++Index)
+    {
+        FMinimalViewInfo View;
+        F.Modifier(F.Manager)->ModifyCamera(1.f / 60.f, View);
+        MaxPitch = FMath::Max(MaxPitch, FMath::Abs(View.Rotation.Pitch));
+        MaxYaw = FMath::Max(MaxYaw, FMath::Abs(View.Rotation.Yaw));
+        TestTrue(TEXT("Pattern has no camera translation"), View.Location.IsNearlyZero());
+        TestTrue(TEXT("Pattern does not roll"), FMath::IsNearlyZero(View.Rotation.Roll));
+    }
+    TestTrue(TEXT("Pitch is visible and bounded by its configured amplitude"), MaxPitch > 0.f && MaxPitch <= Pattern->PitchAmplitude + KINDA_SMALL_NUMBER);
+    TestTrue(TEXT("Yaw is visible and bounded by its configured amplitude"), MaxYaw > 0.f && MaxYaw <= Pattern->YawAmplitude + KINDA_SMALL_NUMBER);
+    F.Manager->StopCameraShake(Shake, false);
+    F.AdvanceCamera(F.Manager, 0.05f);
+    TestTrue(TEXT("Normal release retains the authored blend-out"), F.Contains(F.Manager, Shake));
+    F.AdvanceCamera(F.Manager, Pattern->BlendOutSeconds + 0.05f);
+    TestFalse(TEXT("Owned pattern finishes after blend-out"), F.Contains(F.Manager, Shake));
+    F.ExpectUnrelated();
+    return true;
+}
+
 #endif

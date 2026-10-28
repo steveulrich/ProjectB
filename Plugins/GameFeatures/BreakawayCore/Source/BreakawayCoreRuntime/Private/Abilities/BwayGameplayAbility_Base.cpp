@@ -121,6 +121,7 @@ bool UBwayGameplayAbility_Base::CanActivateAbility(const FGameplayAbilitySpecHan
 
 void UBwayGameplayAbility_Base::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	if (IsInstantiated()) AbilityPresentationState.Reset();
 	const FString AbilityName = GetClass()->GetName();
 	
 	if (bEnableAbilityDebugLogging)
@@ -142,6 +143,32 @@ void UBwayGameplayAbility_Base::ActivateAbility(const FGameplayAbilitySpecHandle
 	
 	// Call parent implementation
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+}
+
+bool UBwayGameplayAbility_Base::CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, FGameplayTagContainer* OptionalRelevantTags)
+{
+	const bool bCommitted = Super::CommitAbility(Handle, ActorInfo, ActivationInfo, OptionalRelevantTags);
+	if (bCommitted && IsInstantiated() && IsActive() && ActorInfo)
+	{
+		AbilityPresentationState.Start(ActorInfo->AbilitySystemComponent.Get(), ActorInfo->AvatarActor.Get(), GetClass()->GetDefaultObject(),
+			Cue_Cast, Cue_Loop, Cue_End);
+	}
+	return bCommitted;
+}
+
+void UBwayGameplayAbility_Base::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	// Match GAS's deferred-end boundary: a scope-locked request has not ended yet.
+	if (IsInstantiated() && ScopeLockCount == 0 && IsEndAbilityValid(Handle, ActorInfo)) AbilityPresentationState.Stop(true);
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UBwayGameplayAbility_Base::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	if (IsInstantiated()) AbilityPresentationState.Stop(false);
+	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
 bool UBwayGameplayAbility_Base::IsEnemy(ABwayCharacterWithAbilities* OtherCharacter) const

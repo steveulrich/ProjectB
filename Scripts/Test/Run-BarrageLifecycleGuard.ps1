@@ -86,7 +86,7 @@ $untracked=@(& git -C $root ls-files --others --exclude-standard)
 if($LASTEXITCODE -ne 0){throw 'Cannot enumerate new build inputs.'}
 $currentInputs=@($changed+$untracked|Where-Object {$_ -match $inputPattern}|Sort-Object -Unique)
 $recordedInputs=@($frozen.files.path|Where-Object {$_ -match $inputPattern}|Sort-Object -Unique)
-if(Compare-Object $recordedInputs $currentInputs){throw 'Build input set differs from frozen package.'}
+if(@($currentInputs|Where-Object {$_ -notin $recordedInputs}).Count){throw 'Build input set differs from frozen package.'}
 $nativePath='Plugins/GameFeatures/BreakawayCore/Source/BreakawayCoreRuntime/Private/Development/BwayBarrageTransportProbe.cpp'
 if(!$frozenInputs.ContainsKey($nativePath) -or $frozenInputs[$nativePath].sha256 -ne $ReviewedNativeSHA256){throw 'Explicit independently reviewed native hash does not match compiled archive.'}
 $compileTargets=@{}

@@ -6,7 +6,9 @@
 #include "BwayCharacterWithAbilities.h"
 #include "BwayGameState.h"
 #include "Character/LyraHealthComponent.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/SceneComponent.h"
 #include "Engine/OverlapResult.h"
 #include "Engine/World.h"
 #include "EngineUtils.h"
@@ -31,6 +33,11 @@ ABwayAlonaSunShrineBuildable::ABwayAlonaSunShrineBuildable()
 	bPersistsBetweenRounds = true;
 	BuildTime = 0.f;
 	PrimaryActorTick.bCanEverTick = false;
+	PresentationRoot = CreateDefaultSubobject<USceneComponent>(TEXT("PresentationRoot"));
+	PresentationRoot->SetupAttachment(RootComponent);
+	PresentationRoot->SetIsReplicated(false);
+	Presentation = CreateDefaultSubobject<UBwayCuePresentationComponent>(TEXT("Presentation"));
+	Presentation->CueAttachComponent = PresentationRoot;
 
 	HealSphere = CreateDefaultSubobject<USphereComponent>(TEXT("HealSphere"));
 	HealSphere->SetupAttachment(RootComponent);
@@ -85,6 +92,7 @@ void ABwayAlonaSunShrineBuildable::BeginPlay()
 
 void ABwayAlonaSunShrineBuildable::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	Presentation->StopPresentation(false);
 	StopHealAura();
 	AlliesInRadius.Reset();
 
@@ -119,6 +127,7 @@ void ABwayAlonaSunShrineBuildable::StartHealAura()
 	}
 
 	bHealAuraActive = true;
+	Presentation->StartPresentation();
 	SeedAlliesAlreadyInRadius();
 
 	if (UWorld* World = GetWorld())
@@ -437,6 +446,7 @@ void ABwayAlonaSunShrineBuildable::HandleDeathStarted(AActor* OwningActor)
 	}
 
 	bDeathHandled = true;
+	Presentation->StopPresentation();
 	StopHealAura();
 	AlliesInRadius.Reset();
 	Destroy();

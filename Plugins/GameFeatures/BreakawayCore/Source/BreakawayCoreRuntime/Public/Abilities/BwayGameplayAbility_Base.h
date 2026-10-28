@@ -6,6 +6,7 @@
 #include "Abilities/BwayGameplayAbility.h"
 #include "BwayCharacterWithAbilities.h"
 #include "GameplayTagContainer.h"
+#include "Combat/BwayCuePresentationComponent.h"
 #include "BwayGameplayAbility_Base.generated.h"
 
 class UGameplayEffect;
@@ -26,6 +27,11 @@ public:
 	// Debug logging overrides
 	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayTagContainer* SourceTags = nullptr, const FGameplayTagContainer* TargetTags = nullptr, FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual bool CommitAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, FGameplayTagContainer* OptionalRelevantTags = nullptr) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo) const override;
 
@@ -100,7 +106,7 @@ protected:
 	UPROPERTY(Transient)
 	mutable TObjectPtr<ABwayCharacterWithAbilities> CachedCharacter;
 
-	/** Optional one-shot cast / impact / end tags and a loop tag for duration abilities. */
+	/** Optional post-commit cast cue. Leave unset for abilities already dispatching native cast cues. */
 	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
 	FGameplayTag Cue_Cast;
 
@@ -112,4 +118,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Presentation|Cues", meta = (Categories = "GameplayCue"))
 	FGameplayTag Cue_End;
+
+private:
+	FBwayCuePresentationState AbilityPresentationState;
 };
