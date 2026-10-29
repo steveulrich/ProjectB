@@ -30,6 +30,8 @@ UBwayHeroSelectionPhaseComponent::UBwayHeroSelectionPhaseComponent(const FObject
 
 	// BreakawayCore tags may not be registered while the CDO is constructed.
 	PhaseTag = FGameplayTag::RequestGameplayTag(FName("Breakaway.GamePhase.HeroSelection"), false);
+	HeroSelectionWidgetClass = TSoftClassPtr<UCommonActivatableWidget>(
+		FSoftObjectPath(TEXT("/BreakawayCore/UI/HeroSelect/W_HeroSelection.W_HeroSelection_C")));
 }
 
 void UBwayHeroSelectionPhaseComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -423,14 +425,6 @@ void UBwayHeroSelectionPhaseComponent::PushHeroSelectionUIToPlayers()
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: Pushing hero selection UI to players"));
 
 	TSoftClassPtr<UCommonActivatableWidget> ResolvedWidgetClass = HeroSelectionWidgetClass;
-	if (UBwayGameplayUrlLibrary::HasGameplayUrlOption(this, TEXT("ArenaIntro")))
-	{
-		const FSoftClassPath WHeroSelectionPath(TEXT("/BreakawayCore/UI/HeroSelect/W_HeroSelection.W_HeroSelection_C"));
-		if (UClass* LoadedWHeroSelect = WHeroSelectionPath.TryLoadClass<UCommonActivatableWidget>())
-		{
-			ResolvedWidgetClass = LoadedWHeroSelect;
-		}
-	}
 	if (ResolvedWidgetClass.IsNull())
 	{
 		const FSoftClassPath WHeroSelectionPath(TEXT("/BreakawayCore/UI/HeroSelect/W_HeroSelection.W_HeroSelection_C"));
@@ -600,6 +594,10 @@ void UBwayHeroSelectionPhaseComponent::HandleSelectionRosterChanged(APlayerState
 		if (auto* Manager = GetSelectionManager()) Manager->RefreshSelectionDeadline();
 		UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionPhaseComponent: late staging arrival keeps existing locks; selection window refreshed player=%d"), PS->GetPlayerId());
 	}
+	if (auto* Manager = GetSelectionManager())
+	{
+		Manager->ReconcileStagingBotSelections();
+	}
 	// Finish logout and replacement before evaluating the live roster. Multiple
 	// notifications in the same frame share one owned callback.
 	World->GetTimerManager().ClearTimer(RosterRecheckTimerHandle);
@@ -690,6 +688,21 @@ bool UBwayHeroSelectionPhaseComponent::TryTravelToPostHeroSelectionMap(bool bExp
 	TravelURL += TEXT("?SkipHeroSelection=1");
 	TravelURL += TEXT("?SeamlessTravel");
 	UBwayGameplayUrlLibrary::AppendMatchRulesToTravelUrl(TravelURL, OptionsString);
+
+	if (UBwayHeroSelectionManager* Manager = GetSelectionManager())
+	{
+		Manager->ReconcileStagingBotSelections();
+		const FString Team0Bots = Manager->BuildStagingBotHeroesOptionForTeam(0);
+		if (!Team0Bots.IsEmpty())
+		{
+			TravelURL += FString::Printf(TEXT("?StagingBotHeroes0=%s"), *Team0Bots);
+		}
+		const FString Team1Bots = Manager->BuildStagingBotHeroesOptionForTeam(1);
+		if (!Team1Bots.IsEmpty())
+		{
+			TravelURL += FString::Printf(TEXT("?StagingBotHeroes1=%s"), *Team1Bots);
+		}
+	}
 
 	// Mark the commit before crossing into engine travel callbacks. A failed
 	// request leaves selection open, with no unchanged automatic travel retry.

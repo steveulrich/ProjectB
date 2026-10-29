@@ -33,7 +33,8 @@ $logPrefix="packaged-$Candidate-$($Variant.ToLowerInvariant())-$Attempt"
 $resultPath=Join-Path $evidenceRoot "$logPrefix-result.json"
 $hostCommand=if($Variant -eq 'Rediscovery'){'bway.Test.LANBrowserReconnectHost'}else{'bway.Test.LANBrowserHost'}
 $clientCommand=if($Variant -eq 'Rediscovery'){'bway.Test.LANBrowserReconnectClient'}else{'bway.Test.LANBrowserClient'}
-$fixtureScope="Actual LAN browser entry joins and connected return/rehost; variant=$Variant; 200ms packet lag; optional synthetic round completion; physical and second-PC proof separate"
+$renderedClientRole = if ($Variant -eq 'SelectionEdges') { 'client3' } else { 'client1' }
+$fixtureScope="Actual LAN browser entry joins and connected return/rehost; variant=$Variant; topology=2 rendered D3D12 (640x360, host+$renderedClientRole) + 2 NullRHI witnesses; 200ms packet lag; optional synthetic round completion; physical and second-PC proof separate"
 $gameplayPattern='LogTemp: Display: BwayLANBrowser: Roster lap=2 phase=playing'
 $passPattern='LogTemp: Display: BwayLANBrowser: PASS .*laps=2'
 if($Variant -eq 'SelectionEdges'){
@@ -41,7 +42,7 @@ if($Variant -eq 'SelectionEdges'){
     $clientCommand='bway.Test.SelectionEdgesClient'
     $gameplayPattern='LogTemp: Display: BwaySelectionEdges: Gameplay '
     $passPattern='LogTemp: Display: BwaySelectionEdges: PASS '
-    $fixtureScope='Remote selection rejection, repeated locks, selection-time disconnect/browser rejoin, unique team rosters after travel; synthetic 120-second selection hold; four rendered processes at 200ms; physical and second-PC proof separate'
+    $fixtureScope="Remote selection rejection, repeated locks, selection-time disconnect/browser rejoin, unique team rosters after travel; synthetic 120-second selection hold; topology=2 rendered D3D12 (640x360, host+$renderedClientRole) + 2 NullRHI witnesses at 200ms packet lag; physical and second-PC proof separate"
 }
 if (!(Test-Path -LiteralPath $exe -PathType Leaf)) {throw 'Missing staged executable.'}
 $existing=@(@($resultPath)+@('host','client1','client2','client3' | ForEach-Object {Join-Path $evidenceRoot "$logPrefix-$_.log"}) | Where-Object {Test-Path -LiteralPath $_})
@@ -61,15 +62,24 @@ $started=[datetime]::UtcNow.ToString('o')
 function Start-Game([string]$Role,[string]$Command) {
     $log=Join-Path $evidenceRoot "$logPrefix-$Role.log"
     if (Test-Path -LiteralPath $log) {throw "Preserve existing log $log"}
-    $arguments=@('/Game/System/FrontEnd/Maps/L_LyraFrontEnd','-windowed','-ResX=800','-ResY=450','-nosound','-nosplash','-unattended','-seconds=700',"-abslog=`"$log`"",'-ExecCmds="t.MaxFPS 30"','-PktLag=200',"-ExecCmds=`"$Command`"")
+    $isRenderedPeer = ($Role -eq 'host' -or $Role -eq $renderedClientRole)
+    if ($isRenderedPeer) {
+        $winX = if ($Role -eq 'host') { 20 } else { 680 }
+        $renderArgs = @('-d3d12', "-WinX=$winX", '-WinY=20', '-ResX=640', '-ResY=360', '-ForceRes', '-Windowed', '-MaxFPS=30')
+        $winStyle = 'Normal'
+    } else {
+        $renderArgs = @('-NullRHI', '-MaxFPS=30')
+        $winStyle = 'Hidden'
+    }
+    $arguments=@('/Game/System/FrontEnd/Maps/L_LyraFrontEnd') + $renderArgs + @('-nosound','-nosplash','-unattended','-seconds=700',"-abslog=`"$log`"",'-PktLag=200',"-ExecCmds=`"$Command`"")
     $roleDiagnostics = @($DiagnosticExecCommands)
     if ($Role -eq 'host') { $roleDiagnostics += @($HostDiagnosticExecCommands) }
     elseif ($Role -like 'client*') { $roleDiagnostics += @($ClientDiagnosticExecCommands) }
     foreach ($diagnostic in $roleDiagnostics) { $arguments += "-ExecCmds=`"$diagnostic`"" }
-    $process=Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory (Split-Path -Parent $exe) -WindowStyle Hidden -PassThru
+    $process=Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory (Split-Path -Parent $exe) -WindowStyle $winStyle -PassThru
     $null=$process.Handle
     $owned.Add($process)
-    $records.Add([ordered]@{role=$Role;processId=$process.Id;log=$log;args=$arguments})
+    $records.Add([ordered]@{role=$Role;processId=$process.Id;rendered=$isRenderedPeer;rhiRequested=if($isRenderedPeer){'D3D12'}else{'NullRHI'};log=$log;args=$arguments})
     $observations[$Role]=@{offset=0L;text=''}
     return $process
 }

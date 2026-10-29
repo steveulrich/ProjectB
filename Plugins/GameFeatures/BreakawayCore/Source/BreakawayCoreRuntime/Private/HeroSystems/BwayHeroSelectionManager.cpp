@@ -3,6 +3,8 @@
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "BwayPlayerState.h"
 #include "BwayGameState.h"
+#include "GameModes/BwayGameplayUrlLibrary.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
@@ -27,6 +29,7 @@ void UBwayHeroSelectionManager::GetLifetimeReplicatedProps(TArray<FLifetimePrope
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UBwayHeroSelectionManager, PlayerSelections);
+	DOREPLIFETIME(UBwayHeroSelectionManager, StagingBotSelections);
 	DOREPLIFETIME(UBwayHeroSelectionManager, SelectionTimeRemaining);
 	DOREPLIFETIME(UBwayHeroSelectionManager, bSelectionActive);
 }
@@ -125,6 +128,8 @@ void UBwayHeroSelectionManager::RegisterPlayer(APlayerState* PlayerState)
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Registered player %s (Team %d)"), 
 		*PlayerState->GetPlayerName(), NewSelection.TeamIndex);
+
+	ReconcileStagingBotSelections();
 }
 
 void UBwayHeroSelectionManager::UnregisterPlayer(APlayerState* PlayerState)
@@ -146,6 +151,7 @@ void UBwayHeroSelectionManager::UnregisterPlayer(APlayerState* PlayerState)
 			}
 
 			PlayerSelections.RemoveAt(i);
+			ReconcileStagingBotSelections();
 			// Finish player/bot replacement before evaluating the remaining roster.
 			if (bSelectionActive && GetWorld() && !GetWorld()->bIsTearingDown)
 			{
@@ -266,6 +272,7 @@ void UBwayHeroSelectionManager::StartHeroSelection()
 	}
 
 	RefreshSelectionDeadline();
+	ReconcileStagingBotSelections();
 }
 
 void UBwayHeroSelectionManager::RefreshSelectionDeadline()
@@ -357,6 +364,9 @@ void UBwayHeroSelectionManager::ResetHeroSelection()
 		}
 	}
 
+	StagingBotSelections.Reset();
+	OnStagingBotSelectionsChanged.Broadcast();
+
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Hero selection reset"));
 }
 
@@ -392,6 +402,7 @@ void UBwayHeroSelectionManager::ForceLockAllPlayers()
 
 	UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Force locked all players with valid selections"));
 
+	ReconcileStagingBotSelections();
 	CheckAllPlayersReady();
 }
 
@@ -418,6 +429,11 @@ void UBwayHeroSelectionManager::OnRep_PlayerSelections()
 			}
 		}
 	}
+}
+
+void UBwayHeroSelectionManager::OnRep_StagingBotSelections()
+{
+	OnStagingBotSelectionsChanged.Broadcast();
 }
 
 // ========== PRIVATE HELPERS ==========
@@ -546,6 +562,9 @@ void UBwayHeroSelectionManager::UpdatePlayerSelection(APlayerState* PlayerState)
 				UE_LOG(LogTemp, Log, TEXT("BwayHeroSelectionManager: Player %s locked hero %s"), 
 					*PlayerState->GetPlayerName(), *Selection.SelectedHeroId.ToString());
 			}
+
+			// Reconcile pre-assigned staging bots before checking readiness so bot picks yield to humans immediately
+			ReconcileStagingBotSelections();
 
 			// Check if all ready
 			CheckAllPlayersReady();
@@ -781,12 +800,28 @@ FPrimaryAssetId UBwayHeroSelectionManager::ResolveFallbackHeroId(FPrimaryAssetId
 FPrimaryAssetId UBwayHeroSelectionManager::PickRandomHeroForTeam(int32 TeamIndex, FPrimaryAssetId FallbackHeroId) const
 {
 	TArray<FPrimaryAssetId> AvailableHeroIds;
+	TArray<FPrimaryAssetId> UnclaimedByStagingBots;
 	for (const FPrimaryAssetId& HeroId : GetRegisteredHeroIds())
 	{
 		if (HeroId.IsValid() && IsHeroAvailableForTeam(HeroId, TeamIndex))
 		{
 			AvailableHeroIds.Add(HeroId);
+			const bool bHeldByStagingBot = StagingBotSelections.ContainsByPredicate(
+				[TeamIndex, &HeroId](const FBwayStagingBotSelection& BotSel)
+				{
+					return BotSel.TeamIndex == TeamIndex && BotSel.SelectedHeroId == HeroId;
+				});
+			if (!bHeldByStagingBot)
+			{
+				UnclaimedByStagingBots.Add(HeroId);
+			}
 		}
+	}
+
+	if (UnclaimedByStagingBots.Num() > 0)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, UnclaimedByStagingBots.Num() - 1);
+		return UnclaimedByStagingBots[RandomIndex];
 	}
 
 	if (AvailableHeroIds.Num() > 0)
@@ -796,6 +831,217 @@ FPrimaryAssetId UBwayHeroSelectionManager::PickRandomHeroForTeam(int32 TeamIndex
 	}
 
 	return ResolveFallbackHeroId(FallbackHeroId);
+}
+
+void UBwayHeroSelectionManager::SetForceStagingBotPreAssignmentForTest(bool bEnable, int32 TestMaxBots)
+{
+	bForceStagingBotPreAssignmentForTest = bEnable;
+	ForcedStagingMaxBotsForTest = FMath::Clamp(TestMaxBots, 0, 8);
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		ReconcileStagingBotSelections();
+	}
+}
+
+bool UBwayHeroSelectionManager::ShouldPreAssignStagingBots() const
+{
+	if (bForceStagingBotPreAssignmentForTest)
+	{
+		return true;
+	}
+	return UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this);
+}
+
+void UBwayHeroSelectionManager::ReconcileStagingBotSelections()
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	if (!ShouldPreAssignStagingBots() || !bSelectionActive)
+	{
+		if (StagingBotSelections.Num() > 0)
+		{
+			StagingBotSelections.Reset();
+			OnStagingBotSelectionsChanged.Broadcast();
+		}
+		return;
+	}
+
+	const ABwayGameState* GameState = GetBwayGameState();
+	int32 HumansPerTeam[2] = {0, 0};
+	TSet<FPrimaryAssetId> HumanChosenHeroes[2];
+	int32 TotalActiveHumans = 0;
+
+	if (GameState)
+	{
+		for (APlayerState* PS : GameState->PlayerArray)
+		{
+			const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS);
+			if (!BwayPS || BwayPS->IsInactive() || BwayPS->IsOnlyASpectator() || BwayPS->IsABot())
+			{
+				continue;
+			}
+			++TotalActiveHumans;
+			int32 TeamIdx = GameState->GetPlayerTeam(BwayPS);
+			if (TeamIdx < 0 || TeamIdx > 1)
+			{
+				TeamIdx = (HumansPerTeam[0] <= HumansPerTeam[1]) ? 0 : 1;
+			}
+			++HumansPerTeam[TeamIdx];
+			if (BwayPS->GetSelectedHeroId().IsValid())
+			{
+				HumanChosenHeroes[TeamIdx].Add(BwayPS->GetSelectedHeroId());
+			}
+		}
+	}
+
+	int32 MaxBotsAllowed = 0;
+	if (bForceStagingBotPreAssignmentForTest)
+	{
+		MaxBotsAllowed = FMath::Clamp(ForcedStagingMaxBotsForTest, 0, FMath::Max(0, 8 - TotalActiveHumans));
+	}
+	else
+	{
+		int32 UrlNumBots = -1;
+		if (UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionInt(this, TEXT("NumBots"), UrlNumBots))
+		{
+			MaxBotsAllowed = FMath::Clamp(UrlNumBots, 0, FMath::Max(0, 8 - TotalActiveHumans));
+		}
+		else
+		{
+			MaxBotsAllowed = FMath::Max(0, 8 - FMath::Max(1, TotalActiveHumans));
+		}
+	}
+
+	int32 DesiredBotsPerTeam[2] = {0, 0};
+	for (int32 Assigned = 0; Assigned < MaxBotsAllowed; ++Assigned)
+	{
+		const int32 TotalTeam0 = HumansPerTeam[0] + DesiredBotsPerTeam[0];
+		const int32 TotalTeam1 = HumansPerTeam[1] + DesiredBotsPerTeam[1];
+		const bool bCanAddTeam0 = TotalTeam0 < 4;
+		const bool bCanAddTeam1 = TotalTeam1 < 4;
+		if (!bCanAddTeam0 && !bCanAddTeam1)
+		{
+			break;
+		}
+		if (bCanAddTeam0 && (!bCanAddTeam1 || TotalTeam0 <= TotalTeam1))
+		{
+			++DesiredBotsPerTeam[0];
+		}
+		else
+		{
+			++DesiredBotsPerTeam[1];
+		}
+	}
+
+	TArray<FPrimaryAssetId> SortedHeroIds = GetRegisteredHeroIds();
+	SortedHeroIds.Sort([](const FPrimaryAssetId& A, const FPrimaryAssetId& B)
+	{
+		return A.ToString() < B.ToString();
+	});
+
+	const bool bLockBots = AreAllPlayersReady();
+	TArray<FBwayStagingBotSelection> Rebuilt;
+	int32 RunningBotNumber = 1;
+
+	for (int32 TeamIdx = 0; TeamIdx < 2; ++TeamIdx)
+	{
+		TArray<FPrimaryAssetId> PreservedTeamBotHeroes;
+		for (const FBwayStagingBotSelection& Existing : StagingBotSelections)
+		{
+			if (Existing.TeamIndex == TeamIdx
+				&& Existing.SelectedHeroId.IsValid()
+				&& !HumanChosenHeroes[TeamIdx].Contains(Existing.SelectedHeroId)
+				&& !PreservedTeamBotHeroes.Contains(Existing.SelectedHeroId)
+				&& SortedHeroIds.Contains(Existing.SelectedHeroId))
+			{
+				PreservedTeamBotHeroes.Add(Existing.SelectedHeroId);
+			}
+		}
+
+		TSet<FPrimaryAssetId> TeamUsedHeroes = HumanChosenHeroes[TeamIdx];
+		for (int32 SlotIdx = 0; SlotIdx < DesiredBotsPerTeam[TeamIdx]; ++SlotIdx)
+		{
+			FPrimaryAssetId AssignedHeroId;
+			if (PreservedTeamBotHeroes.IsValidIndex(SlotIdx) && !TeamUsedHeroes.Contains(PreservedTeamBotHeroes[SlotIdx]))
+			{
+				AssignedHeroId = PreservedTeamBotHeroes[SlotIdx];
+			}
+			else if (SortedHeroIds.Num() > 0)
+			{
+				const int32 StartOffset = (TeamIdx * 2 + SlotIdx) % SortedHeroIds.Num();
+				for (int32 Offset = 0; Offset < SortedHeroIds.Num(); ++Offset)
+				{
+					const FPrimaryAssetId& Candidate = SortedHeroIds[(StartOffset + Offset) % SortedHeroIds.Num()];
+					if (!TeamUsedHeroes.Contains(Candidate))
+					{
+						AssignedHeroId = Candidate;
+						break;
+					}
+				}
+				if (!AssignedHeroId.IsValid())
+				{
+					AssignedHeroId = SortedHeroIds[StartOffset];
+				}
+			}
+
+			if (AssignedHeroId.IsValid())
+			{
+				TeamUsedHeroes.Add(AssignedHeroId);
+			}
+
+			FBwayStagingBotSelection Entry;
+			Entry.TeamIndex = TeamIdx;
+			Entry.BotSlotIndex = SlotIdx;
+			Entry.BotDisplayName = FString::Printf(TEXT("Breakaway Bot %d"), RunningBotNumber++);
+			Entry.SelectedHeroId = AssignedHeroId;
+			Entry.bIsLocked = bLockBots;
+			Rebuilt.Add(Entry);
+		}
+	}
+
+	bool bChanged = (Rebuilt.Num() != StagingBotSelections.Num());
+	if (!bChanged)
+	{
+		for (int32 i = 0; i < Rebuilt.Num(); ++i)
+		{
+			if (Rebuilt[i].TeamIndex != StagingBotSelections[i].TeamIndex
+				|| Rebuilt[i].BotSlotIndex != StagingBotSelections[i].BotSlotIndex
+				|| Rebuilt[i].BotDisplayName != StagingBotSelections[i].BotDisplayName
+				|| Rebuilt[i].SelectedHeroId != StagingBotSelections[i].SelectedHeroId
+				|| Rebuilt[i].bIsLocked != StagingBotSelections[i].bIsLocked)
+			{
+				bChanged = true;
+				break;
+			}
+		}
+	}
+
+	if (bChanged)
+	{
+		StagingBotSelections = MoveTemp(Rebuilt);
+		if (AActor* OwnerActor = GetOwner())
+		{
+			OwnerActor->ForceNetUpdate();
+		}
+		OnStagingBotSelectionsChanged.Broadcast();
+	}
+}
+
+FString UBwayHeroSelectionManager::BuildStagingBotHeroesOptionForTeam(int32 TeamIndex) const
+{
+	TArray<FString> Tokens;
+	for (const FBwayStagingBotSelection& BotSel : StagingBotSelections)
+	{
+		if (BotSel.TeamIndex == TeamIndex && BotSel.SelectedHeroId.IsValid())
+		{
+			// Serialize PrimaryAssetName only (no ':') because AGameModeBase::CanServerTravel rejects URLs containing ':' or '\'.
+			Tokens.Add(BotSel.SelectedHeroId.PrimaryAssetName.ToString());
+		}
+	}
+	return FString::Join(Tokens, TEXT(","));
 }
 
 TArray<FPrimaryAssetId> UBwayHeroSelectionManager::GetRegisteredHeroIds() const

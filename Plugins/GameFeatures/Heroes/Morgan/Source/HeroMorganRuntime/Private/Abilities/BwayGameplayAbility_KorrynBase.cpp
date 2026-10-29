@@ -40,3 +40,16 @@ void UBwayGameplayAbility_KorrynBase::ApplyCooldown(
 
 	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, DurationSeconds);
 }
+
+float UBwayGameplayAbility_KorrynBase::GetDisplayCooldownSeconds() const
+{
+	if (const UBwayKorrynKitConfig* Config = ResolveKitConfig())
+	{
+		const float KitCooldown = GetKitCooldownSeconds(*Config);
+		if (KitCooldown > 0.f)
+		{
+			return KitCooldown;
+		}
+	}
+	return Super::GetDisplayCooldownSeconds();
+}

@@ -18,6 +18,8 @@ class BREAKAWAYCORERUNTIME_API UBwayUserFacingExperienceDefinition : public ULyr
 	GENERATED_BODY()
 
 public:
+	UBwayUserFacingExperienceDefinition(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
 	// Keep the playlist family ID expected by Lyra's selection and session browser UI.
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 

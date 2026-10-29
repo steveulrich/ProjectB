@@ -7,19 +7,80 @@
 #include "GameState/BwayFrontendStateSubsystem.h"
 #include "BwayFrontEndFlowWidgets.generated.h"
 
-class UButton;
-class UTextBlock;
 class UBorder;
-class UOverlay;
-class UVerticalBox;
-class UHorizontalBox;
+class UButton;
+class UCircularThrobber;
 class UCommonSession_SearchResult;
 class UCommonSession_SearchSessionRequest;
+class UHorizontalBox;
+class UOverlay;
+class UScrollBox;
+class UTextBlock;
+class UVerticalBox;
+class UBwayCommonButton;
+struct FOnlineResultInformation;
+
+/** Distinct UI states for the Breakaway LAN Server Browser. */
+UENUM(BlueprintType)
+enum class EBwayServerBrowserViewState : uint8
+{
+	Searching,
+	Empty,
+	Populated,
+	Error
+};
+
+/** Presentation view-model for a single LAN session row in UBwayLocalMatchBrowserWidget. */
+USTRUCT(BlueprintType)
+struct BREAKAWAYCORERUNTIME_API FBwayServerBrowserRowViewModel
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FString SessionId;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FString SessionName;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FString PlaylistName;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FString MapName = TEXT("Dorado");
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	int32 CurrentPlayers = 1;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	int32 MaxPlayers = 8;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	int32 OpenPublicConnections = 7;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	int32 PingMs = 0;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	bool bIsFull = false;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	bool bIsUnreachable = false;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FText FormattedPlayerCount;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	FText FormattedPing;
+};
 
 /**
- * Phase 2.1: Breakaway Main Menu Screen (W_MainMenu)
- * Left-aligned vertical navigation list: PLAY, WARRIORS, HELP, SETTINGS, QUIT.
- * Top-right persistent party/profile header bar.
+ * Breakaway Front End Main Menu Screen (W_MainMenu)
+ * Clean Breakaway-only navigation list:
+ *   - Host LAN Match
+ *   - Find LAN Match
+ *   - Dev Practice / Bot Match
+ *   - Settings
+ *   - Quit
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayMainMenuWidget : public UCommonActivatableWidget
@@ -31,14 +92,21 @@ public:
 
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 
+	/** Opens the staging Match Lobby configured for a real LAN session (OnlineMode = LAN). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
-	UCommonActivatableWidget* ClickPlay();
+	UCommonActivatableWidget* ClickHostLanMatch();
 
+	/** Opens the LAN Server Browser (W_LocalMatchBrowser). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
-	void ClickWarriors();
+	UCommonActivatableWidget* ClickFindLanMatch();
 
+	/** Opens the staging Match Lobby configured for offline bot practice (OnlineMode = Offline, Bots Enabled). */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
-	void ClickHelp();
+	UCommonActivatableWidget* ClickDevPractice();
+
+	/** Pushes the Lyra/Breakaway Settings screen onto UI.Layer.Menu. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	UCommonActivatableWidget* OpenSettingsScreen();
 
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
 	void ClickSettings();
@@ -46,45 +114,64 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
 	void ClickQuit();
 
+	/** Compatibility alias routing legacy Play callers into Host LAN Match. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	UCommonActivatableWidget* ClickPlay() { return ClickHostLanMatch(); }
+
+	UBwayCommonButton* GetHostLanMatchButton() const { return HostLanMatchButton; }
+	UBwayCommonButton* GetFindLanMatchButton() const { return FindLanMatchButton; }
+	UBwayCommonButton* GetDevPracticeButton() const { return DevPracticeButton; }
+	UBwayCommonButton* GetSettingsButton() const { return SettingsButton; }
+	UBwayCommonButton* GetQuitButton() const { return QuitButton; }
+
+	/** Returns the exact visible menu flow button labels in top-to-bottom order. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	TArray<FString> GetVisibleMenuButtonLabels() const;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
 	TSoftClassPtr<UCommonActivatableWidget> ModeSelectionWidgetClass;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	TSoftClassPtr<UCommonActivatableWidget> LocalMatchBrowserWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	TSoftClassPtr<UCommonActivatableWidget> MatchLobbyWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
+	TSoftClassPtr<UCommonActivatableWidget> SettingsScreenClass;
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeOnActivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> PlayButton;
+	UCommonActivatableWidget* PushLobbyWithOnlineMode(bool bIsLanMatch, bool bForceBotsOn);
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> WarriorsButton;
+	TObjectPtr<UBwayCommonButton> HostLanMatchButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> HelpButton;
+	TObjectPtr<UBwayCommonButton> FindLanMatchButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> SettingsButton;
+	TObjectPtr<UBwayCommonButton> DevPracticeButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> QuitButton;
+	TObjectPtr<UBwayCommonButton> SettingsButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> QuitButton;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> ProfileNameText;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> StatusBannerText;
-
-private:
-	UFUNCTION()
-	void OnPlayButtonClicked();
 };
 
 /**
- * Phase 2.2: Breakaway Play / Mode Selection Screen (W_ModeSelection)
- * 5 horizontal angled mode cards: TUTORIAL, ARENA, VERSUS AI, CUSTOM, LOCAL.
- * Hovering LOCAL displays: "Host a local server. For dev testing only."
- * Bottom CANCEL button pops back to W_MainMenu.
+ * Legacy Mode Selection Screen class retained so existing W_ModeSelection Blueprint asset loads cleanly.
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayModeSelectionWidget : public UCommonActivatableWidget
@@ -119,38 +206,15 @@ public:
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeOnActivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
-	UFUNCTION() void OnTutorialClicked();
-	UFUNCTION() void OnArenaClicked();
-	UFUNCTION() void OnVersusAIClicked();
-	UFUNCTION() void OnCustomClicked();
-	UFUNCTION() void OnLocalClicked();
-
-	UFUNCTION() void OnTutorialHovered();
-	UFUNCTION() void OnArenaHovered();
-	UFUNCTION() void OnVersusAIHovered();
-	UFUNCTION() void OnCustomHovered();
-	UFUNCTION() void OnLocalHovered();
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> LocalCardButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> TutorialCardButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> ArenaCardButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> VersusAICardButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> CustomCardButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> LocalCardButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> CancelButton;
+	TObjectPtr<UBwayCommonButton> CancelButton;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> ModeDescriptionText;
@@ -159,10 +223,10 @@ protected:
 };
 
 /**
- * Phase 2.3: Breakaway Local Server Browser (W_LocalMatchBrowser)
- * Central server list panel showing REFRESHING SERVER LIST... -> NO GAMES IN PROGRESS
- * (or active LAN sessions) with manual Refresh button and bottom HOST MATCH button.
- * Clicking HOST MATCH displays CREATING SERVER... overlay and transitions to W_MatchLobby.
+ * Breakaway LAN Server Browser (W_LocalMatchBrowser)
+ * Displays discovered LAN sessions with Session Name, Map (Dorado), Player Count (X/8),
+ * Ping, focusable Join buttons, Searching spinner / Empty states, and Full / Unreachable
+ * error feedback with Retry focus recovery.
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayLocalMatchBrowserWidget : public UCommonActivatableWidget
@@ -178,6 +242,9 @@ public:
 	void RefreshServerList();
 
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ClickRetrySearch();
+
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
 	void ClickHostMatch();
 
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
@@ -186,35 +253,94 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
 	void ClickBack();
 
+	/** Validates row capacity/reachability and initiates JoinSession if joinable. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	bool RequestJoinRow(int32 RowIndex);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
 	bool IsCreatingServer() const { return bIsCreatingServer; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	EBwayServerBrowserViewState GetBrowserViewState() const { return ViewState; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	const TArray<FBwayServerBrowserRowViewModel>& GetRowViewModels() const { return RowViewModels; }
+
+	const TArray<TObjectPtr<UBwayCommonButton>>& GetRowJoinButtons() const { return RowJoinButtons; }
+	UCommonSession_SearchSessionRequest* GetActiveSearchRequest() const { return ActiveSearchRequest; }
+	const TArray<TObjectPtr<UCommonSession_SearchResult>>& GetDiscoveredSessions() const { return DiscoveredSessions; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	FText GetLastErrorMessage() const { return LastErrorMessage; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	bool IsSpinnerVisible() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	bool IsErrorBannerVisible() const;
+
+	UBwayCommonButton* GetRefreshButton() const { return RefreshButton; }
+	UBwayCommonButton* GetRetryButton() const { return RetryButton; }
+	UBwayCommonButton* GetHostMatchButton() const { return HostMatchButton; }
+	UBwayCommonButton* GetBackButton() const { return BackButton; }
+
+	/** Deterministic view-state injection used by UI automation and visual state audits. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ApplySyntheticBrowserStateForAudit(
+		EBwayServerBrowserViewState NewState,
+		const TArray<FBwayServerBrowserRowViewModel>& SyntheticRows,
+		const FText& ErrorText = FText::GetEmpty());
+
+	static FBwayServerBrowserRowViewModel BuildRowViewModelFromSearchResult(const UCommonSession_SearchResult* SearchResult, int32 Index);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
 	TSoftClassPtr<UCommonActivatableWidget> MatchLobbyWidgetClass;
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
-	void FinishSimulatedRefresh();
 	void HandleSessionSearchFinished(bool bSucceeded, const FText& ErrorMessage);
-	void JoinDiscoveredSession(int32 SessionIndex);
-
-	UFUNCTION() void OnSessionRow0Clicked();
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> RefreshButton;
+	void HandleJoinSessionComplete(const FOnlineResultInformation& Result);
+	void RebuildRowWidgets();
+	void RefreshBrowserStatePresentation();
+	void ShowActionableJoinError(const FText& ErrorText);
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> HostMatchButton;
+	TObjectPtr<UBwayCommonButton> RefreshButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> BackButton;
+	TObjectPtr<UBwayCommonButton> RetryButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> HostMatchButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> BackButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UHorizontalBox> SearchingStateBox;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCircularThrobber> SearchingSpinner;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> ServerListStatusText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> ServerListSubStatusText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> ErrorBannerBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> ErrorBannerText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UScrollBox> ServerRowsScrollBox;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UVerticalBox> ServerRowsBox;
@@ -228,15 +354,23 @@ protected:
 	UPROPERTY(Transient)
 	TArray<TObjectPtr<UCommonSession_SearchResult>> DiscoveredSessions;
 
-	FTimerHandle RefreshTimerHandle;
+	UPROPERTY(Transient)
+	TArray<FBwayServerBrowserRowViewModel> RowViewModels;
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UBwayCommonButton>> RowJoinButtons;
+
+	EBwayServerBrowserViewState ViewState = EBwayServerBrowserViewState::Searching;
+	FText LastErrorMessage;
+	FDelegateHandle JoinSessionCompleteHandle;
 	FTimerHandle CreatingServerTimerHandle;
 	bool bIsCreatingServer = false;
+	bool bPendingJoinAttempt = false;
 };
 
 /**
- * Phase 3.2: Breakaway Match Settings Modal (W_MatchSettingsModal)
+ * Breakaway Match Settings Modal (W_MatchSettingsModal)
  * Pushed when clicking MATCH OPTIONS in W_MatchLobby.
- * Horizontal Map Carousel, ENABLE BOTS toggle, BOT DIFFICULTY selector, ACCEPT and CANCEL.
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayMatchSettingsModalWidget : public UCommonActivatableWidget
@@ -278,24 +412,25 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Lobby")
 	EBwayBotDifficulty GetWorkingBotDifficulty() const { return WorkingBotDifficulty; }
 
+	UBwayCommonButton* GetEnableBotsButton() const { return EnableBotsButton; }
+	UBwayCommonButton* GetBotDifficultyButton() const { return BotDifficultyButton; }
+	UBwayCommonButton* GetAcceptButton() const { return AcceptButton; }
+	UBwayCommonButton* GetCancelButton() const { return CancelButton; }
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeOnActivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-
-	UFUNCTION() void OnPrevMapClicked();
-	UFUNCTION() void OnNextMapClicked();
-	UFUNCTION() void OnToggleBotsClicked();
-	UFUNCTION() void OnCycleDifficultyClicked();
 
 	void RefreshModalDisplay();
 	UBwayFrontendStateSubsystem* GetFrontendSubsystem() const;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> PrevMapButton;
+	TObjectPtr<UBwayCommonButton> PrevMapButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> NextMapButton;
+	TObjectPtr<UBwayCommonButton> NextMapButton;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> MapNameText;
@@ -304,22 +439,16 @@ protected:
 	TObjectPtr<UTextBlock> MapDescText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> EnableBotsButton;
+	TObjectPtr<UBwayCommonButton> EnableBotsButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UTextBlock> EnableBotsValueText;
+	TObjectPtr<UBwayCommonButton> BotDifficultyButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> BotDifficultyButton;
+	TObjectPtr<UBwayCommonButton> AcceptButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UTextBlock> BotDifficultyValueText;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> AcceptButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> CancelButton;
+	TObjectPtr<UBwayCommonButton> CancelButton;
 
 	int32 WorkingMapIndex = 0;
 	bool bWorkingBotsEnabled = true;
@@ -327,11 +456,10 @@ protected:
 };
 
 /**
- * Phase 3.1: Breakaway Custom Match Lobby (W_MatchLobby)
- * Displays selected Map Header, host controls (MATCH OPTIONS, INVITES, INVITE PLAYER),
- * read-only summary block (Bots Enabled, Bot Difficulty, Invites),
- * 3-Column Team Roster Grid (BLUE TEAM, RED TEAM, SPECTATORS, 4 slots each),
- * and bottom bar (Leave, Settings, START).
+ * Breakaway Match Lobby (W_MatchLobby)
+ * Configures match options (Bots On/Off, Bot Difficulty, Team Slot) before hosting
+ * either a real LAN session (Host LAN Match) or an offline practice match (Dev Practice / Bot Match)
+ * routed through L_BW_HeroSelect_Staging -> L_BW_Dorado.
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayMatchLobbyWidget : public UCommonActivatableWidget
@@ -361,48 +489,45 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Lobby")
 	void ClickStartMatch();
 
+	/** Hosts the configured session through UCommonSessionSubsystem (used by ClickStartMatch and LAN fixtures). */
+	bool HostConfiguredMatch(const TMap<FString, FString>& AdditionalExtraArgs, FString& OutAdvertisedPlaylist);
+
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|Lobby")
 	void RefreshLobbyDisplay();
+
+	UBwayCommonButton* GetMatchOptionsButton() const { return MatchOptionsButton; }
+	UBwayCommonButton* GetLeaveButton() const { return LeaveButton; }
+	UBwayCommonButton* GetStartButton() const { return StartButton; }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|Lobby")
 	TSoftClassPtr<UCommonActivatableWidget> MatchSettingsModalClass;
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
 	UBwayFrontendStateSubsystem* GetFrontendSubsystem() const;
 
-	UFUNCTION() void OnMatchOptionsClicked();
-	UFUNCTION() void OnBlueSlot0Clicked();
-	UFUNCTION() void OnBlueSlot1Clicked();
-	UFUNCTION() void OnBlueSlot2Clicked();
-	UFUNCTION() void OnBlueSlot3Clicked();
-	UFUNCTION() void OnRedSlot0Clicked();
-	UFUNCTION() void OnRedSlot1Clicked();
-	UFUNCTION() void OnRedSlot2Clicked();
-	UFUNCTION() void OnRedSlot3Clicked();
-	UFUNCTION() void OnSpecSlot0Clicked();
-	UFUNCTION() void OnSpecSlot1Clicked();
-	UFUNCTION() void OnSpecSlot2Clicked();
-	UFUNCTION() void OnSpecSlot3Clicked();
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> LobbyModeBadgeText;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> MapHeaderText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> MatchOptionsButton;
+	TObjectPtr<UBwayCommonButton> MatchOptionsButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> InvitesSelectorButton;
+	TObjectPtr<UBwayCommonButton> InvitesSelectorButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UTextBlock> InvitesButtonLabel;
+	TObjectPtr<UBwayCommonButton> InvitePlayerButton;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UButton> InvitePlayerButton;
+	TObjectPtr<UTextBlock> SummaryOnlineModeText;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> SummaryBotsEnabledText;
@@ -414,29 +539,20 @@ protected:
 	TObjectPtr<UTextBlock> SummaryInvitesText;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UButton>> BlueSlotButtons;
+	TArray<TObjectPtr<UBwayCommonButton>> BlueSlotButtons;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UTextBlock>> BlueSlotLabels;
+	TArray<TObjectPtr<UBwayCommonButton>> RedSlotButtons;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UButton>> RedSlotButtons;
+	TArray<TObjectPtr<UBwayCommonButton>> SpectatorSlotButtons;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UTextBlock>> RedSlotLabels;
+	TObjectPtr<UBwayCommonButton> LeaveButton;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UButton>> SpectatorSlotButtons;
+	TObjectPtr<UBwayCommonButton> SettingsButton;
 
 	UPROPERTY(Transient)
-	TArray<TObjectPtr<UTextBlock>> SpectatorSlotLabels;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> LeaveButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> SettingsButton;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UButton> StartButton;
+	TObjectPtr<UBwayCommonButton> StartButton;
 };

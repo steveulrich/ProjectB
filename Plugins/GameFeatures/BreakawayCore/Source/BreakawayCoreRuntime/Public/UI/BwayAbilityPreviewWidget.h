@@ -9,25 +9,29 @@
 
 class UTexture2D;
 class UMediaSource;
+class UBorder;
+class UImage;
+class UCommonTextBlock;
 
 /**
  * UBwayAbilityPreviewWidget
- * 
- * A widget for displaying ability preview information including
- * preview image/video, ability name, and description.
- * 
- * Designed to be extended in Blueprint for visual customization.
+ *
+ * Concrete C++ inspection row widget displaying a hero ability or signature buildable:
+ * icon, active input keybind badge, ability name, role tag (PRIMARY / KIT / ULTIMATE / BUILDABLE),
+ * reconciled cooldown readout, and description.
  */
-UCLASS(Abstract, Blueprintable, meta = (DisableNativeTick))
+UCLASS(BlueprintType, Blueprintable, meta = (DisableNativeTick))
 class BREAKAWAYCORERUNTIME_API UBwayAbilityPreviewWidget : public UCommonUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	UBwayAbilityPreviewWidget(const FObjectInitializer& ObjectInitializer);
+	UBwayAbilityPreviewWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual bool Initialize() override;
 
 	/**
-	 * Set the ability to preview
+	 * Set the ability or signature buildable to preview
 	 * @param AbilityInfo The ability display information
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability Preview")
@@ -35,12 +39,15 @@ public:
 
 	/**
 	 * Set the preview directly with individual parameters
-	 * @param PreviewImage The preview image
-	 * @param AbilityName The ability name
-	 * @param Description The ability description
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability Preview")
 	void SetAbilityPreviewDirect(UTexture2D* PreviewImage, const FText& AbilityName, const FText& Description);
+
+	/**
+	 * Updates only the resolved input key label (e.g. when local player switches KBM <-> Gamepad)
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Ability Preview")
+	void SetInputKeyLabelOverride(const FText& NewKeyLabel);
 
 	/**
 	 * Clear the current preview
@@ -56,29 +63,36 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
 	bool HasActivePreview() const { return bHasPreview; }
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
+	FText GetDisplayedAbilityName() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
+	FText GetDisplayedKeyLabel() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
+	FText GetDisplayedRoleLabel() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
+	FText GetDisplayedCooldownText() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Preview")
+	FText GetDisplayedDescription() const;
+
 protected:
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
+
+	void EnsureVisualTreeConstructed();
+	void RefreshVisualPresentation();
+
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 
-	/**
-	 * Called when a new ability preview is set
-	 * @param PreviewImage The preview image (may be null)
-	 * @param AbilityName The ability name
-	 * @param Description The ability description
-	 * @param bIsUltimate Whether this is an ultimate ability
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability Preview|Events")
 	void OnAbilityPreviewSet(UTexture2D* PreviewImage, const FText& AbilityName, const FText& Description, bool bIsUltimate);
 
-	/**
-	 * Called when preview video should be played (if available)
-	 * @param VideoSource The video media source (may be null)
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability Preview|Events")
 	void OnPreviewVideoAvailable(UMediaSource* VideoSource);
 
-	/**
-	 * Called when preview is cleared
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Ability Preview|Events")
 	void OnPreviewCleared();
 
@@ -92,12 +106,41 @@ protected:
 	bool bHasPreview = false;
 
 private:
-	/** Cached loaded preview image */
+	/** Cached loaded preview/icon image */
 	UPROPERTY()
 	TObjectPtr<UTexture2D> LoadedPreviewImage;
 
 	/** Cached loaded video source */
 	UPROPERTY()
 	TObjectPtr<UMediaSource> LoadedVideoSource;
-};
 
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> RowBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> IconBackdropBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> IconImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> KeyBadgeBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> KeyBadgeText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> AbilityNameText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> RoleBadgeBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> RoleBadgeText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> CooldownText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> DescriptionText;
+};

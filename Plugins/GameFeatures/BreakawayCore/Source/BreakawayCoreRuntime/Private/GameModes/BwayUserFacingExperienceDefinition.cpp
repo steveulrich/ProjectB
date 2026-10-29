@@ -45,6 +45,12 @@ FPrimaryAssetId UBwayUserFacingExperienceDefinition::GetPrimaryAssetId() const
 		: FPrimaryAssetId(FPrimaryAssetType(TEXT("LyraUserFacingExperienceDefinition")), GetFName());
 }
 
+UBwayUserFacingExperienceDefinition::UBwayUserFacingExperienceDefinition(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+	MaxPlayerCount = 8;
+}
+
 UCommonSession_HostSessionRequest* UBwayUserFacingExperienceDefinition::CreateHostingRequest(const UObject* WorldContextObject) const
 {
 	// The feature's mount can become available after the initial game asset scan.

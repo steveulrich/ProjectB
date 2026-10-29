@@ -19,6 +19,7 @@
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "CommonActivatableWidget.h"
+#include "CommonLocalPlayer.h"
 #include "CommonUIExtensions.h"
 #include "Development/BwayCheatManager.h"
 #include "Development/BwayCombatFixtureAbilities.h"
@@ -334,6 +335,11 @@ void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftC
 	if (!LocalPlayer)
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayPlayerController: Cannot show hero selection without a local player"));
+		return;
+	}
+	if (!LocalPlayer->GetGameInstance() || !Cast<UCommonLocalPlayer>(LocalPlayer))
+	{
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerController: Skipping CommonUI layer push for headless/non-CommonLocalPlayer fixture"));
 		return;
 	}
 
@@ -796,9 +802,11 @@ void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
 		if (ABwayGameState* GS = World->GetGameState<ABwayGameState>())
 		{
 			const UBwayRoundManagementComponent* RoundMgmt = GS->GetRoundManagement();
-			if (!RoundMgmt || RoundMgmt->GetCurrentMatchPhase() != EBwayMatchPhase::PostMatch)
+			const bool bIsLocalHost = HasAuthority() && IsLocalController();
+			const bool bIsPostMatch = RoundMgmt && RoundMgmt->GetCurrentMatchPhase() == EBwayMatchPhase::PostMatch;
+			if (!bIsLocalHost && !bIsPostMatch)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring results return request outside PostMatch"));
+				UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring return-to-frontend request from non-host outside PostMatch"));
 				return;
 			}
 			GS->ReturnToFrontEnd();

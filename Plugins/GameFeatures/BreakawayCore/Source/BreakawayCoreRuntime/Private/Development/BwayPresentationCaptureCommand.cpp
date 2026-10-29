@@ -81,8 +81,8 @@ APlayerController* FindLocalPlayer(int32 PlayerId, int32& Matches)
 		for (FConstPlayerControllerIterator It = World->GetPlayerControllerIterator(); It; ++It)
 		{
 			APlayerController* PC = It->Get();
-			if (IsValid(PC) && PC->IsLocalController() && PC->GetLocalPlayer() && PC->PlayerState
-				&& PC->PlayerState->GetPlayerId() == PlayerId)
+			if (!IsValid(PC) || !PC->IsLocalController() || !PC->GetLocalPlayer()) continue;
+			if (PlayerId == INDEX_NONE || (PC->PlayerState && PC->PlayerState->GetPlayerId() == PlayerId))
 			{
 				Selected = PC;
 				++Matches;
@@ -217,7 +217,9 @@ TSharedPtr<FRequest> Queue(const FString& Token, int32 PlayerId, const FString& 
 	if (Active.IsValid()) return nullptr;
 	Active = MakeShared<FRequest>();
 	Active->Token = Token; Active->PlayerId = PlayerId; Active->Label = Label; Active->MaximumBytes = MaximumBytes;
-	const FString BaseName = FString::Printf(TEXT("player%d-%s"), PlayerId, *Label);
+	const FString BaseName = PlayerId == INDEX_NONE
+		? FString::Printf(TEXT("local-%s"), *Label)
+		: FString::Printf(TEXT("player%d-%s"), PlayerId, *Label);
 	const FString Directory = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("Logs/PresentationCaptures"), Token);
 	Active->ImagePath = FPaths::ConvertRelativePathToFull(FPaths::Combine(Directory, BaseName + TEXT(".png")));
 	Active->RecordPath = FPaths::ChangeExtension(Active->ImagePath, TEXT("json"));
@@ -245,7 +247,7 @@ FAutoConsoleCommand Command(TEXT("bway.Test.CapturePresentation"),
 	{
 		int32 PlayerId = INDEX_NONE;
 		if (Args.Num() != 3 || !IsSafeName(Args[0]) || !LexTryParseString(PlayerId, *Args[1])
-			|| PlayerId < 0 || !IsSafeName(Args[2]))
+			|| PlayerId < INDEX_NONE || !IsSafeName(Args[2]))
 		{
 			UE_LOG(LogTemp, Error, TEXT("BwayPresentationCapture: FAIL reason=usage expected=<token> <local-player-id> <label> names=ASCII-alphanumeric-hyphen-underscore-max64"));
 			return;

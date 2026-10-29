@@ -14,6 +14,7 @@ class HEROALONARUNTIME_API UBwayGameplayAbility_AlonaBase : public UBwayGameplay
 
 public:
 	UBwayGameplayAbility_AlonaBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual float GetDisplayCooldownSeconds() const override;
 
 protected:
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

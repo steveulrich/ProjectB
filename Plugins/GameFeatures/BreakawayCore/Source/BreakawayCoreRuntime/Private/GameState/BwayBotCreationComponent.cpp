@@ -3,6 +3,7 @@
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
@@ -62,6 +63,9 @@ void UBwayBotCreationComponent::BeginPlay()
 void UBwayBotCreationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	GetWorld()->GetTimerManager().ClearTimer(PendingHumanTravelTimer);
+	bInitializedStagingBotHeroQueues = false;
+	PendingStagingBotHeroes[0].Reset();
+	PendingStagingBotHeroes[1].Reset();
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -114,6 +118,69 @@ int32 UBwayBotCreationComponent::GetUrlNumBotsOverride(int32 CurrentDefault) con
 	}
 
 	return CurrentDefault;
+}
+
+void UBwayBotCreationComponent::InitializeStagingBotHeroQueuesIfNeeded()
+{
+	if (bInitializedStagingBotHeroQueues)
+	{
+		return;
+	}
+	bInitializedStagingBotHeroQueues = true;
+	PendingStagingBotHeroes[0].Reset();
+	PendingStagingBotHeroes[1].Reset();
+
+	const FName OptionKeys[2] = { TEXT("StagingBotHeroes0"), TEXT("StagingBotHeroes1") };
+	for (int32 TeamIdx = 0; TeamIdx < 2; ++TeamIdx)
+	{
+		FString SerializedList;
+		if (!UBwayGameplayUrlLibrary::TryGetGameplayUrlOptionString(this, OptionKeys[TeamIdx], SerializedList)
+			|| SerializedList.IsEmpty())
+		{
+			continue;
+		}
+
+		TArray<FString> Tokens;
+		SerializedList.ParseIntoArray(Tokens, TEXT(","), true);
+		for (const FString& Token : Tokens)
+		{
+			const FString Trimmed = Token.TrimStartAndEnd();
+			if (Trimmed.IsEmpty())
+			{
+				continue;
+			}
+			const FPrimaryAssetId ParsedId = Trimmed.Contains(TEXT(":"))
+				? FPrimaryAssetId::FromString(Trimmed)
+				: FPrimaryAssetId(FPrimaryAssetType(TEXT("HeroDataAsset")), FName(*Trimmed));
+			if (ParsedId.IsValid())
+			{
+				PendingStagingBotHeroes[TeamIdx].Add(ParsedId);
+			}
+		}
+	}
+}
+
+FPrimaryAssetId UBwayBotCreationComponent::PopNextPreAssignedStagingBotHero(
+	int32 TeamIndex,
+	const UBwayHeroSelectionManager* SelectionManager)
+{
+	if (TeamIndex < 0 || TeamIndex > 1 || !SelectionManager)
+	{
+		return FPrimaryAssetId();
+	}
+
+	while (PendingStagingBotHeroes[TeamIndex].Num() > 0)
+	{
+		const FPrimaryAssetId CandidateId = PendingStagingBotHeroes[TeamIndex][0];
+		PendingStagingBotHeroes[TeamIndex].RemoveAt(0);
+		if (CandidateId.IsValid()
+			&& UBwayHeroRegistry::GetHeroDataById(CandidateId) != nullptr
+			&& SelectionManager->IsHeroAvailableForTeam(CandidateId, TeamIndex))
+		{
+			return CandidateId;
+		}
+	}
+	return FPrimaryAssetId();
 }
 
 int32 UBwayBotCreationComponent::GetTargetBotCount() const
@@ -310,22 +377,40 @@ void UBwayBotCreationComponent::SpawnOneBot()
 			{
 				const bool bLockImmediately = SelectionManager->IsSelectionActive()
 					|| !UBwayHeroSelectionFlowLibrary::IsDirectEditorPlayWithoutHeroSelectFlow(this);
-				const FPrimaryAssetId DirectPieBotHero = UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroId(this);
-				if (DirectPieBotHero.IsValid())
+
+				InitializeStagingBotHeroQueuesIfNeeded();
+				const int32 BotTeamIndex = GameState ? GameState->GetPlayerTeam(BotPlayerState) : -1;
+				const FPrimaryAssetId PreAssignedStagingHero = PopNextPreAssignedStagingBotHero(BotTeamIndex, SelectionManager);
+				bool bAssignedFromStaging = false;
+				if (PreAssignedStagingHero.IsValid())
 				{
-					// The editor preference cannot leave a bot unassigned when that
-					// hero is already taken by a teammate, including after rematch.
-					if (!SelectionManager->AssignHeroToPlayer(BotPlayerState, DirectPieBotHero, bLockImmediately))
+					bAssignedFromStaging = SelectionManager->AssignHeroToPlayer(BotPlayerState, PreAssignedStagingHero, bLockImmediately);
+					if (bAssignedFromStaging)
 					{
-						SelectionManager->AssignRandomHeroToPlayer(BotPlayerState, FPrimaryAssetId(), bLockImmediately);
+						UE_LOG(LogTemp, Log, TEXT("BwayBotCreation: Carried pre-assigned staging hero %s to %s (Team %d)"),
+							*PreAssignedStagingHero.ToString(), *BotPlayerState->GetPlayerName(), BotTeamIndex);
 					}
 				}
-				else
+
+				if (!bAssignedFromStaging)
 				{
-					SelectionManager->AssignRandomHeroToPlayer(
-						BotPlayerState,
-						FPrimaryAssetId(),
-						bLockImmediately);
+					const FPrimaryAssetId DirectPieBotHero = UBwayHeroSelectionFlowLibrary::ResolveDirectPieBotHeroId(this);
+					if (DirectPieBotHero.IsValid())
+					{
+						// The editor preference cannot leave a bot unassigned when that
+						// hero is already taken by a teammate, including after rematch.
+						if (!SelectionManager->AssignHeroToPlayer(BotPlayerState, DirectPieBotHero, bLockImmediately))
+						{
+							SelectionManager->AssignRandomHeroToPlayer(BotPlayerState, FPrimaryAssetId(), bLockImmediately);
+						}
+					}
+					else
+					{
+						SelectionManager->AssignRandomHeroToPlayer(
+							BotPlayerState,
+							FPrimaryAssetId(),
+							bLockImmediately);
+					}
 				}
 			}
 		}
@@ -461,6 +546,9 @@ void UBwayBotCreationComponent::ShutdownAllBotsForTravel()
 {
 	GetWorld()->GetTimerManager().ClearTimer(PendingHumanTravelTimer);
 	bWaitingForHumanTravel = false;
+	bInitializedStagingBotHeroQueues = false;
+	PendingStagingBotHeroes[0].Reset();
+	PendingStagingBotHeroes[1].Reset();
 	if (!GetOwner()->HasAuthority())
 	{
 		return;

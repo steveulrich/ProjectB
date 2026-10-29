@@ -40,3 +40,16 @@ void UBwayGameplayAbility_RawlinsBase::ApplyCooldown(
 
 	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, DurationSeconds);
 }
+
+float UBwayGameplayAbility_RawlinsBase::GetDisplayCooldownSeconds() const
+{
+	if (const UBwayRawlinsKitConfig* Config = ResolveKitConfig())
+	{
+		const float KitCooldown = GetKitCooldownSeconds(*Config);
+		if (KitCooldown > 0.f)
+		{
+			return KitCooldown;
+		}
+	}
+	return Super::GetDisplayCooldownSeconds();
+}

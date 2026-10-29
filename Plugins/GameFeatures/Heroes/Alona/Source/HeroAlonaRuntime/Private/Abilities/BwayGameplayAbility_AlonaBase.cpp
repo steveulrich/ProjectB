@@ -40,3 +40,16 @@ void UBwayGameplayAbility_AlonaBase::ApplyCooldown(
 
 	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, DurationSeconds);
 }
+
+float UBwayGameplayAbility_AlonaBase::GetDisplayCooldownSeconds() const
+{
+	if (const UBwayAlonaKitConfig* Config = ResolveKitConfig())
+	{
+		const float KitCooldown = GetKitCooldownSeconds(*Config);
+		if (KitCooldown > 0.f)
+		{
+			return KitCooldown;
+		}
+	}
+	return Super::GetDisplayCooldownSeconds();
+}

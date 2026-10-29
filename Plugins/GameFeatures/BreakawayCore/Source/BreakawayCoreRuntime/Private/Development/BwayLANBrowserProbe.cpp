@@ -21,6 +21,8 @@
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "PrimaryGameLayout.h"
+#include "UI/BwayCommonButton.h"
+#include "UI/BwayFrontEndFlowWidgets.h"
 #include "UI/BwayMatchBreakdownWidget.h"
 #include "UObject/UObjectIterator.h"
 #include "UObject/UnrealType.h"
@@ -49,13 +51,23 @@ T* ObjectProperty(UObject* Object, FName Name)
 	return Property ? Cast<T>(Property->GetObjectPropertyValue_InContainer(Object)) : nullptr;
 }
 
-UCommonActivatableWidget* Frontend(APlayerController* PC)
+UBwayMainMenuWidget* Frontend(APlayerController* PC, bool* OutLegacyShooterActive = nullptr)
 {
+	if (OutLegacyShooterActive) *OutLegacyShooterActive = false;
+	UBwayMainMenuWidget* FoundMainMenu = nullptr;
 	for (TObjectIterator<UCommonActivatableWidget> It; It; ++It)
 	{
-		if (It->GetOwningPlayer() == PC && It->IsActivated() && It->GetClass()->GetName() == TEXT("W_LyraFrontEnd_C")) return *It;
+		if (It->IsTemplate() || It->GetOwningPlayer() != PC || !It->IsActivated()) continue;
+		if (It->GetClass()->GetName() == TEXT("W_LyraFrontEnd_C"))
+		{
+			if (OutLegacyShooterActive) *OutLegacyShooterActive = true;
+		}
+		else if (auto* MainMenu = Cast<UBwayMainMenuWidget>(*It))
+		{
+			FoundMainMenu = MainMenu;
+		}
 	}
-	return nullptr;
+	return FoundMainMenu;
 }
 
 UBwayMatchBreakdownWidget* Results(APlayerController* PC)
@@ -75,7 +87,8 @@ struct FProbe
 	int32 Lap = 1;
 	double Started = FPlatformTime::Seconds();
 	double Since = Started;
-	TWeakObjectPtr<UCommonActivatableWidget> Browser;
+	double LastBrowserRefresh = 0.0;
+	TWeakObjectPtr<UBwayLocalMatchBrowserWidget> Browser;
 	TWeakObjectPtr<UCommonSession_SearchSessionRequest> FirstSearch;
 	FString FirstSessionId;
 	bool LoggedWaitingRoster = false;
@@ -134,33 +147,38 @@ struct FProbe
 	}
 	bool HostSession(UWorld* World, APlayerController* PC)
 	{
-		UCommonSessionSubsystem* Sessions = World->GetGameInstance()->GetSubsystem<UCommonSessionSubsystem>();
-		const auto* Playlist = LoadObject<UBwayUserFacingExperienceDefinition>(nullptr,
-			TEXT("/Game/System/DA_Playlist_CTR_LAN.DA_Playlist_CTR_LAN"));
-		UCommonSession_HostSessionRequest* Request = Playlist ? Playlist->CreateHostingRequest(World) : nullptr;
-		if (!Sessions || !Request || Request->OnlineMode != ECommonSessionOnlineMode::LAN || Request->bUseLobbies)
+		bool bLegacyShooter = false;
+		UBwayMainMenuWidget* MainMenu = Frontend(PC, &bLegacyShooter);
+		if (bLegacyShooter) return Fail(TEXT("legacy-shooter-frontend-active"));
+		if (!MainMenu) return Fail(TEXT("breakaway-main-menu-missing"));
+		auto* Lobby = Cast<UBwayMatchLobbyWidget>(MainMenu->ClickHostLanMatch());
+		if (!Lobby || !Lobby->IsActivated()) return Fail(TEXT("host-lan-lobby-open-failed"));
+		// Shorten this session-flow fixture only. Results are driven by production EndRound;
+		// this is explicitly not evidence of natural combat or a goal scored by player input.
+		TMap<FString, FString> FixtureArgs;
+		FixtureArgs.Add(TEXT("NumBots"), TEXT("4"));
+		FixtureArgs.Add(TEXT("PointsToWin"), TEXT("1"));
+		FixtureArgs.Add(TEXT("RoundDuration"), TEXT("180"));
+		FixtureArgs.Add(TEXT("WarmupDuration"), TEXT("3"));
+		FixtureArgs.Add(TEXT("PostRoundDuration"), TEXT("2"));
+		FString AdvertisedPlaylist;
+		if (!Lobby->HostConfiguredMatch(FixtureArgs, AdvertisedPlaylist))
 		{
 			return Fail(TEXT("invalid-lan-playlist"));
 		}
-		// Shorten this session-flow fixture only. Results are driven by production EndRound;
-		// this is explicitly not evidence of natural combat or a goal scored by player input.
-		Request->ExtraArgs.Add(TEXT("NumBots"), TEXT("4"));
-		Request->ExtraArgs.Add(TEXT("PointsToWin"), TEXT("1"));
-		Request->ExtraArgs.Add(TEXT("RoundDuration"), TEXT("180"));
-		Request->ExtraArgs.Add(TEXT("WarmupDuration"), TEXT("3"));
-		Request->ExtraArgs.Add(TEXT("PostRoundDuration"), TEXT("2"));
-		Sessions->HostSession(PC, Request);
-		UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: Hosted lap=%d mode=LAN playlist=%s"), Lap, *Request->ModeNameForAdvertisement);
+		UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: Hosted lap=%d mode=LAN playlist=%s via=UBwayMatchLobbyWidget"), Lap, *AdvertisedPlaylist);
 		return true;
 	}
 	bool OpenBrowser(APlayerController* PC)
 	{
-		UClass* Class = LoadClass<UCommonActivatableWidget>(nullptr,
-			TEXT("/Game/UI/Menu/Experiences/W_SessionBrowserScreen.W_SessionBrowserScreen_C"));
-		Browser = Class ? UCommonUIExtensions::PushContentToLayer_ForPlayer(PC->GetLocalPlayer(),
-			FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Menu")), Class) : nullptr;
-		if (!Browser.IsValid()) return Fail(TEXT("browser-push-failed"));
-		UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: BrowserOpened lap=%d owner=%d"), Lap, PC->PlayerState ? PC->PlayerState->GetPlayerId() : -1);
+		bool bLegacyShooter = false;
+		UBwayMainMenuWidget* MainMenu = Frontend(PC, &bLegacyShooter);
+		if (bLegacyShooter) return Fail(TEXT("legacy-shooter-frontend-active"));
+		if (!MainMenu) return Fail(TEXT("breakaway-main-menu-missing"));
+		Browser = Cast<UBwayLocalMatchBrowserWidget>(MainMenu->ClickFindLanMatch());
+		if (!Browser.IsValid() || !Browser->IsActivated()) return Fail(TEXT("browser-push-failed"));
+		LastBrowserRefresh = FPlatformTime::Seconds();
+		UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: BrowserOpened lap=%d owner=%d widget=UBwayLocalMatchBrowserWidget"), Lap, PC->PlayerState ? PC->PlayerState->GetPlayerId() : -1);
 		Advance(1);
 		return true;
 	}
@@ -231,22 +249,37 @@ struct FProbe
 		}
 		else if (Step == 1)
 		{
-			UCommonActivatableWidget* Screen = Browser.Get();
+			UBwayLocalMatchBrowserWidget* Screen = Browser.Get();
 			if (!Screen || !Screen->IsActivated()) return Fail(TEXT("browser-lost-before-join"));
-			auto* Request = ObjectProperty<UCommonSession_SearchSessionRequest>(Screen, TEXT("SearchRequest"));
-			auto* List = Cast<UListView>(Screen->GetWidgetFromName(TEXT("LyraListView")));
-			if (!Request || !List || List->GetNumItems() == 0) return true;
-			if (Request->OnlineMode != ECommonSessionOnlineMode::LAN || Request->bUseLobbies) return Fail(TEXT("search-not-lan"));
-			for (UObject* Item : List->GetListItems())
+			UCommonSession_SearchSessionRequest* Request = Screen->GetActiveSearchRequest();
+			if (Request && (Request->OnlineMode != ECommonSessionOnlineMode::LAN || Request->bUseLobbies)) return Fail(TEXT("search-not-lan"));
+			const EBwayServerBrowserViewState ViewState = Screen->GetBrowserViewState();
+			if (ViewState == EBwayServerBrowserViewState::Searching) return true;
+			if (ViewState == EBwayServerBrowserViewState::Empty || ViewState == EBwayServerBrowserViewState::Error)
 			{
-				auto* Result = Cast<UCommonSession_SearchResult>(Item);
-				FString Mode; bool Found = false;
-				if (Result) Result->GetStringSetting(TEXT("GAMEMODE"), Mode, Found);
-				if (!Found || Mode != TEXT("DA_Playlist_CTR_LAN")) continue;
-				UUserWidget* Entry = List->GetEntryWidgetFromItem<UUserWidget>(Item);
-				if (!Entry || ObjectProperty<UCommonSession_SearchResult>(Entry, TEXT("SessionEntry")) != Result) return true;
-				UFunction* Join = Entry->FindFunction(TEXT("JoinSession"));
-				if (!Join || Join->NumParms != 0) return Fail(TEXT("join-entry-interface-changed"));
+				if (Now - LastBrowserRefresh >= 2.5)
+				{
+					LastBrowserRefresh = Now;
+					Screen->RefreshServerList();
+				}
+				return true;
+			}
+			const TArray<FBwayServerBrowserRowViewModel>& Rows = Screen->GetRowViewModels();
+			const TArray<TObjectPtr<UCommonSession_SearchResult>>& Discovered = Screen->GetDiscoveredSessions();
+			const TArray<TObjectPtr<UBwayCommonButton>>& JoinButtons = Screen->GetRowJoinButtons();
+			if (!Request || Rows.IsEmpty() || Discovered.Num() != Rows.Num() || JoinButtons.Num() != Rows.Num()) return true;
+			for (int32 RowIdx = 0; RowIdx < Rows.Num(); ++RowIdx)
+			{
+				const FBwayServerBrowserRowViewModel& Row = Rows[RowIdx];
+				UCommonSession_SearchResult* Result = Discovered[RowIdx];
+				UBwayCommonButton* JoinBtn = JoinButtons[RowIdx];
+				if (!Result || !JoinBtn || Row.PlaylistName != TEXT("DA_Playlist_CTR_LAN")) continue;
+				if (Row.SessionName.IsEmpty() || !Row.MapName.Contains(TEXT("Dorado")) || Row.MaxPlayers != 8
+					|| !Row.FormattedPlayerCount.ToString().EndsWith(TEXT("/8")))
+				{
+					return Fail(TEXT("browser-row-metadata-invalid"));
+				}
+				if (Row.bIsFull || Row.bIsUnreachable || !JoinBtn->GetIsEnabled()) continue;
 				const FString SessionId = Result->GetDescription();
 				if (Reconnect)
 				{
@@ -255,13 +288,19 @@ struct FProbe
 					else if (FirstSearch.Get() == Request || FirstSessionId == SessionId) return Fail(TEXT("stale-rediscovery"));
 					UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: SearchIdentity lap=%d session=%s fresh=1"), Lap, *SessionId);
 				}
-				UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: Discovered lap=%d results=%d entries=%d playlist=%s open=%d capacity=%d"),
-					Lap, Request->Results.Num(), List->GetDisplayedEntryWidgets().Num(), *Mode,
+				UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: Discovered lap=%d results=%d entries=%d playlist=%s map=%s players=%s ping=%s open=%d capacity=%d"),
+					Lap, Request->Results.Num(), Rows.Num(), *Row.PlaylistName, *Row.MapName,
+					*Row.FormattedPlayerCount.ToString(), *Row.FormattedPing.ToString(),
 					Result->GetNumOpenPublicConnections(), Result->GetMaxPublicConnections());
 				Advance(2);
-				Entry->ProcessEvent(Join, nullptr);
+				if (!JoinBtn->SimulateClick()) return Fail(TEXT("browser-join-button-click-failed"));
 				UE_LOG(LogTemp, Display, TEXT("BwayLANBrowser: EntryJoinRequested lap=%d"), Lap);
 				return true;
+			}
+			if (Now - LastBrowserRefresh >= 2.5)
+			{
+				LastBrowserRefresh = Now;
+				Screen->RefreshServerList();
 			}
 		}
 		else if (Step == 2 && IsStaging && World->GetNetMode() == (Host ? NM_ListenServer : NM_Client))

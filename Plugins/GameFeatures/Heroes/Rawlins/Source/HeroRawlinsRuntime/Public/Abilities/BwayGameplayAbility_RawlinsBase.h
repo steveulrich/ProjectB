@@ -14,6 +14,7 @@ class HERORAWLINSRUNTIME_API UBwayGameplayAbility_RawlinsBase : public UBwayGame
 
 public:
 	UBwayGameplayAbility_RawlinsBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual float GetDisplayCooldownSeconds() const override;
 
 protected:
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

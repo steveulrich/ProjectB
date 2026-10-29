@@ -6,6 +6,7 @@
 #include "BwayHeroAbilityUILibrary.generated.h"
 
 class UAbilitySystemComponent;
+class ULocalPlayer;
 class ULyraAbilitySet;
 class ULyraGameplayAbility;
 
@@ -59,4 +60,12 @@ public:
 		FGameplayTag InputTag,
 		const TArray<ULyraAbilitySet*>& AbilitySets,
 		TSubclassOf<ULyraGameplayAbility>& OutAbilityClass);
+
+	/** Resolve compact keybind label for an InputTag from active local-player mappings or authored humanoid IMCs. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Ability UI")
+	static FText ResolveKeyLabelForInputTag(FGameplayTag InputTag, const ULocalPlayer* OptionalLocalPlayer = nullptr);
+
+	/** Resolve non-duplicated shared humanoid movement summary (Jump + Slide / Slide-Jump) from active mappings. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|Ability UI")
+	static FText ResolveSharedMovementSummaryText(const ULocalPlayer* OptionalLocalPlayer = nullptr);
 };

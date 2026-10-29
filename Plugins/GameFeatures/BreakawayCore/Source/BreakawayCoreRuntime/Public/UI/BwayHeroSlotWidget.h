@@ -9,7 +9,7 @@
 
 class UTexture2D;
 class UImage;
-class UTextBlock;
+class UCommonTextBlock;
 class UBorder;
 
 /**
@@ -18,21 +18,27 @@ class UBorder;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroSlotClicked, FPrimaryAssetId, HeroId);
 
 /**
- * UBwayHeroSlotWidget
- * 
- * A button widget representing a single hero in the character selection grid.
- * Handles portrait display, selection highlighting, availability states,
- * and player ownership indicators (P1, P2, etc.).
- * 
- * Designed to be extended in Blueprint for visual customization.
+ * Delegate fired when a hero slot is hovered or receives controller/keyboard focus
  */
-UCLASS(Abstract, Blueprintable, meta = (DisableNativeTick))
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHeroSlotFocusedOrHovered, FPrimaryAssetId, HeroId);
+
+/**
+ * UBwayHeroSlotWidget
+ *
+ * Concrete CommonUI hero card in the staging hero selection roster grid.
+ * Displays hero portrait, display name, reconciled class badge (Fighter, Support,
+ * Debuff Support, Shooter), selection/focus highlight, teammate ownership indicator,
+ * and lock state.
+ */
+UCLASS(BlueprintType, Blueprintable, meta = (DisableNativeTick))
 class BREAKAWAYCORERUNTIME_API UBwayHeroSlotWidget : public UCommonButtonBase
 {
 	GENERATED_BODY()
 
 public:
-	UBwayHeroSlotWidget(const FObjectInitializer& ObjectInitializer);
+	UBwayHeroSlotWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual bool Initialize() override;
 
 	/**
 	 * Set the hero data for this slot
@@ -49,6 +55,12 @@ public:
 	void SetSelectionState(bool bNewSelectedState);
 
 	/**
+	 * Set whether this slot is currently inspected in the Kit & Buildable panel
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Slot")
+	void SetInspectedState(bool bNewInspectedState);
+
+	/**
 	 * Set the player indicator badge (P1, P2, etc.)
 	 * @param PlayerIndex The player index (0-based), -1 to hide
 	 */
@@ -63,84 +75,104 @@ public:
 	void SetAvailability(bool bAvailable);
 
 	/**
-	 * Set whether this hero is locked (owned by another player on the team)
-	 * @param bInLocked True if locked by another player
+	 * Set whether this hero is locked
+	 * @param bInLocked True if locked
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Hero Slot")
 	void SetLockedState(bool bInLocked);
+
+	/**
+	 * Disables/enables grid switching across all slots when the local player locks/unlocks
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Hero Slot")
+	void SetLocalPhaseLockedState(bool bInLocalPhaseLocked);
+
+	/** Programmatically invokes slot click when enabled and unlocked */
+	UFUNCTION(BlueprintCallable, Category = "Hero Slot")
+	bool SimulateClick();
 
 	/** Get the hero ID assigned to this slot */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
 	FPrimaryAssetId GetHeroId() const { return HeroId; }
 
+	/** Get the hero display name */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	FText GetHeroDisplayName() const { return HeroDisplayName; }
+
+	/** Get the hero's reconciled class badge display text */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	FText GetHeroClassName() const { return HeroClassName; }
+
+	/** Get the hero's portrait texture */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	UTexture2D* GetHeroPortrait() const { return HeroPortrait; }
+
 	/** Check if this slot is currently selected */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
 	bool IsSlotSelected() const { return bIsSelected; }
+
+	/** Check if this slot is currently locked */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	bool IsSlotLocked() const { return bIsLocked; }
+
+	/** Check if local player lock has disabled grid switching on this slot */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	bool IsLocalPhaseLocked() const { return bLocalPhaseLocked; }
 
 	/** Check if this hero is available */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
 	bool IsHeroAvailable() const { return bIsAvailable; }
 
+	/** Check if this slot currently has focus visual active */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	bool IsVisuallyFocused() const { return bHasFocusVisual; }
+
+	/** Returns the rendered status badge text (LOCKED / TAKEN / P# / READY) */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
+	FText GetStatusBadgeText() const;
+
 	/** Delegate fired when this slot is clicked */
 	UPROPERTY(BlueprintAssignable, Category = "Hero Slot|Events")
 	FOnHeroSlotClicked OnHeroSlotClicked;
 
+	/** Delegate fired when this slot is hovered or focused (for live kit/3D preview) */
+	UPROPERTY(BlueprintAssignable, Category = "Hero Slot|Events")
+	FOnHeroSlotFocusedOrHovered OnHeroSlotFocusedOrHovered;
+
 protected:
-	//~ Begin UUserWidget Interface
+	//~ Begin UUserWidget / UCommonButtonBase Interface
 	virtual void NativeConstruct() override;
 	virtual void NativeOnClicked() override;
 	virtual void NativeOnHovered() override;
 	virtual void NativeOnUnhovered() override;
-	//~ End UUserWidget Interface
+	virtual void NativeOnAddedToFocusPath(const FFocusEvent& InFocusEvent) override;
+	virtual void NativeOnRemovedFromFocusPath(const FFocusEvent& InFocusEvent) override;
+	//~ End UUserWidget / UCommonButtonBase Interface
+
+	void EnsureVisualTreeConstructed();
+	void RefreshInteractability();
+	void RefreshVisualPresentation();
 
 	// ========== BLUEPRINT IMPLEMENTABLE EVENTS ==========
 
-	/**
-	 * Called when hero data is set - update your visuals here
-	 * @param Portrait The hero's portrait texture (may be null)
-	 * @param DisplayName The hero's display name
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnHeroDataSet(UTexture2D* Portrait, const FText& DisplayName);
 
-	/**
-	 * Called when selection state changes
-	 * @param bNewIsSelected True if now selected
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnSelectionStateChanged(bool bNewIsSelected);
 
-	/**
-	 * Called when player indicator should update
-	 * @param PlayerIndex The player index (0-based), -1 means no indicator
-	 * @param PlayerLabel The text to display (e.g., "P1", "P2")
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnPlayerIndicatorChanged(int32 PlayerIndex, const FText& PlayerLabel);
 
-	/**
-	 * Called when availability state changes
-	 * @param bAvailable True if hero is available
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnAvailabilityChanged(bool bAvailable);
 
-	/**
-	 * Called when locked state changes
-	 * @param bIsLockedByOther True if locked by another player
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnLockedStateChanged(bool bIsLockedByOther);
 
-	/**
-	 * Called when the slot is hovered
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnSlotHovered();
 
-	/**
-	 * Called when the slot is unhovered
-	 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Hero Slot|Events")
 	void OnSlotUnhovered();
 
@@ -155,6 +187,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	FText HeroDisplayName;
 
+	/** The hero's reconciled class display name */
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
+	FText HeroClassName;
+
+	/** The hero's class enum */
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
+	EHeroClass HeroClass = EHeroClass::Fighter;
+
 	/** The hero's portrait texture */
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	TObjectPtr<UTexture2D> HeroPortrait;
@@ -163,16 +203,50 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	bool bIsSelected = false;
 
+	/** Whether this slot is currently inspected in the details panel */
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
+	bool bIsInspected = false;
+
 	/** Whether the hero is available for selection */
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	bool bIsAvailable = true;
 
-	/** Whether the hero is locked (selected by teammate) */
+	/** Whether the hero is locked */
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	bool bIsLocked = false;
+
+	/** Whether the local player has locked in (disabling grid switching) */
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
+	bool bLocalPhaseLocked = false;
 
 	/** The player index owning this hero (-1 if none) */
 	UPROPERTY(BlueprintReadOnly, Category = "Hero Slot")
 	int32 OwningPlayerIndex = -1;
-};
 
+private:
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> OuterFocusBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> InnerCardBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> ClassBadgeBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> ClassBadgeText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> StatusBadgeText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> PortraitBackdropBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> PortraitImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> HeroNameText;
+
+	bool bHasFocusVisual = false;
+};

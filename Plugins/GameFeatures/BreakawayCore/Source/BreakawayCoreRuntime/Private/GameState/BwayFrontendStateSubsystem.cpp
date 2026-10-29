@@ -95,6 +95,12 @@ void UBwayFrontendStateSubsystem::SetLobbySettings(const FBwayMatchLobbySettings
 	OnLobbySettingsChanged.Broadcast();
 }
 
+void UBwayFrontendStateSubsystem::SetLobbyOnlineMode(bool bInIsLanMatch)
+{
+	LobbySettings.bIsLanMatch = bInIsLanMatch;
+	OnLobbySettingsChanged.Broadcast();
+}
+
 void UBwayFrontendStateSubsystem::ApplyMatchSettingsModal(int32 InMapIndex, bool bInEnableBots, EBwayBotDifficulty InBotDifficulty)
 {
 	if (AvailableMaps.Num() > 0)
@@ -160,7 +166,12 @@ bool UBwayFrontendStateSubsystem::MoveLocalHostToSlot(EBwayLobbyTeam TargetTeam,
 
 void UBwayFrontendStateSubsystem::BuildMatchExtraArgs(TMap<FString, FString>& OutExtraArgs) const
 {
-	OutExtraArgs.Add(TEXT("NumBots"), LobbySettings.bBotsEnabled ? TEXT("7") : TEXT("0"));
+	// When bots are disabled, force NumBots=0; when enabled, omit NumBots so
+	// UBwayBotCreationComponent scales bots dynamically to TargetPlayerCount (8) - ActiveHumans.
+	if (!LobbySettings.bBotsEnabled)
+	{
+		OutExtraArgs.Add(TEXT("NumBots"), TEXT("0"));
+	}
 	OutExtraArgs.Add(TEXT("BotDifficulty"), LobbySettings.BotDifficulty == EBwayBotDifficulty::Elite ? TEXT("Elite") : TEXT("Normal"));
 	OutExtraArgs.Add(TEXT("HostTeam"), FString::FromInt(static_cast<int32>(LobbySettings.LocalHostTeam)));
 	OutExtraArgs.Add(TEXT("ArenaIntro"), TEXT("1"));

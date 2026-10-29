@@ -6,14 +6,17 @@
 #include "CommonActivatableWidget.h"
 #include "BwayPauseMenuWidget.generated.h"
 
+class UBwayCommonButton;
+class UTextBlock;
+
 /**
  * UBwayPauseMenuWidget
- * 
- * Pause menu widget with Resume, Settings, and Quit options.
- * In multiplayer, this only pauses locally (no server pause).
- * Designed to be extended in Blueprint for visual implementation.
+ *
+ * Concrete in-match Breakaway Pause Menu pushed onto CommonUI UI.Layer.Menu.
+ * Presents Resume, Options, and role-aware Return to Lobby (Host / Standalone)
+ * or Disconnect to Main Menu (Client), restoring Game layer input/focus on close.
  */
-UCLASS(Abstract, Blueprintable, meta = (DisplayName = "Breakaway Pause Menu"))
+UCLASS(BlueprintType, Blueprintable, meta = (DisplayName = "Breakaway Pause Menu"))
 class BREAKAWAYCORERUNTIME_API UBwayPauseMenuWidget : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
@@ -21,22 +24,17 @@ class BREAKAWAYCORERUNTIME_API UBwayPauseMenuWidget : public UCommonActivatableW
 public:
 	UBwayPauseMenuWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-protected:
-	//~ UCommonActivatableWidget interface
-	virtual UWidget* NativeGetDesiredFocusTarget() const override;
-	//~ End UCommonActivatableWidget interface
+	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 
-	// ========== ACTIONS ==========
-
-	/** Resume the game (close this menu) */
+	/** Resume the game (close this menu and restore CommonUI Game layer focus) */
 	UFUNCTION(BlueprintCallable, Category = "Pause Menu")
 	void ResumeGame();
 
-	/** Open the settings menu */
+	/** Open the Options / Settings screen on UI.Layer.Menu */
 	UFUNCTION(BlueprintCallable, Category = "Pause Menu")
-	void OpenSettings();
+	UCommonActivatableWidget* OpenSettings();
 
-	/** Quit to the main menu */
+	/** Host: Return connected lobby to L_LyraFrontEnd. Client: Disconnect to Main Menu. */
 	UFUNCTION(BlueprintCallable, Category = "Pause Menu")
 	void QuitToMainMenu();
 
@@ -44,31 +42,67 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Pause Menu")
 	void QuitToDesktop();
 
+	/** True when the owning world is a remote client (NM_Client), or overridden for UI audit. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Pause Menu")
+	bool IsClientPauseRole() const;
+
+	/** Refresh button labels for current Host vs Client role. */
+	UFUNCTION(BlueprintCallable, Category = "Pause Menu")
+	void RefreshRolePresentation();
+
+	void SetClientRoleOverrideForAudit(bool bEnableOverride, bool bInForceClient);
+
+	UBwayCommonButton* GetResumeButton() const { return ResumeButton; }
+	UBwayCommonButton* GetOptionsButton() const { return OptionsButton; }
+	UBwayCommonButton* GetLeaveMatchButton() const { return LeaveMatchButton; }
+	FText GetLeaveActionLabelText() const;
+
+protected:
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+	virtual void NativeConstruct() override;
+	virtual void NativeOnActivated() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+
 	// ========== BLUEPRINT EVENTS ==========
 
-	/** Called when settings should be opened - implement in Blueprint to push settings widget */
+	/** Called when settings should be opened */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Pause Menu|Events")
 	void OnOpenSettingsRequested();
 
-	/** Called before quitting to main menu - use for confirmation dialogs */
+	/** Called before returning/disconnecting to main menu */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Pause Menu|Events")
 	void OnQuitToMainMenuRequested();
 
-	/** Called before quitting to desktop - use for confirmation dialogs */
+	/** Called before quitting to desktop */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Pause Menu|Events")
 	void OnQuitToDesktopRequested();
 
 protected:
-	/** The widget to focus when this menu opens */
+	/** Optional authored widget to focus when this menu opens */
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget, OptionalWidget = true), Category = "Pause Menu")
 	TObjectPtr<UWidget> DefaultFocusWidget;
 
-	/** Settings widget class to push */
+	/** Settings widget class to push onto UI.Layer.Menu */
 	UPROPERTY(EditDefaultsOnly, Category = "Pause Menu")
 	TSoftClassPtr<UCommonActivatableWidget> SettingsWidgetClass;
 
-	/** Main menu level to load when quitting */
+	/** Main menu level to load when returning offline */
 	UPROPERTY(EditDefaultsOnly, Category = "Pause Menu")
 	TSoftObjectPtr<UWorld> MainMenuLevel;
-};
 
+private:
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> ResumeButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> OptionsButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBwayCommonButton> LeaveMatchButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> RoleSubtitleText;
+
+	bool bUseRoleOverrideForAudit = false;
+	bool bForcedClientRoleForAudit = false;
+};

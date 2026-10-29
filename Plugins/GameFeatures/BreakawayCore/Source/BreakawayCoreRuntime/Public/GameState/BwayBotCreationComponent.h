@@ -70,6 +70,8 @@ protected:
 	int32 NumBotsOverride = -1;
 	FTimerHandle PendingHumanTravelTimer;
 	bool bWaitingForHumanTravel = false;
+	bool bInitializedStagingBotHeroQueues = false;
+	TArray<FPrimaryAssetId> PendingStagingBotHeroes[2];
 
 	void OnExperienceLoaded(const class ULyraExperienceDefinition* Experience);
 
@@ -78,6 +80,8 @@ protected:
 
 	int32 GetTargetBotCount() const;
 	int32 GetUrlNumBotsOverride(int32 CurrentDefault) const;
+	void InitializeStagingBotHeroQueuesIfNeeded();
+	FPrimaryAssetId PopNextPreAssignedStagingBotHero(int32 TeamIndex, const class UBwayHeroSelectionManager* SelectionManager);
 	void SpawnMissingBots();
 	void SpawnOneBot();
 	void ApplyRelicAIToBot(class AAIController* BotController);

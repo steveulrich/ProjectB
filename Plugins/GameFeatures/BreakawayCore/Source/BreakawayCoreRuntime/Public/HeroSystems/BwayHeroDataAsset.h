@@ -44,6 +44,18 @@ struct FAbilityDisplayInfo
     UPROPERTY(BlueprintReadOnly, Category="Display")
     bool bIsUltimate = false;
 
+    /** Whether this slot represents the hero's signature buildable. */
+    UPROPERTY(BlueprintReadOnly, Category="Display")
+    bool bIsBuildable = false;
+
+    /** Reconciled base cooldown in seconds (0 if primary / passive / round-quota). */
+    UPROPERTY(BlueprintReadOnly, Category="Display")
+    float CooldownSeconds = 0.f;
+
+    /** Resolved active keybind display label (e.g. LMB, Q, E, R, F, 1). */
+    UPROPERTY(BlueprintReadOnly, Category="Display")
+    FText InputKeyLabel;
+
     /** Input tag from the ability set grant (used for keybind display). */
     UPROPERTY(BlueprintReadOnly, Category="Display")
     FGameplayTag InputActionTag;

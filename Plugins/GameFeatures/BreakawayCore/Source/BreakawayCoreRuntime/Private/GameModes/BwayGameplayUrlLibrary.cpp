@@ -54,7 +54,9 @@ void UBwayGameplayUrlLibrary::ResetMatchTravelOptions(FURL& Url)
 			|| Key.Equals(TEXT("Restart"), ESearchCase::IgnoreCase)
 			|| Key.Equals(TEXT("HeroSelectStaging"), ESearchCase::IgnoreCase)
 			|| Key.Equals(TEXT("HeroSelectTargetMap"), ESearchCase::IgnoreCase)
-			|| Key.Equals(TEXT("HeroSelectTargetExperience"), ESearchCase::IgnoreCase);
+			|| Key.Equals(TEXT("HeroSelectTargetExperience"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("StagingBotHeroes0"), ESearchCase::IgnoreCase)
+			|| Key.Equals(TEXT("StagingBotHeroes1"), ESearchCase::IgnoreCase);
 	});
 }
 
@@ -95,6 +97,8 @@ const TArray<FName>& GetKnownGameplayOptionKeys()
 		TEXT("HeroSelectStaging"),
 		TEXT("HeroSelectTargetMap"),
 		TEXT("HeroSelectTargetExperience"),
+		TEXT("StagingBotHeroes0"),
+		TEXT("StagingBotHeroes1"),
 	};
 	return Keys;
 }

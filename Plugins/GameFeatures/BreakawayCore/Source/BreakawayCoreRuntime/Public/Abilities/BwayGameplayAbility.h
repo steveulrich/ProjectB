@@ -62,6 +62,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "UI")
 	static bool GetDisplayDataFromAbilityClass(TSubclassOf<UGameplayAbility> AbilityClass, FBwayAbilityUIData& OutDisplayData);
 
+	/** Base cooldown in seconds for UI inspection (derived from reconciled kit config or CooldownGameplayEffect). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "UI")
+	virtual float GetDisplayCooldownSeconds() const;
+
+	/** Read base cooldown in seconds from an ability class CDO. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "UI")
+	static float GetDisplayCooldownFromAbilityClass(TSubclassOf<UGameplayAbility> AbilityClass);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	FBwayAbilityUIData DisplayData;
 };

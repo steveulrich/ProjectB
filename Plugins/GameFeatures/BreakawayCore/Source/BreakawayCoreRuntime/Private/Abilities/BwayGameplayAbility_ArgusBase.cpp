@@ -40,3 +40,16 @@ void UBwayGameplayAbility_ArgusBase::ApplyCooldown(
 
 	ApplyCooldownWithOptionalDuration(Handle, ActorInfo, ActivationInfo, DurationSeconds);
 }
+
+float UBwayGameplayAbility_ArgusBase::GetDisplayCooldownSeconds() const
+{
+	if (const UBwayArgusKitConfig* Config = ResolveKitConfig())
+	{
+		const float KitCooldown = GetKitCooldownSeconds(*Config);
+		if (KitCooldown > 0.f)
+		{
+			return KitCooldown;
+		}
+	}
+	return Super::GetDisplayCooldownSeconds();
+}

@@ -14,6 +14,7 @@ class BREAKAWAYCORERUNTIME_API UBwayGameplayAbility_ArgusBase : public UBwayGame
 
 public:
 	UBwayGameplayAbility_ArgusBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual float GetDisplayCooldownSeconds() const override;
 
 protected:
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

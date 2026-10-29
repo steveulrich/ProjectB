@@ -14,6 +14,7 @@ class HEROMORGANRUNTIME_API UBwayGameplayAbility_KorrynBase : public UBwayGamepl
 
 public:
 	UBwayGameplayAbility_KorrynBase(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual float GetDisplayCooldownSeconds() const override;
 
 protected:
 	virtual void ApplyCooldown(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,

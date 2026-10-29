@@ -34,6 +34,37 @@ struct FPlayerHeroSelectionState
 };
 
 /**
+ * Lightweight pre-assigned bot slot replicated during staging hero selection (L_BW_HeroSelect_Staging)
+ * so 4v4 team sidebars show live bot portraits without spawning bot PlayerStates in staging.
+ * Pre-assigned bot heroes yield immediately if a human teammate selects them, and carry into Dorado.
+ */
+USTRUCT(BlueprintType)
+struct BREAKAWAYCORERUNTIME_API FBwayStagingBotSelection
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	int32 TeamIndex = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	int32 BotSlotIndex = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	FString BotDisplayName;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	FPrimaryAssetId SelectedHeroId;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Hero Selection")
+	bool bIsLocked = false;
+};
+
+/**
+ * Delegate fired when staging bot pre-assignments change
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStagingBotSelectionsChanged);
+
+/**
  * Delegate fired when a player's hero selection changes
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerHeroSelectionChanged, 
@@ -188,6 +219,20 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
 	void ResolveMissingSelectionsAndLockAll(FPrimaryAssetId FallbackHeroId);
 
+	/** Returns pre-assigned bot hero selections for staging 4v4 team roster sidebars. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	const TArray<FBwayStagingBotSelection>& GetStagingBotSelections() const { return StagingBotSelections; }
+
+	/** Recomputes staging bot pre-assignments around active human teammates and bot settings. */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Hero Selection")
+	void ReconcileStagingBotSelections();
+
+	/** Serializes pre-assigned staging bot HeroIds for TeamIndex (comma-delimited PrimaryAssetIds) for Dorado travel. */
+	FString BuildStagingBotHeroesOptionForTeam(int32 TeamIndex) const;
+
+	/** Allows headless unit tests to exercise staging bot pre-assignment outside L_BW_HeroSelect_Staging. */
+	void SetForceStagingBotPreAssignmentForTest(bool bEnable, int32 TestMaxBots = 7);
+
 	// ========== CONFIGURATION ==========
 
 	/**
@@ -220,13 +265,22 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Events")
 	FOnAllPlayersReady OnAllPlayersReady;
 
+	UPROPERTY(BlueprintAssignable, Category = "Hero Selection Events")
+	FOnStagingBotSelectionsChanged OnStagingBotSelectionsChanged;
+
 private:
 	// Track all player selections
 	UPROPERTY(ReplicatedUsing = OnRep_PlayerSelections)
 	TArray<FPlayerHeroSelectionState> PlayerSelections;
 
+	UPROPERTY(ReplicatedUsing = OnRep_StagingBotSelections)
+	TArray<FBwayStagingBotSelection> StagingBotSelections;
+
 	UFUNCTION()
 	void OnRep_PlayerSelections();
+
+	UFUNCTION()
+	void OnRep_StagingBotSelections();
 
 	UPROPERTY(Replicated)
 	float SelectionTimeRemaining = 0.0f;
@@ -262,6 +316,10 @@ private:
 	FPrimaryAssetId PickRandomHeroForTeam(int32 TeamIndex, FPrimaryAssetId FallbackHeroId) const;
 	TArray<FPrimaryAssetId> GetRegisteredHeroIds() const;
 	bool IsBotPlayerState(const ABwayPlayerState* PlayerState) const;
+	bool ShouldPreAssignStagingBots() const;
+
+	bool bForceStagingBotPreAssignmentForTest = false;
+	int32 ForcedStagingMaxBotsForTest = 7;
 
 	// Get the game state
 	ABwayGameState* GetBwayGameState() const;

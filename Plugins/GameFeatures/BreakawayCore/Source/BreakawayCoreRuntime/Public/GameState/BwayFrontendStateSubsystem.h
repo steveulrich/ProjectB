@@ -85,6 +85,10 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchLobbySettings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby")
 	bool bLaunchedFromLobby = false;
+
+	/** True when hosting an advertised LAN session; false for offline Dev Practice / Bot Match. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby")
+	bool bIsLanMatch = true;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBwayLobbySettingsChanged);
@@ -124,6 +128,10 @@ public:
 	/** Replaces the match lobby settings and broadcasts OnLobbySettingsChanged */
 	UFUNCTION(BlueprintCallable, Category = "Frontend State|Lobby")
 	void SetLobbySettings(const FBwayMatchLobbySettings& NewSettings);
+
+	/** Configures whether the lobby hosts an advertised LAN session or offline Dev Practice match. */
+	UFUNCTION(BlueprintCallable, Category = "Frontend State|Lobby")
+	void SetLobbyOnlineMode(bool bInIsLanMatch);
 
 	/** Commits Match Settings Modal options (Map, Enable Bots, Bot Difficulty) */
 	UFUNCTION(BlueprintCallable, Category = "Frontend State|Lobby")
