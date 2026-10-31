@@ -127,6 +127,16 @@ protected:
     /** Fallback when replicated mesh or owner arrives late on clients. */
     void TryResolveMeshVisual();
 
+    void HandleBuildableOutOfHealth(
+        AActor* DamageInstigator,
+        AActor* DamageCauser,
+        const struct FGameplayEffectSpec* DamageEffectSpec,
+        float DamageMagnitude,
+        float OldValue,
+        float NewValue);
+
+    bool bDestructionStatCredited = false;
+
 };
 
 UCLASS(BlueprintType)

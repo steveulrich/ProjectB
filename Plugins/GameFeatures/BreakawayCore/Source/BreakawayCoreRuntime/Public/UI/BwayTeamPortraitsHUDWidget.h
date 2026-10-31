@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/AssetManagerTypes.h"
+#include "GameModes/BwayMatchPhaseTypes.h"
 #include "GameplayTagContainer.h"
 #include "UI/BwayHUDHelpers.h"
 #include "UI/BwayMatchHUDWidgetBase.h"
@@ -34,15 +35,19 @@ class BREAKAWAYCORERUNTIME_API UBwayTeamPortraitsHUDWidget : public UBwayMatchHU
 public:
 	UBwayTeamPortraitsHUDWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
+	UFUNCTION(BlueprintCallable, Category = "HUD|Portraits")
+	void RefreshTeamPortraits();
+
+	const TArray<TObjectPtr<UBwayTeamPortraitSlotWidget>>& GetSlotWidgets() const { return SlotWidgets; }
+	int32 GetDisplaySlotIndex() const { return DisplaySlotIndex; }
+	void SetDisplaySlotIndexForTest(int32 InDisplaySlotIndex) { DisplaySlotIndex = FMath::Clamp(InDisplaySlotIndex, 0, 1); }
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	virtual void NativePreConstruct() override;
 	virtual void NotifyRoundStateChanged(FName NewState) override;
-
-	UFUNCTION(BlueprintCallable, Category = "HUD|Portraits")
-	void RefreshTeamPortraits();
 
 	UFUNCTION()
 	void HandlePortraitHeroChanged(FPrimaryAssetId NewHeroId);
@@ -52,6 +57,12 @@ protected:
 
 	UFUNCTION()
 	void HandlePortraitPlayerNumChanged(int32 PlayerNum);
+
+	UFUNCTION()
+	void HandlePortraitRespawnScheduleChanged();
+
+	UFUNCTION()
+	void HandleMatchPhaseChanged(EBwayMatchPhase NewPhase);
 
 	UFUNCTION()
 	void HandleTeamsUpdated();
@@ -83,16 +94,19 @@ protected:
 	FMargin PortraitSlotPadding = FMargin(3.0f, 0.0f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
-	float PortraitRefreshInterval = 0.5f;
+	float PortraitRefreshInterval = 0.15f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
+	float RespawnCountdownRefreshInterval = 0.10f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
 	TObjectPtr<UTexture2D> EmptyPortraitTexture = nullptr;
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
-	FLinearColor FriendlyFrameColor = FLinearColor(0.18f, 0.45f, 1.0f, 1.0f);
+	FLinearColor FriendlyFrameColor = FLinearColor(0.09f, 0.84f, 0.92f, 1.0f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
-	FLinearColor EnemyFrameColor = FLinearColor(1.0f, 0.28f, 0.12f, 1.0f);
+	FLinearColor EnemyFrameColor = FLinearColor(0.89f, 0.22f, 0.20f, 1.0f);
 
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Portraits")
 	FLinearColor EmptyFrameColor = FLinearColor(0.10f, 0.12f, 0.16f, 0.75f);
@@ -122,6 +136,7 @@ private:
 	void HandleDeathTagChanged(const FGameplayTag ChangedTag, int32 NewCount);
 
 	float TimeSinceLastPortraitRefresh = 0.0f;
+	bool bAnySlotWaitingToRespawn = false;
 	TArray<FBoundPortraitPlayer> BoundPortraitPlayers;
 
 	UPROPERTY(Transient)

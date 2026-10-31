@@ -94,6 +94,58 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Timer")
 	static int32 GetSuddenDeathWarningSecondsFromWorld(const UWorld* World);
 
+	/** Authoritative round-win target (PointsToWin, e.g. 3 in Demo) from RoundManagement. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Score")
+	static int32 GetPointsToWinFromWorld(const UWorld* World);
+
+	/** Relic territory half in display slot space (0 = Friendly Territory, 1 = Enemy Territory, -1 = Midfield). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Team")
+	static int32 GetDisplayRelicTerritoryHalf(const UWorld* World, int32 LocalPlayerTeamIndex);
+
+	/** True when an active CommonUI Menu, GameMenu, or Modal layer occludes the gameplay HUD. */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HUD|Layout")
+	static bool IsLocalGameplayHUDOccludedByMenu(const APlayerController* PlayerController);
+
+	/** Condensed broadcast font (/BreakawayCore/UI/Fonts/refrigeratordeluxe-heavy_Font) with bold CoreStyle fallback. */
+	static FSlateFontInfo GetBroadcastCondensedFont(
+		int32 PointSize,
+		int32 LetterSpacing = 0,
+		int32 OutlineSize = 0,
+		const FLinearColor& OutlineColor = FLinearColor(0.0f, 0.0f, 0.0f, 0.92f));
+
+	/** Safe text measurement for custom NativePaint alignment (handles NullRHI/headless fallback). */
+	static FVector2D MeasureBroadcastText(const FString& Text, const FSlateFontInfo& FontInfo);
+
+	/** Draw a filled convex polygon in local widget coordinates. */
+	static void DrawConvexPolygon(
+		const FGeometry& AllottedGeometry,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		TConstArrayView<FVector2D> Points,
+		const FLinearColor& Color);
+
+	/** Draw an antialiased polyline or closed polygon outline in local widget coordinates. */
+	static void DrawPolygonOutline(
+		const FGeometry& AllottedGeometry,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		TConstArrayView<FVector2D> Points,
+		const FLinearColor& Color,
+		float Thickness = 1.5f,
+		bool bClosed = true);
+
+	/** Draw a solid axis-aligned quad in local widget coordinates. */
+	static void DrawSolidBox(
+		const FGeometry& AllottedGeometry,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FVector2D& Offset,
+		const FVector2D& Size,
+		const FLinearColor& Color);
+
+	/** Align WBP_BW_MatchHUDLayout extension points to broadcast positions and mount UBwayMatchBroadcastOverlayWidget. */
+	static void ApplyBroadcastHUDLayoutOverrides(APlayerController* OwningPlayer);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

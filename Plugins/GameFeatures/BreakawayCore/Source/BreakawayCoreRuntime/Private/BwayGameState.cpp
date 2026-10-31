@@ -10,6 +10,9 @@
 #include "Character/LyraHealthComponent.h"
 #include "HeroSystems/BwayHeroSelectionManager.h"
 #include "HeroSystems/BwayHeroSelectionPhaseComponent.h"
+#include "HeroSystems/BwayHeroSelectionFlowLibrary.h"
+#include "HeroSystems/BwayHeroRegistry.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
 #include "GameState/BwayBotCreationComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "GameState/BwayRoundManagementComponent.h"
@@ -56,6 +59,17 @@ void ABwayGameState::AddPlayerState(APlayerState* PlayerState)
 {
 	const bool bAlreadyPresent = PlayerArray.Contains(PlayerState);
 	Super::AddPlayerState(PlayerState);
+	if (HasAuthority() && PlayerState && !PlayerState->IsABot())
+	{
+		const int32 JoiningId = PlayerState->GetPlayerId();
+		if (JoiningId != INDEX_NONE)
+		{
+			DisconnectedMatchParticipants.RemoveAll([JoiningId](const FBwayMatchBreakdownPlayerColumn& Entry)
+			{
+				return Entry.PlayerId == JoiningId;
+			});
+		}
+	}
 	if (HasAuthority() && HeroSelectionManager && HeroSelectionManager->IsSelectionActive())
 	{
 		HeroSelectionManager->RegisterPlayer(PlayerState);
@@ -69,6 +83,10 @@ void ABwayGameState::AddPlayerState(APlayerState* PlayerState)
 void ABwayGameState::RemovePlayerState(APlayerState* PlayerState)
 {
 	const bool bWasPresent = PlayerArray.Contains(PlayerState);
+	if (HasAuthority() && bWasPresent)
+	{
+		SnapshotDisconnectedMatchParticipant(PlayerState);
+	}
 	Super::RemovePlayerState(PlayerState);
 	if (HasAuthority() && HeroSelectionManager)
 	{
@@ -97,6 +115,7 @@ void ABwayGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABwayGameState, Teams);
+	DOREPLIFETIME(ABwayGameState, DisconnectedMatchParticipants);
 	#if !UE_BUILD_SHIPPING
 	DOREPLIFETIME(ABwayGameState, TeamPeerConvergenceEnemyId);
 	DOREPLIFETIME(ABwayGameState, TeamPeerConvergenceSample);
@@ -458,6 +477,130 @@ void ABwayGameState::OnRep_TeamInfo()
 	OnTeamsUpdated.Broadcast();
 }
 
+void ABwayGameState::OnRep_DisconnectedParticipants()
+{
+	OnTeamsUpdated.Broadcast();
+}
+
+void ABwayGameState::SnapshotDisconnectedMatchParticipant(APlayerState* PlayerState)
+{
+	if (!HasAuthority() || !PlayerState || PlayerState->IsABot() || bResultsTravelPending)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World || World->bIsTearingDown || UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return;
+	}
+
+	const ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PlayerState);
+	if (!BwayPS)
+	{
+		return;
+	}
+
+	const EBwayMatchPhase Phase = RoundManagementComponent ? RoundManagementComponent->GetCurrentMatchPhase() : EBwayMatchPhase::None;
+	const bool bMatchActive = GetCurrentRoundNumber() > 0
+		|| Phase == EBwayMatchPhase::Warmup
+		|| Phase == EBwayMatchPhase::Playing
+		|| Phase == EBwayMatchPhase::PostRound
+		|| Phase == EBwayMatchPhase::PostMatch;
+	if (!bMatchActive)
+	{
+		return;
+	}
+
+	int32 TeamIndex = GetPlayerTeam(BwayPS);
+	if (TeamIndex < 0 && BwayPS->GetGenericTeamId() != FGenericTeamId::NoTeam)
+	{
+		TeamIndex = static_cast<int32>(BwayPS->GetGenericTeamId().GetId()) - 1;
+	}
+	if (TeamIndex < 0 || TeamIndex > 1)
+	{
+		return;
+	}
+
+	const int32 PlayerId = BwayPS->GetPlayerId();
+	FBwayMatchBreakdownPlayerColumn* Existing = DisconnectedMatchParticipants.FindByPredicate(
+		[PlayerId](const FBwayMatchBreakdownPlayerColumn& Entry)
+		{
+			return Entry.PlayerId == PlayerId;
+		});
+
+	FBwayMatchBreakdownPlayerColumn& Snapshot = Existing ? *Existing : DisconnectedMatchParticipants.AddDefaulted_GetRef();
+	Snapshot.PlayerId = PlayerId;
+	Snapshot.GameTeamIndex = TeamIndex;
+	Snapshot.bIsLocalPlayer = false;
+	Snapshot.bIsConnected = false;
+	Snapshot.PlayerName = FText::FromString(BwayPS->GetPlayerName());
+	Snapshot.HeroId = BwayPS->GetSelectedHeroId();
+	if (Snapshot.HeroId.IsValid())
+	{
+		if (const UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(Snapshot.HeroId))
+		{
+			Snapshot.HeroName = HeroData->DisplayName;
+			Snapshot.HeroPortrait = HeroData->Portrait;
+		}
+	}
+	Snapshot.Stats = BwayPS->GetMatchStatsSnapshot();
+	Snapshot.MVPScore = UBwayMatchStatsLibrary::ComputePlayerMVPScore(Snapshot.Stats);
+	Snapshot.EquippedUpgrades = BwayPS->GetReplicatedEquippedUpgrades();
+	ForceNetUpdate();
+}
+
+void ABwayGameState::UpdateDisconnectedParticipantStats(const ABwayPlayerState* PlayerState)
+{
+	if (!HasAuthority() || !PlayerState)
+	{
+		return;
+	}
+
+	const int32 PlayerId = PlayerState->GetPlayerId();
+	if (FBwayMatchBreakdownPlayerColumn* Existing = DisconnectedMatchParticipants.FindByPredicate(
+		[PlayerId](const FBwayMatchBreakdownPlayerColumn& Entry)
+		{
+			return Entry.PlayerId == PlayerId;
+		}))
+	{
+		Existing->Stats = PlayerState->GetMatchStatsSnapshot();
+		Existing->MVPScore = UBwayMatchStatsLibrary::ComputePlayerMVPScore(Existing->Stats);
+		Existing->EquippedUpgrades = PlayerState->GetReplicatedEquippedUpgrades();
+		ForceNetUpdate();
+	}
+}
+
+void ABwayGameState::ClearDisconnectedMatchParticipants()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (DisconnectedMatchParticipants.Num() > 0)
+	{
+		DisconnectedMatchParticipants.Reset();
+		ForceNetUpdate();
+	}
+}
+
+void ABwayGameState::FreezeAllMatchStats(bool bFrozen)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	for (APlayerState* PS : PlayerArray)
+	{
+		if (ABwayPlayerState* BwayPS = Cast<ABwayPlayerState>(PS))
+		{
+			BwayPS->SetMatchStatsFrozen(bFrozen);
+		}
+	}
+}
+
 // ========================================
 // Match Flow Control
 // ========================================
@@ -507,6 +650,7 @@ void ABwayGameState::ShowResultsScreen_Implementation(int32 WinningTeam)
 	// arrive independently, so clients must not rebuild final totals from live state.
 	if (!bHasFinalResultsSummary)
 	{
+		FreezeAllMatchStats(true);
 		const FBwayResolvedMatchFlowSettings Settings = UBwayMatchFlowLibrary::ResolveMatchFlowSettings(this, nullptr, nullptr);
 		FinalResultsSummary = UBwayMatchStatsLibrary::BuildPostMatchSummaryData(
 			this, WinningTeam, GetCurrentRoundNumber(), FMath::Max(0.0f, Settings.PostMatchSummaryDuration));
@@ -607,10 +751,14 @@ void ABwayGameState::RestartMatchFromResults()
 	{
 		RoundManagementComponent->ResetForNextMatch();
 	}
+	bHasFinalResultsSummary = false;
+	FinalResultsSummary = FBwayPostMatchSummaryData();
+	ClearDisconnectedMatchParticipants();
 	for (APlayerState* PlayerState : PlayerArray)
 	{
 		if (ABwayPlayerState* BwayPlayerState = Cast<ABwayPlayerState>(PlayerState))
 		{
+			BwayPlayerState->SetMatchStatsFrozen(false);
 			if (BwayPlayerState->UpgradeComponent)
 			{
 				BwayPlayerState->UpgradeComponent->ResetUpgrades();

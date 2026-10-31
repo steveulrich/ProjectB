@@ -3,11 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameState/BwayRoundManagementComponent.h"
 #include "UI/BwayMatchHUDWidgetBase.h"
 #include "BwayCaptureTheRelicScoreWidget.generated.h"
 
+class UBorder;
 class UCommonNumericTextBlock;
 class UCommonTextBlock;
+class UHorizontalBox;
+class UTextBlock;
+class UTexture2D;
+class ABwayPlayerState;
 
 /**
  * Lyra HUD slot widget for Capture-the-Relic team round-win scores.
@@ -24,10 +30,6 @@ class BREAKAWAYCORERUNTIME_API UBwayCaptureTheRelicScoreWidget : public UBwayMat
 public:
 	UBwayCaptureTheRelicScoreWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
-
 	/** Push current scores to bound text blocks and fire OnScoreChanged. */
 	UFUNCTION(BlueprintCallable, Category = "HUD|Score")
 	void RefreshScoreDisplay();
@@ -35,6 +37,25 @@ protected:
 	/** Push current round timer to bound text block and fire OnRoundTimeUpdated. */
 	UFUNCTION(BlueprintCallable, Category = "HUD|Timer")
 	void RefreshTimerDisplay();
+
+	int32 GetDisplayedPointsToWin() const { return CachedPointsToWin; }
+	int32 GetDisplayedFriendlyFilledPips() const { return CachedFriendlyScore; }
+	int32 GetDisplayedEnemyFilledPips() const { return CachedEnemyScore; }
+	int32 GetDisplayedLocalRespawnSeconds() const { return CachedLocalRespawnSeconds; }
+	FText GetDisplayedTimerText() const;
+
+protected:
+	virtual void NativePreConstruct() override;
+	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
+	virtual int32 NativePaint(
+		const FPaintArgs& Args,
+		const FGeometry& AllottedGeometry,
+		const FSlateRect& MyCullingRect,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FWidgetStyle& InWidgetStyle,
+		bool bParentEnabled) const override;
 
 	/** Called when either display-column score changes (Team1 = left/friendly, Team2 = right/enemy). */
 	UFUNCTION(BlueprintImplementableEvent, Category = "HUD|Events")
@@ -63,7 +84,7 @@ protected:
 
 	/** Poll round timer on clients (OnRoundTimeChanged is authority-only). */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")
-	float TimerPollInterval = 1.0f;
+	float TimerPollInterval = 0.2f;
 
 	/** When false, timer text and OnRoundTimeUpdated are skipped. */
 	UPROPERTY(EditDefaultsOnly, Category = "HUD|Timer")
@@ -81,7 +102,61 @@ private:
 	void UpdateBoundScoreTexts(int32 Team1Score, int32 Team2Score);
 	void UpdateBoundTimerText(int32 SecondsRemaining);
 	void UpdateBoundRoundLabelText();
+	void EnsureScorebugDecorationWidgets(int32 PointsToWin);
+	void UpdateRoundWinPips(int32 FriendlyScore, int32 EnemyScore, int32 PointsToWin);
+	void RefreshLocalRespawnIndicator();
+	void BindToLocalRespawnPlayerState();
+	void BindToRoundEndedEvents();
+	UTexture2D* ResolveRoundWinConditionIcon(EBwayWinCondition Condition) const;
+
+	UFUNCTION()
+	void HandleLocalRespawnScheduleChanged();
+
+	UFUNCTION()
+	void HandleRoundEnded(int32 WinningTeam, EBwayWinCondition WinCondition, int32 RoundNumber);
+
+	int32 ResolveAuthoritativeClockSeconds() const;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UHorizontalBox> FriendlyPipsRow;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UHorizontalBox> EnemyPipsRow;
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UBorder>> FriendlyPipBorders;
+
+	UPROPERTY(Transient)
+	TArray<TObjectPtr<UBorder>> EnemyPipBorders;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> LocalRespawnBadgeBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> Text_LocalRespawnBadge;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<ABwayPlayerState> BoundLocalPlayerState;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<UBwayRoundManagementComponent> BoundRoundManagement;
+
+	UPROPERTY(Transient)
+	mutable TObjectPtr<UTexture2D> CachedRoundIconScore;
+
+	UPROPERTY(Transient)
+	mutable TObjectPtr<UTexture2D> CachedRoundIconTeamWipe;
+
+	UPROPERTY(Transient)
+	mutable TObjectPtr<UTexture2D> CachedRoundIconTerritory;
+
+	TArray<EBwayWinCondition> Team0WinHistory;
+	TArray<EBwayWinCondition> Team1WinHistory;
 
 	FTimerHandle TimerPollHandle;
+	int32 CachedPointsToWin = 0;
+	int32 CachedFriendlyScore = 0;
+	int32 CachedEnemyScore = 0;
+	int32 CachedLocalRespawnSeconds = 0;
 	bool bSuddenDeathWarningShown = false;
 };

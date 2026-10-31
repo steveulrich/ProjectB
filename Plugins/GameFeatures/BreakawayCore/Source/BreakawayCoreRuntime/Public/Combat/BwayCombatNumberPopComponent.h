@@ -52,6 +52,9 @@ public:
 	/** Present a number from a routed verb message (local host or ClientBroadcastMessage). */
 	void PresentCombatNumber(FGameplayTag NumberTag, const FLyraVerbMessage& Payload);
 
+	/** World time (GetTimeSeconds) of the most recent local outgoing-damage hit confirmation. */
+	float GetLastOutgoingHitWorldTime() const { return LastOutgoingHitWorldTime; }
+
 	/** Location and scale (1→EndScale) for a live pop at Age seconds. */
 	static void EvaluateNumberPopAnimation(
 		float Age,
@@ -124,6 +127,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Number Pop", meta = (ClampMin = "4"))
 	int32 MaxPooledNumbers = 24;
+
+	float LastOutgoingHitWorldTime = -100.0f;
 
 private:
 	/** Empty for invalid amounts; never invents a minimum whole-number heal. */

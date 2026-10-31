@@ -40,6 +40,10 @@ void UBwayTeamPortraitsHUDWidget::NativeDestruct()
 	if (BoundRosterGameState.IsValid())
 	{
 		BoundRosterGameState->OnTeamsUpdated.RemoveDynamic(this, &ThisClass::HandleTeamsUpdated);
+		if (UBwayRoundManagementComponent* RoundMgmt = BoundRosterGameState->GetRoundManagement())
+		{
+			RoundMgmt->OnMatchPhaseChanged.RemoveDynamic(this, &ThisClass::HandleMatchPhaseChanged);
+		}
 	}
 	BoundRosterGameState.Reset();
 	ClearPlayerEventBindings();
@@ -51,10 +55,12 @@ void UBwayTeamPortraitsHUDWidget::NativeTick(const FGeometry& MyGeometry, float 
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (PortraitRefreshInterval > 0.0f)
+	const float ClampedPortraitInterval = (PortraitRefreshInterval > 0.0f) ? FMath::Min(PortraitRefreshInterval, 0.15f) : 0.0f;
+	const float ActiveInterval = bAnySlotWaitingToRespawn ? RespawnCountdownRefreshInterval : ClampedPortraitInterval;
+	if (ActiveInterval > 0.0f)
 	{
 		TimeSinceLastPortraitRefresh += InDeltaTime;
-		if (TimeSinceLastPortraitRefresh >= PortraitRefreshInterval)
+		if (TimeSinceLastPortraitRefresh >= ActiveInterval)
 		{
 			TimeSinceLastPortraitRefresh = 0.0f;
 			RefreshTeamPortraits();
@@ -112,6 +118,7 @@ void UBwayTeamPortraitsHUDWidget::ApplyTeamLabel()
 	}
 
 	Text_TeamLabel->SetText(DisplaySlotIndex == 0 ? FriendlyTeamLabel : EnemyTeamLabel);
+	Text_TeamLabel->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UBwayTeamPortraitsHUDWidget::RefreshTeamPortraits()
@@ -131,7 +138,20 @@ void UBwayTeamPortraitsHUDWidget::RefreshTeamPortraits()
 	UBwayHUDHelpers::GetTeamPlayerHUDDataForDisplaySlot(this, ClampedDisplaySlot, LocalTeam, TeamData);
 
 	const FLinearColor OccupiedFrameColor =
-		ClampedDisplaySlot == 0 ? FriendlyFrameColor : EnemyFrameColor;
+		ClampedDisplaySlot == 0
+			? FLinearColor(0.09f, 0.84f, 0.92f, 1.0f)
+			: FLinearColor(0.89f, 0.22f, 0.20f, 1.0f);
+	const bool bIsFriendlySlot = (ClampedDisplaySlot == 0);
+
+	ABwayGameState* GameState = GetBwayGameState();
+	const UBwayRoundManagementComponent* RoundMgmt = GameState ? GameState->GetRoundManagement() : nullptr;
+	const double ServerTime = GameState ? GameState->GetServerWorldTimeSeconds() : (GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0);
+	const bool bRoundRespawnActive = !RoundMgmt || (
+		(!RoundMgmt->IsOrchestratingMatchFlow() || RoundMgmt->GetCurrentMatchPhase() == EBwayMatchPhase::Playing)
+		&& RoundMgmt->GetCurrentRoundState() == ERoundState::RoundActive);
+	const int32 ActiveRoundNumber = RoundMgmt ? RoundMgmt->GetCurrentRoundNumber() : 0;
+
+	bool bFoundWaitingSlot = false;
 
 	for (int32 SlotIndex = 0; SlotIndex < SlotWidgets.Num(); ++SlotIndex)
 	{
@@ -143,6 +163,7 @@ void UBwayTeamPortraitsHUDWidget::RefreshTeamPortraits()
 
 		FBwayTeamPortraitSlotViewModel ViewModel;
 		ViewModel.SlotIndex = SlotIndex;
+		ViewModel.bIsFriendly = bIsFriendlySlot;
 
 		if (TeamData.IsValidIndex(SlotIndex))
 		{
@@ -154,7 +175,21 @@ void UBwayTeamPortraitsHUDWidget::RefreshTeamPortraits()
 				: EmptyPortraitTexture.Get();
 			ViewModel.bIsAlive = Data.bIsAlive;
 			ViewModel.bHasRelic = Data.bHasRelic;
+			ViewModel.HealthPercent = Data.bIsAlive ? FMath::Clamp(Data.HealthPercent, 0.0f, 1.0f) : 0.0f;
 			ViewModel.FrameColor = OccupiedFrameColor;
+
+			if (!Data.bIsAlive && Data.PlayerState && bRoundRespawnActive)
+			{
+				const FBwayRespawnSchedule Schedule = Data.PlayerState->GetRespawnSchedule();
+				const bool bMatchesCurrentRound = (ActiveRoundNumber <= 0 || Schedule.RoundNumber == ActiveRoundNumber);
+				const int32 RemainingSeconds = bMatchesCurrentRound ? Schedule.GetRemainingSeconds(ServerTime) : 0;
+				if (Schedule.bIsWaitingToRespawn && bMatchesCurrentRound && RemainingSeconds > 0)
+				{
+					ViewModel.bIsWaitingToRespawn = true;
+					ViewModel.RespawnRemainingSeconds = RemainingSeconds;
+					bFoundWaitingSlot = true;
+				}
+			}
 		}
 		else
 		{
@@ -162,12 +197,16 @@ void UBwayTeamPortraitsHUDWidget::RefreshTeamPortraits()
 			ViewModel.PortraitTexture = EmptyPortraitTexture;
 			ViewModel.bIsAlive = true;
 			ViewModel.bHasRelic = false;
+			ViewModel.HealthPercent = 0.0f;
+			ViewModel.bIsWaitingToRespawn = false;
+			ViewModel.RespawnRemainingSeconds = 0;
 			ViewModel.FrameColor = EmptyFrameColor;
 		}
 
 		SlotWidget->SetSlotViewModel(ViewModel);
 	}
 
+	bAnySlotWaitingToRespawn = bFoundWaitingSlot;
 	RefreshPlayerEventBindings(TeamData);
 }
 
@@ -182,12 +221,20 @@ void UBwayTeamPortraitsHUDWidget::BindToRosterEvents()
 	if (BoundRosterGameState.IsValid())
 	{
 		BoundRosterGameState->OnTeamsUpdated.RemoveDynamic(this, &ThisClass::HandleTeamsUpdated);
+		if (UBwayRoundManagementComponent* OldRoundMgmt = BoundRosterGameState->GetRoundManagement())
+		{
+			OldRoundMgmt->OnMatchPhaseChanged.RemoveDynamic(this, &ThisClass::HandleMatchPhaseChanged);
+		}
 	}
 
 	BoundRosterGameState = GameState;
 	if (GameState)
 	{
 		GameState->OnTeamsUpdated.AddUniqueDynamic(this, &ThisClass::HandleTeamsUpdated);
+		if (UBwayRoundManagementComponent* RoundMgmt = GameState->GetRoundManagement())
+		{
+			RoundMgmt->OnMatchPhaseChanged.AddUniqueDynamic(this, &ThisClass::HandleMatchPhaseChanged);
+		}
 	}
 }
 
@@ -240,6 +287,9 @@ void UBwayTeamPortraitsHUDWidget::RefreshPlayerEventBindings(const TArray<FTeamP
 		PlayerState->OnPlayerNumAssigned.AddUniqueDynamic(
 			this,
 			&ThisClass::HandlePortraitPlayerNumChanged);
+		PlayerState->OnRespawnScheduleChanged.AddUniqueDynamic(
+			this,
+			&ThisClass::HandlePortraitRespawnScheduleChanged);
 
 		FBoundPortraitPlayer& Binding = BoundPortraitPlayers.AddDefaulted_GetRef();
 		Binding.PlayerState = PlayerState;
@@ -270,6 +320,9 @@ void UBwayTeamPortraitsHUDWidget::ClearPlayerEventBindings()
 			Binding.PlayerState->OnPlayerNumAssigned.RemoveDynamic(
 				this,
 				&ThisClass::HandlePortraitPlayerNumChanged);
+			Binding.PlayerState->OnRespawnScheduleChanged.RemoveDynamic(
+				this,
+				&ThisClass::HandlePortraitRespawnScheduleChanged);
 		}
 
 		if (Binding.AbilitySystemComponent.IsValid() && Binding.DeathTagChangedHandle.IsValid())
@@ -299,6 +352,17 @@ void UBwayTeamPortraitsHUDWidget::HandlePortraitRelicChanged(bool bHasRelic)
 void UBwayTeamPortraitsHUDWidget::HandlePortraitPlayerNumChanged(int32 PlayerNum)
 {
 	(void)PlayerNum;
+	RefreshTeamPortraits();
+}
+
+void UBwayTeamPortraitsHUDWidget::HandlePortraitRespawnScheduleChanged()
+{
+	RefreshTeamPortraits();
+}
+
+void UBwayTeamPortraitsHUDWidget::HandleMatchPhaseChanged(EBwayMatchPhase NewPhase)
+{
+	(void)NewPhase;
 	RefreshTeamPortraits();
 }
 

@@ -7,6 +7,7 @@
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystem/Attributes/LyraHealthSet.h"
 #include "Character/LyraHealthComponent.h"
 #include "Components/Image.h"
 #include "Engine/Texture2D.h"
@@ -123,6 +124,36 @@ bool UBwayHUDHelpers::GetTeamPlayerHUDData(
 		PlayerData.SlotIndex = SlotIndex;
 		PlayerData.bHasRelic = BwayPS->bHasRelic;
 		PlayerData.bIsAlive = IsPlayerAliveForHUD(BwayPS);
+		if (PlayerData.bIsAlive)
+		{
+			bool bResolvedHealth = false;
+			if (const APawn* LivePawn = BwayPS->GetPawn())
+			{
+				if (const ULyraHealthComponent* HealthComp = ULyraHealthComponent::FindHealthComponent(LivePawn))
+				{
+					PlayerData.HealthPercent = FMath::Clamp(HealthComp->GetHealthNormalized(), 0.0f, 1.0f);
+					bResolvedHealth = true;
+				}
+			}
+			if (!bResolvedHealth)
+			{
+				if (const UAbilitySystemComponent* ASC = BwayPS->GetAbilitySystemComponent())
+				{
+					const float MaxHP = ASC->GetNumericAttribute(ULyraHealthSet::GetMaxHealthAttribute());
+					if (MaxHP > KINDA_SMALL_NUMBER)
+					{
+						PlayerData.HealthPercent = FMath::Clamp(
+							ASC->GetNumericAttribute(ULyraHealthSet::GetHealthAttribute()) / MaxHP,
+							0.0f,
+							1.0f);
+					}
+				}
+			}
+		}
+		else
+		{
+			PlayerData.HealthPercent = 0.0f;
+		}
 
 		// Get hero data from the selected hero ID
 		FPrimaryAssetId HeroId = BwayPS->GetSelectedHeroId();

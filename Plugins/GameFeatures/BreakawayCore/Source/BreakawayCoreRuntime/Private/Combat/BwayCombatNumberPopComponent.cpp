@@ -591,6 +591,13 @@ void UBwayCombatNumberPopComponent::PresentCombatNumber(FGameplayTag NumberTag, 
 
 	EnsureConfig();
 	EnsureFeedbackWidget();
+	if (NumberTag == BwayCombatFeedbackTags::Number_OutgoingDamage)
+	{
+		if (const UWorld* World = GetWorld())
+		{
+			LastOutgoingHitWorldTime = World->GetTimeSeconds();
+		}
+	}
 	if (FeedbackWidget && (!BoundHealthComponent.IsValid() || !BoundHealthComponent->IsDeadOrDying()))
 	{
 		if (NumberTag == BwayCombatFeedbackTags::Number_OutgoingDamage) FeedbackWidget->ShowHitConfirm();

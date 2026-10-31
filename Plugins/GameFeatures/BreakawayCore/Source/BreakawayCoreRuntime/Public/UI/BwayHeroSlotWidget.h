@@ -224,29 +224,36 @@ protected:
 	int32 OwningPlayerIndex = -1;
 
 private:
+	/**
+	 * Native C++ visual tree subwidgets constructed only for direct UBwayHeroSlotWidget::StaticClass()
+	 * instances. Blueprint subclasses (e.g. legacy WBP_BW_HeroSlot) own their UMG-authored WidgetTree
+	 * and drive their designer variables via OnHeroDataSet / OnSelectionStateChanged hooks without
+	 * UClass FProperty collisions.
+	 */
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> OuterFocusBorder;
+	TObjectPtr<UBorder> NativeOuterFocusBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> InnerCardBorder;
+	TObjectPtr<UBorder> NativeInnerCardBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> ClassBadgeBorder;
+	TObjectPtr<UBorder> NativeClassBadgeBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> ClassBadgeText;
+	TObjectPtr<UCommonTextBlock> NativeClassBadgeText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> StatusBadgeText;
+	TObjectPtr<UCommonTextBlock> NativeStatusBadgeText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> PortraitBackdropBorder;
+	TObjectPtr<UBorder> NativePortraitBackdropBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UImage> PortraitImage;
+	TObjectPtr<UImage> NativePortraitImage;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> HeroNameText;
+	TObjectPtr<UCommonTextBlock> NativeHeroNameText;
 
+	bool bUsingNativeVisualTree = false;
 	bool bHasFocusVisual = false;
 };

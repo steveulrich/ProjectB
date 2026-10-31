@@ -2,6 +2,7 @@
 
 #include "UI/BwayHeroSlotWidget.h"
 #include "UI/BwayCommonButton.h"
+#include "Blueprint/WidgetBlueprintGeneratedClass.h"
 #include "Blueprint/WidgetTree.h"
 #include "CommonTextBlock.h"
 #include "Components/Border.h"
@@ -56,6 +57,10 @@ bool UBwayHeroSlotWidget::Initialize()
 
 void UBwayHeroSlotWidget::EnsureVisualTreeConstructed()
 {
+	if (Cast<UWidgetBlueprintGeneratedClass>(GetClass()) != nullptr)
+	{
+		return;
+	}
 	if (!WidgetTree)
 	{
 		WidgetTree = NewObject<UWidgetTree>(this, TEXT("WidgetTree"), RF_Transient);
@@ -65,49 +70,51 @@ void UBwayHeroSlotWidget::EnsureVisualTreeConstructed()
 		return;
 	}
 
+	bUsingNativeVisualTree = true;
+
 	USizeBox* CardSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("SlotCardSize"));
 	CardSize->SetWidthOverride(158.f);
 	CardSize->SetHeightOverride(196.f);
 	WidgetTree->RootWidget = CardSize;
 
-	OuterFocusBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotOuterFocusBorder"));
-	OuterFocusBorder->SetPadding(FMargin(2.5f));
-	CardSize->AddChild(OuterFocusBorder);
+	NativeOuterFocusBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotOuterFocusBorder"));
+	NativeOuterFocusBorder->SetPadding(FMargin(2.5f));
+	CardSize->AddChild(NativeOuterFocusBorder);
 
-	InnerCardBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotInnerCardBorder"));
-	InnerCardBorder->SetPadding(FMargin(8.f, 8.f));
-	OuterFocusBorder->SetContent(InnerCardBorder);
+	NativeInnerCardBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotInnerCardBorder"));
+	NativeInnerCardBorder->SetPadding(FMargin(8.f, 8.f));
+	NativeOuterFocusBorder->SetContent(NativeInnerCardBorder);
 
 	UVerticalBox* CardVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("SlotCardVBox"));
-	InnerCardBorder->SetContent(CardVBox);
+	NativeInnerCardBorder->SetContent(CardVBox);
 
 	// Top row: Class Badge + Player/Lock/Taken Status Badge
 	UHorizontalBox* TopBadgeRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("SlotTopBadgeRow"));
 	CardVBox->AddChildToVerticalBox(TopBadgeRow)->SetPadding(FMargin(0.f, 0.f, 0.f, 6.f));
 
-	ClassBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotClassBadgeBorder"));
-	ClassBadgeBorder->SetPadding(FMargin(6.f, 2.f));
-	ClassBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotClassBadgeText"));
+	NativeClassBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotClassBadgeBorder"));
+	NativeClassBadgeBorder->SetPadding(FMargin(6.f, 2.f));
+	NativeClassBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotClassBadgeText"));
 	{
-		FSlateFontInfo Font = ClassBadgeText->GetFont();
+		FSlateFontInfo Font = NativeClassBadgeText->GetFont();
 		Font.Size = 9;
-		ClassBadgeText->SetFont(Font);
-		ClassBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		NativeClassBadgeText->SetFont(Font);
+		NativeClassBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 	}
-	ClassBadgeBorder->SetContent(ClassBadgeText);
-	TopBadgeRow->AddChildToHorizontalBox(ClassBadgeBorder)->SetVerticalAlignment(VAlign_Center);
+	NativeClassBadgeBorder->SetContent(NativeClassBadgeText);
+	TopBadgeRow->AddChildToHorizontalBox(NativeClassBadgeBorder)->SetVerticalAlignment(VAlign_Center);
 
 	USpacer* TopSpacer = WidgetTree->ConstructWidget<USpacer>(USpacer::StaticClass(), TEXT("SlotTopSpacer"));
 	TopBadgeRow->AddChildToHorizontalBox(TopSpacer)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 
-	StatusBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotStatusBadgeText"));
+	NativeStatusBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotStatusBadgeText"));
 	{
-		FSlateFontInfo Font = StatusBadgeText->GetFont();
+		FSlateFontInfo Font = NativeStatusBadgeText->GetFont();
 		Font.Size = 9;
-		StatusBadgeText->SetFont(Font);
-		StatusBadgeText->SetJustification(ETextJustify::Right);
+		NativeStatusBadgeText->SetFont(Font);
+		NativeStatusBadgeText->SetJustification(ETextJustify::Right);
 	}
-	TopBadgeRow->AddChildToHorizontalBox(StatusBadgeText)->SetVerticalAlignment(VAlign_Center);
+	TopBadgeRow->AddChildToHorizontalBox(NativeStatusBadgeText)->SetVerticalAlignment(VAlign_Center);
 
 	// Center Portrait Frame
 	USizeBox* PortraitSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("SlotPortraitSize"));
@@ -117,23 +124,23 @@ void UBwayHeroSlotWidget::EnsureVisualTreeConstructed()
 	PortraitSlot->SetHorizontalAlignment(HAlign_Center);
 	PortraitSlot->SetPadding(FMargin(0.f, 2.f, 0.f, 6.f));
 
-	PortraitBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotPortraitBackdrop"));
-	PortraitBackdropBorder->SetPadding(FMargin(2.f));
-	PortraitSize->AddChild(PortraitBackdropBorder);
+	NativePortraitBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotPortraitBackdrop"));
+	NativePortraitBackdropBorder->SetPadding(FMargin(2.f));
+	PortraitSize->AddChild(NativePortraitBackdropBorder);
 
-	PortraitImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("SlotPortraitImage"));
-	PortraitImage->SetDesiredSizeOverride(FVector2D(108.f, 108.f));
-	PortraitBackdropBorder->SetContent(PortraitImage);
+	NativePortraitImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("SlotPortraitImage"));
+	NativePortraitImage->SetDesiredSizeOverride(FVector2D(108.f, 108.f));
+	NativePortraitBackdropBorder->SetContent(NativePortraitImage);
 
 	// Bottom Hero Display Name
-	HeroNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotHeroNameText"));
+	NativeHeroNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotHeroNameText"));
 	{
-		FSlateFontInfo Font = HeroNameText->GetFont();
+		FSlateFontInfo Font = NativeHeroNameText->GetFont();
 		Font.Size = 14;
-		HeroNameText->SetFont(Font);
-		HeroNameText->SetJustification(ETextJustify::Center);
+		NativeHeroNameText->SetFont(Font);
+		NativeHeroNameText->SetJustification(ETextJustify::Center);
 	}
-	CardVBox->AddChildToVerticalBox(HeroNameText)->SetHorizontalAlignment(HAlign_Fill);
+	CardVBox->AddChildToVerticalBox(NativeHeroNameText)->SetHorizontalAlignment(HAlign_Fill);
 
 	RefreshVisualPresentation();
 }
@@ -251,7 +258,7 @@ bool UBwayHeroSlotWidget::SimulateClick()
 
 FText UBwayHeroSlotWidget::GetStatusBadgeText() const
 {
-	return StatusBadgeText ? StatusBadgeText->GetText() : FText::GetEmpty();
+	return NativeStatusBadgeText ? NativeStatusBadgeText->GetText() : FText::GetEmpty();
 }
 
 void UBwayHeroSlotWidget::RefreshInteractability()
@@ -265,78 +272,83 @@ void UBwayHeroSlotWidget::RefreshInteractability()
 
 void UBwayHeroSlotWidget::RefreshVisualPresentation()
 {
+	if (!bUsingNativeVisualTree)
+	{
+		return;
+	}
+
 	const FLinearColor ClassAccent = ResolveClassAccentColor(HeroClassName, HeroClass);
 
-	if (HeroNameText)
+	if (NativeHeroNameText)
 	{
-		HeroNameText->SetText(FText::FromString(HeroDisplayName.ToString().ToUpper()));
-		HeroNameText->SetColorAndOpacity(FSlateColor(
+		NativeHeroNameText->SetText(FText::FromString(HeroDisplayName.ToString().ToUpper()));
+		NativeHeroNameText->SetColorAndOpacity(FSlateColor(
 			(!bIsAvailable && !bIsSelected) ? FLinearColor(0.55f, 0.60f, 0.68f, 0.90f) : FLinearColor::White));
 	}
 
-	if (ClassBadgeText)
+	if (NativeClassBadgeText)
 	{
-		ClassBadgeText->SetText(FText::FromString(HeroClassName.ToString().ToUpper()));
+		NativeClassBadgeText->SetText(FText::FromString(HeroClassName.ToString().ToUpper()));
 	}
-	if (ClassBadgeBorder)
+	if (NativeClassBadgeBorder)
 	{
-		ClassBadgeBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.45f, ClassAccent.G * 0.45f, ClassAccent.B * 0.45f, 0.95f));
+		NativeClassBadgeBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.45f, ClassAccent.G * 0.45f, ClassAccent.B * 0.45f, 0.95f));
 	}
 
-	if (StatusBadgeText)
+	if (NativeStatusBadgeText)
 	{
 		if (bIsLocked && bIsSelected)
 		{
-			StatusBadgeText->SetText(NSLOCTEXT("HeroSlot", "StatusLocked", "LOCKED"));
-			StatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.28f, 0.94f, 0.52f, 1.0f)));
+			NativeStatusBadgeText->SetText(NSLOCTEXT("HeroSlot", "StatusLocked", "LOCKED"));
+			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.28f, 0.94f, 0.52f, 1.0f)));
 		}
 		else if (bIsSelected)
 		{
-			StatusBadgeText->SetText(OwningPlayerIndex >= 0
+			NativeStatusBadgeText->SetText(OwningPlayerIndex >= 0
 				? FText::FromString(FString::Printf(TEXT("P%d"), OwningPlayerIndex + 1))
 				: NSLOCTEXT("HeroSlot", "StatusSelected", "PICKED"));
-			StatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.0f)));
+			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.0f)));
 		}
 		else if (!bIsAvailable)
 		{
-			StatusBadgeText->SetText(OwningPlayerIndex >= 0
+			NativeStatusBadgeText->SetText(OwningPlayerIndex >= 0
 				? FText::FromString(FString::Printf(TEXT("TAKEN P%d"), OwningPlayerIndex + 1))
 				: NSLOCTEXT("HeroSlot", "StatusTaken", "TAKEN"));
-			StatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.92f, 0.42f, 0.38f, 0.95f)));
+			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.92f, 0.42f, 0.38f, 0.95f)));
 		}
 		else if (OwningPlayerIndex >= 0)
 		{
-			StatusBadgeText->SetText(FText::FromString(FString::Printf(TEXT("P%d"), OwningPlayerIndex + 1)));
-			StatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.75f, 0.84f, 0.95f, 0.95f)));
+			NativeStatusBadgeText->SetText(FText::FromString(FString::Printf(TEXT("P%d"), OwningPlayerIndex + 1)));
+			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.75f, 0.84f, 0.95f, 0.95f)));
 		}
 		else
 		{
-			StatusBadgeText->SetText(FText::GetEmpty());
+			NativeStatusBadgeText->SetText(FText::GetEmpty());
 		}
 	}
 
-	if (PortraitBackdropBorder)
+	if (NativePortraitBackdropBorder)
 	{
-		PortraitBackdropBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.22f, ClassAccent.G * 0.22f, ClassAccent.B * 0.22f, 0.92f));
+		NativePortraitBackdropBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.22f, ClassAccent.G * 0.22f, ClassAccent.B * 0.22f, 0.92f));
 	}
 
-	if (PortraitImage)
+	if (NativePortraitImage)
 	{
 		if (HeroPortrait)
 		{
-			PortraitImage->SetBrushFromTexture(HeroPortrait, false);
-			PortraitImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			NativePortraitImage->SetBrushFromTexture(HeroPortrait, false);
+			NativePortraitImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			const float Opacity = (!bIsAvailable && !bIsSelected) ? 0.38f : 1.0f;
-			PortraitImage->SetColorAndOpacity(FLinearColor(Opacity, Opacity, Opacity, 1.0f));
+			NativePortraitImage->SetColorAndOpacity(FLinearColor(Opacity, Opacity, Opacity, 1.0f));
 		}
 		else
 		{
-			PortraitImage->SetBrushTintColor(FSlateColor(ClassAccent));
-			PortraitImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			NativePortraitImage->SetBrushTintColor(FSlateColor(ClassAccent));
+			NativePortraitImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
 
-	if (OuterFocusBorder && InnerCardBorder)
+	if (NativeOuterFocusBorder && NativeInnerCardBorder)
 	{
 		const bool bHovered = IsHovered();
 		FLinearColor RingColor(0.18f, 0.28f, 0.42f, 0.85f);
@@ -373,8 +385,8 @@ void UBwayHeroSlotWidget::RefreshVisualPresentation()
 			CardBg = FLinearColor(0.03f, 0.05f, 0.09f, 0.75f);
 		}
 
-		OuterFocusBorder->SetBrushColor(RingColor);
-		InnerCardBorder->SetBrushColor(CardBg);
+		NativeOuterFocusBorder->SetBrushColor(RingColor);
+		NativeInnerCardBorder->SetBrushColor(CardBg);
 	}
 }
 

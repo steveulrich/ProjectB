@@ -4,6 +4,8 @@
 
 #include "BwayGameState.h"
 #include "BwayPlayerController.h"
+#include "CommonSessionSubsystem.h"
+#include "Engine/GameInstance.h"
 #include "HeroSystems/BwayHeroDataAsset.h"
 #include "HeroSystems/BwayHeroRegistry.h"
 #include "UI/BwayMatchBreakdownWidget.h"
@@ -235,6 +237,14 @@ FMatchResultsData UBwayResultsScreenWidget::GetMatchResults() const
 
 void UBwayResultsScreenWidget::PlayAgain()
 {
+	if (const UWorld* World = GetWorld())
+	{
+		if (World->GetNetMode() == NM_Client)
+		{
+			return;
+		}
+	}
+
 	OnPlayAgainRequested();
 
 	if (ABwayPlayerController* PC = Cast<ABwayPlayerController>(GetOwningPlayer()))
@@ -246,6 +256,26 @@ void UBwayResultsScreenWidget::PlayAgain()
 void UBwayResultsScreenWidget::ReturnToLobby()
 {
 	OnReturnToLobbyRequested();
+
+	UWorld* World = GetWorld();
+	if (World && World->GetNetMode() == NM_Client)
+	{
+		CleanupChildWidgets();
+		if (UGameInstance* GI = World->GetGameInstance())
+		{
+			if (UCommonSessionSubsystem* SessionSubsystem = GI->GetSubsystem<UCommonSessionSubsystem>())
+			{
+				SessionSubsystem->CleanUpSessions();
+			}
+			GI->ReturnToMainMenu();
+			return;
+		}
+		if (APlayerController* PC = GetOwningPlayer())
+		{
+			PC->ConsoleCommand(TEXT("disconnect"));
+		}
+		return;
+	}
 
 	if (ABwayPlayerController* BwayPC = Cast<ABwayPlayerController>(GetOwningPlayer()))
 	{

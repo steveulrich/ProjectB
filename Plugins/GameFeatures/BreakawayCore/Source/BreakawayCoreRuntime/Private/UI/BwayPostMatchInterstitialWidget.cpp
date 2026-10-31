@@ -2,8 +2,12 @@
 
 #include "UI/BwayPostMatchInterstitialWidget.h"
 
+#include "Blueprint/WidgetTree.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Stats/BwayMatchStatsLibrary.h"
+#include "Styling/CoreStyle.h"
 #include "UI/BwayMatchHUDWidgetBase.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayPostMatchInterstitialWidget)
@@ -69,6 +73,26 @@ int32 UBwayPostMatchInterstitialWidget::GetStatFieldValue(const FBwayPlayerMatch
 
 void UBwayPostMatchInterstitialWidget::RefreshBoundWidgets()
 {
+	if (WidgetTree)
+	{
+		if (UImage* DimOverlay = Cast<UImage>(WidgetTree->FindWidget(TEXT("DimOverlay"))))
+		{
+			if (UCanvasPanelSlot* DimSlot = Cast<UCanvasPanelSlot>(DimOverlay->Slot))
+			{
+				DimSlot->SetAnchors(FAnchors(0.0f, 0.0f, 1.0f, 1.0f));
+				DimSlot->SetOffsets(FMargin(0.0f));
+			}
+			if (DimOverlay->GetBrush().GetResourceObject() == nullptr)
+			{
+				DimOverlay->SetBrush(*FCoreStyle::Get().GetBrush("WhiteBrush"));
+			}
+			if (DimOverlay->GetColorAndOpacity().A < 0.45f)
+			{
+				DimOverlay->SetColorAndOpacity(FLinearColor(0.01f, 0.02f, 0.04f, 0.74f));
+			}
+		}
+	}
+
 	if (Text_Header)
 	{
 		Text_Header->SetText(GetOutcomeHeaderText());

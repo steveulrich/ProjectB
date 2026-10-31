@@ -9,14 +9,18 @@
 
 class ABwayPlayerState;
 class UAbilitySystemComponent;
+class UBorder;
 class UEnhancedInputLocalPlayerSubsystem;
 class UHorizontalBox;
 class UInputAction;
 class ULyraGameplayAbility;
+class UTextBlock;
+class UVerticalBox;
 
 /**
  * Lyra HUD-slot ability bar. It renders six stable, non-interactive positions:
- * buildable, LMB, F, Q, E, R.
+ * buildable, primary, hero mobility, two abilities, and ultimate, plus separate
+ * compact prompts for Shared Slide (IA_BW_Slide) and Relic Request / Controls.
  */
 UCLASS(Abstract, Blueprintable, meta = (DisplayName = "Breakaway Ability Bar HUD Widget"))
 class BREAKAWAYCORERUNTIME_API UBwayAbilityBarHUDWidget : public UBwayMatchHUDWidgetBase
@@ -29,6 +33,26 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HUD|Ability Bar")
 	void RefreshAbilityBar();
 
+	const TArray<TObjectPtr<UBwayMatchAbilitySlotWidget>>& GetSlotWidgets() const { return SlotWidgets; }
+
+	UFUNCTION(BlueprintPure, Category = "HUD|Ability Bar")
+	FText GetSharedSlideKeyLabel() const { return CachedSharedSlideKeyLabel; }
+
+	UFUNCTION(BlueprintPure, Category = "HUD|Ability Bar")
+	FText GetSharedSlidePromptText() const;
+
+	UFUNCTION(BlueprintPure, Category = "HUD|Ability Bar")
+	FText GetRelicRequestKeyLabel() const { return CachedRelicRequestKeyLabel; }
+
+	UFUNCTION(BlueprintPure, Category = "HUD|Ability Bar")
+	FText GetRelicPromptText() const;
+
+	/** Deterministic KBM vs Gamepad override for headless view-model verification. */
+	void SetInputDeviceOverrideForTest(bool bEnableOverride, bool bPreferGamepad);
+
+	/** Public entry point for tests to verify HandleControlMappingsRebuilt updates labels live. */
+	void TriggerControlMappingsRebuiltForTest() { HandleControlMappingsRebuilt(); }
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -39,6 +63,8 @@ protected:
 	void BindToLocalPlayerState();
 	void UnbindFromLocalPlayerState();
 	void RequestAbilityBarRefresh();
+	void RefreshAuxiliaryPrompts(bool bIsRelicCarrier);
+	bool ShouldPreferGamepadLabels() const;
 
 	TArray<FGameplayTag> GetFixedHeroSlotTags() const;
 	FText GetHeroFallbackLabel(int32 Position) const;
@@ -96,7 +122,28 @@ private:
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UEnhancedInputLocalPlayerSubsystem> BoundInputSubsystem;
 
+	UPROPERTY(Transient)
+	TObjectPtr<const UInputAction> CachedSharedSlideAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<const UInputAction> CachedRelicRequestAction;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> AuxiliaryPromptsBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> Text_SharedSlidePrompt;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> Text_RelicPrompt;
+
+	FDelegateHandle InputMethodChangedHandle;
+	FText CachedSharedSlideKeyLabel;
+	FText CachedRelicRequestKeyLabel;
+
 	float TimeSinceLastAbilityRefresh = 0.0f;
 	bool bRefreshRequested = true;
 	bool bAnySlotOnCooldown = false;
+	bool bTestOverrideInputDevice = false;
+	bool bTestPreferGamepad = false;
 };

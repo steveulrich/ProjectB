@@ -12,6 +12,9 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "Player/LyraPlayerState.h"
 #include "BwayGameState.h"
+#include "BwayPlayerState.h"
+#include "GameplayEffect.h"
+#include "AbilitySystemComponent.h"
 #include "GameState/BwayBuildableRegistryComponent.h"
 #include "Buildable/BwayBuildablePlacementLibrary.h"
 #include "GameFramework/PlayerController.h"
@@ -88,6 +91,7 @@ void ABuildableActor::InitializeAbilitySystem()
     {
         HealthSet->InitMaxHealth(100.f);
         HealthSet->InitHealth(HealthSet->GetMaxHealth());
+        HealthSet->OnOutOfHealth.AddUObject(this, &ABuildableActor::HandleBuildableOutOfHealth);
     }
     else
     {
@@ -179,6 +183,11 @@ void ABuildableActor::BeginPlay()
 
 void ABuildableActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+    if (HealthSet)
+    {
+        HealthSet->OnOutOfHealth.RemoveAll(this);
+    }
+
     if (HasAuthority())
     {
         if (ABwayGameState* GameState = GetWorld()->GetGameState<ABwayGameState>())
@@ -191,6 +200,77 @@ void ABuildableActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
     }
 
     Super::EndPlay(EndPlayReason);
+}
+
+void ABuildableActor::HandleBuildableOutOfHealth(
+    AActor* DamageInstigator,
+    AActor* DamageCauser,
+    const FGameplayEffectSpec* DamageEffectSpec,
+    float DamageMagnitude,
+    float OldValue,
+    float NewValue)
+{
+    (void)DamageCauser;
+    (void)DamageMagnitude;
+    (void)OldValue;
+    (void)NewValue;
+
+    if (!HasAuthority() || bDestructionStatCredited)
+    {
+        return;
+    }
+
+    auto ResolvePlayerState = [](const AActor* Actor) -> ABwayPlayerState*
+    {
+        if (!Actor)
+        {
+            return nullptr;
+        }
+        if (const ABwayPlayerState* DirectPS = Cast<ABwayPlayerState>(Actor))
+        {
+            return const_cast<ABwayPlayerState*>(DirectPS);
+        }
+        if (const AController* Controller = Cast<AController>(Actor))
+        {
+            return Cast<ABwayPlayerState>(Controller->PlayerState);
+        }
+        if (const APawn* Pawn = Cast<APawn>(Actor))
+        {
+            return Cast<ABwayPlayerState>(Pawn->GetPlayerState());
+        }
+        if (const ABuildableActor* SourceBuildable = Cast<ABuildableActor>(Actor))
+        {
+            return Cast<ABwayPlayerState>(SourceBuildable->GetPlacingPlayerState());
+        }
+        return nullptr;
+    };
+
+    ABwayPlayerState* InstigatorPS = ResolvePlayerState(DamageInstigator);
+    if (!InstigatorPS && DamageEffectSpec)
+    {
+        if (const UAbilitySystemComponent* InstigatorASC = DamageEffectSpec->GetEffectContext().GetOriginalInstigatorAbilitySystemComponent())
+        {
+            InstigatorPS = ResolvePlayerState(InstigatorASC->GetOwnerActor());
+        }
+    }
+
+    if (!InstigatorPS)
+    {
+        return;
+    }
+
+    ABwayGameState* GameState = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr;
+    const int32 InstigatorTeam = GameState ? GameState->GetPlayerTeam(InstigatorPS) : INDEX_NONE;
+    const FGenericTeamId RawTeamId = GetTeamId();
+    const int32 BuildableTeam = (RawTeamId != FGenericTeamId::NoTeam)
+        ? (static_cast<int32>(RawTeamId.GetId()) - 1)
+        : (GameState && PlacingPlayerState ? GameState->GetPlayerTeam(PlacingPlayerState) : INDEX_NONE);
+
+    if (InstigatorTeam >= 0 && BuildableTeam >= 0 && InstigatorTeam != BuildableTeam)
+    {
+        bDestructionStatCredited = true;
+        InstigatorPS->AddBuildableDestroyed(1);
+    }
 }
 
 void ABuildableActor::Tick(float DeltaTime)

@@ -38,6 +38,18 @@ struct FBwayRespawnSchedule
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 RoundNumber = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsWaitingToRespawn = false;
+
+	int32 GetRemainingSeconds(double CurrentServerTime) const
+	{
+		if (!bIsWaitingToRespawn || ServerEndTime <= 0.0 || !FMath::IsFinite(ServerEndTime) || !FMath::IsFinite(CurrentServerTime))
+		{
+			return 0;
+		}
+		return FMath::Max(0, FMath::CeilToInt(ServerEndTime - CurrentServerTime));
+	}
 };
 
 UCLASS()
@@ -58,9 +70,14 @@ public:
 	void SetSuppressMatchGoldEarningsTracking(bool bSuppress) { bSuppressMatchGoldEarningsTracking = bSuppress; }
 	bool IsSuppressingMatchGoldEarningsTracking() const { return bSuppressMatchGoldEarningsTracking; }
 
+	/** Authority-only: freeze end-of-match stat totals once results are captured until ResetMatchStats(). */
+	void SetMatchStatsFrozen(bool bFrozen) { bMatchStatsFrozen = bFrozen; }
+	bool AreMatchStatsFrozen() const { return bMatchStatsFrozen; }
+
 private:
 	bool bHasCarriedTeamAssignment = false;
 	bool bSuppressMatchGoldEarningsTracking = false;
+	bool bMatchStatsFrozen = false;
 
 public:
 	ABwayPlayerState(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -208,6 +225,17 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Stats")
 	int32 GetInterceptions() const { return Interceptions; }
 
+	/** Server-only: Record an enemy buildable destroyed this match */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "Stats")
+	void AddBuildableDestroyed(int32 Amount = 1);
+
+	UFUNCTION(BlueprintPure, Category = "Stats")
+	int32 GetBuildablesDestroyed() const { return BuildablesDestroyed; }
+
+	/** Publicly replicated equipped upgrade ranks for 8-player scoreboard/results display (UpgradeComponent::OwnedUpgrades stays COND_OwnerOnly). */
+	UFUNCTION(BlueprintPure, Category = "Economy")
+	const TArray<FBwayOwnedUpgrade>& GetReplicatedEquippedUpgrades() const { return ReplicatedEquippedUpgrades; }
+
 	/** Set or clear explicit base healing zone presence on this player's upgrade component. */
 	UFUNCTION(BlueprintCallable, Category = "Economy|Base")
 	void SetInHealingZone(bool bInZone, int32 ZoneTeamIndex = -1);
@@ -353,6 +381,13 @@ protected:
 
 	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
 	int32 BuildablesDestroyed = 0;
+
+	/** Publicly replicated equipped upgrades for scoreboard/results (kept separate from COND_OwnerOnly UpgradeComponent::OwnedUpgrades). */
+	UPROPERTY(ReplicatedUsing=OnRep_MatchStats)
+	TArray<FBwayOwnedUpgrade> ReplicatedEquippedUpgrades;
+
+	UFUNCTION()
+	void HandleOwnedUpgradesChanged();
 
 	UPROPERTY(ReplicatedUsing=OnRep_LastRoundStats)
 	FBwayPlayerMatchStats LastRoundStats;

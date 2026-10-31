@@ -15,6 +15,8 @@ class UBwayRoundManagementComponent;
 class UBwayCombatNumberPopComponent;
 class UBwayNameplatePolicyComponent;
 class UBwayRespawnHUDWidget;
+class UBwayScoreboardWidget;
+class UBwayUpgradeShopWidget;
 class ABuildableActor;
 class ABwayPlayerState;
 
@@ -44,6 +46,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Breakaway|Economy")
 	void OpenUpgradeShop();
 	const class UInputAction* GetUpgradeShopInputAction() const { return UpgradeShopInputAction; }
+
+	UFUNCTION(Exec, BlueprintCallable, Category="Breakaway|UI")
+	void ToggleScoreboard();
+	UFUNCTION(BlueprintCallable, Category="Breakaway|UI")
+	void ShowScoreboard();
+	UFUNCTION(BlueprintCallable, Category="Breakaway|UI")
+	void HideScoreboard();
+	UFUNCTION(BlueprintPure, Category="Breakaway|UI")
+	bool IsScoreboardVisible() const;
+
+	UBwayScoreboardWidget* GetScoreboardWidget() const { return ScoreboardWidget; }
+	UBwayPostRoundSummaryWidget* GetPostRoundSummaryWidget() const { return PostRoundSummaryWidget; }
+	UUserWidget* GetResultsWidget() const { return ResultsWidget; }
+	UBwayUpgradeShopWidget* GetUpgradeShopWidget() const { return UpgradeShopWidget; }
 
 	/**
 	 * Opens the hero selection UI for this player.
@@ -166,6 +182,10 @@ public:
 	UFUNCTION(Client, Reliable)
 	void Client_RunJailCaptureProbe(ABwayPlayerState* Placer, ABwayPlayerState* Ally, ABwayPlayerState* Victim, ABwayPlayerState* SecondVictim, int32 Phase);
 
+	/** Development-only Goal 6 client HUD/Portrait/Ability/Scoreboard/PostRound/PostMatch audit probe. */
+	UFUNCTION(Client, Reliable)
+	void Client_RunGoal6HUDAuditProbe(int32 Stage, bool bCaptureScreenshot);
+
 	/** Development-only aim handoff used by the remote-owner fixture before a server-only pass. */
 	UFUNCTION(Server, Reliable)
 	void Server_SetTeamRemoteAim(FRotator AimRotation, int32 TeammatePlayerId);
@@ -200,9 +220,12 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<class UInputAction> UpgradeShopInputAction;
 	TWeakObjectPtr<class UEnhancedInputComponent> ShopBoundInputComponent;
+	TWeakObjectPtr<class UInputComponent> ScoreboardBoundInputComponent;
 	uint32 ShopInputBindingHandle = 0;
 	UPROPERTY(Transient)
 	TObjectPtr<class UBwayUpgradeShopWidget> UpgradeShopWidget;
+	UPROPERTY(Transient)
+	TObjectPtr<class UBwayScoreboardWidget> ScoreboardWidget;
 	void BindPostRoundSummaryListeners();
 	void UnbindPostRoundSummaryListeners();
 

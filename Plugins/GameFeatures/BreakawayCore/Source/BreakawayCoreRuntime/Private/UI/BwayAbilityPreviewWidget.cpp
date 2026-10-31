@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UI/BwayAbilityPreviewWidget.h"
+#include "Blueprint/WidgetBlueprintGeneratedClass.h"
 #include "Blueprint/WidgetTree.h"
 #include "CommonTextBlock.h"
 #include "Components/Border.h"
@@ -30,108 +31,114 @@ bool UBwayAbilityPreviewWidget::Initialize()
 
 void UBwayAbilityPreviewWidget::EnsureVisualTreeConstructed()
 {
+	if (Cast<UWidgetBlueprintGeneratedClass>(GetClass()) != nullptr)
+	{
+		return;
+	}
 	if (!WidgetTree || WidgetTree->RootWidget)
 	{
 		return;
 	}
 
-	RowBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewRowBorder"));
-		RowBorder->SetPadding(FMargin(8.f, 6.f));
-		RowBorder->SetBrushColor(FLinearColor(0.05f, 0.09f, 0.16f, 0.92f));
-		WidgetTree->RootWidget = RowBorder;
+	bUsingNativeVisualTree = true;
 
-		UHorizontalBox* RowHBox = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("PreviewRowHBox"));
-		RowBorder->SetContent(RowHBox);
+	NativeRowBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewRowBorder"));
+	NativeRowBorder->SetPadding(FMargin(8.f, 6.f));
+	NativeRowBorder->SetBrushColor(FLinearColor(0.05f, 0.09f, 0.16f, 0.92f));
+	WidgetTree->RootWidget = NativeRowBorder;
 
-		// Left Icon (36x36)
-		USizeBox* IconSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("PreviewIconSize"));
-		IconSize->SetWidthOverride(36.f);
-		IconSize->SetHeightOverride(36.f);
-		UHorizontalBoxSlot* IconSlot = RowHBox->AddChildToHorizontalBox(IconSize);
-		IconSlot->SetVerticalAlignment(VAlign_Top);
-		IconSlot->SetPadding(FMargin(0.f, 2.f, 8.f, 0.f));
+	UHorizontalBox* RowHBox = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("PreviewRowHBox"));
+	NativeRowBorder->SetContent(RowHBox);
 
-		IconBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewIconBackdrop"));
-		IconBackdropBorder->SetPadding(FMargin(2.f));
-		IconBackdropBorder->SetBrushColor(FLinearColor(0.10f, 0.20f, 0.34f, 0.95f));
-		IconSize->AddChild(IconBackdropBorder);
+	// Left Icon (36x36)
+	USizeBox* IconSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("PreviewIconSize"));
+	IconSize->SetWidthOverride(36.f);
+	IconSize->SetHeightOverride(36.f);
+	UHorizontalBoxSlot* IconSlot = RowHBox->AddChildToHorizontalBox(IconSize);
+	IconSlot->SetVerticalAlignment(VAlign_Top);
+	IconSlot->SetPadding(FMargin(0.f, 2.f, 8.f, 0.f));
 
-		IconImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("PreviewIconImage"));
-		IconImage->SetDesiredSizeOverride(FVector2D(32.f, 32.f));
-		IconBackdropBorder->SetContent(IconImage);
+	NativeIconBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewIconBackdrop"));
+	NativeIconBackdropBorder->SetPadding(FMargin(2.f));
+	NativeIconBackdropBorder->SetBrushColor(FLinearColor(0.10f, 0.20f, 0.34f, 0.95f));
+	IconSize->AddChild(NativeIconBackdropBorder);
 
-		// Right Details Column
-		UVerticalBox* DetailsVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("PreviewDetailsVBox"));
-		RowHBox->AddChildToHorizontalBox(DetailsVBox)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+	NativeIconImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("PreviewIconImage"));
+	NativeIconImage->SetDesiredSizeOverride(FVector2D(32.f, 32.f));
+	NativeIconBackdropBorder->SetContent(NativeIconImage);
 
-		UHorizontalBox* HeaderRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("PreviewHeaderRow"));
-		DetailsVBox->AddChildToVerticalBox(HeaderRow)->SetPadding(FMargin(0.f, 0.f, 0.f, 2.f));
+	// Right Details Column
+	UVerticalBox* DetailsVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("PreviewDetailsVBox"));
+	RowHBox->AddChildToHorizontalBox(DetailsVBox)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 
-		// [Key] Badge
-		KeyBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewKeyBadgeBorder"));
-		KeyBadgeBorder->SetPadding(FMargin(5.f, 1.f));
-		KeyBadgeBorder->SetBrushColor(FLinearColor(0.14f, 0.24f, 0.38f, 0.96f));
-		KeyBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewKeyBadgeText"));
-		{
-			FSlateFontInfo Font = KeyBadgeText->GetFont();
-			Font.Size = 9;
-			KeyBadgeText->SetFont(Font);
-			KeyBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.0f)));
-		}
-		KeyBadgeBorder->SetContent(KeyBadgeText);
-		UHorizontalBoxSlot* KeySlot = HeaderRow->AddChildToHorizontalBox(KeyBadgeBorder);
-		KeySlot->SetVerticalAlignment(VAlign_Center);
-		KeySlot->SetPadding(FMargin(0.f, 0.f, 6.f, 0.f));
+	UHorizontalBox* HeaderRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("PreviewHeaderRow"));
+	DetailsVBox->AddChildToVerticalBox(HeaderRow)->SetPadding(FMargin(0.f, 0.f, 0.f, 2.f));
 
-		// Ability Name
-		AbilityNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewAbilityNameText"));
-		{
-			FSlateFontInfo Font = AbilityNameText->GetFont();
-			Font.Size = 11;
-			AbilityNameText->SetFont(Font);
-			AbilityNameText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		}
-		UHorizontalBoxSlot* NameSlot = HeaderRow->AddChildToHorizontalBox(AbilityNameText);
-		NameSlot->SetVerticalAlignment(VAlign_Center);
-		NameSlot->SetPadding(FMargin(0.f, 0.f, 6.f, 0.f));
+	// [Key] Badge
+	NativeKeyBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewKeyBadgeBorder"));
+	NativeKeyBadgeBorder->SetPadding(FMargin(5.f, 1.f));
+	NativeKeyBadgeBorder->SetBrushColor(FLinearColor(0.14f, 0.24f, 0.38f, 0.96f));
+	NativeKeyBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewKeyBadgeText"));
+	{
+		FSlateFontInfo Font = NativeKeyBadgeText->GetFont();
+		Font.Size = 9;
+		NativeKeyBadgeText->SetFont(Font);
+		NativeKeyBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.0f)));
+	}
+	NativeKeyBadgeBorder->SetContent(NativeKeyBadgeText);
+	UHorizontalBoxSlot* KeySlot = HeaderRow->AddChildToHorizontalBox(NativeKeyBadgeBorder);
+	KeySlot->SetVerticalAlignment(VAlign_Center);
+	KeySlot->SetPadding(FMargin(0.f, 0.f, 6.f, 0.f));
 
-		// Role Badge (PRIMARY / KIT / ULTIMATE / BUILDABLE)
-		RoleBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewRoleBadgeBorder"));
-		RoleBadgeBorder->SetPadding(FMargin(5.f, 1.f));
-		RoleBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewRoleBadgeText"));
-		{
-			FSlateFontInfo Font = RoleBadgeText->GetFont();
-			Font.Size = 8;
-			RoleBadgeText->SetFont(Font);
-			RoleBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
-		}
-		RoleBadgeBorder->SetContent(RoleBadgeText);
-		HeaderRow->AddChildToHorizontalBox(RoleBadgeBorder)->SetVerticalAlignment(VAlign_Center);
+	// Ability Name
+	NativeAbilityNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewAbilityNameText"));
+	{
+		FSlateFontInfo Font = NativeAbilityNameText->GetFont();
+		Font.Size = 11;
+		NativeAbilityNameText->SetFont(Font);
+		NativeAbilityNameText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	}
+	UHorizontalBoxSlot* NameSlot = HeaderRow->AddChildToHorizontalBox(NativeAbilityNameText);
+	NameSlot->SetVerticalAlignment(VAlign_Center);
+	NameSlot->SetPadding(FMargin(0.f, 0.f, 6.f, 0.f));
 
-		USpacer* HeaderSpacer = WidgetTree->ConstructWidget<USpacer>(USpacer::StaticClass(), TEXT("PreviewHeaderSpacer"));
-		HeaderRow->AddChildToHorizontalBox(HeaderSpacer)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+	// Role Badge (PRIMARY / KIT / ULTIMATE / BUILDABLE)
+	NativeRoleBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PreviewRoleBadgeBorder"));
+	NativeRoleBadgeBorder->SetPadding(FMargin(5.f, 1.f));
+	NativeRoleBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewRoleBadgeText"));
+	{
+		FSlateFontInfo Font = NativeRoleBadgeText->GetFont();
+		Font.Size = 8;
+		NativeRoleBadgeText->SetFont(Font);
+		NativeRoleBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	}
+	NativeRoleBadgeBorder->SetContent(NativeRoleBadgeText);
+	HeaderRow->AddChildToHorizontalBox(NativeRoleBadgeBorder)->SetVerticalAlignment(VAlign_Center);
 
-		// Cooldown Readout
-		CooldownText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewCooldownText"));
-		{
-			FSlateFontInfo Font = CooldownText->GetFont();
-			Font.Size = 10;
-			CooldownText->SetFont(Font);
-			CooldownText->SetJustification(ETextJustify::Right);
-			CooldownText->SetColorAndOpacity(FSlateColor(FLinearColor(0.32f, 0.84f, 0.98f, 1.0f)));
-		}
-		HeaderRow->AddChildToHorizontalBox(CooldownText)->SetVerticalAlignment(VAlign_Center);
+	USpacer* HeaderSpacer = WidgetTree->ConstructWidget<USpacer>(USpacer::StaticClass(), TEXT("PreviewHeaderSpacer"));
+	HeaderRow->AddChildToHorizontalBox(HeaderSpacer)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
 
-		// Description Text
-		DescriptionText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewDescriptionText"));
-		{
-			FSlateFontInfo Font = DescriptionText->GetFont();
-			Font.Size = 9;
-			DescriptionText->SetFont(Font);
-			DescriptionText->SetAutoWrapText(true);
-			DescriptionText->SetColorAndOpacity(FSlateColor(FLinearColor(0.76f, 0.83f, 0.92f, 0.96f)));
-		}
-		DetailsVBox->AddChildToVerticalBox(DescriptionText);
+	// Cooldown Readout
+	NativeCooldownText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewCooldownText"));
+	{
+		FSlateFontInfo Font = NativeCooldownText->GetFont();
+		Font.Size = 10;
+		NativeCooldownText->SetFont(Font);
+		NativeCooldownText->SetJustification(ETextJustify::Right);
+		NativeCooldownText->SetColorAndOpacity(FSlateColor(FLinearColor(0.32f, 0.84f, 0.98f, 1.0f)));
+	}
+	HeaderRow->AddChildToHorizontalBox(NativeCooldownText)->SetVerticalAlignment(VAlign_Center);
+
+	// Description Text
+	NativeDescriptionText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("PreviewDescriptionText"));
+	{
+		FSlateFontInfo Font = NativeDescriptionText->GetFont();
+		Font.Size = 9;
+		NativeDescriptionText->SetFont(Font);
+		NativeDescriptionText->SetAutoWrapText(true);
+		NativeDescriptionText->SetColorAndOpacity(FSlateColor(FLinearColor(0.76f, 0.83f, 0.92f, 0.96f)));
+	}
+	DetailsVBox->AddChildToVerticalBox(NativeDescriptionText);
 	RefreshVisualPresentation();
 }
 
@@ -209,54 +216,59 @@ void UBwayAbilityPreviewWidget::ClearPreview()
 
 FText UBwayAbilityPreviewWidget::GetDisplayedAbilityName() const
 {
-	return AbilityNameText ? AbilityNameText->GetText() : CurrentAbilityInfo.AbilityName;
+	return NativeAbilityNameText ? NativeAbilityNameText->GetText() : CurrentAbilityInfo.AbilityName;
 }
 
 FText UBwayAbilityPreviewWidget::GetDisplayedKeyLabel() const
 {
-	return KeyBadgeText ? KeyBadgeText->GetText() : CurrentAbilityInfo.InputKeyLabel;
+	return NativeKeyBadgeText ? NativeKeyBadgeText->GetText() : CurrentAbilityInfo.InputKeyLabel;
 }
 
 FText UBwayAbilityPreviewWidget::GetDisplayedRoleLabel() const
 {
-	return RoleBadgeText ? RoleBadgeText->GetText() : FText::GetEmpty();
+	return NativeRoleBadgeText ? NativeRoleBadgeText->GetText() : FText::GetEmpty();
 }
 
 FText UBwayAbilityPreviewWidget::GetDisplayedCooldownText() const
 {
-	return CooldownText ? CooldownText->GetText() : FText::GetEmpty();
+	return NativeCooldownText ? NativeCooldownText->GetText() : FText::GetEmpty();
 }
 
 FText UBwayAbilityPreviewWidget::GetDisplayedDescription() const
 {
-	return DescriptionText ? DescriptionText->GetText() : CurrentAbilityInfo.Description;
+	return NativeDescriptionText ? NativeDescriptionText->GetText() : CurrentAbilityInfo.Description;
 }
 
 void UBwayAbilityPreviewWidget::RefreshVisualPresentation()
 {
+	if (!bUsingNativeVisualTree)
+	{
+		return;
+	}
+
 	if (!bHasPreview)
 	{
-		if (RowBorder)
+		if (NativeRowBorder)
 		{
-			RowBorder->SetVisibility(ESlateVisibility::Collapsed);
+			NativeRowBorder->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		return;
 	}
 
-	if (RowBorder)
+	if (NativeRowBorder)
 	{
-		RowBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		NativeRowBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (CurrentAbilityInfo.bIsBuildable)
 		{
-			RowBorder->SetBrushColor(FLinearColor(0.11f, 0.13f, 0.06f, 0.94f));
+			NativeRowBorder->SetBrushColor(FLinearColor(0.11f, 0.13f, 0.06f, 0.94f));
 		}
 		else if (CurrentAbilityInfo.bIsUltimate)
 		{
-			RowBorder->SetBrushColor(FLinearColor(0.12f, 0.08f, 0.18f, 0.94f));
+			NativeRowBorder->SetBrushColor(FLinearColor(0.12f, 0.08f, 0.18f, 0.94f));
 		}
 		else
 		{
-			RowBorder->SetBrushColor(FLinearColor(0.05f, 0.09f, 0.16f, 0.92f));
+			NativeRowBorder->SetBrushColor(FLinearColor(0.05f, 0.09f, 0.16f, 0.92f));
 		}
 	}
 
@@ -281,53 +293,53 @@ void UBwayAbilityPreviewWidget::RefreshVisualPresentation()
 		RoleLabel = NSLOCTEXT("AbilityPreview", "RolePrimary", "PRIMARY");
 	}
 
-	if (IconBackdropBorder)
+	if (NativeIconBackdropBorder)
 	{
-		IconBackdropBorder->SetBrushColor(FLinearColor(AccentColor.R * 0.35f, AccentColor.G * 0.35f, AccentColor.B * 0.35f, 0.95f));
+		NativeIconBackdropBorder->SetBrushColor(FLinearColor(AccentColor.R * 0.35f, AccentColor.G * 0.35f, AccentColor.B * 0.35f, 0.95f));
 	}
-	if (IconImage)
+	if (NativeIconImage)
 	{
 		if (LoadedPreviewImage)
 		{
-			IconImage->SetBrushFromTexture(LoadedPreviewImage, false);
-			IconImage->SetColorAndOpacity(FLinearColor::White);
+			NativeIconImage->SetBrushFromTexture(LoadedPreviewImage, false);
+			NativeIconImage->SetColorAndOpacity(FLinearColor::White);
 		}
 		else
 		{
-			IconImage->SetBrushTintColor(FSlateColor(AccentColor));
+			NativeIconImage->SetBrushTintColor(FSlateColor(AccentColor));
 		}
 	}
 
-	if (KeyBadgeBorder && KeyBadgeText)
+	if (NativeKeyBadgeBorder && NativeKeyBadgeText)
 	{
 		const FString RawKey = CurrentAbilityInfo.InputKeyLabel.ToString().TrimStartAndEnd();
 		if (RawKey.IsEmpty())
 		{
-			KeyBadgeBorder->SetVisibility(ESlateVisibility::Collapsed);
-			KeyBadgeText->SetText(FText::GetEmpty());
+			NativeKeyBadgeBorder->SetVisibility(ESlateVisibility::Collapsed);
+			NativeKeyBadgeText->SetText(FText::GetEmpty());
 		}
 		else
 		{
-			KeyBadgeBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			KeyBadgeText->SetText(FText::FromString(FString::Printf(TEXT("[%s]"), *RawKey)));
+			NativeKeyBadgeBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			NativeKeyBadgeText->SetText(FText::FromString(FString::Printf(TEXT("[%s]"), *RawKey)));
 		}
 	}
 
-	if (AbilityNameText)
+	if (NativeAbilityNameText)
 	{
-		AbilityNameText->SetText(CurrentAbilityInfo.AbilityName);
+		NativeAbilityNameText->SetText(CurrentAbilityInfo.AbilityName);
 	}
 
-	if (RoleBadgeBorder)
+	if (NativeRoleBadgeBorder)
 	{
-		RoleBadgeBorder->SetBrushColor(FLinearColor(AccentColor.R * 0.45f, AccentColor.G * 0.45f, AccentColor.B * 0.45f, 0.95f));
+		NativeRoleBadgeBorder->SetBrushColor(FLinearColor(AccentColor.R * 0.45f, AccentColor.G * 0.45f, AccentColor.B * 0.45f, 0.95f));
 	}
-	if (RoleBadgeText)
+	if (NativeRoleBadgeText)
 	{
-		RoleBadgeText->SetText(RoleLabel);
+		NativeRoleBadgeText->SetText(RoleLabel);
 	}
 
-	if (CooldownText)
+	if (NativeCooldownText)
 	{
 		if (CurrentAbilityInfo.CooldownSeconds > 0.05f)
 		{
@@ -336,24 +348,24 @@ void UBwayAbilityPreviewWidget::RefreshVisualPresentation()
 			const FString FormattedSecs = bWholeSecond
 				? FString::Printf(TEXT("CD: %ds"), FMath::RoundToInt(RoundedTenth))
 				: FString::Printf(TEXT("CD: %.1fs"), RoundedTenth);
-			CooldownText->SetText(FText::FromString(FormattedSecs));
+			NativeCooldownText->SetText(FText::FromString(FormattedSecs));
 		}
 		else if (bIsPrimary)
 		{
-			CooldownText->SetText(NSLOCTEXT("AbilityPreview", "PrimaryNoCD", "Primary"));
+			NativeCooldownText->SetText(NSLOCTEXT("AbilityPreview", "PrimaryNoCD", "Primary"));
 		}
 		else if (CurrentAbilityInfo.bIsBuildable)
 		{
-			CooldownText->SetText(NSLOCTEXT("AbilityPreview", "BuildableCD", "1 Active"));
+			NativeCooldownText->SetText(NSLOCTEXT("AbilityPreview", "BuildableCD", "1 Active"));
 		}
 		else
 		{
-			CooldownText->SetText(FText::GetEmpty());
+			NativeCooldownText->SetText(FText::GetEmpty());
 		}
 	}
 
-	if (DescriptionText)
+	if (NativeDescriptionText)
 	{
-		DescriptionText->SetText(CurrentAbilityInfo.Description);
+		NativeDescriptionText->SetText(CurrentAbilityInfo.Description);
 	}
 }

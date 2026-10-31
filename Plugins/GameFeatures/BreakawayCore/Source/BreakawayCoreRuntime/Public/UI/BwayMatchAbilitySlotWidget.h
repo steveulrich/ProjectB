@@ -54,6 +54,14 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchAbilitySlotViewModel
 	/** Seconds remaining on cooldown. Meaningful only while bIsOnCooldown is true. */
 	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
 	float CountdownTime = 0.f;
+
+	/** Authoritative active buildable count placed by this player across the arena. */
+	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
+	int32 ActiveBuildableCount = 0;
+
+	/** Maximum simultaneous active buildables allowed for this hero's buildable asset. */
+	UPROPERTY(BlueprintReadOnly, Category = "Ability Bar")
+	int32 MaxActiveBuildables = 0;
 };
 
 /**
@@ -71,8 +79,35 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Ability Bar")
 	const FBwayMatchAbilitySlotViewModel& GetSlotViewModel() const { return ViewModel; }
 
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	FText GetDisplayedCooldownText() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	FText GetDisplayedStateText() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	FText GetDisplayedKeybindText() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	FText GetDisplayedAbilityNameText() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	bool IsCooldownOverlayVisible() const;
+
+	UFUNCTION(BlueprintPure, Category = "Ability Bar")
+	bool IsRelicFrameVisible() const;
+
 protected:
 	virtual void NativePreConstruct() override;
+	virtual int32 NativePaint(
+		const FPaintArgs& Args,
+		const FGeometry& AllottedGeometry,
+		const FSlateRect& MyCullingRect,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FWidgetStyle& InWidgetStyle,
+		bool bParentEnabled) const override;
+	void EnsureFallbackWidgets();
 
 	void ApplyViewModel();
 

@@ -38,6 +38,10 @@ struct BREAKAWAYCORERUNTIME_API FTeamPlayerHUDData
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	bool bHasRelic = false;
 
+	/** Normalized live health [0..1] for top-bar portrait mini health bar (0 when dead). */
+	UPROPERTY(BlueprintReadOnly, Category = "HUD")
+	float HealthPercent = 1.0f;
+
 	/** The player state reference */
 	UPROPERTY(BlueprintReadOnly, Category = "HUD")
 	TObjectPtr<ABwayPlayerState> PlayerState = nullptr;

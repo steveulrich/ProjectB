@@ -409,6 +409,7 @@ void ABreakawayGameMode::Logout(AController* Exiting)
 		ABwayGameState* BwayGS = GetBreakawayGameState();
 		if (BwayGS && PC->PlayerState)
 		{
+			BwayGS->SnapshotDisconnectedMatchParticipant(PC->PlayerState);
 			BwayGS->RemovePlayerFromTeam(PC->PlayerState);
 		}
 	}

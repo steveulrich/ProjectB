@@ -66,6 +66,10 @@ public:
 
 	static FBwayTeamStatAggregate AggregateTeamStatsFromGameState(const ABwayGameState* GameState, int32 TeamIndex, bool bRoundOnly);
 
+	/** Canonical MVP score formula shared across live scoreboard and post-match breakdown. */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Stats")
+	static float ComputePlayerMVPScore(const FBwayPlayerMatchStats& Stats);
+
 private:
 	static ABwayGameState* ResolveGameState(const UObject* WorldContextObject);
 

@@ -38,6 +38,12 @@ void ABwayPlayerState::PostInitializeComponents()
 			ASC->GetGameplayAttributeValueChangeDelegate(UBwayGoldAttributeSet::GetCurrentGoldAttribute())
 				.AddUObject(this, &ThisClass::HandleGoldChanged);
 		}
+
+		if (UpgradeComponent)
+		{
+			UpgradeComponent->OnUpgradesChanged.AddUniqueDynamic(this, &ThisClass::HandleOwnedUpgradesChanged);
+			HandleOwnedUpgradesChanged();
+		}
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: PostInitializeComponents called for %s"), *GetName());
@@ -241,6 +247,7 @@ void ABwayPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ABwayPlayerState, ForcedFumbles);
 	DOREPLIFETIME(ABwayPlayerState, Interceptions);
 	DOREPLIFETIME(ABwayPlayerState, BuildablesDestroyed);
+	DOREPLIFETIME(ABwayPlayerState, ReplicatedEquippedUpgrades);
 	DOREPLIFETIME(ABwayPlayerState, MatchGoldEarned);
 	DOREPLIFETIME(ABwayPlayerState, LastRoundStats);
 	DOREPLIFETIME(ABwayPlayerState, RespawnSchedule);
@@ -270,9 +277,16 @@ void ABwayPlayerState::SetRespawnSchedule(double ServerEndTime, int32 RoundNumbe
 	if (!HasAuthority()) return;
 	const double EndTime = FMath::IsFinite(ServerEndTime) && ServerEndTime > 0.0 ? ServerEndTime : 0.0;
 	const int32 ScheduledRound = EndTime > 0.0 ? RoundNumber : 0;
-	if (RespawnSchedule.ServerEndTime == EndTime && RespawnSchedule.RoundNumber == ScheduledRound) return;
+	const bool bWaiting = EndTime > 0.0;
+	if (RespawnSchedule.ServerEndTime == EndTime
+		&& RespawnSchedule.RoundNumber == ScheduledRound
+		&& RespawnSchedule.bIsWaitingToRespawn == bWaiting)
+	{
+		return;
+	}
 	RespawnSchedule.ServerEndTime = EndTime;
 	RespawnSchedule.RoundNumber = ScheduledRound;
+	RespawnSchedule.bIsWaitingToRespawn = bWaiting;
 	OnRep_RespawnSchedule();
 	ForceNetUpdate();
 }
@@ -300,7 +314,7 @@ void ABwayPlayerState::OnRep_PlayerNum()
 
 void ABwayPlayerState::AddKill()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		Kills++;
 		OnRep_MatchStats();
@@ -310,7 +324,7 @@ void ABwayPlayerState::AddKill()
 
 void ABwayPlayerState::AddDeath()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		Deaths++;
 		OnRep_MatchStats();
@@ -320,7 +334,7 @@ void ABwayPlayerState::AddDeath()
 
 void ABwayPlayerState::AddAssist()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		Assists++;
 		OnRep_MatchStats();
@@ -330,7 +344,7 @@ void ABwayPlayerState::AddAssist()
 
 void ABwayPlayerState::AddObjectiveScore(int32 Amount)
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		ObjectiveScore += Amount;
 		OnRep_MatchStats();
@@ -340,7 +354,7 @@ void ABwayPlayerState::AddObjectiveScore(int32 Amount)
 
 void ABwayPlayerState::AddDamageDealt(int32 Amount)
 {
-	if (HasAuthority() && Amount > 0)
+	if (HasAuthority() && !bMatchStatsFrozen && Amount > 0)
 	{
 		DamageDealt += Amount;
 		OnRep_MatchStats();
@@ -349,7 +363,7 @@ void ABwayPlayerState::AddDamageDealt(int32 Amount)
 
 void ABwayPlayerState::AddHealingDone(int32 Amount)
 {
-	if (HasAuthority() && Amount > 0)
+	if (HasAuthority() && !bMatchStatsFrozen && Amount > 0)
 	{
 		HealingDone += Amount;
 		OnRep_MatchStats();
@@ -358,7 +372,7 @@ void ABwayPlayerState::AddHealingDone(int32 Amount)
 
 void ABwayPlayerState::AddForcedFumble()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		ForcedFumbles++;
 		OnRep_MatchStats();
@@ -368,12 +382,33 @@ void ABwayPlayerState::AddForcedFumble()
 
 void ABwayPlayerState::AddInterception()
 {
-	if (HasAuthority())
+	if (HasAuthority() && !bMatchStatsFrozen)
 	{
 		Interceptions++;
 		OnRep_MatchStats();
 		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded interception (total: %d)"), *GetPlayerName(), Interceptions);
 	}
+}
+
+void ABwayPlayerState::AddBuildableDestroyed(int32 Amount)
+{
+	if (HasAuthority() && !bMatchStatsFrozen && Amount > 0)
+	{
+		BuildablesDestroyed += Amount;
+		OnRep_MatchStats();
+		UE_LOG(LogTemp, Log, TEXT("BwayPlayerState: %s recorded buildable destroyed +%d (total: %d)"), *GetPlayerName(), Amount, BuildablesDestroyed);
+	}
+}
+
+void ABwayPlayerState::HandleOwnedUpgradesChanged()
+{
+	if (!HasAuthority() || bMatchStatsFrozen)
+	{
+		return;
+	}
+
+	ReplicatedEquippedUpgrades = UpgradeComponent ? UpgradeComponent->GetOwnedUpgrades() : TArray<FBwayOwnedUpgrade>();
+	OnRep_MatchStats();
 }
 
 void ABwayPlayerState::SetInHealingZone(bool bInZone, int32 ZoneTeamIndex)
@@ -393,6 +428,7 @@ void ABwayPlayerState::ResetMatchStats()
 {
 	if (HasAuthority())
 	{
+		bMatchStatsFrozen = false;
 		SetRespawnSchedule(0.0, 0);
 		DeathsInCurrentRound = 0;
 		Kills = 0;
@@ -404,6 +440,7 @@ void ABwayPlayerState::ResetMatchStats()
 		ForcedFumbles = 0;
 		Interceptions = 0;
 		BuildablesDestroyed = 0;
+		ReplicatedEquippedUpgrades.Reset();
 		LastRoundStats.Reset();
 		RoundStartStatsBaseline.Reset();
 		MatchGoldEarned = 0.0;
@@ -420,7 +457,7 @@ FBwayPlayerMatchStats ABwayPlayerState::GetMatchStatsSnapshot() const
 
 void ABwayPlayerState::HandleGoldChanged(const FOnAttributeChangeData& Change)
 {
-	if (bSuppressMatchGoldEarningsTracking)
+	if (bSuppressMatchGoldEarningsTracking || bMatchStatsFrozen)
 	{
 		return;
 	}
@@ -507,6 +544,13 @@ void ABwayPlayerState::FinalizeRoundStats()
 
 void ABwayPlayerState::OnRep_MatchStats()
 {
+	if (HasAuthority())
+	{
+		if (ABwayGameState* BwayGS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+		{
+			BwayGS->UpdateDisconnectedParticipantStats(this);
+		}
+	}
 	OnMatchStatsChanged.Broadcast();
 }
 

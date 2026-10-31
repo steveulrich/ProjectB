@@ -38,6 +38,19 @@ struct BREAKAWAYCORERUNTIME_API FBwayTeamPortraitSlotViewModel
 	bool bHasRelic = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Team Portraits")
+	bool bIsFriendly = true;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Team Portraits")
+	bool bIsWaitingToRespawn = false;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Team Portraits")
+	int32 RespawnRemainingSeconds = 0;
+
+	/** Normalized live health [0..1] for the per-portrait mini health bar (0 when dead). */
+	UPROPERTY(BlueprintReadOnly, Category = "Team Portraits")
+	float HealthPercent = 1.0f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Team Portraits")
 	FLinearColor FrameColor = FLinearColor(0.10f, 0.12f, 0.16f, 0.75f);
 };
 
@@ -57,8 +70,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Team Portraits")
 	const FBwayTeamPortraitSlotViewModel& GetSlotViewModel() const { return ViewModel; }
 
+	FText GetDisplayedRespawnText() const;
+	bool IsRespawnTimerVisible() const;
+	bool IsDeathOverlayVisible() const;
+	bool IsRelicBadgeVisible() const;
+
 protected:
 	virtual void NativePreConstruct() override;
+	virtual int32 NativePaint(
+		const FPaintArgs& Args,
+		const FGeometry& AllottedGeometry,
+		const FSlateRect& MyCullingRect,
+		FSlateWindowElementList& OutDrawElements,
+		int32 LayerId,
+		const FWidgetStyle& InWidgetStyle,
+		bool bParentEnabled) const override;
 
 	void ApplyViewModel();
 
@@ -76,6 +102,15 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Team Portraits|Widgets")
 	TObjectPtr<UTextBlock> Text_RelicBadge;
+
+	/** Centered live respawn countdown seconds over dead player's portrait (Sept 2017 broadcast HUD parity). */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional), Category = "Team Portraits|Widgets")
+	TObjectPtr<UTextBlock> Text_RespawnTimer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team Portraits")
+	FLinearColor RelicCarrierFrameColor = FLinearColor(0.95f, 0.78f, 0.18f, 0.98f);
+
+	void EnsureRespawnTimerWidget();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Team Portraits")
 	TObjectPtr<UTexture2D> EmptyPortraitTexture = nullptr;

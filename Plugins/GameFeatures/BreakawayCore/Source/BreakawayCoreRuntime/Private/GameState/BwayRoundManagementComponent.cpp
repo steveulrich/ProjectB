@@ -95,6 +95,8 @@ void UBwayRoundManagementComponent::GetLifetimeReplicatedProps(TArray<FLifetimeP
 	DOREPLIFETIME(UBwayRoundManagementComponent, RoundStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, WarmupStartTime);
 	DOREPLIFETIME(UBwayRoundManagementComponent, WarmupDurationSeconds);
+	DOREPLIFETIME(UBwayRoundManagementComponent, PrematchStartTime);
+	DOREPLIFETIME(UBwayRoundManagementComponent, PrematchDurationSeconds);
 	DOREPLIFETIME(UBwayRoundManagementComponent, bArenaIntroActive);
 	DOREPLIFETIME(UBwayRoundManagementComponent, bArenaIntroPlayed);
 	DOREPLIFETIME(UBwayRoundManagementComponent, CurrentRoundNumber);
@@ -301,6 +303,8 @@ void UBwayRoundManagementComponent::EnterPrematch()
 
 	bOrchestratorActive = true;
 	bPrematchCompletionHandled = false;
+	PrematchDurationSeconds = FMath::Max(0.0f, ResolvedMatchFlowSettings.PrematchDuration);
+	PrematchStartTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0f;
 
 	SetMatchPhase(EBwayMatchPhase::Prematch);
 	StartPrematchPhaseAbility();
@@ -1344,6 +1348,21 @@ int32 UBwayRoundManagementComponent::GetWarmupTimeRemaining() const
 	return FMath::CeilToInt(RemainingTime);
 }
 
+int32 UBwayRoundManagementComponent::GetPrematchTimeRemaining() const
+{
+	if (CurrentMatchPhase != EBwayMatchPhase::Prematch || PrematchDurationSeconds <= 0.0f)
+	{
+		return 0;
+	}
+
+	const AGameStateBase* GameState = GetOwner<AGameStateBase>();
+	const double CurrentServerTime = GameState
+		? GameState->GetServerWorldTimeSeconds() : (GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0);
+	const double ElapsedTime = FMath::Max(0.0, CurrentServerTime - static_cast<double>(PrematchStartTime));
+	const double RemainingTime = FMath::Max(0.0, static_cast<double>(PrematchDurationSeconds) - ElapsedTime);
+	return FMath::CeilToInt(RemainingTime);
+}
+
 // ========================================
 // Round Lifecycle
 // ========================================
@@ -1703,6 +1722,11 @@ void UBwayRoundManagementComponent::ResetForNextMatch()
 	Team0RoundWinHistory.Reset();
 	Team1RoundWinHistory.Reset();
 	ClearActivePostRoundSummary();
+	if (ABwayGameState* BwayGS = GetBwayGameState())
+	{
+		BwayGS->ClearDisconnectedMatchParticipants();
+		BwayGS->FreezeAllMatchStats(false);
+	}
 }
 
 // ========================================

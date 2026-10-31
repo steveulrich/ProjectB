@@ -1,18 +1,32 @@
 #include "UI/BwayAbilityBarHUDWidget.h"
 
-#include "BwayPlayerState.h"
 #include "AbilitySystem/Abilities/LyraGameplayAbility.h"
 #include "AbilitySystemComponent.h"
-#include "GameplayEffect.h"
-#include "GameplayEffectTypes.h"
+#include "Blueprint/WidgetTree.h"
+#include "Buildable/BuildableBase.h"
+#include "BwayGameState.h"
+#include "BwayPlayerState.h"
 #include "Character/LyraPawnData.h"
+#include "CommonInputSubsystem.h"
+#include "CommonInputTypeEnum.h"
+#include "Components/Border.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/SizeBox.h"
+#include "Components/TextBlock.h"
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 #include "Engine/LocalPlayer.h"
 #include "EnhancedInputSubsystems.h"
+#include "GameState/BwayBuildableRegistryComponent.h"
+#include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
+#include "HeroSystems/BwayHeroDataAsset.h"
+#include "HeroSystems/BwayHeroRegistry.h"
 #include "Input/LyraInputConfig.h"
 #include "InputAction.h"
+#include "InputMappingContext.h"
 #include "UI/BwayAbilityUISettings.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayAbilityBarHUDWidget)
@@ -31,6 +45,8 @@ namespace BwayMatchAbilityBar
 		TEXT("InputTag.Ability.Ability2"),
 		TEXT("InputTag.Ability.Ability3"),
 	};
+
+	const FName RelicCarryingStateTagName(TEXT("State.Relic.Carrying"));
 }
 
 UBwayAbilityBarHUDWidget::UBwayAbilityBarHUDWidget(const FObjectInitializer& ObjectInitializer)
@@ -41,6 +57,19 @@ UBwayAbilityBarHUDWidget::UBwayAbilityBarHUDWidget(const FObjectInitializer& Obj
 void UBwayAbilityBarHUDWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	if (!CachedSharedSlideAction)
+	{
+		CachedSharedSlideAction = LoadObject<UInputAction>(
+			nullptr,
+			TEXT("/BreakawayCore/Input/Actions/IA_BW_Slide.IA_BW_Slide"));
+	}
+	if (!CachedRelicRequestAction)
+	{
+		CachedRelicRequestAction = LoadObject<UInputAction>(
+			nullptr,
+			TEXT("/BreakawayCore/Input/Actions/IA_BW_Relic_Request.IA_BW_Relic_Request"));
+	}
 
 	RebuildSlotWidgets();
 	BindToLocalPlayerState();
@@ -58,7 +87,23 @@ void UBwayAbilityBarHUDWidget::NativeDestruct()
 			&ThisClass::HandleControlMappingsRebuilt);
 	}
 	BoundInputSubsystem.Reset();
+
+	if (InputMethodChangedHandle.IsValid())
+	{
+		if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+		{
+			if (UCommonInputSubsystem* CommonInput = UCommonInputSubsystem::Get(LocalPlayer))
+			{
+				CommonInput->OnInputMethodChangedNative.Remove(InputMethodChangedHandle);
+			}
+		}
+		InputMethodChangedHandle.Reset();
+	}
+
 	SlotWidgets.Reset();
+	AuxiliaryPromptsBorder = nullptr;
+	Text_SharedSlidePrompt = nullptr;
+	Text_RelicPrompt = nullptr;
 
 	Super::NativeDestruct();
 }
@@ -88,9 +133,75 @@ void UBwayAbilityBarHUDWidget::NotifyRoundStateChanged(FName NewState)
 	RequestAbilityBarRefresh();
 }
 
+void UBwayAbilityBarHUDWidget::SetInputDeviceOverrideForTest(const bool bEnableOverride, const bool bPreferGamepad)
+{
+	bTestOverrideInputDevice = bEnableOverride;
+	bTestPreferGamepad = bPreferGamepad;
+	RequestAbilityBarRefresh();
+	RefreshAbilityBar();
+}
+
+bool UBwayAbilityBarHUDWidget::ShouldPreferGamepadLabels() const
+{
+	if (bTestOverrideInputDevice)
+	{
+		return bTestPreferGamepad;
+	}
+
+	if (const ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+	{
+		if (const UCommonInputSubsystem* CommonInput = UCommonInputSubsystem::Get(LocalPlayer))
+		{
+			return CommonInput->GetCurrentInputType() == ECommonInputType::Gamepad;
+		}
+	}
+
+	return false;
+}
+
 void UBwayAbilityBarHUDWidget::RebuildSlotWidgets()
 {
 	SlotWidgets.Reset();
+	AuxiliaryPromptsBorder = nullptr;
+	Text_SharedSlidePrompt = nullptr;
+	Text_RelicPrompt = nullptr;
+
+	if (WidgetTree)
+	{
+		// Clear authored white M_UI_FocusBorder on AbilityBarFrame; the trapezoidal pedestal is painted on UBwayMatchBroadcastOverlayWidget.
+		WidgetTree->ForEachWidget([](UWidget* Candidate)
+		{
+			if (UBorder* Border = Cast<UBorder>(Candidate))
+			{
+				FSlateBrush NoBrush;
+				NoBrush.DrawAs = ESlateBrushDrawType::NoDrawType;
+				Border->SetBrush(NoBrush);
+				Border->SetBrushColor(FLinearColor::Transparent);
+				Border->SetPadding(FMargin(0.0f));
+			}
+			else if (USizeBox* SizeBox = Cast<USizeBox>(Candidate))
+			{
+				SizeBox->ClearWidthOverride();
+				SizeBox->ClearHeightOverride();
+			}
+		});
+	}
+
+	if (!AbilitySlots && WidgetTree && !WidgetTree->RootWidget)
+	{
+		AbilitySlots = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("AbilitySlots"));
+		WidgetTree->RootWidget = AbilitySlots;
+	}
+
+	if (!AbilitySlotWidgetClass)
+	{
+		const FSoftClassPath DefaultSlotClassPath(
+			TEXT("/BreakawayCore/UI/Match/W_BW_MatchAbilitySlot.W_BW_MatchAbilitySlot_C"));
+		if (UClass* LoadedSlotClass = DefaultSlotClassPath.TryLoadClass<UBwayMatchAbilitySlotWidget>())
+		{
+			AbilitySlotWidgetClass = LoadedSlotClass;
+		}
+	}
 
 	if (!AbilitySlots || !AbilitySlotWidgetClass)
 	{
@@ -98,7 +209,8 @@ void UBwayAbilityBarHUDWidget::RebuildSlotWidgets()
 	}
 
 	APlayerController* OwningPlayer = GetOwningPlayer();
-	if (!OwningPlayer)
+	UWorld* World = GetWorld();
+	if (!OwningPlayer && !World)
 	{
 		return;
 	}
@@ -106,20 +218,74 @@ void UBwayAbilityBarHUDWidget::RebuildSlotWidgets()
 	AbilitySlots->ClearChildren();
 	SlotWidgets.Reserve(BwayMatchAbilityBar::SlotCount);
 
+	// Keep SlotWidgets[0..5] in logical slot index order while placing them into AbilitySlots in
+	// Breakaway broadcast visual order: 1 (Buildable) | LMB (Primary) | F (Mobility) | R (Ultimate center) | Q | E.
 	for (int32 Position = 0; Position < BwayMatchAbilityBar::SlotCount; ++Position)
 	{
-		UBwayMatchAbilitySlotWidget* SlotWidget =
-			CreateWidget<UBwayMatchAbilitySlotWidget>(OwningPlayer, AbilitySlotWidgetClass);
+		UBwayMatchAbilitySlotWidget* SlotWidget = OwningPlayer
+			? CreateWidget<UBwayMatchAbilitySlotWidget>(OwningPlayer, AbilitySlotWidgetClass)
+			: CreateWidget<UBwayMatchAbilitySlotWidget>(World, AbilitySlotWidgetClass);
 		if (!SlotWidget)
 		{
 			continue;
 		}
-
-		if (UHorizontalBoxSlot* HorizontalSlot = AbilitySlots->AddChildToHorizontalBox(SlotWidget))
-		{
-			HorizontalSlot->SetPadding(AbilitySlotPadding);
-		}
 		SlotWidgets.Add(SlotWidget);
+	}
+
+	static constexpr int32 VisualOrder[BwayMatchAbilityBar::SlotCount] = { 0, 1, 2, 5, 3, 4 };
+	for (const int32 LogicalIdx : VisualOrder)
+	{
+		if (!SlotWidgets.IsValidIndex(LogicalIdx) || !SlotWidgets[LogicalIdx])
+		{
+			continue;
+		}
+
+		if (UHorizontalBoxSlot* HorizontalSlot = AbilitySlots->AddChildToHorizontalBox(SlotWidgets[LogicalIdx]))
+		{
+			const FMargin HexPadding = (LogicalIdx == 0)
+				? FMargin(2.0f, 0.0f, 10.0f, 0.0f)
+				: ((LogicalIdx == 5) ? FMargin(3.0f, 0.0f, 3.0f, 0.0f) : FMargin(2.0f, 0.0f, 2.0f, 0.0f));
+			HorizontalSlot->SetPadding(HexPadding);
+			HorizontalSlot->SetVerticalAlignment(VAlign_Bottom);
+		}
+	}
+
+	// Retain separate non-slot prompt widgets for Shared Slide (IA_BW_Slide) and Relic Request / Controls
+	// so hero mobility (Position 2 / InputTag.Ability.Ability4) is never conflated with shared slide,
+	// while keeping the visual pedestal clean per broadcast HUD parity.
+	if (WidgetTree)
+	{
+		AuxiliaryPromptsBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("AuxiliaryPromptsBorder"));
+		AuxiliaryPromptsBorder->SetVisibility(ESlateVisibility::Collapsed);
+
+		UVerticalBox* PromptsVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("AuxiliaryPromptsVBox"));
+		Text_SharedSlidePrompt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Text_SharedSlidePrompt"));
+		Text_RelicPrompt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Text_RelicPrompt"));
+
+		FSlateFontInfo PromptFont = Text_SharedSlidePrompt->GetFont();
+		PromptFont.Size = 11;
+		Text_SharedSlidePrompt->SetFont(PromptFont);
+		Text_SharedSlidePrompt->SetColorAndOpacity(FSlateColor(FLinearColor(0.84f, 0.92f, 1.0f, 0.96f)));
+		Text_SharedSlidePrompt->SetShadowOffset(FVector2D(1.0f, 1.0f));
+		Text_SharedSlidePrompt->SetShadowColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.90f));
+
+		Text_RelicPrompt->SetFont(PromptFont);
+		Text_RelicPrompt->SetColorAndOpacity(FSlateColor(FLinearColor(0.96f, 0.84f, 0.32f, 0.96f)));
+		Text_RelicPrompt->SetShadowOffset(FVector2D(1.0f, 1.0f));
+		Text_RelicPrompt->SetShadowColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.90f));
+
+		if (UVerticalBoxSlot* SlideSlot = PromptsVBox->AddChildToVerticalBox(Text_SharedSlidePrompt))
+		{
+			SlideSlot->SetPadding(FMargin(0.0f, 0.0f, 0.0f, 2.0f));
+		}
+		PromptsVBox->AddChildToVerticalBox(Text_RelicPrompt);
+		AuxiliaryPromptsBorder->SetContent(PromptsVBox);
+
+		if (UHorizontalBoxSlot* AuxSlot = AbilitySlots->AddChildToHorizontalBox(AuxiliaryPromptsBorder))
+		{
+			AuxSlot->SetPadding(FMargin(8.0f, 0.0f, 2.0f, 0.0f));
+			AuxSlot->SetVerticalAlignment(VAlign_Center);
+		}
 	}
 }
 
@@ -145,7 +311,8 @@ void UBwayAbilityBarHUDWidget::BindToLocalPlayerState()
 	}
 
 	UEnhancedInputLocalPlayerSubsystem* InputSubsystem = nullptr;
-	if (ULocalPlayer* LocalPlayer = GetOwningLocalPlayer())
+	ULocalPlayer* LocalPlayer = GetOwningLocalPlayer();
+	if (LocalPlayer)
 	{
 		InputSubsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	}
@@ -165,6 +332,19 @@ void UBwayAbilityBarHUDWidget::BindToLocalPlayerState()
 			InputSubsystem->ControlMappingsRebuiltDelegate.AddUniqueDynamic(
 				this,
 				&ThisClass::HandleControlMappingsRebuilt);
+		}
+	}
+
+	if (!InputMethodChangedHandle.IsValid() && LocalPlayer)
+	{
+		if (UCommonInputSubsystem* CommonInput = UCommonInputSubsystem::Get(LocalPlayer))
+		{
+			InputMethodChangedHandle = CommonInput->OnInputMethodChangedNative.AddWeakLambda(
+				this,
+				[this](ECommonInputType /*NewInputType*/)
+				{
+					HandleControlMappingsRebuilt();
+				});
 		}
 	}
 
@@ -222,13 +402,13 @@ FText UBwayAbilityBarHUDWidget::GetHeroFallbackLabel(const int32 Position) const
 	case 1:
 		return LOCTEXT("PrimaryFallback", "Primary");
 	case 2:
-		return LOCTEXT("Ability4Fallback", "F Ability");
+		return LOCTEXT("Ability4Fallback", "Hero Mobility");
 	case 3:
-		return LOCTEXT("Ability1Fallback", "Q Ability");
+		return LOCTEXT("Ability1Fallback", "Ability 1");
 	case 4:
-		return LOCTEXT("Ability2Fallback", "E Ability");
+		return LOCTEXT("Ability2Fallback", "Ability 2");
 	case 5:
-		return LOCTEXT("Ability3Fallback", "R Ability");
+		return LOCTEXT("Ability3Fallback", "Ultimate");
 	default:
 		return LOCTEXT("UnknownAbilityFallback", "Unavailable");
 	}
@@ -238,26 +418,38 @@ const UInputAction* UBwayAbilityBarHUDWidget::ResolveInputAction(
 	const FGameplayTag InputTag,
 	const TSoftObjectPtr<const UInputAction>& FallbackInputAction) const
 {
-	if (InputTag.IsValid() && BoundPlayerState.IsValid())
+	if (InputTag.IsValid())
 	{
-		if (const ULyraPawnData* PawnData = BoundPlayerState->GetPawnData<ULyraPawnData>())
+		const ULyraInputConfig* InputConfig = nullptr;
+		if (BoundPlayerState.IsValid())
 		{
-			if (const ULyraInputConfig* InputConfig = PawnData->InputConfig)
+			if (const ULyraPawnData* PawnData = BoundPlayerState->GetPawnData<ULyraPawnData>())
 			{
-				for (const FLyraInputAction& InputAction : InputConfig->AbilityInputActions)
-				{
-					if (InputAction.InputTag == InputTag && InputAction.InputAction)
-					{
-						return InputAction.InputAction;
-					}
-				}
+				InputConfig = PawnData->InputConfig;
+			}
+		}
+		if (!InputConfig)
+		{
+			InputConfig = LoadObject<ULyraInputConfig>(
+				nullptr,
+				TEXT("/BreakawayCore/Input/DA_BW_InputData_Humanoid.DA_BW_InputData_Humanoid"));
+		}
 
-				for (const FLyraInputAction& InputAction : InputConfig->NativeInputActions)
+		if (InputConfig)
+		{
+			for (const FLyraInputAction& InputAction : InputConfig->AbilityInputActions)
+			{
+				if (InputAction.InputTag == InputTag && InputAction.InputAction)
 				{
-					if (InputAction.InputTag == InputTag && InputAction.InputAction)
-					{
-						return InputAction.InputAction;
-					}
+					return InputAction.InputAction;
+				}
+			}
+
+			for (const FLyraInputAction& InputAction : InputConfig->NativeInputActions)
+			{
+				if (InputAction.InputTag == InputTag && InputAction.InputAction)
+				{
+					return InputAction.InputAction;
 				}
 			}
 		}
@@ -268,21 +460,48 @@ const UInputAction* UBwayAbilityBarHUDWidget::ResolveInputAction(
 
 FText UBwayAbilityBarHUDWidget::ResolveKeyLabel(const UInputAction* InputAction) const
 {
-	if (!InputAction || !BoundInputSubsystem.IsValid())
+	if (!InputAction)
 	{
 		return LOCTEXT("UnboundKey", "—");
 	}
 
-	const TArray<FKey> BoundKeys = BoundInputSubsystem->QueryKeysMappedToAction(InputAction);
+	TArray<FKey> BoundKeys;
+	if (BoundInputSubsystem.IsValid())
+	{
+		BoundKeys = BoundInputSubsystem->QueryKeysMappedToAction(InputAction);
+	}
+	if (BoundKeys.IsEmpty())
+	{
+		static const TCHAR* ImcPaths[] = {
+			TEXT("/BreakawayCore/Input/Mappings/IMC_BW_HeroAbilities.IMC_BW_HeroAbilities"),
+			TEXT("/BreakawayCore/Input/Mappings/IMC_BW_Default.IMC_BW_Default"),
+			TEXT("/BreakawayCore/Input/Mappings/IMC_BW_PlayerUI.IMC_BW_PlayerUI"),
+		};
+		for (const TCHAR* ImcPath : ImcPaths)
+		{
+			if (const UInputMappingContext* Imc = LoadObject<UInputMappingContext>(nullptr, ImcPath))
+			{
+				for (const FEnhancedActionKeyMapping& Mapping : Imc->GetMappings())
+				{
+					if (Mapping.Action == InputAction && Mapping.Key.IsValid())
+					{
+						BoundKeys.AddUnique(Mapping.Key);
+					}
+				}
+			}
+		}
+	}
+
 	if (BoundKeys.IsEmpty())
 	{
 		return LOCTEXT("UnboundKey", "—");
 	}
 
+	const bool bPreferGamepad = ShouldPreferGamepadLabels();
 	const FKey* PreferredKey = BoundKeys.FindByPredicate(
-		[](const FKey& Key)
+		[bPreferGamepad](const FKey& Key)
 		{
-			return Key.IsValid() && !Key.IsGamepadKey();
+			return Key.IsValid() && (Key.IsGamepadKey() == bPreferGamepad);
 		});
 
 	return CompactKeyDisplayName(PreferredKey ? *PreferredKey : BoundKeys[0]);
@@ -301,6 +520,14 @@ FText UBwayAbilityBarHUDWidget::CompactKeyDisplayName(const FKey& Key) const
 	if (Key == EKeys::MiddleMouseButton)
 	{
 		return LOCTEXT("MiddleMouseButtonShort", "MMB");
+	}
+	if (Key == EKeys::LeftShift || Key == EKeys::RightShift)
+	{
+		return LOCTEXT("ShiftShort", "SHIFT");
+	}
+	if (Key == EKeys::LeftControl || Key == EKeys::RightControl)
+	{
+		return LOCTEXT("CtrlShort", "CTRL");
 	}
 
 	return Key.IsValid() ? Key.GetDisplayName(/*bLongDisplayName*/ false) : LOCTEXT("UnboundKey", "—");
@@ -372,6 +599,62 @@ void UBwayAbilityBarHUDWidget::FillCooldownState(
 	InOutViewModel.CooldownPercent = FMath::Clamp((BestRemaining / BestDuration), 0.f, 1.f);
 }
 
+void UBwayAbilityBarHUDWidget::RefreshAuxiliaryPrompts(const bool bIsRelicCarrier)
+{
+	if (!CachedSharedSlideAction)
+	{
+		CachedSharedSlideAction = LoadObject<UInputAction>(
+			nullptr,
+			TEXT("/BreakawayCore/Input/Actions/IA_BW_Slide.IA_BW_Slide"));
+	}
+	if (!CachedRelicRequestAction)
+	{
+		CachedRelicRequestAction = LoadObject<UInputAction>(
+			nullptr,
+			TEXT("/BreakawayCore/Input/Actions/IA_BW_Relic_Request.IA_BW_Relic_Request"));
+	}
+
+	CachedSharedSlideKeyLabel = ResolveKeyLabel(CachedSharedSlideAction);
+	CachedRelicRequestKeyLabel = ResolveKeyLabel(CachedRelicRequestAction);
+
+	if (Text_SharedSlidePrompt)
+	{
+		Text_SharedSlidePrompt->SetText(
+			FText::FromString(FString::Printf(TEXT("[%s] SLIDE"), *CachedSharedSlideKeyLabel.ToString())));
+	}
+
+	if (Text_RelicPrompt)
+	{
+		if (bIsRelicCarrier)
+		{
+			const UBwayAbilityUISettings& UISettings = UBwayAbilityUISettings::Get();
+			const FText ThrowKey = UISettings.RelicCombatSlots.IsValidIndex(0)
+				? ResolveKeyLabel(ResolveInputAction(UISettings.RelicCombatSlots[0].InputTag, UISettings.RelicCombatSlots[0].InputAction))
+				: LOCTEXT("UnboundKey", "—");
+			const FText PassKey = UISettings.RelicCombatSlots.IsValidIndex(2)
+				? ResolveKeyLabel(ResolveInputAction(UISettings.RelicCombatSlots[2].InputTag, UISettings.RelicCombatSlots[2].InputAction))
+				: LOCTEXT("UnboundKey", "—");
+			const FText DropKey = UISettings.RelicCombatSlots.IsValidIndex(3)
+				? ResolveKeyLabel(ResolveInputAction(UISettings.RelicCombatSlots[3].InputTag, UISettings.RelicCombatSlots[3].InputAction))
+				: LOCTEXT("UnboundKey", "—");
+
+			Text_RelicPrompt->SetText(
+				FText::FromString(FString::Printf(
+					TEXT("RELIC [%s] THROW • [%s] PASS • [%s] DROP"),
+					*ThrowKey.ToString(),
+					*PassKey.ToString(),
+					*DropKey.ToString())));
+			Text_RelicPrompt->SetColorAndOpacity(FSlateColor(FLinearColor(1.0f, 0.84f, 0.22f, 1.0f)));
+		}
+		else
+		{
+			Text_RelicPrompt->SetText(
+				FText::FromString(FString::Printf(TEXT("[%s] CALL RELIC"), *CachedRelicRequestKeyLabel.ToString())));
+			Text_RelicPrompt->SetColorAndOpacity(FSlateColor(FLinearColor(0.90f, 0.86f, 0.62f, 0.94f)));
+		}
+	}
+}
+
 void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 {
 	if (SlotWidgets.Num() != BwayMatchAbilityBar::SlotCount)
@@ -379,21 +662,65 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 		RebuildSlotWidgets();
 	}
 
-	if (SlotWidgets.Num() != BwayMatchAbilityBar::SlotCount)
-	{
-		return;
-	}
-
 	if (!BoundPlayerState.IsValid())
 	{
 		BindToLocalPlayerState();
 	}
 
+	if (BoundPlayerState.IsValid() && !BoundAbilitySystemComponent.IsValid())
+	{
+		BoundAbilitySystemComponent = BoundPlayerState->GetAbilitySystemComponent();
+	}
+
+	const FGameplayTag CarryingStateTag =
+		FGameplayTag::RequestGameplayTag(BwayMatchAbilityBar::RelicCarryingStateTagName, /*ErrorIfNotFound*/ false);
+	const bool bHasCarryingTag =
+		BoundAbilitySystemComponent.IsValid()
+		&& CarryingStateTag.IsValid()
+		&& BoundAbilitySystemComponent->HasMatchingGameplayTag(CarryingStateTag);
+	const bool bIsRelicCarrier =
+		(BoundPlayerState.IsValid() && BoundPlayerState->bHasRelic) || bHasCarryingTag;
+
+	RefreshAuxiliaryPrompts(bIsRelicCarrier);
+
+	if (SlotWidgets.Num() != BwayMatchAbilityBar::SlotCount)
+	{
+		return;
+	}
+
 	const TArray<FGameplayTag> HeroSlotTags = GetFixedHeroSlotTags();
 	const UBwayAbilityUISettings& UISettings = UBwayAbilityUISettings::Get();
-	const bool bIsRelicCarrier = BoundPlayerState.IsValid() && BoundPlayerState->bHasRelic;
 	const bool bBuildableConsumed =
 		BoundPlayerState.IsValid() && BoundPlayerState->HasPlacedBuildableThisRound();
+
+	int32 ActiveBuildableCount = 0;
+	int32 MaxActiveBuildables = 0;
+	if (BoundPlayerState.IsValid())
+	{
+		if (const ABwayGameState* GameState = GetBwayGameState())
+		{
+			if (GameState->BuildableRegistryComponent)
+			{
+				ActiveBuildableCount = GameState->BuildableRegistryComponent->GetBuildableCountForPlayer(BoundPlayerState.Get());
+			}
+		}
+
+		const FPrimaryAssetId HeroId = BoundPlayerState->GetSelectedHeroId();
+		if (HeroId.IsValid())
+		{
+			if (const UBwayHeroDataAsset* HeroData = UBwayHeroRegistry::GetHeroDataById(HeroId))
+			{
+				if (const UBwayBuildableDataAsset* BuildableData = HeroData->GetBuildableDataAsset())
+				{
+					MaxActiveBuildables = BuildableData->MaxActiveBuildablesPerPlayer;
+				}
+			}
+		}
+		if (MaxActiveBuildables <= 0)
+		{
+			MaxActiveBuildables = 2;
+		}
+	}
 
 	bool bFoundCooldown = false;
 
@@ -403,6 +730,11 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 		ViewModel.Position = Position;
 		ViewModel.bIsBuildable = Position == 0;
 		ViewModel.bIsConsumed = ViewModel.bIsBuildable && bBuildableConsumed;
+		if (ViewModel.bIsBuildable)
+		{
+			ViewModel.ActiveBuildableCount = ActiveBuildableCount;
+			ViewModel.MaxActiveBuildables = MaxActiveBuildables;
+		}
 
 		FGameplayTag InputTag = HeroSlotTags.IsValidIndex(Position)
 			? HeroSlotTags[Position]
@@ -427,7 +759,7 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 			else
 			{
 				InputTag = FGameplayTag();
-				FallbackLabel = LOCTEXT("MissingRelicSlot", "Unavailable");
+				FallbackLabel = LOCTEXT("MissingRelicSlot", "Relic Lock");
 			}
 		}
 
@@ -464,6 +796,16 @@ void UBwayAbilityBarHUDWidget::RefreshAbilityBar()
 	}
 
 	bAnySlotOnCooldown = bFoundCooldown;
+}
+
+FText UBwayAbilityBarHUDWidget::GetSharedSlidePromptText() const
+{
+	return Text_SharedSlidePrompt ? Text_SharedSlidePrompt->GetText() : FText::GetEmpty();
+}
+
+FText UBwayAbilityBarHUDWidget::GetRelicPromptText() const
+{
+	return Text_RelicPrompt ? Text_RelicPrompt->GetText() : FText::GetEmpty();
 }
 
 void UBwayAbilityBarHUDWidget::HandleRelicPossessionChanged(bool bHasRelic)

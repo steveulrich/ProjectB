@@ -78,6 +78,8 @@ public class BreakawayCoreRuntime : ModuleRules
 		if (Target.bBuildEditor)
 		{
 			PrivateDependencyModuleNames.Add("UnrealEd");
+			PrivateDependencyModuleNames.Add("BlueprintGraph");
+			PrivateDependencyModuleNames.Add("Kismet");
 			PrivateDependencyModuleNames.Add("NiagaraEditor");
 			PrivateDependencyModuleNames.Add("AssetTools");
 		}

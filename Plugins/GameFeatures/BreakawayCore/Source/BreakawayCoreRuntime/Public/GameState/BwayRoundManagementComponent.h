@@ -175,6 +175,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
 	int32 GetWarmupTimeRemaining() const;
 
+	/** Get remaining time in the Prematch countdown phase (in seconds). */
+	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
+	int32 GetPrematchTimeRemaining() const;
+
 	/** True while the Arena Intro camera fly-through sequence is running between Hero Selection and Warmup. */
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
 	bool IsArenaIntroActive() const { return bArenaIntroActive; }
@@ -504,6 +508,14 @@ protected:
 	/** Replicated duration of the Warmup / Pre-Round Shop phase in seconds */
 	UPROPERTY(Replicated)
 	float WarmupDurationSeconds = 15.0f;
+
+	/** When the Prematch phase started (server time) */
+	UPROPERTY(Replicated)
+	float PrematchStartTime = 0.0f;
+
+	/** Replicated configured duration of the Prematch phase in seconds */
+	UPROPERTY(Replicated)
+	float PrematchDurationSeconds = 0.0f;
 
 	/** Replicated flag indicating the Arena Intro fly-through is currently active */
 	UPROPERTY(Replicated)

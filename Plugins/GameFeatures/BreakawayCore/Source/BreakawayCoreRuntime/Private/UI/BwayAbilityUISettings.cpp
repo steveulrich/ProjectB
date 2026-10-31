@@ -69,7 +69,7 @@ UBwayAbilityUISettings::UBwayAbilityUISettings()
 		LOCTEXT("RelicDrop", "Drop"));
 
 	FBwayRelicAbilityBarSlot& MissingSlot = RelicCombatSlots.AddDefaulted_GetRef();
-	MissingSlot.PlaceholderLabel = LOCTEXT("RelicMissingAbility", "Unavailable");
+	MissingSlot.PlaceholderLabel = LOCTEXT("RelicMissingAbility", "Relic Lock");
 }
 
 const UBwayAbilityUISettings& UBwayAbilityUISettings::Get()

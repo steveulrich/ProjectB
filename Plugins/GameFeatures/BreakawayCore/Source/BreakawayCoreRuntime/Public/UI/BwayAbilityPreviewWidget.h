@@ -114,33 +114,41 @@ private:
 	UPROPERTY()
 	TObjectPtr<UMediaSource> LoadedVideoSource;
 
+	/**
+	 * Native C++ visual tree subwidgets constructed only for direct UBwayAbilityPreviewWidget::StaticClass()
+	 * instances. Blueprint subclasses (e.g. legacy WBP_BW_AbilityPreviewPanel, which uses a URichTextBlock
+	 * DescriptionText) own their UMG-authored WidgetTree and drive it via OnAbilityPreviewSet without
+	 * UClass FProperty name or widget-type collisions.
+	 */
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> RowBorder;
+	TObjectPtr<UBorder> NativeRowBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> IconBackdropBorder;
+	TObjectPtr<UBorder> NativeIconBackdropBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UImage> IconImage;
+	TObjectPtr<UImage> NativeIconImage;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> KeyBadgeBorder;
+	TObjectPtr<UBorder> NativeKeyBadgeBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> KeyBadgeText;
+	TObjectPtr<UCommonTextBlock> NativeKeyBadgeText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> AbilityNameText;
+	TObjectPtr<UCommonTextBlock> NativeAbilityNameText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UBorder> RoleBadgeBorder;
+	TObjectPtr<UBorder> NativeRoleBadgeBorder;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> RoleBadgeText;
+	TObjectPtr<UCommonTextBlock> NativeRoleBadgeText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> CooldownText;
+	TObjectPtr<UCommonTextBlock> NativeCooldownText;
 
 	UPROPERTY(Transient)
-	TObjectPtr<UCommonTextBlock> DescriptionText;
+	TObjectPtr<UCommonTextBlock> NativeDescriptionText;
+
+	bool bUsingNativeVisualTree = false;
 };

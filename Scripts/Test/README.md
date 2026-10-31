@@ -1049,3 +1049,28 @@ Use `Measure-DoradoVsm.ps1 -Candidate <staged-root> -OutputDir <dir> -Profile <l
 `VSM/OVERFLOW_FLAGS` and VSM page/instance metrics via `-csvCategories=VSM
 -csvNoProcessingThread` alongside once-per-process `LogRenderer [VSM]` lines and
 in-engine `HighResShot` captures on a single rendered D3D12 process in `L_BW_Dorado`.
+
+## Staged candidate packaging & Goal 6 Match HUD helpers
+
+Use `Package-StagedCandidate.ps1 -Candidate <LAN-YYYYMMDD-NN> -GateContractPath
+<gate-contract.json> -EditorCompileJson <compile-editor.json> -GameCompileJson
+<compile-game.json> -AutomationJson <automation.json> -OutputDir <evidence-dir>
+[-ValidateOnly]` to preflight (`0` live Unreal processes, `>= 25 GiB` free disk, fresh
+source snapshot, passed Editor/Game/Automation records, `packageRuns` cap), temporarily
+quarantine and byte-exact-restore `ShooterCTF`'s `UnrealEditor.modules` during UAT
+`BuildCookRun -nocompile -nocompileuat -cook -stage -pak -archive`, and emit
+`package-result.json` + `<candidate>/sha256.csv`.
+
+Use `Run-Goal6PIEAudit.ps1 -OutputDirectory <evidence-dir> -Token <pie-token>` to run
+the 4-world `1920x1080` PIE Goal 6 HUD, portrait respawn countdown, 6-slot ability
+overlay, phase banner, 8-player Tab Scoreboard, frozen Post-Match Results, and Host
+Rematch reset audit (`bway.Test.Goal6RuntimeAudit`) with Host/Client `1080p` PNG
+captures and clean owned-editor teardown.
+
+Use `Run-Goal6PackagedTransport.ps1 -Candidate <LAN-YYYYMMDD-NN> -Attempt <attempt>
+-ExpectedExeSHA256 <sha256> -PackageResultPath <package-result.json> -GateContractPath
+<gate-contract.json> [-ValidateOnly]` (with `pwsh -NonInteractive`) to run the
+consolidated 4-process `200ms` RTT packaged Goal 6 audit (`2 D3D12 640x360 -ForceRes
+30 FPS + 2 NullRHI 30 FPS`, `-PktLag=100`), including staggered `UPendingNetGame::TravelCompleted`
+client joins, real mid-match NullRHI client disconnect reconciliation, Host/Client1
+D3D12 screenshots, and staged `GameUserSettings.ini` byte restoration.

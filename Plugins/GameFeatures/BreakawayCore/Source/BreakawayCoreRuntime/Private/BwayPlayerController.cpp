@@ -9,6 +9,7 @@
 #include "UI/BwayResultsScreenWidget.h"
 #include "UI/BwayPostRoundSummaryWidget.h"
 #include "UI/BwayRespawnHUDWidget.h"
+#include "UI/BwayScoreboardWidget.h"
 #include "BreakawayGameMode.h"
 #include "BwayGameState.h"
 #include "BwayPlayerState.h"
@@ -176,6 +177,102 @@ void ABwayPlayerController::SetupInputComponent()
 			this, &ThisClass::ToggleUpgradeShop).GetHandle();
 		ShopBoundInputComponent = EnhancedInput;
 	}
+
+	if (InputComponent && ScoreboardBoundInputComponent.Get() != InputComponent)
+	{
+		FInputKeyBinding PressTab(FInputChord(EKeys::Tab), IE_Pressed);
+		PressTab.bConsumeInput = false;
+		PressTab.KeyDelegate.GetDelegateForManualSet().BindUObject(this, &ThisClass::ShowScoreboard);
+		InputComponent->KeyBindings.Add(MoveTemp(PressTab));
+
+		FInputKeyBinding ReleaseTab(FInputChord(EKeys::Tab), IE_Released);
+		ReleaseTab.bConsumeInput = false;
+		ReleaseTab.KeyDelegate.GetDelegateForManualSet().BindUObject(this, &ThisClass::HideScoreboard);
+		InputComponent->KeyBindings.Add(MoveTemp(ReleaseTab));
+
+		FInputKeyBinding PressGamepadView(FInputChord(EKeys::Gamepad_Special_Left), IE_Pressed);
+		PressGamepadView.bConsumeInput = false;
+		PressGamepadView.KeyDelegate.GetDelegateForManualSet().BindUObject(this, &ThisClass::ShowScoreboard);
+		InputComponent->KeyBindings.Add(MoveTemp(PressGamepadView));
+
+		FInputKeyBinding ReleaseGamepadView(FInputChord(EKeys::Gamepad_Special_Left), IE_Released);
+		ReleaseGamepadView.bConsumeInput = false;
+		ReleaseGamepadView.KeyDelegate.GetDelegateForManualSet().BindUObject(this, &ThisClass::HideScoreboard);
+		InputComponent->KeyBindings.Add(MoveTemp(ReleaseGamepadView));
+
+		ScoreboardBoundInputComponent = InputComponent;
+	}
+}
+
+void ABwayPlayerController::ToggleScoreboard()
+{
+	if (IsScoreboardVisible())
+	{
+		HideScoreboard();
+	}
+	else
+	{
+		ShowScoreboard();
+	}
+}
+
+void ABwayPlayerController::ShowScoreboard()
+{
+	if (!IsLocalController() || !GetLocalPlayer())
+	{
+		return;
+	}
+	if ((HeroSelectionWidget && HeroSelectionWidget->IsActivated())
+		|| (UpgradeShopWidget && UpgradeShopWidget->IsActivated())
+		|| PostRoundSummaryWidget != nullptr
+		|| ResultsWidget != nullptr
+		|| UBwayHeroSelectionFlowLibrary::IsHeroSelectStagingWorld(this))
+	{
+		return;
+	}
+	if (const ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+	{
+		if (const UBwayRoundManagementComponent* RoundMgmt = GS->GetRoundManagement())
+		{
+			const EBwayMatchPhase Phase = RoundMgmt->GetCurrentMatchPhase();
+			if (Phase == EBwayMatchPhase::None || Phase == EBwayMatchPhase::PostMatch)
+			{
+				return;
+			}
+		}
+	}
+
+	if (!ScoreboardWidget)
+	{
+		ScoreboardWidget = CreateWidget<UBwayScoreboardWidget>(this, UBwayScoreboardWidget::StaticClass());
+	}
+	if (!ScoreboardWidget)
+	{
+		return;
+	}
+
+	if (!ScoreboardWidget->IsInViewport())
+	{
+		ScoreboardWidget->AddToPlayerScreen(125);
+	}
+	ScoreboardWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+	ScoreboardWidget->RefreshScoreboardData();
+}
+
+void ABwayPlayerController::HideScoreboard()
+{
+	if (ScoreboardWidget)
+	{
+		ScoreboardWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+bool ABwayPlayerController::IsScoreboardVisible() const
+{
+	return ScoreboardWidget
+		&& ScoreboardWidget->IsInViewport()
+		&& ScoreboardWidget->GetVisibility() != ESlateVisibility::Collapsed
+		&& ScoreboardWidget->GetVisibility() != ESlateVisibility::Hidden;
 }
 
 void ABwayPlayerController::ToggleUpgradeShop()
@@ -213,6 +310,7 @@ void ABwayPlayerController::OpenUpgradeShop()
 		}
 	}
 
+	HideScoreboard();
 	UpgradeShopWidget = Cast<UBwayUpgradeShopWidget>(UCommonUIExtensions::PushContentToLayer_ForPlayer(
 		GetLocalPlayer(), FGameplayTag::RequestGameplayTag(TEXT("UI.Layer.Menu")), ShopClass));
 }
@@ -353,6 +451,7 @@ void ABwayPlayerController::Client_ShowHeroSelection_Implementation(const TSoftC
 		return;
 	}
 
+	HideScoreboard();
 	DismissPostRoundSummary();
 }
 
@@ -459,6 +558,9 @@ void ABwayPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	StopArenaIntroFlyThrough();
 	if (RespawnHUDWidget) RespawnHUDWidget->RemoveFromParent();
 	RespawnHUDWidget = nullptr;
+	if (ScoreboardWidget) ScoreboardWidget->RemoveFromParent();
+	ScoreboardWidget = nullptr;
+	ScoreboardBoundInputComponent.Reset();
 	if (UpgradeShopWidget && UpgradeShopWidget->IsActivated()) UpgradeShopWidget->DeactivateWidget();
 	if (UEnhancedInputComponent* BoundInput = ShopBoundInputComponent.Get()) BoundInput->RemoveBindingByHandle(ShopInputBindingHandle);
 	ShopBoundInputComponent.Reset();
@@ -535,6 +637,11 @@ void ABwayPlayerController::HandleMatchPhaseChanged(EBwayMatchPhase NewPhase)
 	else if (UpgradeShopWidget && UpgradeShopWidget->IsActivated())
 	{
 		UpgradeShopWidget->DeactivateWidget();
+	}
+
+	if (NewPhase == EBwayMatchPhase::PostMatch)
+	{
+		HideScoreboard();
 	}
 
 	if (NewPhase != EBwayMatchPhase::PostRound)
@@ -710,6 +817,7 @@ void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData
 		return;
 	}
 
+	HideScoreboard();
 	if (!bHidMatchHUDForPostRound)
 	{
 		SetMatchHUDVisibleForPostRound(false);
@@ -815,6 +923,7 @@ void ABwayPlayerController::Client_ShowResults_Implementation(
 	const FBwayPostMatchSummaryData& Summary,
 	const TSoftClassPtr<UUserWidget>& WidgetClass)
 {
+	HideScoreboard();
 	Client_HideHeroSelection_Implementation();
 	DismissPostRoundSummary();
 
@@ -869,6 +978,11 @@ void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
 {
 	if (UWorld* World = GetWorld())
 	{
+		if (World->GetNetMode() == NM_ListenServer && !IsLocalController())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring Server_RequestReturnToFrontEnd from non-host client on ListenServer"));
+			return;
+		}
 		if (ABwayGameState* GS = World->GetGameState<ABwayGameState>())
 		{
 			const UBwayRoundManagementComponent* RoundMgmt = GS->GetRoundManagement();
@@ -886,9 +1000,23 @@ void ABwayPlayerController::Server_RequestReturnToFrontEnd_Implementation()
 
 void ABwayPlayerController::Server_RequestPlayAgain_Implementation()
 {
-	if (ABwayGameState* GS = GetWorld() ? GetWorld()->GetGameState<ABwayGameState>() : nullptr)
+	if (UWorld* World = GetWorld())
 	{
-		GS->RestartMatchFromResults();
+		if (World->GetNetMode() == NM_ListenServer && !IsLocalController())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring Server_RequestPlayAgain from non-host client on ListenServer"));
+			return;
+		}
+		if (ABwayGameState* GS = World->GetGameState<ABwayGameState>())
+		{
+			const UBwayRoundManagementComponent* RoundMgmt = GS->GetRoundManagement();
+			if (!RoundMgmt || RoundMgmt->GetCurrentMatchPhase() != EBwayMatchPhase::PostMatch)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BwayPlayerController: Ignoring Server_RequestPlayAgain outside PostMatch"));
+				return;
+			}
+			GS->RestartMatchFromResults();
+		}
 	}
 }
 

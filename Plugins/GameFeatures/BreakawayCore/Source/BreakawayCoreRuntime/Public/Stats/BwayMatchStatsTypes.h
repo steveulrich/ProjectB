@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Economy/BwayUpgradeComponent.h"
 #include "BwayMatchStatsTypes.generated.h"
 
 class UTexture2D;
@@ -169,6 +170,14 @@ struct BREAKAWAYCORERUNTIME_API FBwayMatchBreakdownPlayerColumn
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	float MVPScore = 0.0f;
+
+	/** False when this row comes from a player who disconnected before results were finalized. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	bool bIsConnected = true;
+
+	/** Final equipped upgrade ids and ranks for 8-player scoreboard/results display. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	TArray<FBwayOwnedUpgrade> EquippedUpgrades;
 };
 
 /**
@@ -213,6 +222,9 @@ struct BREAKAWAYCORERUNTIME_API FBwayPostMatchSummaryData
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	TArray<FBwayMatchBreakdownPlayerColumn> PlayerColumns;
+
+	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
+	int32 MVPPlayerId = INDEX_NONE;
 
 	UPROPERTY(BlueprintReadOnly, Category = "PostMatch")
 	FText MVPPlayerName;

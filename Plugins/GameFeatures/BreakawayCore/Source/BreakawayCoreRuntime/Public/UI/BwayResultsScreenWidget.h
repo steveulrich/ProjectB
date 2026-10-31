@@ -60,6 +60,11 @@ public:
 
 	void ApplyAuthoritativeResults(const FBwayPostMatchSummaryData& Summary);
 
+	void ForceAdvanceToBreakdownForAudit() { AdvanceToBreakdown(); }
+	UBwayPostMatchInterstitialWidget* GetInterstitialWidget() const { return InterstitialWidget; }
+	UBwayMatchBreakdownWidget* GetBreakdownWidget() const { return BreakdownWidget; }
+	const FBwayPostMatchSummaryData& GetCachedPostMatchSummary() const { return CachedSummary; }
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;

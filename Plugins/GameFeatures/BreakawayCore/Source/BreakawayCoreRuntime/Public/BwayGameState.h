@@ -178,6 +178,21 @@ public:
 	/** Send the retained final snapshot to one owning connection, including a PostMatch arrival. */
 	bool SendResultsToPlayer(ABwayPlayerController* Player);
 
+	/** Authority-only: snapshot a departing human match participant before logout removes their team assignment. */
+	void SnapshotDisconnectedMatchParticipant(APlayerState* PlayerState);
+
+	/** Authority-only: refresh a departed participant's retained stats if post-disconnect combat credit lands. */
+	void UpdateDisconnectedParticipantStats(const class ABwayPlayerState* PlayerState);
+
+	/** Authority-only: clear retained disconnected match participants on match reset. */
+	void ClearDisconnectedMatchParticipants();
+
+	/** Authority-only: freeze or unfreeze end-of-match player stats. */
+	void FreezeAllMatchStats(bool bFrozen);
+
+	/** Retained match participant snapshots for players who disconnected during the match. */
+	const TArray<FBwayMatchBreakdownPlayerColumn>& GetDisconnectedMatchParticipants() const { return DisconnectedMatchParticipants; }
+
 	/** Development-only replicated probe used by the team-combat fixture to sample peer state. */
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_RunTeamPeerConvergence(int32 EnemyPlayerId);
@@ -262,6 +277,13 @@ protected:
 
 	UFUNCTION()
 	void OnRep_TeamInfo();
+
+	/** Retained stats/hero/upgrades for human players who disconnected during an active match. */
+	UPROPERTY(ReplicatedUsing = OnRep_DisconnectedParticipants, Transient)
+	TArray<FBwayMatchBreakdownPlayerColumn> DisconnectedMatchParticipants;
+
+	UFUNCTION()
+	void OnRep_DisconnectedParticipants();
 
 	/** Development-only replicated probe value; clients sample their local enemy state on sequence arrival. */
 	UPROPERTY(Replicated, Transient)
