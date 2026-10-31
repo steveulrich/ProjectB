@@ -1,0 +1,14 @@
+<Material MtlFlags="2621440" Shader="Illum" GenMask="2000048000021" StringGenMask="%ALLOW_SILHOUETTE_POM%BLENDLAYER%NORMAL_MAP%PARALLAX_OCCLUSION_MAPPING%SUBSURFACE_SCATTERING" SurfaceType="mat_tile" Diffuse="1,1,1,1" Specular="0.021219011,0.021219011,0.021219011,1" Opacity="1" Shininess="22" AlphaTest="0.98000002" vertModifType="0" LayerAct="1">
+ <Textures>
+  <Texture Map="Diffuse" File="objects/01_eldorado_a_temple/decals/floor_decals/rel_el_breakaway_logo_diff.dds"/>
+  <Texture Map="Bumpmap" File="objects/01_eldorado_a_temple/decals/floor_decals/rel_el_breakaway_logo_ddna.dds">
+   <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="12" TileV="11.5"/>
+  </Texture>
+  <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+  <Texture Map="Heightmap" File="objects/01_eldorado_a_temple/decals/floor_decals/rel_el_breakaway_logo_height.dds"/>
+  <Texture Map="Custom" File="objects/01_eldorado_a_temple/vegetation/moss/rel_temple_moss_a_diff.tif"/>
+  <Texture Map="[1] Custom" File="objects/01_eldorado_a_temple/vegetation/moss/rel_temple_wall_moss_a_ddna.tif"/>
+  <Texture Map="Opacity" File="objects/01_eldorado_a_temple/decals/floor_decals/rel_el_breakaway_logo_blend.dds"/>
+ </Textures>
+ <PublicParams BlendFalloff="21.6" GlowTint="1,1,1" EmittanceMapGamma="1" BlendLayer2Tiling="4.8099999" PomDisplacement="0.0080000004" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" BlendMaskTiling="1" SelfShadowStrength="2.4560001" GlowTintBlending="0" HeightBias="0.68599999" BlendFactor="0.92000002" AmbientBoost="2.71" BlendLayer2Specular="0.02" IndirectColor="0.25,0.25,0.25"/>
+</Material>

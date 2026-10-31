@@ -1,0 +1,121 @@
+{
+  "r.DynamicRes.OperationMode": 0.0,
+  "r.ScreenPercentage": 100.0,
+  "sg.ViewDistanceQuality": 3.0,
+  "sg.AntiAliasingQuality": 3.0,
+  "sg.ShadowQuality": 3.0,
+  "sg.GlobalIlluminationQuality": 3.0,
+  "sg.ReflectionQuality": 3.0,
+  "sg.PostProcessQuality": 3.0,
+  "sg.TextureQuality": 3.0,
+  "sg.EffectsQuality": 3.0,
+  "sg.FoliageQuality": 3.0,
+  "sg.ShadingQuality": 3.0,
+  "r.Shadow.Virtual.Enable": 1.0,
+  "generated_utc": "2026-10-30T22:09:17.643780+00:00",
+  "resolution": "1280x720 PIE client area",
+  "hardware": "RTX4070SUPER / Ryzen7 9800X3D",
+  "engine": "5.8.1-0+UE5",
+  "scope": "one local authority PIE; actual ProjectB character; zero bots; final materials, lighting and seven Nanite far backdrops",
+  "snapshot": {
+    "world": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado",
+    "time_s": 39.31230951100588,
+    "pawn": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.B_BW_Character_Humanoid_C_1",
+    "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+    "position_cm": [
+      450.0,
+      1000.0,
+      98.15160258751187
+    ],
+    "velocity_cm_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "view": [
+      0.0,
+      90.0,
+      0.0
+    ],
+    "collision_enabled": true,
+    "move_input_ignored": false,
+    "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+    "capsule_radius_cm": 35.0,
+    "capsule_half_height_cm": 96.0,
+    "max_step_height_cm": 50.0,
+    "max_walk_speed_cm_s": 600.0,
+    "has_cheat_manager": true,
+    "floor": {
+      "hit": true,
+      "point_cm": [
+        450.00000412996314,
+        999.9999783051012,
+        0.0016046497039496899
+      ],
+      "normal": [
+        -4.6616613145637684e-07,
+        -1.0974345466894554e-06,
+        0.9999999999992892
+      ],
+      "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_144"
+    },
+    "relic_count": 1,
+    "relic": {
+      "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.BP_BW_RelicActor_C_0",
+      "class": "/BreakawayCore/GameModes/BallMode/Relic/BP_BW_RelicActor.BP_BW_RelicActor_C",
+      "position_cm": [
+        158.2164762259991,
+        -138.70221375621426,
+        6.080881048581503
+      ],
+      "state": "<RelicState.DROPPED: 2>",
+      "carrier": null,
+      "physics_velocity_cm_s": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "simulating": true,
+      "mass_kg": 10.0,
+      "component_scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "collision_profile": "Custom",
+      "mesh_local_bounds_cm": {
+        "min": [
+          -15.03905963897705,
+          -14.3310546875,
+          -13.92822551727295
+        ],
+        "max": [
+          15.03905963897705,
+          14.3310546875,
+          13.92822551727295
+        ]
+      },
+      "mesh_asset": "/BreakawayCore/GameModes/BallMode/Relic/Mesh/SM_BW_Relic.SM_BW_Relic",
+      "size_note": "Actual mesh bounds; not an assumed test-sphere radius or collision primitive radius.",
+      "collision_actor_bounds": {
+        "origin_cm": [
+          158.2164762259991,
+          -138.70221375621423,
+          6.080881048581517
+        ],
+        "extent_cm": [
+          241.31792098522953,
+          214.2450556476253,
+          195.443880953131
+        ],
+        "approximate_max_extent_cm": 241.31792098522953,
+        "note": "Colliding actor bounds may include pickup query sphere; not a precise ball collision radius."
+      },
+      "ccd": true,
+      "physical_material_override": null,
+      "settings_asset": "/BreakawayCore/GameModes/BallMode/Relic/DA_BW_RelicSettings_Default.DA_BW_RelicSettings_Default",
+      "linear_damping": 1.5,
+      "angular_damping": 1.0
+    }
+  }
+}

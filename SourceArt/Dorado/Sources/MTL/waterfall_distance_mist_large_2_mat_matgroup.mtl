@@ -1,0 +1,29 @@
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Waterfall_Distance_Mist_Large_2_MAT" MtlFlags="2621568" Shader="Illum" GenMask="3000002001" StringGenMask="%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS" SurfaceType="" Diffuse="0.63075727,0.71569365,0.83077002,1" Specular="1,1,1,1" Emittance="0.13563335,0.65140575,0.76815128,2" Opacity="0.85000002" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist_2.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="3" TexMod_UOscillatorRate="0.25" TexMod_UOscillatorPhase="0.5" TexMod_UOscillatorAmplitude="0.30000001" TileV="3" TexMod_VOscillatorType="2" TexMod_VOscillatorRate="-0.25" TexMod_VOscillatorPhase="1" TexMod_VOscillatorAmplitude="0.2" TexMod_WRotateRate="0.99975586" TexMod_WRotatePhase="0.99975586" TexMod_WRotateAmplitude="0.99975586"/>
+    </Texture>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+    <Texture Map="Detail" File="objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="6" TileV="6"/>
+    </Texture>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" DetailDiffuseScale="0.5" OccluderMaxFadingFactor="1" SSSIndex="0" DetailBumpScale="0" FadeLighting="0.31398875,0.73791051,0.9046613" UseGlobalTranspZPrePass="0" GlowTintBlending="0" DetailGlossScale="0.5" AmbientBoost="0.079999998" IndirectColor="0.32314324,0.93011099,0.61049569"/>
+  </Material>
+  <Material Name="Waterfall_Distance_Mist_Large_1_MAT" MtlFlags="2621568" Shader="Illum" GenMask="3000002001" StringGenMask="%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS" SurfaceType="" Diffuse="0.010329825,0.1441285,0.60382748,1" Specular="1,1,1,1" Emittance="0.13563335,0.65140575,0.76815128,3" Opacity="0.95999998" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="3" TexMod_UOscillatorRate="0.25" TexMod_UOscillatorPhase="0.5" TexMod_UOscillatorAmplitude="0.30000001" TileV="2" TexMod_VOscillatorType="2" TexMod_VOscillatorRate="-0.25" TexMod_VOscillatorPhase="1" TexMod_VOscillatorAmplitude="0.5" TexMod_WRotateRate="0.99975586" TexMod_WRotatePhase="0.99975586" TexMod_WRotateAmplitude="0.99975586"/>
+    </Texture>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+    <Texture Map="Detail" File="objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds">
+     <TexMod TexMod_RotateType="0" TexMod_TexGenType="0" TexMod_bTexGenProjected="0" TileU="6" TileV="6"/>
+    </Texture>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" DetailDiffuseScale="0.5" OccluderMaxFadingFactor="1" SSSIndex="0" DetailBumpScale="0" FadeLighting="0.31398875,0.73791051,0.9046613" UseGlobalTranspZPrePass="0" GlowTintBlending="0" DetailGlossScale="0.5" AmbientBoost="0.079999998" IndirectColor="0.32314324,0.93011099,0.61049569"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

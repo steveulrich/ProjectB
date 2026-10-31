@@ -1,0 +1,3905 @@
+{
+  "scope": "Owned native package file hashes. The --final-map flag records root confirmation that final saves are complete; no editor reopen check is performed by this script.",
+  "files": [
+    {
+      "path": "Maps/L_Dorado.umap",
+      "bytes": 792561,
+      "sha256": "04557811baddff4baab92a7fc07752dbe4552303c7d25147e1c803696f8dc89d",
+      "last_write_utc": "2026-10-30T22:10:45.801500+00:00",
+      "stable_during_read": true,
+      "hash_status": "FINAL_ON_DISK_SNAPSHOT"
+    },
+    {
+      "path": "Materials/Instances/MI_arrow_single__0__arrow_single.uasset",
+      "bytes": 11710,
+      "sha256": "f1190890fd85bebd0e420ad0ed5b7d5769641b9f3fe97d3ff3373d7b81e6e120",
+      "last_write_utc": "2026-10-30T19:52:22.912045+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_arrow_strip_matgroup__0__arrow_strip.uasset",
+      "bytes": 11708,
+      "sha256": "3925949f4f12a04de578c2b4c0353b4c05453ea09646f208b0a728f7f0162860",
+      "last_write_utc": "2026-10-30T19:52:23.596946+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_Dorado_VioletCore.uasset",
+      "bytes": 7093,
+      "sha256": "5ebd7cd2e03d9e56b831648c95d69939e728d3b035ae832219797c49c3e9d10a",
+      "last_write_utc": "2026-10-30T21:59:55.069626+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_collision_matgroup__0__collision.uasset",
+      "bytes": 9964,
+      "sha256": "a43192fc4a9368bf06a97b37957915169243304a35f34bb5309af973eedf4358",
+      "last_write_utc": "2026-10-30T19:52:06.773030+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_collision_matgroup__1__charcoal_grid.uasset",
+      "bytes": 10950,
+      "sha256": "c4665ca150859f2e133d3dd92fe698c2fd293f451ea4d1096cd774988a4bbd3d",
+      "last_write_utc": "2026-10-30T19:52:06.927685+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_ground_mateprial__0__green_stone_mat.uasset",
+      "bytes": 10948,
+      "sha256": "fc2df103892991544845927c8406ccaac87d61f22a3f350d38592709a92d9a3c",
+      "last_write_utc": "2026-10-30T19:52:24.000781+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_ground_mateprial__1__gold.uasset",
+      "bytes": 12602,
+      "sha256": "a65e23f48e3ba5bc2ed976a66576f9dc79893a86eaf0e9e04ac46c9e442dca04",
+      "last_write_utc": "2026-10-30T19:52:25.205199+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_ground_mateprial__2__stone.uasset",
+      "bytes": 10888,
+      "sha256": "25f279a3a97b81e2051bef02a535442965ee40680fcf9aa8425428ad74d0b025",
+      "last_write_utc": "2026-10-30T19:52:25.329557+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_ground_mateprial__3__power_mat.uasset",
+      "bytes": 11842,
+      "sha256": "be01724598f57b73cc06feb14d75fc68ba8bbe92e47758e308245f9e04383830",
+      "last_write_utc": "2026-10-30T19:52:25.466457+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_start_collision_matgroup__0__vis_mesh.uasset",
+      "bytes": 10956,
+      "sha256": "232725192af56d567f569104f1a15664ea917ef949899fb1dc3227f388aa701e",
+      "last_write_utc": "2026-10-30T19:52:07.038410+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_eldorado_start_collision_matgroup__1__collision.uasset",
+      "bytes": 10000,
+      "sha256": "621bb7502d944a93da57e91006f7d0823bb7329e15dd9c00d355e4e502add31d",
+      "last_write_utc": "2026-10-30T19:52:07.119231+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_grass_decal__0__grass_decal.uasset",
+      "bytes": 11911,
+      "sha256": "3576f7b466e239e7aa34c89c40c138c9c501120382f73987258920b7783c74e5",
+      "last_write_utc": "2026-10-30T19:52:15.903347+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_grass_decal_player_start__0__grass_decal_player_start.uasset",
+      "bytes": 12067,
+      "sha256": "df0f7a9fd7e3de5b9618d6349ae724cc97751f1adba05cad047e59e26b4a2b5a",
+      "last_write_utc": "2026-10-30T19:52:16.063231+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_gray_temp_a_matgroup__0__gray_temp_a.uasset",
+      "bytes": 10894,
+      "sha256": "066eddb0b012a22ba449c40e30ec9aee6b7b7671c4aea0ce8a54aebd52b0fcc8",
+      "last_write_utc": "2026-10-30T19:52:25.620859+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_gray_temp_a_matgroup__1__temp_gem.uasset",
+      "bytes": 14276,
+      "sha256": "f3f7ffcf19df4f00710d805092f7acd52beac3407bea424de54a7258a2afa17b",
+      "last_write_utc": "2026-10-30T19:52:28.012436+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_mag_ring_01_matgroup__0__mag_ring_01.uasset",
+      "bytes": 15782,
+      "sha256": "8f19dfd430b94c8f022901bac708876a9a9dda4290a749eb87ea13ac4fedc1b9",
+      "last_write_utc": "2026-10-30T21:59:48.271789+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_mag_ring_01_matgroup__1__mag_ring_02.uasset",
+      "bytes": 13916,
+      "sha256": "17e44541fe231b181b9f48caab1f4d4b1356f09cf1833aa836779a6882d5d97b",
+      "last_write_utc": "2026-10-30T21:59:48.370435+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_banner01_matgroup__0__banner_a_mat.uasset",
+      "bytes": 16408,
+      "sha256": "ca1036a760e4737c54b8586cb0e2d7890878b1aabfe5f1da5cab2d735d6e0b9f",
+      "last_write_utc": "2026-10-30T21:26:30.152368+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_blocks_a_matgroup__0__col.uasset",
+      "bytes": 11008,
+      "sha256": "d4538de17a9fe21c416ab4fa2d1ae5c893500b5b86945491d4f74c98894a0e24",
+      "last_write_utc": "2026-10-30T20:00:46.639294+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_blocks_a_matgroup__1__blocks_a_mat.uasset",
+      "bytes": 14483,
+      "sha256": "997dac9e58b4e54fd63bc81837870c2a07a7a3043e71cff5b500cd4224f2938e",
+      "last_write_utc": "2026-10-30T21:59:48.722430+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_blocks_a_matgroup__2__blocks_b_mat.uasset",
+      "bytes": 15223,
+      "sha256": "aa7b87b91b6128bf7226d9e10bc93baa5e5b956d675a8e2a5d9eeb618e482a23",
+      "last_write_utc": "2026-10-30T21:59:49.155584+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_crack_decal_a__0__rel_ed_crack_decal_a.uasset",
+      "bytes": 12718,
+      "sha256": "baf4cb010db31f29aa43e52e06b8c697b33e00d8eb6a218d3ef48ea1f68e8c79",
+      "last_write_utc": "2026-10-30T19:52:19.171025+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_crack_decal_b__0__rel_ed_crack_decal_b.uasset",
+      "bytes": 12730,
+      "sha256": "bb0bd2474f8d8869316d9161e0ef4fbdd84466e35fcdbe6bb35a4d3c2f63d865",
+      "last_write_utc": "2026-10-30T19:52:20.554600+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_grass_patch_b__0__rel_ed_grass_patch_b.uasset",
+      "bytes": 13701,
+      "sha256": "b6c6df0c50eac5af8c562b870e06d98d041d22c2744a0fa52aa3e818a47ba6e2",
+      "last_write_utc": "2026-10-30T19:52:17.906181+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_ground_proxy_matgroup__0__rel_ed_ground_proxy.uasset",
+      "bytes": 10030,
+      "sha256": "af8ed26bb0de24f710f6e45809f8dfed77abf5cf9e568626e8fa466fe01615a6",
+      "last_write_utc": "2026-10-30T19:52:07.190622+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_ground_proxy_matgroup__1__rel_ground_mat.uasset",
+      "bytes": 11890,
+      "sha256": "edbec52345fd3ad5bb2be1ff5753615abdae02850ed3c2f48a23522a2b280579",
+      "last_write_utc": "2026-10-30T19:52:07.572127+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_ring_a_matgroup__0__rel_ed_ring_a_mat.uasset",
+      "bytes": 17198,
+      "sha256": "26f9904b8950faa9036a4e4a953b5b87d30af3e76b272972b4e8da9bb64bacc9",
+      "last_write_utc": "2026-10-30T21:59:49.621128+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_ring_a_matgroup__1__rel_ed_ring_b_mat.uasset",
+      "bytes": 15552,
+      "sha256": "509d3148706f4ecad6a4dcce47375fd0f5e12c8cf14fff50ac2ddabc09d6f942",
+      "last_write_utc": "2026-10-30T21:59:50.106841+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_rock_decal_a__0__rel_ed_rock_decal_a.uasset",
+      "bytes": 13532,
+      "sha256": "2365c16f2f3babf90a2fbcf81db86146947e58357586e07533e5ef6c8aaeb8f8",
+      "last_write_utc": "2026-10-30T19:52:22.284143+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_serpent_body_matgroup__0__proxy.uasset",
+      "bytes": 9946,
+      "sha256": "2159b9e4dc736cd28602785f54a84d0a6be85ff081ce899de840e3580fefb475",
+      "last_write_utc": "2026-10-30T19:52:28.170600+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body.uasset",
+      "bytes": 18390,
+      "sha256": "d1b1b99ce621adc1a41e95db56404ca8b2214bd4fe8f572e11e912bd5dd2c201",
+      "last_write_utc": "2026-10-30T21:59:37.813894+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_serpent_body_matgroup__2__rel_ed_serpent_front.uasset",
+      "bytes": 15014,
+      "sha256": "39709824eb779d671b92c966717dedc64b6c8d1b84211498c5289d0e80f78aa5",
+      "last_write_utc": "2026-10-30T21:59:38.126024+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head.uasset",
+      "bytes": 19849,
+      "sha256": "8563a465988d47e203b54ae60c2402557678bb29e8ebf847ba2204ccc0deb0cc",
+      "last_write_utc": "2026-10-30T21:59:38.577643+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_serpent_body_matgroup__4__rel_ed_serpent_pillar.uasset",
+      "bytes": 14887,
+      "sha256": "44c103f01a72d5644a9cd57f3f66ffd2f929ccaf04dfc8346e31b1f136d95bc0",
+      "last_write_utc": "2026-10-30T21:59:38.856174+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_treecard_a_mat_matgroup__0__rel_ed_treecard_a_mat.uasset",
+      "bytes": 14486,
+      "sha256": "34674501fb79b70fe7c3118d24618d8cb5bdf9b196ba34ca339a45a5651cf7ec",
+      "last_write_utc": "2026-10-30T21:26:40.850559+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vine_leaf_a_matgroup__0__rel_ed_vine_leaf_a.uasset",
+      "bytes": 15779,
+      "sha256": "5c0f952bca4dd2f959c41e9b6b227b9fef56b9a32279c4f8a3b78b483e1066dc",
+      "last_write_utc": "2026-10-30T21:26:42.485496+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vista_ring_a_matgroup__0__rel_ed_ring_mat.uasset",
+      "bytes": 11344,
+      "sha256": "ec9730df6bd8ecfb3bbff2d5c7e4f51463f400c043e6a4aaf3ad32f26a1bbfca",
+      "last_write_utc": "2026-10-30T21:26:33.355598+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.uasset",
+      "bytes": 13447,
+      "sha256": "cad73129b8ea5ca82dc75eb755f797bb183328f799e8b43fa697af30f5bd70f7",
+      "last_write_utc": "2026-10-30T21:26:33.787389+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a.uasset",
+      "bytes": 14133,
+      "sha256": "c299c0aa89841d242d9240706efc7055a8f2a04810e6d31c464f608981c6cf8c",
+      "last_write_utc": "2026-10-30T21:26:34.229700+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.uasset",
+      "bytes": 14092,
+      "sha256": "2c668bb8ca0a4e328d0722896c2138d94e7a36407c291c7b0d3fdda3a171e039",
+      "last_write_utc": "2026-10-30T21:26:34.694734+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.uasset",
+      "bytes": 14169,
+      "sha256": "1bd2b6d868f12b01ffa6fb5ab03db3160830b8eee0c9e0d0ee5a2a8aaf7ff2ce",
+      "last_write_utc": "2026-10-30T21:26:35.144451+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.uasset",
+      "bytes": 14056,
+      "sha256": "71a09585409773126988422f14c7110a6803c796b571bfe839ec5477543ff22f",
+      "last_write_utc": "2026-10-30T21:26:35.593974+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a.uasset",
+      "bytes": 17111,
+      "sha256": "f74aa99836f495616eda262f18d0fefeca87e74b1ff381f1c4be9fd3f44fbc9b",
+      "last_write_utc": "2026-10-30T21:59:50.655735+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.uasset",
+      "bytes": 16568,
+      "sha256": "dc5d37d886fcd165108a7977461970d95ecce5760d2231a829c3f9d9efd4b230",
+      "last_write_utc": "2026-10-30T21:59:51.206975+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.uasset",
+      "bytes": 16853,
+      "sha256": "0e36539c8735c314c6785e85f952bd2b8c9a00874ce056970a5808dcd3d47694",
+      "last_write_utc": "2026-10-30T21:26:37.577204+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.uasset",
+      "bytes": 13575,
+      "sha256": "3a5e1756c1fa3dacb07abbbab1134c1e34255dc1e39300047552904da22631ff",
+      "last_write_utc": "2026-10-30T21:26:37.742546+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__9__rel_ed_treecard_mat.uasset",
+      "bytes": 19394,
+      "sha256": "3306f57f1adbc816811092262e705ee410147e24c542d2289ebf33b7345b06bf",
+      "last_write_utc": "2026-10-30T21:26:38.106452+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__0__rel_el_arenatrima_mat.uasset",
+      "bytes": 15343,
+      "sha256": "31a1dfecc9af167a0af40d0a52bdc564708a97004c2db38c156c9d5b45898474",
+      "last_write_utc": "2026-10-30T21:59:39.107734+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__10__rel_el_arenatrimaturq_mat.uasset",
+      "bytes": 13921,
+      "sha256": "6e02ced6e8c5a87fe5230787390b0ec884590b96fe0e5b6aee69e1a5b287091a",
+      "last_write_utc": "2026-10-30T21:59:40.578523+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__11__rel_el_arenatrimb_mat.uasset",
+      "bytes": 14325,
+      "sha256": "c31ea9e7510f9135f431e800a26c1cbc95005d47764941c8a460749d6031ce12",
+      "last_write_utc": "2026-10-30T21:26:11.484001+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat.uasset",
+      "bytes": 14277,
+      "sha256": "a2b37e51c34422b5e40858985cdf35c4e1ecd29f3ada7937ed47aa9f5372229e",
+      "last_write_utc": "2026-10-30T21:59:40.830344+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__13__rel_el_arenawallsblend_mat.uasset",
+      "bytes": 14337,
+      "sha256": "05e406458fc687bde56e28e20d430f0118fe1f4daf6035e8fa70cda9c7feabb5",
+      "last_write_utc": "2026-10-30T21:59:41.136606+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__14__rel_el_arena_col_mat.uasset",
+      "bytes": 10284,
+      "sha256": "3e209201c9562f2d69d0b9baaf09565b7bfb4d779df7f9fada890a5d961140d8",
+      "last_write_utc": "2026-10-30T21:26:12.653032+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__15__shadow.uasset",
+      "bytes": 10535,
+      "sha256": "21a3e3ad4bfb0133aa54041ab507f7f4fedbc0a4bacffac993ed592ed0004f95",
+      "last_write_utc": "2026-10-30T21:26:12.802721+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__1__rel_el_arenafloora_mat.uasset",
+      "bytes": 13684,
+      "sha256": "168635e41198447311c6d22a58916aebdc99438e2ce0a053bd1534ddd3584507",
+      "last_write_utc": "2026-10-30T21:26:06.355254+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__2__rel_el_arenasnakeheada_mat.uasset",
+      "bytes": 18947,
+      "sha256": "b079c3f878eff6821afff1c7cf93487a0003bb0a5df5e76455a2e4f29aa20766",
+      "last_write_utc": "2026-10-30T21:26:07.203759+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__3__rel_el_arenasnakeheadb_mat.uasset",
+      "bytes": 20078,
+      "sha256": "87053440e3b8a429737ab89517320fb50cfd518911600e939030ec3de1681595",
+      "last_write_utc": "2026-10-30T21:59:39.510407+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__4__rel_el_arenastairsa_mat.uasset",
+      "bytes": 14433,
+      "sha256": "5378fe792da84b1781e30938b09a1186b9f90b670a279f3cedb823d5586edad2",
+      "last_write_utc": "2026-10-30T21:59:39.747985+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__5__rel_el_arenateama_mat.uasset",
+      "bytes": 15359,
+      "sha256": "e3411f06472cf44e44fe76e96d5637cf969cdbab4edab3b260632e2263d38ec7",
+      "last_write_utc": "2026-10-30T21:26:08.870176+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__6__rel_el_arenateamb_mat.uasset",
+      "bytes": 13234,
+      "sha256": "2c0f3fc1d6ac5cd8f2b8f7a34415dd69827c7ff99380251844ef1fb15e10498e",
+      "last_write_utc": "2026-10-30T21:26:09.443349+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__7__rel_el_arenatemplelights_mat.uasset",
+      "bytes": 8850,
+      "sha256": "cfa0e2e98e3c4fbcdcac26e761f34e62075df6796140bc6adbb59c209692ce9d",
+      "last_write_utc": "2026-10-30T21:59:39.898820+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat.uasset",
+      "bytes": 15220,
+      "sha256": "deb956bc1bd53317931d94949fd24e3df354f9a8c3750b021fa59d9626a5cc9d",
+      "last_write_utc": "2026-10-30T21:59:40.006500+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_arenamaster_mat__9__rel_el_arenatrimagold_mat.uasset",
+      "bytes": 15411,
+      "sha256": "2e74e7c4be56171107cd80dce9f051c881e340f25def53c1971969e4b39e2ade",
+      "last_write_utc": "2026-10-30T21:59:40.280960+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_breakaway_material__0__rel_el_breakaway_material.uasset",
+      "bytes": 15969,
+      "sha256": "2e6094db4f8038ce46493d01e8080dd51300aceb2d7d2db4c06987da5d1060da",
+      "last_write_utc": "2026-10-30T21:59:37.396937+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_breakaway_material_cine_override__0__rel_el_breakaway_material_cine_override.uasset",
+      "bytes": 13784,
+      "sha256": "4655e31df74e1c48c832d66db3704ed98ab11450840a47228e78ae9215398fde",
+      "last_write_utc": "2026-10-30T19:52:08.663185+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_cloud9_material__0__rel_el_cloud9_material.uasset",
+      "bytes": 13628,
+      "sha256": "a9a3db8ebfbbc74c927650afc305d81dd9307bbc7642cfb1b99f5d45ce205740",
+      "last_write_utc": "2026-10-30T19:52:09.818046+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_dorado_snakeheadpillar_b_material__1__snakeheadpillar_mat.uasset",
+      "bytes": 19662,
+      "sha256": "6a3d8a006e7eae4257ebcc9a49b6b092e985ea139188360f5c27e4cb08ac0618",
+      "last_write_utc": "2026-10-30T21:59:41.552383+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_echofox_logo_material__0__rel_el_echofox_logo_material.uasset",
+      "bytes": 13708,
+      "sha256": "b6095ddf3936c9e359995c84d73a8c58cf6ed077bb4d28ff8d0ed30c2db00aa9",
+      "last_write_utc": "2026-10-30T19:52:11.533383+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_echofox_material__0__rel_el_echofox_material.uasset",
+      "bytes": 13648,
+      "sha256": "585f92107b55098d5599062bcccea51e64f5475a0ab80e557d457564a95f8b01",
+      "last_write_utc": "2026-10-30T19:52:11.680082+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_island_large_matgroup__0__rel_el_island_large.uasset",
+      "bytes": 13856,
+      "sha256": "9082456c67d664ab463e947af4f02642cccfb2a4d667b7b15897cc2348445560",
+      "last_write_utc": "2026-10-30T21:26:38.321829+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_island_small_a_matgroup__0__island_group_a.uasset",
+      "bytes": 13931,
+      "sha256": "fcd9080f443fb72b7ab59e25602b1c6208886be46bd19c7f75d817d40b3e7ab2",
+      "last_write_utc": "2026-10-30T21:26:38.503042+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_island_small_b_matgroup__0__rel_el_island_small_b.uasset",
+      "bytes": 13927,
+      "sha256": "31815d4e4a5f7b93890f07420e535fd278b3e062c0c4fb51dd051dbd96c7a224",
+      "last_write_utc": "2026-10-30T21:26:38.682904+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_island_small_c_matgroup__0__rel_el_island_small_c.uasset",
+      "bytes": 14012,
+      "sha256": "3df0e1d2457e56b5fed50f896f2a72c022689670f21974322106d0d2a0a0eda7",
+      "last_write_utc": "2026-10-30T21:26:38.864757+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_mountain_c_matgroup__0__rel_el_mountain_c.uasset",
+      "bytes": 14068,
+      "sha256": "c4c2e6f97b247a366498f36e9de268d8089fc3b195e774c2d4d3d63d8c900dac",
+      "last_write_utc": "2026-10-30T21:26:39.193894+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_nrg_material__0__rel_el_nrg_material.uasset",
+      "bytes": 13568,
+      "sha256": "9be5ba632769ee2f77e3268002c2331bc34c87ad9a8e9588cd4c719429db269d",
+      "last_write_utc": "2026-10-30T19:52:13.498263+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_plant_vine_matgroup__0__rel_el_plant_vine.uasset",
+      "bytes": 13068,
+      "sha256": "c23bfe0b018e692baa53cdc68b4e4f9cfd8f49405cc77b8244f155a1db97be51",
+      "last_write_utc": "2026-10-30T21:26:40.319840+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_temple_vista_matgroup__0__rel_el_temple_brick.uasset",
+      "bytes": 13393,
+      "sha256": "fbde7b2a2a8f257614c5e8cf139928d34e1ea712fc86c06f448de214d5a3ae7b",
+      "last_write_utc": "2026-10-30T21:26:39.382746+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_temple_vista_matgroup__1__rel_el_temple_accents.uasset",
+      "bytes": 16682,
+      "sha256": "ce40e55327ad98ea346db062c1b37043d17f6231ac690402a93f5d0391529838",
+      "last_write_utc": "2026-10-30T21:26:39.733261+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_treecard_matgroup__0__rel_el_treecard.uasset",
+      "bytes": 19304,
+      "sha256": "d7c85d681367e8b4d32f54a8c9078448622942d865555f4bf6821d3d5cce1355",
+      "last_write_utc": "2026-10-30T21:26:39.900407+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_uci_material__0__rel_el_uci_material.uasset",
+      "bytes": 13568,
+      "sha256": "972b71936aeb17c1f13f1a8eb87408897d4710d38ab2b2e532765687634af1e4",
+      "last_write_utc": "2026-10-30T19:52:15.072455+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_vine_card_matgroup__0__rel_el_vine_card.uasset",
+      "bytes": 14033,
+      "sha256": "b732cafa4b267e28b1637cdae923cf972422431680040967f32acddfe0093624",
+      "last_write_utc": "2026-10-30T21:26:42.800593+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_vista_cloud_c_warm__0__rel_el_vista_cloud_c_warm.uasset",
+      "bytes": 15372,
+      "sha256": "ad9aee3980a6e5db4130d5a1f5e0a6a72d6534b61cfc7694b009ed5eeb2018a7",
+      "last_write_utc": "2026-10-30T21:26:32.570818+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_vista_cloud_matgroup__0__rel_el_vista_cloud_mat.uasset",
+      "bytes": 15366,
+      "sha256": "a9a3d3f43c178654f34371f6db561c466d711d60e17b92a764833f8a1ba9173b",
+      "last_write_utc": "2026-10-30T21:26:32.737166+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_el_vista_cloud_matgroup__1__rel_el_vista_cloud2_mat.uasset",
+      "bytes": 13741,
+      "sha256": "91234958e9e6b640768e1bcbfdcb066a074e8ffa12b6e8729d4d904037c8ede1",
+      "last_write_utc": "2026-10-30T21:26:33.100567+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__1__buff_spawn_mat.uasset",
+      "bytes": 19436,
+      "sha256": "0a3dd339f8743e4e2b73c44dc9ee612f2e58483945fa832335d7e37a9e40d96c",
+      "last_write_utc": "2026-10-30T21:59:42.234162+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__1__buff_spawn_mat__ref_left_cyan_panel.uasset",
+      "bytes": 10997,
+      "sha256": "ccd6c979aa271f884e8ea09842cf5dcdee2b1d6ae4cbef1b1564d43069fdf8cd",
+      "last_write_utc": "2026-10-30T21:59:54.369442+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__1__buff_spawn_mat__ref_right_green_panel.uasset",
+      "bytes": 10981,
+      "sha256": "50d6f54d7ccd7be6dd07d65127aebbcfe217728c8a08b2507612f948fc00968f",
+      "last_write_utc": "2026-10-30T21:59:54.055589+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power.uasset",
+      "bytes": 10322,
+      "sha256": "3bc9ff51d9b14aeb526495c22f14be3d0bd40cb6b06d723ad9831d0f1072f1d1",
+      "last_write_utc": "2026-10-30T21:59:42.696752+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power__center_warm.uasset",
+      "bytes": 8152,
+      "sha256": "39206961c24dfe3f72d1b3b6c7d290248505d67237bb08ed37fed1ec32cd291b",
+      "last_write_utc": "2026-10-30T21:59:54.171768+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power__east_green.uasset",
+      "bytes": 6851,
+      "sha256": "5530b8de69a18f56c9b545ad5b60a6d5da972e5e9a62f858faeaf3e81ea6817f",
+      "last_write_utc": "2026-10-30T21:53:52.818778+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power__ref_left_cyan.uasset",
+      "bytes": 6940,
+      "sha256": "9a26162a5e9f697404a9c4f717c88b76f1ec6544d39baf1d7df4e3be76f51963",
+      "last_write_utc": "2026-10-30T21:59:54.269962+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power__ref_right_green.uasset",
+      "bytes": 6886,
+      "sha256": "a639b61bcaf86dc5aed640f2e02ce74c9c2f590daa3faf9670ba8321bc6f2d78",
+      "last_write_utc": "2026-10-30T21:59:53.955930+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power__west_cyan.uasset",
+      "bytes": 6911,
+      "sha256": "8620e21b807272fb756ae16756b4c46047ab9b5dc0839b7537eab6f68f0b1cf9",
+      "last_write_utc": "2026-10-30T21:53:52.633024+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__3__rel_eldorado_trim_mat.uasset",
+      "bytes": 18234,
+      "sha256": "115267aca76dcc3833c0e70b69abb53d58c8a0d797501c6dafac5dc412fccb7e",
+      "last_write_utc": "2026-10-30T21:59:43.327289+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_buff_spawn_material__4__ramp_mat.uasset",
+      "bytes": 14679,
+      "sha256": "b8a408dd64f61cad591a7fe1fefc06dd7034a088ca43a830c6d00dc394ef4a36",
+      "last_write_utc": "2026-10-30T21:26:16.269247+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__0__brick_round.uasset",
+      "bytes": 14620,
+      "sha256": "da6d2843ca22c3c37239d8369506591bd652b643ce984daaf6c528746a95b80c",
+      "last_write_utc": "2026-10-30T21:26:16.934687+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__2__gold_trim.uasset",
+      "bytes": 13985,
+      "sha256": "7a65b799b72c68b605f02ce51320a2601db8c9dbbcfc262249e94dbbe7900ec1",
+      "last_write_utc": "2026-10-30T21:59:43.771804+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__3__trim_02.uasset",
+      "bytes": 14122,
+      "sha256": "ebc815d85cdeb4b9de4b61520b8176207ca3c4d36df85142246853f8f4e6e9d6",
+      "last_write_utc": "2026-10-30T21:26:18.204262+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__4__portal_rim.uasset",
+      "bytes": 14148,
+      "sha256": "369817329b2eaebd6e539a05a57ff38add019bd7f57aba683ab0427427758fa7",
+      "last_write_utc": "2026-10-30T21:26:18.782409+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_main_ground_material__0__main_ground_mat.uasset",
+      "bytes": 16670,
+      "sha256": "659dd8d612f0b3bb3b12c7174152aa8f6c72af83b1547997391b4ccbb226f880",
+      "last_write_utc": "2026-10-30T21:59:44.392479+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_main_ground_material__1__trim_mat.uasset",
+      "bytes": 18117,
+      "sha256": "ad733ad8c6472db063ef513faa65a4caf51d0ea0d210b5ddefcd488be167afd4",
+      "last_write_utc": "2026-10-30T21:59:44.758954+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_main_ground_material__3__relic_center_deco.uasset",
+      "bytes": 20434,
+      "sha256": "c58dc6681b928f394c42a2e169c8fb5ec674d203d0ffec41faa24f16849c6a81",
+      "last_write_utc": "2026-10-30T21:59:45.527548+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_main_ground_material__4__main_ground_02_mat.uasset",
+      "bytes": 16850,
+      "sha256": "b842e6b37e68516c40aa35300ddaa8474930f74ff01d6cf1ffa76ae1b4f5559a",
+      "last_write_utc": "2026-10-30T21:59:46.126869+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_mid_circle_top_ramp_matgroup__0__rel_eldorado_mid_circle_top_ramp.uasset",
+      "bytes": 15496,
+      "sha256": "8527c8f2208bf3634442d4908ff29785edbb400161d9887c1a0d8a2e86bff0c0",
+      "last_write_utc": "2026-10-30T21:26:22.285790+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_mid_circle_top_ramp_matgroup__1__col.uasset",
+      "bytes": 10983,
+      "sha256": "95a2fa33f14139e481a53bd45febac7457daa443a79b86bafc48de46694764a3",
+      "last_write_utc": "2026-10-30T20:00:43.230183+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_sidewall_material__1__rel_eldorado_solid_gold_01_mat.uasset",
+      "bytes": 14087,
+      "sha256": "58a1b7b72ae93879b62e3aebf0e71ddbf0d2b205cbbdfa00802cc2d1dfc00b23",
+      "last_write_utc": "2026-10-30T21:59:46.306023+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat.uasset",
+      "bytes": 15215,
+      "sha256": "f93f79d648f882ef9288ab488c8524b96f4293d11a5a7fc55371235e2fa45edd",
+      "last_write_utc": "2026-10-30T21:59:46.512432+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_sidewall_material__3__rel_eldorado_trim_mat.uasset",
+      "bytes": 14182,
+      "sha256": "42ad90c15b10002dc103648709e75daa9233833dcf858ab5145f9e540ce39e10",
+      "last_write_utc": "2026-10-30T21:26:23.119774+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_sidewall_material__4__rel_el_arenateama_mat.uasset",
+      "bytes": 15407,
+      "sha256": "9ea0faec5ce5920fa0bd9830755d19676ef115b87c65064cd70d23b71d6c0d21",
+      "last_write_utc": "2026-10-30T21:26:23.347172+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_sidewall_material__5__rel_eldorado_mid_buff_temple_mat.uasset",
+      "bytes": 16424,
+      "sha256": "ec0242ba131dc6db38821289f45b387592d6b337c578e53b20b8728631643b01",
+      "last_write_utc": "2026-10-30T21:26:24.004567+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_stair_sides_material__1__rel_eldorado_stone_mat.uasset",
+      "bytes": 15233,
+      "sha256": "6ed95127f6e84f64bcf94a98391fd1517e66bd73ba61a7affefee015f3f5280e",
+      "last_write_utc": "2026-10-30T21:59:46.623136+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_stair_sides_material__2__rel_eldorado_trim_mat.uasset",
+      "bytes": 14199,
+      "sha256": "b09a1d41f9bb0b3cf1e717d8b19867b151a9299ca14cf8b0c64ef9ec159bdca8",
+      "last_write_utc": "2026-10-30T21:26:24.486661+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_stair_sides_material__3__rel_el_arenateama_mat.uasset",
+      "bytes": 15423,
+      "sha256": "9ca3bfe6ac8382bc0e502cebb51b2d764cb67c89c40f428c737617413ee4fc98",
+      "last_write_utc": "2026-10-30T21:26:24.703211+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_stairs_material__1__rel_eldorado_stairs_mat.uasset",
+      "bytes": 15353,
+      "sha256": "3fd7791f586f558ba044524378a8b327ba8015708921d6ef1753c4d3e8df8c36",
+      "last_write_utc": "2026-10-30T21:59:46.787223+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_stairs_material__2__rel_eldorado_trim_mat.uasset",
+      "bytes": 14021,
+      "sha256": "cd8881cb26d5314deca3c0ea46f4b6eab3fd766e1dd2a7859c5709c4a592c5ff",
+      "last_write_utc": "2026-10-30T21:59:46.952775+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__0__rel_eldorado_floor_v2_mat.uasset",
+      "bytes": 19099,
+      "sha256": "e35c25b5a17cf30549f22cd69e61c70f0bc7781306491b6475332e9afd6010f8",
+      "last_write_utc": "2026-10-30T21:59:47.708468+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__1__rel_eldorado_stairs_mat.uasset",
+      "bytes": 14282,
+      "sha256": "84167c0aec74edea23b7e7a912f0bdcbeabc5b7edef02ca27831237817162479",
+      "last_write_utc": "2026-10-30T21:26:26.432683+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__2__gold_trim.uasset",
+      "bytes": 14002,
+      "sha256": "6b3ff7e5c223e7e28ce80ca54c071b3e58f06ea2cebee57b855a75be69da2bb2",
+      "last_write_utc": "2026-10-30T21:59:47.873131+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_rel_prxy_eldorado_mid_steps_c_mat__0__mid_steps.uasset",
+      "bytes": 18398,
+      "sha256": "02e9c24dd52945b00bfbef51191066d2846cf71020e13f16a28d7ff1ae23d65b",
+      "last_write_utc": "2026-10-30T21:26:27.450727+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_relic_center_deco_matgroup__1__relic_center_deco.uasset",
+      "bytes": 17812,
+      "sha256": "305c14ad2880aeb9d73e976c1d8e957f16889251eb97dcf80f16b6144fc63a47",
+      "last_write_utc": "2026-10-30T21:26:27.869948+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_relic_center_deco_matgroup__2__relic_deco_mat.uasset",
+      "bytes": 18229,
+      "sha256": "310fefb78dcc7a6e04e278f3f427f23a3cc6b3f074d8dd1b4d5358f385128c4b",
+      "last_write_utc": "2026-10-30T21:26:28.717071+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_temple_tree_02_matgroup__0__temple_tree_02_leaves.uasset",
+      "bytes": 16697,
+      "sha256": "3a3633a2fbb7c0b5cfdf108c12b82fe50f77801f903e20a7f053a1da47ccdb6b",
+      "last_write_utc": "2026-10-30T21:26:41.365913+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_temple_tree_02_matgroup__1__tremple_tree_02_trunk.uasset",
+      "bytes": 14193,
+      "sha256": "8109e0ac9f9406d2dcd59bbd924eea1070fac1fb696e0f953c1c9d48784f3ff3",
+      "last_write_utc": "2026-10-30T21:26:41.952714+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup__0__waterfall_distance_mist_large_2_mat.uasset",
+      "bytes": 15072,
+      "sha256": "dae0a36e5545f9590e36dc669d52fb712f9fc0da3b631b6bea7c2b9f9cf790d1",
+      "last_write_utc": "2026-10-30T21:26:43.124737+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup__1__waterfall_distance_mist_large_1_mat.uasset",
+      "bytes": 13357,
+      "sha256": "7df0465ffdfd0971df3c3b71fc451733490f7b1c7b39becc689a4ae2369579dc",
+      "last_write_utc": "2026-10-30T21:26:43.487795+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__0__waterfall_distance_mist_large_2_mat.uasset",
+      "bytes": 15378,
+      "sha256": "207418da4647d5ae86b7e6e4146742ac38ddf3f0ad963b839f451275604819f0",
+      "last_write_utc": "2026-10-30T21:26:43.652623+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__1__waterfall_distance_mist_large_1_mat.uasset",
+      "bytes": 14796,
+      "sha256": "d5204bca4ff8b83da695c29062db551db95576a35612caac0d66361659de9f79",
+      "last_write_utc": "2026-10-30T21:26:43.820888+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup__0__waterfall_eldorado_long_distance_base_mat.uasset",
+      "bytes": 13425,
+      "sha256": "56f41608e28b49374f9181a91bef0e22816cd4894dc239ff8bac10a97fd09e8b",
+      "last_write_utc": "2026-10-30T21:59:51.639630+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup__1__waterfall_eldorado_long_distance_middle_mat.uasset",
+      "bytes": 13223,
+      "sha256": "0aa5bbde03cc9a626f9f41f2faada51b54eaf79c5108ad156a634a5a01382a80",
+      "last_write_utc": "2026-10-30T21:59:51.987347+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__0__waterfall_eldorado_long_distance_base__3901281d.uasset",
+      "bytes": 13285,
+      "sha256": "a804762ec6c08ef2a55116ee71ef8985cb23568eabd51f81ebed5bf245f0a303",
+      "last_write_utc": "2026-10-30T21:59:52.185723+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__1__waterfall_eldorado_long_distance_middl_dbab335a.uasset",
+      "bytes": 14177,
+      "sha256": "b5ae8775706bc1aa72e7723f6691110707857ebadb5e3107b7e0806bb307ec1e",
+      "last_write_utc": "2026-10-30T21:59:52.545120+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__0__waterfall_eldorado_long_distance__558d0da8.uasset",
+      "bytes": 13285,
+      "sha256": "3824c4bde8d82135821f916cc196af6f10b7d6f8e63e05ae87950b3015116a1b",
+      "last_write_utc": "2026-10-30T21:59:52.742248+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__1__waterfall_eldorado_long_distance__db8c1bf0.uasset",
+      "bytes": 14177,
+      "sha256": "971e383c03721cba71022796e9eaf6f2bf054dc46243f76eafa1674b25376a1d",
+      "last_write_utc": "2026-10-30T21:59:53.095206+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Cloud.uasset",
+      "bytes": 97260,
+      "sha256": "e91971ed8b3788c340bee63e027502d830fa71078bad6237e33b314f9e60626a",
+      "last_write_utc": "2026-10-30T21:25:59.040060+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Energy.uasset",
+      "bytes": 98657,
+      "sha256": "9bb6ed816ca382dc601eee9870948c7c812cb382d0be22597ae3879ce35a912f",
+      "last_write_utc": "2026-10-30T21:25:57.354346+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Foliage.uasset",
+      "bytes": 69936,
+      "sha256": "1f8c74acf765e5423080afef000f89c3baa20d20c36e5ad9883c573590df67db",
+      "last_write_utc": "2026-10-30T21:25:53.288531+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Glow.uasset",
+      "bytes": 41221,
+      "sha256": "e20549ee695f6b178bd969bf65225f78ec2fc792acaeeda47b4b7c11c497be62",
+      "last_write_utc": "2026-10-30T21:49:52.412068+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_MaskedLogo.uasset",
+      "bytes": 44133,
+      "sha256": "585413000dfaecedea6adaa4d66536b11396689c755091cbd06654a28e20e7c3",
+      "last_write_utc": "2026-10-30T21:26:01.459666+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Surface.uasset",
+      "bytes": 66542,
+      "sha256": "3bdb5a74285bea93a35ae658fcb1b5fe6df512844b6145e617e9ab7aa88c1739",
+      "last_write_utc": "2026-10-30T21:25:51.296176+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Materials/M_Dorado_Water.uasset",
+      "bytes": 100389,
+      "sha256": "7717389118cd3c0e0752d1f06cb9cfc5f12a8d1fa58a88809423fc9881ac6d92",
+      "last_write_utc": "2026-10-30T21:25:55.881917+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_CentimeterCalibration.uasset",
+      "bytes": 73528,
+      "sha256": "2a0342c63f66f6545eeaf719926d45db63cc92701328a3a48bce3786418714a5",
+      "last_write_utc": "2026-10-30T20:01:47.746370+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_magnet_force_01_group.uasset",
+      "bytes": 190704,
+      "sha256": "84b0adf716614606095fc7825a5f9a25032507da4dfcddc36d676740a28184c5",
+      "last_write_utc": "2026-10-30T20:16:53.027328+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_primitive_plane_noproxy.uasset",
+      "bytes": 74198,
+      "sha256": "544710934ed21283d951abd84b25916e5df4bf3527bd6032eac9b7ec984d06db",
+      "last_write_utc": "2026-10-30T20:16:29.149634+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_banner01_group.uasset",
+      "bytes": 91792,
+      "sha256": "9af3b5d2dbbff0b680f53abe41d92f08e6b4489d9519cc3b1fb5a7fe23d46359",
+      "last_write_utc": "2026-10-30T20:16:28.966910+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_block_clump_a_group.uasset",
+      "bytes": 126327,
+      "sha256": "0efb7bf3b6ce54f2df0c6639494b8cbc1677dcb952a8b58aade4e61d88994227",
+      "last_write_utc": "2026-10-30T20:16:30.940472+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_block_clump_b_group.uasset",
+      "bytes": 155462,
+      "sha256": "ff390c5f1adf461baa7f81b7b47682a902f9198230cb6d0ad556b7443301aeff",
+      "last_write_utc": "2026-10-30T20:16:28.514838+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_block_clump_c_group.uasset",
+      "bytes": 134807,
+      "sha256": "29b6cc07f1fc05fc5f94f39e1ae36d6a511aa03bc76d7b3be43ac1059e6e8aaa",
+      "last_write_utc": "2026-10-30T20:16:26.871032+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_block_clump_d_group.uasset",
+      "bytes": 96270,
+      "sha256": "e21182e0fdcfcd3a458abc16fcab46d67ea1ffe88a0537253df1df22cf4dca86",
+      "last_write_utc": "2026-10-30T20:16:29.567004+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_block_clump_e_group.uasset",
+      "bytes": 104404,
+      "sha256": "7723779f67a610595abb7be7c5f6b186d34572b1543d917c49eb6630e68fea51",
+      "last_write_utc": "2026-10-30T20:16:31.424565+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_hanging_vine_leafs_a.uasset",
+      "bytes": 81700,
+      "sha256": "584ba5bb9a7cb2509402ae31ad4fa776f071013ac750c6fd4ec2a1919ea55cf1",
+      "last_write_utc": "2026-10-30T20:16:53.097909+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_ring_a_group.uasset",
+      "bytes": 641871,
+      "sha256": "2661f43aaea29daffd99f8aeed0cef29a3b49013c1cf1f5b26e5b3796284a773",
+      "last_write_utc": "2026-10-30T20:16:43.929100+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_ring_b_group.uasset",
+      "bytes": 1486452,
+      "sha256": "63adb15e4827f120a76e4620c8cc0f6bcb857509819c112a9af8fafdc1615d9b",
+      "last_write_utc": "2026-10-30T20:16:42.350480+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_serpent_pillar_group.uasset",
+      "bytes": 169456,
+      "sha256": "6c750075bf3be19535d13ac98457954577062493e479438062ebef8612e40064",
+      "last_write_utc": "2026-10-30T20:16:28.776352+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_serpent_wall_a_clump_group.uasset",
+      "bytes": 266847,
+      "sha256": "da4bfc541595143734bab95cabf9e6ed8644518856906b4a6e8f166adaea26bd",
+      "last_write_utc": "2026-10-30T20:16:31.911688+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_serpent_wall_a_group.uasset",
+      "bytes": 396050,
+      "sha256": "d449f77965585b056036cd78d2e7fdf8bb9603d177b937a747c1fc9c5fa52358",
+      "last_write_utc": "2026-10-30T20:16:29.839058+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_serpent_wall_b_clump_group.uasset",
+      "bytes": 265573,
+      "sha256": "592cb077fcf764bad6a767bc033b5637ff5476b19cea3ab90053e834cbd3fb87",
+      "last_write_utc": "2026-10-30T20:16:29.104130+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_serpent_wall_b_group.uasset",
+      "bytes": 420494,
+      "sha256": "f7c9cad67fdc726f6cf9d56a9262475af29bd1f20fe87a42dd939283df0b46af",
+      "last_write_utc": "2026-10-30T20:16:27.262501+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_treecards_clump_a_group.uasset",
+      "bytes": 89225,
+      "sha256": "d03d78734d7ff552e67badaf230d3b4157bd8a4bc987f2cbea0ffc505a0c43e2",
+      "last_write_utc": "2026-10-30T20:16:52.047182+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_treecards_clump_b_group.uasset",
+      "bytes": 96031,
+      "sha256": "b323f9f647af3bcaaa2ab7386c06153416cfeb89088a6adffad787139c4068af",
+      "last_write_utc": "2026-10-30T20:16:52.298082+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vista_ring_a_group.uasset",
+      "bytes": 80490,
+      "sha256": "5996a627629fa079515024797f963b6e40e09dc2b0d9d0b8e7c0a4553f93374b",
+      "last_write_utc": "2026-10-30T20:16:44.013779+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_a_group.uasset",
+      "bytes": 187434,
+      "sha256": "ee86273c18740d4c3df7d27b219ce4ac3c586e7e70bb8cdae8197143f8240c79",
+      "last_write_utc": "2026-10-30T21:03:29.630217+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_b_group.uasset",
+      "bytes": 151922,
+      "sha256": "fd30b9c5b583572716db4a3a6a6a0e95dc060297c05a68a4256b25435c47e51d",
+      "last_write_utc": "2026-10-30T21:03:29.820737+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_c_group.uasset",
+      "bytes": 283748,
+      "sha256": "1dcf3c47450722162afb2b3ed23dd84f8b5af1fbf78efc17c7d0d9568105c91c",
+      "last_write_utc": "2026-10-30T21:03:30.312522+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_d_group.uasset",
+      "bytes": 354274,
+      "sha256": "c216c95353aab58d9a4b88c82eb711499b5b70aa95da4059d52475f458837795",
+      "last_write_utc": "2026-10-30T21:03:30.843207+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_e_group.uasset",
+      "bytes": 344368,
+      "sha256": "4ad7456d8d67fc6279d5b9fbd301edc25bbe5ddeb15048bf047117c2c1cb11c6",
+      "last_write_utc": "2026-10-30T21:03:31.492852+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistamountains_clump_f_group.uasset",
+      "bytes": 673382,
+      "sha256": "93f8b5df32ee771f070d6ae3499f1aef18b302d2351240eda1aea65a952a534d",
+      "last_write_utc": "2026-10-30T21:03:32.757195+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistatrees_clump_a_group.uasset",
+      "bytes": 85910,
+      "sha256": "225f19847d8d800cbe8dc759185fa408dbc54c30b8f01489919cb299da1d6cee",
+      "last_write_utc": "2026-10-30T20:16:52.732666+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistatrees_clump_b_group.uasset",
+      "bytes": 80396,
+      "sha256": "0ecff73e29ccb273e1854698639862997c8a476d229470c5eaddc6ff7f7928ee",
+      "last_write_utc": "2026-10-30T20:16:52.530704+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistatrees_clump_c_group.uasset",
+      "bytes": 78232,
+      "sha256": "9220eeadd76a6899e328bfc0481a024276d0124658955b2a38ec207bc23c1af9",
+      "last_write_utc": "2026-10-30T20:16:53.427217+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistatrees_clump_d_group.uasset",
+      "bytes": 83188,
+      "sha256": "e4208f7f3ed10ef2316c2e3d13a5af8ee20377a6911d4835826df28143cfffc8",
+      "last_write_utc": "2026-10-30T20:16:53.293856+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_ed_vistatrees_clump_e_group.uasset",
+      "bytes": 75272,
+      "sha256": "8cb9728d53d86b81112b89e47b9383e3037a8289e2ac600e9bfaa22c8985f1b5",
+      "last_write_utc": "2026-10-30T20:16:53.358337+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_arenastartareawall_b_group.uasset",
+      "bytes": 132016,
+      "sha256": "611e0e1d6cd1b84d7dbac90b9db78629d76b2e4c92b77b99e1f3802591ef3675",
+      "last_write_utc": "2026-10-30T20:16:50.662627+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_arenastatue_a_group.uasset",
+      "bytes": 205029,
+      "sha256": "82dc45fed183407634dc5b11c6bd566aa86319e7f55cda597a5ee824dba80069",
+      "last_write_utc": "2026-10-30T20:16:41.502800+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_arenastatue_b_group.uasset",
+      "bytes": 297367,
+      "sha256": "05ef787007f67b9b90a3f928afe585e099312bf3e31973bb6b1694224b47a5d0",
+      "last_write_utc": "2026-10-30T20:16:44.467750+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_arenatemple_group.uasset",
+      "bytes": 566575,
+      "sha256": "5bcf15096e3af571c4183927946445c59a612273af2443689df905c2be57b37a",
+      "last_write_utc": "2026-10-30T20:16:44.980659+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_dorado_center_point_a_group.uasset",
+      "bytes": 82860,
+      "sha256": "f0d1cd3906e324620b5b144a54855c9e0bae7f2725d89208ec4db0a684af34bc",
+      "last_write_utc": "2026-10-30T20:16:25.774515+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_dorado_groud_design_group.uasset",
+      "bytes": 93506,
+      "sha256": "fe29f3ea7e7a751932238d61c827c2fab8a233aadf2ab0b868113a68cd8bcf04",
+      "last_write_utc": "2026-10-30T20:16:33.034348+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_dorado_relic_snake_a_group.uasset",
+      "bytes": 83417,
+      "sha256": "203d84277b9256948200fbeb12a2f926d8121d02e2ae33d91d15461092a26e42",
+      "last_write_utc": "2026-10-30T20:16:41.644147+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_dorado_relic_snake_b_group.uasset",
+      "bytes": 83486,
+      "sha256": "31773a9fcd1a7ca23bbe66a9a7425ec8f147cf96191fa3d1b8790e39a2bae733",
+      "last_write_utc": "2026-10-30T20:16:34.153895+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_dorado_snakeheadpillar_b_group.uasset",
+      "bytes": 359809,
+      "sha256": "65a177e9ebba6b0d1d5e95c117330f3fa2eac0b685001843626f4d7a6f4248cb",
+      "last_write_utc": "2026-10-30T20:16:29.033465+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_island_large.uasset",
+      "bytes": 190482,
+      "sha256": "7cb78381601995341ae6634cfaa3348d3c9bcba42577520c062847fedf72f08d",
+      "last_write_utc": "2026-10-30T20:16:53.726578+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_island_small_a.uasset",
+      "bytes": 99360,
+      "sha256": "6eadbdf1b9e250fb9658441c76921155bc747ea8a06b6ed548c1d12b93c09200",
+      "last_write_utc": "2026-10-30T20:16:45.199308+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_island_small_b.uasset",
+      "bytes": 99594,
+      "sha256": "c7fcfc4ad3db49ef2a0ac4bfcd1081880076dd9d326aec29167e2c473c9724d7",
+      "last_write_utc": "2026-10-30T20:16:44.215337+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_island_small_c.uasset",
+      "bytes": 95206,
+      "sha256": "a04a75b884eabd07072d450508c22e0a4fc206707fac1b0aeedc1d28e20831e6",
+      "last_write_utc": "2026-10-30T20:16:44.088466+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_mountain_unique_c_group.uasset",
+      "bytes": 92451,
+      "sha256": "8d1faafc807a9902baf5fc328cdff0159e48a8e086c854f444f2f7305b1ddd7c",
+      "last_write_utc": "2026-10-30T21:03:32.867715+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_plant_vine_bundle_a.uasset",
+      "bytes": 145828,
+      "sha256": "6c40333d33bcd5a090cb4b39dade954806d91ed8aa5f7b7d00dc054ed64d44d9",
+      "last_write_utc": "2026-10-30T20:16:52.807821+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_plant_vine_bundle_b.uasset",
+      "bytes": 137623,
+      "sha256": "e973abe5c0fda5eeb4edf1ae3be42bc146406622d37c1fb5206beca9411c6377",
+      "last_write_utc": "2026-10-30T20:16:52.949229+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_plant_vine_curve_b.uasset",
+      "bytes": 85401,
+      "sha256": "b7b49c77361d1de95857224b632e1400e01dac8f4808406bbaf4400b3eb56324",
+      "last_write_utc": "2026-10-30T20:16:52.660402+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_plant_vine_curve_c.uasset",
+      "bytes": 98114,
+      "sha256": "a96dab7f73988c851f81075ff5ba50e5a4ea7f71be2e1c26dc383ff8c166977e",
+      "last_write_utc": "2026-10-30T20:16:53.509049+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_temple_large.uasset",
+      "bytes": 95358,
+      "sha256": "e66a5e809d47a11d8115b540771df4f183a736b8bf429775bbe49a460073b50d",
+      "last_write_utc": "2026-10-30T20:16:51.697710+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_treecard_l3.uasset",
+      "bytes": 74570,
+      "sha256": "73d1a6a6d7fb86e05f77ad9fbb96333f0fa07b6cbb0e1f2565834f228ff17b89",
+      "last_write_utc": "2026-10-30T20:16:53.644627+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_treecard_l4.uasset",
+      "bytes": 74410,
+      "sha256": "6656c1b0abe8d7e6ce8f8422c567e268efe14b773545c52f9b2bc08cc372bce9",
+      "last_write_utc": "2026-10-30T20:16:53.572864+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_treecard_l5.uasset",
+      "bytes": 74620,
+      "sha256": "24cd8abf9252b3e532b67c707fc6114498276898087a65cf91a9b2a6d4adbd45",
+      "last_write_utc": "2026-10-30T20:16:53.793167+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vine_card_a.uasset",
+      "bytes": 73880,
+      "sha256": "d6751e110695354794e01052c5c1e0c949f8883579603369b8a2b312a5e81a43",
+      "last_write_utc": "2026-10-30T20:16:53.213286+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud.uasset",
+      "bytes": 73964,
+      "sha256": "d258cddccf29ac7bfe7ced52ca60c3fedf32f90eab214ec28abf476162fcbc22",
+      "last_write_utc": "2026-10-30T20:16:52.442854+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud2.uasset",
+      "bytes": 73971,
+      "sha256": "378c4e3e2ba268de87b84e045e1d05722464621f2098f94822702d180f0cacde",
+      "last_write_utc": "2026-10-30T20:16:52.880064+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud3.uasset",
+      "bytes": 73872,
+      "sha256": "3188609ade43cd772a4f7672124cccd413428b4ad0ababb7b372cfcedaee7c7b",
+      "last_write_utc": "2026-10-30T20:16:52.595046+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud4.uasset",
+      "bytes": 73824,
+      "sha256": "c86af89cd7e1d94590b71dc3b55e57b19b86285c4ab084def32ade2124b86465",
+      "last_write_utc": "2026-10-30T20:16:52.378073+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud5.uasset",
+      "bytes": 74273,
+      "sha256": "bf87a78a86c143a168b699268c4742d84307f060c96bd2dde48d9ecdc3213916",
+      "last_write_utc": "2026-10-30T20:16:53.857104+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud6.uasset",
+      "bytes": 74178,
+      "sha256": "04c81f038d2608e771273542272204654c2092889e9b72022ea51846da06b9b4",
+      "last_write_utc": "2026-10-30T20:16:53.995065+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud7.uasset",
+      "bytes": 73998,
+      "sha256": "232b154b0e30f598e937a42c205a115b3eaa323bc9fb328e02580a91286294ad",
+      "last_write_utc": "2026-10-30T20:16:53.925174+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_el_vista_cloud8.uasset",
+      "bytes": 73837,
+      "sha256": "dfede03961e83a26a5b62a48f08c5e665aee4040d97dc7e1a5961e6a68f04cbc",
+      "last_write_utc": "2026-10-30T20:16:54.075803+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_border_x4_a_group.uasset",
+      "bytes": 89839,
+      "sha256": "196a2911142170cb922a21ff3e536240301d3504e095595d996635c3b32d6f4e",
+      "last_write_utc": "2026-10-30T20:16:28.914202+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_centerline_group.uasset",
+      "bytes": 110770,
+      "sha256": "2a324c177486c0da0b3a787bdb30a536d6e64634b5c037112ee96638f7f1a567",
+      "last_write_utc": "2026-10-30T20:16:41.567458+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_curved_wall_a_group.uasset",
+      "bytes": 82602,
+      "sha256": "dbabd571b370f2ca981faebff68718d524c73fa321fe126a85a96f6700647a35",
+      "last_write_utc": "2026-10-30T20:16:42.094500+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_curved_wall_b_group.uasset",
+      "bytes": 81450,
+      "sha256": "7e2be51147909ec1713621333cbe5c436fa0d2867a170f41cc1e9e0c3452619b",
+      "last_write_utc": "2026-10-30T20:16:25.830353+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_floor_v2_gapfill_group.uasset",
+      "bytes": 78689,
+      "sha256": "8a1a398ce7ecf125dbe9f2f1cf8a279e4f595adf116a4265455afdff556d77e8",
+      "last_write_utc": "2026-10-30T20:16:28.856366+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_floor_v2_group.uasset",
+      "bytes": 296834,
+      "sha256": "f739578e95463c746e9e65a2926570986506d5f0b0bdcd6459c180a3cfd65534",
+      "last_write_utc": "2026-10-30T20:16:31.750463+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_ground_collision_b_group.uasset",
+      "bytes": 75974,
+      "sha256": "f3915d0faae15eba156e320b7b761dba665867664165e33a32a61a09714e3ae1",
+      "last_write_utc": "2026-10-30T20:16:32.917548+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_b_group.uasset",
+      "bytes": 93759,
+      "sha256": "1680e1624cd832d97fd20bf036a00d53f215a3624e61583db73782438ee60c6e",
+      "last_write_utc": "2026-10-30T20:16:32.134073+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_c_group.uasset",
+      "bytes": 100130,
+      "sha256": "258153a60e9db9f236816b229240b45b6c1754a062548cff63c9913deb2d2018",
+      "last_write_utc": "2026-10-30T20:16:34.066810+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_center_tc_group.uasset",
+      "bytes": 78924,
+      "sha256": "c196769907186ab7c512477b5fb6fcd78aa028533c160085cf8e24ca5e466e5d",
+      "last_write_utc": "2026-10-30T20:16:33.105128+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_d_group.uasset",
+      "bytes": 95676,
+      "sha256": "9be84ca9484d6d036706f03bfbe6ad1b19b47b8f711c4a3f3dff1c4d11fdce8a",
+      "last_write_utc": "2026-10-30T20:16:33.972870+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_e_group.uasset",
+      "bytes": 84324,
+      "sha256": "7e5b64a628f696e0852c6d13890497b2fc46cea5da20359e98068189e8081b06",
+      "last_write_utc": "2026-10-30T20:16:33.870322+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_f_group.uasset",
+      "bytes": 95679,
+      "sha256": "90249ae8f19112c7175e03b762bb8c9534166e28f068e17f146510bf871a7940",
+      "last_write_utc": "2026-10-30T20:16:42.017757+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_main_floor_tc_group.uasset",
+      "bytes": 78671,
+      "sha256": "6f8cf3e7af136d5a84924766287f8d7fcd0844e3128ac9a91861c0eb38ef4cd9",
+      "last_write_utc": "2026-10-30T20:16:32.200009+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_buff_border_a_group.uasset",
+      "bytes": 77343,
+      "sha256": "e23698813deb13265bdf2299724f33574249d40ef6e48e114f9c278dfec62391",
+      "last_write_utc": "2026-10-30T20:16:25.889557+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_buff_border_b_group.uasset",
+      "bytes": 77337,
+      "sha256": "5f9b93b7622ecb2b2b1b10ee1e36234c171ab774675fe976a1858fdbb6287f7f",
+      "last_write_utc": "2026-10-30T20:16:28.613924+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_buff_temple_a_group.uasset",
+      "bytes": 98423,
+      "sha256": "e063af9ec51bd32ec03e441afc280845105ade0f49a2f4800637c07658682694",
+      "last_write_utc": "2026-10-30T20:16:29.622596+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_circle_top_a_group.uasset",
+      "bytes": 105973,
+      "sha256": "590f7f587f8ee488fff47cda893d1eb58d8aaab74767437b1b3ff09cb57ea81d",
+      "last_write_utc": "2026-10-30T20:16:29.688963+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_circle_top_b_group.uasset",
+      "bytes": 87318,
+      "sha256": "bd28bd81650e8f35489b080733ab91a7e7b38dba375dc3b1f9f7b5f76e29c3bb",
+      "last_write_utc": "2026-10-30T20:16:29.255887+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_circle_top_c_group.uasset",
+      "bytes": 106953,
+      "sha256": "416e6fc4ff0169586faf707c33f66cf95e8b55d0893e240ba9593349004cd670",
+      "last_write_utc": "2026-10-30T20:16:41.884885+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group.uasset",
+      "bytes": 88412,
+      "sha256": "2942a6e78db65b70df59f9a019daa9741270a026093fbcb0714cb4f3b0411295",
+      "last_write_utc": "2026-10-30T20:16:33.781381+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group.uasset",
+      "bytes": 88673,
+      "sha256": "a0bfa3d02fe18f7532d0fdd673dcabb92380625d42faf470574e8b539b11b256",
+      "last_write_utc": "2026-10-30T20:16:32.683945+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_sidewall_a_group.uasset",
+      "bytes": 81575,
+      "sha256": "3689ffe51d815c03adf628c678db89b77e1735fa8f2bb11928cb0b47a5ea1faf",
+      "last_write_utc": "2026-10-30T20:16:32.772707+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_stair_c_group.uasset",
+      "bytes": 109791,
+      "sha256": "7e77cdc0ce5893a070b370c7a6b9a30b61518ba7732d7acd48d1f15d1e3f08c7",
+      "last_write_utc": "2026-10-30T20:16:25.945793+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_mid_staris_a_group.uasset",
+      "bytes": 148732,
+      "sha256": "1bcb43a1acee31babc699f00ffcd8eb62c60f31e2cbe3c859290e6219ed7975a",
+      "last_write_utc": "2026-10-30T20:16:26.050713+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_relic_center_cap_a_group.uasset",
+      "bytes": 76816,
+      "sha256": "b9cadbaf27b5ee23af19f23137de2060e7f65c31446a6017eca36586367d967e",
+      "last_write_utc": "2026-10-30T20:16:25.999538+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_relic_spawn_a_group.uasset",
+      "bytes": 116644,
+      "sha256": "7e206712245b4e3e34d497a2326f5fde6f23f10085d74f750e2fa728d56d2022",
+      "last_write_utc": "2026-10-30T20:16:31.995810+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_relic_spawn_b_group.uasset",
+      "bytes": 117696,
+      "sha256": "7b94bebfc9dba0b22ec905cca457acc8d79a1fd14ad63dd83ec8e7fcc633b33c",
+      "last_write_utc": "2026-10-30T20:16:33.253692+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_sidewall_gold_a_group.uasset",
+      "bytes": 75498,
+      "sha256": "bdcf4a1b28cca5ec7503929d804da8122a7b13852729548aca23a617a9fe3cf7",
+      "last_write_utc": "2026-10-30T20:16:26.927545+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_stairs_sides_a_group.uasset",
+      "bytes": 88294,
+      "sha256": "00a85202f8fa0c0103988fdbc44047ff30d384618dd1496e29240b953395d2cc",
+      "last_write_utc": "2026-10-30T20:16:27.009262+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_startramp_clump_group.uasset",
+      "bytes": 164235,
+      "sha256": "df782ecb675c47da46e3159700eb0eed59d67408090684d90a69cc5ab9db7447",
+      "last_write_utc": "2026-10-30T20:16:27.125573+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_eldorado_wall_trim_a.uasset",
+      "bytes": 93328,
+      "sha256": "1d0bed990568c2a2c364a5249a43525212231085d899b8924326a574cac32bff",
+      "last_write_utc": "2026-10-30T20:16:41.729033+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_prxy_eldorado_mid_steps_c_group.uasset",
+      "bytes": 121182,
+      "sha256": "133897d84fa670bbd1f63b50dc850836e45430e4f4665769d9e7fd042327da59",
+      "last_write_utc": "2026-10-30T20:16:29.742808+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_rel_prxy_eldorado_mid_steps_d_group.uasset",
+      "bytes": 120983,
+      "sha256": "b3d3ca8d31eb0f1b4133d26cd949a31d6bb190d46c069f4659de1c7a5fad530e",
+      "last_write_utc": "2026-10-30T20:16:29.203199+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_RingEnergy_Gap_01.uasset",
+      "bytes": 79957,
+      "sha256": "6a48bf734a238920526094d93581b06a96d09cb936ae81aa3f415a2dbc98b684",
+      "last_write_utc": "2026-10-30T20:16:54.960490+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_RingEnergy_Gap_02.uasset",
+      "bytes": 79303,
+      "sha256": "e0e7001fa37f84defe6ad8ebbda083086cb92847266a744b638f50c2272e981d",
+      "last_write_utc": "2026-10-30T20:16:55.698931+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_RingEnergy_Gap_03.uasset",
+      "bytes": 80125,
+      "sha256": "181ae18cccf4095974493ca8de215021ad6d3a2cfe87e40a671b6e49469b1d4d",
+      "last_write_utc": "2026-10-30T20:16:56.371733+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_RingEnergy_Gap_04.uasset",
+      "bytes": 79191,
+      "sha256": "052865862035dab019bbc0440789f7a9f931df4dd0564cff78db999a352fc41a",
+      "last_write_utc": "2026-10-30T20:16:57.059757+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_sm_waterfall_distance_mist_large_2_group.uasset",
+      "bytes": 81352,
+      "sha256": "1e1cff57e77d9d52d270bda3aab09ab87b5a32bfe61124529d424773df4a5733",
+      "last_write_utc": "2026-10-30T20:16:54.160380+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_sm_waterfall_long_distance_group.uasset",
+      "bytes": 103083,
+      "sha256": "329a1b9fd429c65258f02dd0d54d4095bdbc0ac6567b6d2bce689c7ee8a3f60f",
+      "last_write_utc": "2026-10-30T20:16:54.244719+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Meshes/SM_Dorado_trmple_tree_02_group.uasset",
+      "bytes": 970658,
+      "sha256": "998b7ee34064e5c3590c4fa1d5747c8acbae9a8eb6e5a48cf39193534b26702b",
+      "last_write_utc": "2026-10-30T20:16:52.214931+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_arrow_36c8b822_A.uasset",
+      "bytes": 14059,
+      "sha256": "6920ba334125618b8f53322ecb2e1fb23e43f493364b130d9b81036ef9a0961a",
+      "last_write_utc": "2026-10-30T19:52:23.419445+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_arrow_36c8b822_BC.uasset",
+      "bytes": 23935,
+      "sha256": "cef2533c0cd87af383f0f4ad5f4fdf6f7ffb72a3062604569b49e05302d533aa",
+      "last_write_utc": "2026-10-30T19:52:23.130878+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_banner_a_mat_8dfb5872_BC.uasset",
+      "bytes": 315735,
+      "sha256": "2598e6574410583a9f427a1354799490796f6093344d3106b8fb24b673772d39",
+      "last_write_utc": "2026-10-30T21:26:29.515487+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_banner_a_mat_8dfb5872_M.uasset",
+      "bytes": 73321,
+      "sha256": "fb2e92d459bba637a12222a0c2e9e30008c5b2cdcce103263f567228e0671634",
+      "last_write_utc": "2026-10-30T21:26:30.011490+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_BaseColor.uasset",
+      "bytes": 10991,
+      "sha256": "2da23485669413a5d3490ccb96f16b8171977ee82f862a1cdd8a45137e9399b4",
+      "last_write_utc": "2026-10-30T21:59:36.858370+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_black_63fa2cf8_BC.uasset",
+      "bytes": 11126,
+      "sha256": "c1db6032c67f6e9f941a3226b443ba7f845ac0ae9b4896cb89e9ce2d795abb58",
+      "last_write_utc": "2026-10-30T21:59:43.399135+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_buff_spawn_mat_bd772f22_BC.uasset",
+      "bytes": 1140934,
+      "sha256": "08915ba0a275a8d99168f4f03c679f0fd20ce12e4385efc330f902809382b6d5",
+      "last_write_utc": "2026-10-30T21:59:41.604005+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_buff_spawn_mat_bd772f22_M.uasset",
+      "bytes": 27992,
+      "sha256": "1e91683fea2a48a34f5627b6d86a8d91245bccdb97e16e877f332beba6ceb55f",
+      "last_write_utc": "2026-10-30T21:59:42.137991+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_Emissive.uasset",
+      "bytes": 10964,
+      "sha256": "f67f170a2f8842c392eabf6ab0e4c26703ea7cb883e74440dd8352ce0d9ff011",
+      "last_write_utc": "2026-10-30T21:59:37.093314+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_riverflow01a_2e9fd6ca_A.uasset",
+      "bytes": 118376,
+      "sha256": "f050f6757b0ca415d66f91bbff2fcd81428258e2600d228dcdfdbef428cd967e",
+      "last_write_utc": "2026-10-30T21:59:48.035634+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_riverflow01a_2e9fd6ca_BC.uasset",
+      "bytes": 252390,
+      "sha256": "1e97ecbcdc73b0cc84c21764d52f2e3a6286c0eee20b81164bc5d14e0cfd1db8",
+      "last_write_utc": "2026-10-30T21:59:47.953914+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_riverflow01a_n_05c1cd30_N.uasset",
+      "bytes": 671969,
+      "sha256": "36957fbba531434e84aa232832766e2df54660cc4550df9c864607b4eb565e07",
+      "last_write_utc": "2026-10-30T21:59:48.103605+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_water_river_test_2_f0ab40f2_Spec.uasset",
+      "bytes": 867735,
+      "sha256": "ed24d7d61d74ad5aff7cbfc8d0141d5bf4cbec5dc2407173a00c0105c984b6a7",
+      "last_write_utc": "2026-10-30T21:59:51.455761+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_base_2_9988ba63_A.uasset",
+      "bytes": 357427,
+      "sha256": "ffab8a4b898750dbc0973d1860546e409352011961e8f4215af968ac73658228",
+      "last_write_utc": "2026-10-30T21:59:51.372204+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_base_2_9988ba63_BC.uasset",
+      "bytes": 747120,
+      "sha256": "fd3d82a227d77dfbdd8a4a27bbe9c95be774a09f121c4e7e3e7e2499364806c0",
+      "last_write_utc": "2026-10-30T21:59:51.556734+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_base_52201456_A.uasset",
+      "bytes": 341065,
+      "sha256": "8d49da9f9f5a1d540e47779821e9a20a7d4792ce148b06c67a5e586fe0229c5f",
+      "last_write_utc": "2026-10-30T21:59:51.804538+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_base_52201456_BC.uasset",
+      "bytes": 668954,
+      "sha256": "6decc244334c07df74ff135d36af63e2dc1f2fdd18dcf34634736c6a4a30f6f3",
+      "last_write_utc": "2026-10-30T21:59:53.007248+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_distance_mist_1ce3fd52_A.uasset",
+      "bytes": 75942,
+      "sha256": "c7b610e885b8bce5d8c988bb8806754264533fb2f06ac1ca8d80ae551a484398",
+      "last_write_utc": "2026-10-30T21:26:43.331644+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_distance_mist_1ce3fd52_BC.uasset",
+      "bytes": 184603,
+      "sha256": "1dc9387cd5841f583906d18ff17246693cc4fdacf36c2ff529e80ce4d2d245bc",
+      "last_write_utc": "2026-10-30T21:26:43.232448+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_distance_mist_2_23bcdb75_A.uasset",
+      "bytes": 81668,
+      "sha256": "186ae61d3c5d043560993ff70e6dc480c6765d44b910c12946d467f59d53054d",
+      "last_write_utc": "2026-10-30T21:26:42.979813+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_fx_t_waterfall_eldorado_distance_mist_2_23bcdb75_BC.uasset",
+      "bytes": 190754,
+      "sha256": "0ae5bdd03151bc589d4fb4f9e5cbb4d57536b9226f995e94af09b20726adef9e",
+      "last_write_utc": "2026-10-30T21:26:42.880688+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_grey_38a16272_BC.uasset",
+      "bytes": 11112,
+      "sha256": "45f479fabcecb9f9b652164fb27dfb3e253c30a492870a0c6fb1e0ab1fa11c12",
+      "last_write_utc": "2026-10-30T21:26:33.193299+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_Metallic.uasset",
+      "bytes": 11003,
+      "sha256": "92452f404ffaf61f2896f08046f08e369904143f6a9ede45dafa8013a2782592",
+      "last_write_utc": "2026-10-30T21:59:37.018722+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_mid_steps_1c3eeea5_BC.uasset",
+      "bytes": 666814,
+      "sha256": "306889b34602a36b3ccab21c897251bcd9104f09f517b277eeb4425c8e01e4aa",
+      "last_write_utc": "2026-10-30T21:26:26.799909+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_mid_steps_1c3eeea5_M.uasset",
+      "bytes": 17601,
+      "sha256": "b5b3cc87e51cd459e2e3ef21e7ef98540d54a845d54dbdbd5fc500b6d8224611",
+      "last_write_utc": "2026-10-30T21:26:27.309180+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_Normal.uasset",
+      "bytes": 11231,
+      "sha256": "07e380de9505e6e7387ffff27f28d1ec7464ba4ed13fc0c3473685981b132b6b",
+      "last_write_utc": "2026-10-30T21:59:36.902398+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_Opacity.uasset",
+      "bytes": 10976,
+      "sha256": "3cd31da6e63f73c5bd70c15503ae988f688c88a4c46c38e07904c84b243403e2",
+      "last_write_utc": "2026-10-30T21:59:37.058495+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_pointer_arrow_v4_6809d159_A.uasset",
+      "bytes": 31763,
+      "sha256": "37bd281c5939365fb525f83cb2b8bbd8476baad15451e8489310d8a8d5669595",
+      "last_write_utc": "2026-10-30T19:52:22.780790+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_pointer_arrow_v4_6809d159_BC.uasset",
+      "bytes": 57853,
+      "sha256": "127abc393505488a57be874601db47018482969d460dcbda1fde4e4d10d16077",
+      "last_write_utc": "2026-10-30T19:52:22.537946+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_crystal_ddna_f666d2cd_N.uasset",
+      "bytes": 5921240,
+      "sha256": "1f48135e7160628280bc5517ae80d6ca29f3c3c3719187b32103f269136942cd",
+      "last_write_utc": "2026-10-30T19:52:27.020660+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_crystal_ddna_f666d2cd_R.uasset",
+      "bytes": 3321992,
+      "sha256": "45986a4169d581ac19cdf235b56590ae4fa91b15b4b1a4c0faaef6a348774d7f",
+      "last_write_utc": "2026-10-30T19:52:27.393807+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_crystal_green_glow_2da87185_A.uasset",
+      "bytes": 1992365,
+      "sha256": "3707fe73e4e465cb3758b9eee8c9c6b3984fd98615297f6467111a5b5cd3a366",
+      "last_write_utc": "2026-10-30T19:52:26.399845+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_crystal_green_glow_2da87185_BC.uasset",
+      "bytes": 5308658,
+      "sha256": "ff400f4f73dd891a0f5e3f1c64b94aa19443d8490085d426fb2c8793c80aa9fd",
+      "last_write_utc": "2026-10-30T19:52:26.090649+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_crystal_green_glow_2da87185_E.uasset",
+      "bytes": 3223208,
+      "sha256": "3d6162eb8fbad03d670facbf9d4681fe530ded5594cbfb0983a48879c76c50a6",
+      "last_write_utc": "2026-10-30T19:52:27.792366+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_banner01_a_ddna_db40efac_N.uasset",
+      "bytes": 321694,
+      "sha256": "cd2813085c6b8ef6590b0a6454814e36914821a527b6077a14197beb6d191fcf",
+      "last_write_utc": "2026-10-30T21:26:29.713901+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_banner01_a_ddna_db40efac_R.uasset",
+      "bytes": 215223,
+      "sha256": "4516c3b7ca8de956117c263298dee2bf5ffef6fc263053b8a3297ed2316827e3",
+      "last_write_utc": "2026-10-30T21:26:29.813361+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_banner01_a_diff_a912e6f9_A.uasset",
+      "bytes": 39215,
+      "sha256": "071cfd9f7e2f019b89bef71f302b828734f9116f0b37dee2db47426603459c53",
+      "last_write_utc": "2026-10-30T21:26:29.609484+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_banner01_a_spec_1e75a06e_Spec.uasset",
+      "bytes": 35535,
+      "sha256": "4bcc4e482302f58b8aa1b2118a08a312978502ea279c1be926fec2de495f3e65",
+      "last_write_utc": "2026-10-30T21:26:29.910882+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_a_ddna_c7d0b932_N.uasset",
+      "bytes": 1080982,
+      "sha256": "43fc1cb97d8a9b911163e0f10eaa4554114ce5bd164fddd5097f48f6246585c9",
+      "last_write_utc": "2026-10-30T21:59:48.623779+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_a_diff_278170aa_A.uasset",
+      "bytes": 259497,
+      "sha256": "0b90a0787ad5043cab7e9b312b0dcb86f95843ad3a23c9ba591ef0f7a04987f1",
+      "last_write_utc": "2026-10-30T21:59:48.532459+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_a_diff_278170aa_BC.uasset",
+      "bytes": 1452317,
+      "sha256": "062bb159f814dfef0eec9f29c61c2c69c0ec241aa7dffcdc9dbeac9f2d9f24fa",
+      "last_write_utc": "2026-10-30T21:59:48.458775+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_b_ddna_1e6621ff_N.uasset",
+      "bytes": 906459,
+      "sha256": "0910a148310d5dc6d28cee7f77bbc0771b51d0e05ed8e30053390abe4c1844f3",
+      "last_write_utc": "2026-10-30T21:59:48.973212+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_b_ddna_1e6621ff_R.uasset",
+      "bytes": 200667,
+      "sha256": "d15069898049fb6161ffdcd39aded694a944dcada09d0181feddcaee94f38203",
+      "last_write_utc": "2026-10-30T21:59:49.052071+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_b_diff_d81eee1f_A.uasset",
+      "bytes": 379023,
+      "sha256": "8444a598e48d377c7bb9eb70868f0a90935dcd67975fab95c73d03bf4cc34f9a",
+      "last_write_utc": "2026-10-30T21:59:48.883819+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_blocks_b_diff_d81eee1f_BC.uasset",
+      "bytes": 1573695,
+      "sha256": "3e7c65e0b42ee8b0084c656cf23b0bedc15535da49a4a44ee3e2094f0e3a3c4c",
+      "last_write_utc": "2026-10-30T21:59:48.811134+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_canopy_a_ddna_e114c958_N.uasset",
+      "bytes": 847043,
+      "sha256": "ee66fc20c5a77a04cf60b3645b9a28e5ae04231bfbb74a90f347538ba6fd7635",
+      "last_write_utc": "2026-10-30T21:26:41.135995+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_canopy_a_ddna_e114c958_R.uasset",
+      "bytes": 234582,
+      "sha256": "04d2f50df61726db3bdc546ab1d54c7b9758f4982d66bcce7fe1576bde39d03d",
+      "last_write_utc": "2026-10-30T21:26:41.227962+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_canopy_a_diffa_d48d1564_A.uasset",
+      "bytes": 60433,
+      "sha256": "fe3b10115182262c40d5470d543f8bfeed115f3fd56d1bb6bde5664a958af773",
+      "last_write_utc": "2026-10-30T21:26:41.025848+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_canopy_a_diffa_d48d1564_BC.uasset",
+      "bytes": 761600,
+      "sha256": "e0325a4eea9feea3e66092dd1b10a524ce8b1112b166991c4ce5ac9a0368ec4c",
+      "last_write_utc": "2026-10-30T21:26:40.933886+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grass_patch_decal_diffa_90877497_A.uasset",
+      "bytes": 175659,
+      "sha256": "2d5cc09812f1b9cae5f4ea8b03db0f9af737d558f34371131a44418fe0e1880e",
+      "last_write_utc": "2026-10-30T19:52:15.701899+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grass_patch_decal_diffa_90877497_BC.uasset",
+      "bytes": 1298331,
+      "sha256": "cb41681d7afe14fb186fbbb6ef7c18edc5de02dd7d5ba71932d46a4c4f9068f4",
+      "last_write_utc": "2026-10-30T19:52:15.357614+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grasspatch_b_ddna_91a60142_N.uasset",
+      "bytes": 3020798,
+      "sha256": "3829a2e03d11073cbc9790a137052dad58d72027e64a3e25b89961bf9f9ddbd8",
+      "last_write_utc": "2026-10-30T19:52:17.439872+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grasspatch_b_ddna_91a60142_R.uasset",
+      "bytes": 1106857,
+      "sha256": "886368d30dadbee9b6b985df30dab37826cf24d75929d2e2039a74aefeecf58f",
+      "last_write_utc": "2026-10-30T19:52:17.724356+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grasspatch_b_diffa_4cf37a50_A.uasset",
+      "bytes": 777160,
+      "sha256": "032f995258df0a9abeafc461f44d7c8bd5a9629935248d5999fc5432c323b11c",
+      "last_write_utc": "2026-10-30T19:52:16.854714+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_grasspatch_b_diffa_4cf37a50_BC.uasset",
+      "bytes": 4085811,
+      "sha256": "9e912e6589e652c17b646333f17281399010415e2dc5a760ebce808c297aa09b",
+      "last_write_utc": "2026-10-30T19:52:16.498034+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_ring_a_mat_59b99209_BC.uasset",
+      "bytes": 1028751,
+      "sha256": "55c7a6aa3fea22b778da2c2323b1b69f3263e7911eb1b14c489154dfedf867aa",
+      "last_write_utc": "2026-10-30T21:59:49.223746+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_ring_a_mat_59b99209_M.uasset",
+      "bytes": 32315,
+      "sha256": "d8caba944a40421ce4ab7a36fd9c729b65b100c542f9d64f8162c56c5f6c798a",
+      "last_write_utc": "2026-10-30T21:59:49.549368+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_ring_b_mat_f02db215_BC.uasset",
+      "bytes": 857317,
+      "sha256": "b3feba5dbea0c3efc1d0dbbb5cab7743a67e079f2ec2db1fd66930045284012c",
+      "last_write_utc": "2026-10-30T21:59:49.686824+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_ring_b_mat_f02db215_M.uasset",
+      "bytes": 18795,
+      "sha256": "55f56deba835379cb864572f8b3979943f279db02a3d4947cae6aee89a1d7254",
+      "last_write_utc": "2026-10-30T21:59:50.016936+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_rock_decal_a_ddna_438f2b6f_N.uasset",
+      "bytes": 1707065,
+      "sha256": "9f328c12d41935142bd52c0e52bf8cd6ae242d5dc2c849c353c71fc38357cf34",
+      "last_write_utc": "2026-10-30T19:52:21.725299+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_rock_decal_a_ddna_438f2b6f_R.uasset",
+      "bytes": 718126,
+      "sha256": "fcac47fbb39fc3b2fb711cd2bb94b508e981c086607939c9b93420c4d9329a22",
+      "last_write_utc": "2026-10-30T19:52:22.076398+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_rock_decal_a_diffa_494a6fb8_A.uasset",
+      "bytes": 238318,
+      "sha256": "6ffd31adc398ddc1bc6efb351a5369579f56058a88f54e49a35b3b1942f759e3",
+      "last_write_utc": "2026-10-30T19:52:21.097529+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_rock_decal_a_diffa_494a6fb8_BC.uasset",
+      "bytes": 1484128,
+      "sha256": "9d361449f1b7b4b6850c340e2c59e70e435fdb321886a4ea9092f485ead093d5",
+      "last_write_utc": "2026-10-30T19:52:20.855000+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_serpent_body_28a20d61_BC.uasset",
+      "bytes": 2993763,
+      "sha256": "3c9f28ef32e65be781dcf25c9f4e05941b7d0c09a31e20e29c16e9890ba399e4",
+      "last_write_utc": "2026-10-30T21:59:37.464227+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_serpent_body_28a20d61_M.uasset",
+      "bytes": 19715,
+      "sha256": "53926f453875c78fff30d9da63bab679c5cdd1f4dbc37ba71804d0518a12f092",
+      "last_write_utc": "2026-10-30T21:59:37.762322+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_serpent_head_a49f3579_BC.uasset",
+      "bytes": 648893,
+      "sha256": "68423985bd3fe3a34adea26e237ef637442b815c72f66564eb9619125aef0444",
+      "last_write_utc": "2026-10-30T21:59:38.179172+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_serpent_head_a49f3579_M.uasset",
+      "bytes": 34560,
+      "sha256": "5e15d90c409dbbc9232e1efd1f4b270daf1a1676de104754e3f5e44487545ae9",
+      "last_write_utc": "2026-10-30T21:59:38.522171+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_snakering_a_ddn_b314e27a_N.uasset",
+      "bytes": 1230804,
+      "sha256": "25dcfd176ad4975bef96155dec246c862d22b050b40e57d21186b27845d83c30",
+      "last_write_utc": "2026-10-30T21:59:49.310292+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_snakering_a_spec_c8cc6842_Spec.uasset",
+      "bytes": 426407,
+      "sha256": "3ebaccbed95dfe557c574f72592d9603f0bc54fecff4f0837e0ee1316f6b7b26",
+      "last_write_utc": "2026-10-30T21:59:49.387890+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_snakering_b_ddn_bf382513_N.uasset",
+      "bytes": 783585,
+      "sha256": "7fd3c7398117b95fe2db2d78c05a9c3986e9010edc2827aaf9f98fc7ea824692",
+      "last_write_utc": "2026-10-30T21:59:49.770986+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_snakering_b_spec_815a1d1c_Spec.uasset",
+      "bytes": 339673,
+      "sha256": "87389f96b914f2451bf4455dc27b8ac4411bf79f57224732682144a85c89e764",
+      "last_write_utc": "2026-10-30T21:59:49.853555+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_tree_card_ddna_e3b1e2f4_N.uasset",
+      "bytes": 467364,
+      "sha256": "82a6b22a62556402a16042f4eca47441e88c1d347e6c403ad05a4839b0110e7d",
+      "last_write_utc": "2026-10-30T21:26:40.615066+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_tree_card_ddna_e3b1e2f4_R.uasset",
+      "bytes": 156388,
+      "sha256": "dbeea0538f3bcd3db1c764fafd17b0bac9564e1792b008884b9b56e6b1e9a9bf",
+      "last_write_utc": "2026-10-30T21:26:40.713027+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_tree_card_diffa_a51c4ea0_A.uasset",
+      "bytes": 43173,
+      "sha256": "de017d49bc1fe251a36c2f88ef290fa7361bc0d79385c776890933e4206ee542",
+      "last_write_utc": "2026-10-30T21:26:40.512422+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_tree_card_diffa_a51c4ea0_BC.uasset",
+      "bytes": 570319,
+      "sha256": "11d7856d84654e93f3b0ebc8d9ae081dc45899cde92a0ed8b3b61149ae30f02e",
+      "last_write_utc": "2026-10-30T21:26:40.413869+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_veg_vines_ddna_4368cb23_N.uasset",
+      "bytes": 1814594,
+      "sha256": "b86873343fb26005125bcb9b5c362a6a252352238be7b34b40b890c6913f2051",
+      "last_write_utc": "2026-10-30T21:26:40.089168+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_veg_vines_ddna_4368cb23_R.uasset",
+      "bytes": 542369,
+      "sha256": "dbc66881a436d8327fd5cfa96c30bccb69fdd40c39191d8849a051563c729c84",
+      "last_write_utc": "2026-10-30T21:26:40.184225+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_veg_vines_diff_7cf42201_BC.uasset",
+      "bytes": 782323,
+      "sha256": "7bde5ebcfe8bc6dd30919b24618029a3d8716796505c989f53fe5e03ee8cbe3e",
+      "last_write_utc": "2026-10-30T21:26:39.985443+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_vine_leafs_ddna_110bda2b_N.uasset",
+      "bytes": 600022,
+      "sha256": "95a639408536e3ec8c79c0b1a38b43b01e9c0f9fd261db8fd18f709f666329a5",
+      "last_write_utc": "2026-10-30T21:26:42.252739+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_vine_leafs_ddna_110bda2b_R.uasset",
+      "bytes": 277263,
+      "sha256": "2bbb374e1d7101e1b6332e49640a06dd5130b65cec92ce2b3a7bcd4248c4d3dc",
+      "last_write_utc": "2026-10-30T21:26:42.346097+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_vine_leafs_diffa_ce8b93f7_A.uasset",
+      "bytes": 53665,
+      "sha256": "feb24336f927e1daf8906974f619a8dd50cff68982f944b371b69c97a053421f",
+      "last_write_utc": "2026-10-30T21:26:42.145840+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_ed_vine_leafs_diffa_ce8b93f7_BC.uasset",
+      "bytes": 443408,
+      "sha256": "3f34bd7f74cad6e020510397469f3fb0807179ec3ad82643e31b2ef7343af6e7",
+      "last_write_utc": "2026-10-30T21:26:42.050948+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arena_tile_flat_ddna_32db8289_N.uasset",
+      "bytes": 1623470,
+      "sha256": "fbfab63cd0acd404c117646901405094c6089f389c520b3e66cd2b8e2ea67f4d",
+      "last_write_utc": "2026-10-30T21:59:40.947157+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arena_tile_flat_ddna_32db8289_R.uasset",
+      "bytes": 508310,
+      "sha256": "3c87cc6aca7144ec8ff2be30a96d86b6687512115ef9302dd990093a50a5fbae",
+      "last_write_utc": "2026-10-30T21:59:41.010516+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arena_tile_flat_diff_87750b39_BC.uasset",
+      "bytes": 904745,
+      "sha256": "d1d4c5e7e7d0084da937b1607e2a7b8b97346eb959ab224d45399e850b43f9ad",
+      "last_write_utc": "2026-10-30T21:59:40.885944+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arena_tile_flat_mask_63652bba_Mask.uasset",
+      "bytes": 229378,
+      "sha256": "580b55c13ac7e83ef02817e710c02700e66e042e5907deb4e871b137970ab97f",
+      "last_write_utc": "2026-10-30T21:59:41.067241+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenasnakeheada_mat_fbc00e87_BC.uasset",
+      "bytes": 1077578,
+      "sha256": "3fea78a5665d15d2bc21569f09d62476ea5ceeaf5a029567aca441bb45d6272e",
+      "last_write_utc": "2026-10-30T21:26:06.450227+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenasnakeheada_mat_fbc00e87_M.uasset",
+      "bytes": 43008,
+      "sha256": "8349505a1485b26dacecbe0243b7d3d33b8db7fd1fa73c8edf52df19b18e03ca",
+      "last_write_utc": "2026-10-30T21:26:07.045069+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenasnakeheadb_mat_db329e1b_BC.uasset",
+      "bytes": 1016873,
+      "sha256": "2cf877d4377b35f653ef009ed0298617713d5ed2a80d7fe34e1b175d84293558",
+      "last_write_utc": "2026-10-30T21:59:39.151678+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenasnakeheadb_mat_db329e1b_M.uasset",
+      "bytes": 92077,
+      "sha256": "adc7b2b76fd6b05864b00a76c5cabce0985ddd2a80b59850cc0d82b3f481cd87",
+      "last_write_utc": "2026-10-30T21:59:39.459905+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilefloorsquare_ddna_41e97d69_N.uasset",
+      "bytes": 1828086,
+      "sha256": "0bdcf8f6488c798bbb0d3ba7979f7d170f9441e9cd453c762b84d857eb00bbfd",
+      "last_write_utc": "2026-10-30T21:26:06.074221+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilefloorsquare_ddna_41e97d69_R.uasset",
+      "bytes": 591457,
+      "sha256": "e14a1acc5db8523a27b3d01fa417c1ad84dd8d801887d44ed2ab81c04d2826bc",
+      "last_write_utc": "2026-10-30T21:26:06.183183+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilefloorsquare_diff_e19d1536_BC.uasset",
+      "bytes": 971244,
+      "sha256": "36c647c23428c22eeadb7a51602a5f5d2931bca0bd469c8687f89e6904e4eb49",
+      "last_write_utc": "2026-10-30T21:26:05.969993+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilewall_ddna_169030dc_N.uasset",
+      "bytes": 1943919,
+      "sha256": "2733943e7722fd41da97227adf62bb40dd49cad1f67f84be8e98f972e3218666",
+      "last_write_utc": "2026-10-30T21:59:40.707147+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilewall_ddna_169030dc_R.uasset",
+      "bytes": 636706,
+      "sha256": "787928259d721d8f7ffdd2d29e690c0bc8fe81013132ed7205c6a5c67f8587e0",
+      "last_write_utc": "2026-10-30T21:59:40.761324+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatilewall_diff_f284cd48_BC.uasset",
+      "bytes": 1031964,
+      "sha256": "a18e5477071500deb4dadbb27f9a231d5f5a31a1ece46b3070a87b9642b5d30f",
+      "last_write_utc": "2026-10-30T21:59:40.641742+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_gold_ddna_22b2853f_N.uasset",
+      "bytes": 1357345,
+      "sha256": "d07ee64b67b3624e3fb56321b4ffe53a30180faebd99c65682c5d2b66ae2b11c",
+      "last_write_utc": "2026-10-30T21:59:40.114589+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_gold_ddna_22b2853f_R.uasset",
+      "bytes": 526964,
+      "sha256": "368e54d46ed5d6838192863e6a1b792fb8a61cf738fcd722c7543a3c8a354efc",
+      "last_write_utc": "2026-10-30T21:59:40.172262+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_gold_diff_bd9ac2e0_BC.uasset",
+      "bytes": 430209,
+      "sha256": "4533460198cd0aac8526bff9fbcf61268b8a0d6517f8cb071583aaa192b1720d",
+      "last_write_utc": "2026-10-30T21:59:40.057260+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_gold_spec_090e48ff_Spec.uasset",
+      "bytes": 438135,
+      "sha256": "d4368b72d42fb736add2059a32b6d61473ee81a865f7c7e11a8d10156fc45402",
+      "last_write_utc": "2026-10-30T21:26:37.349081+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_turquoise_ddna_05bc928c_N.uasset",
+      "bytes": 1439539,
+      "sha256": "909e60c4fa7fd8d853405161e8f0118a39acf2cd38e1dc3f0f08293d2d38d639",
+      "last_write_utc": "2026-10-30T21:59:40.398910+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_turquoise_ddna_05bc928c_R.uasset",
+      "bytes": 506876,
+      "sha256": "ecbf0fffb3a4bf1d9cbac233f9f1c0dc3b928ff4cc768e9aad814e7d5848c520",
+      "last_write_utc": "2026-10-30T21:59:40.455466+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_turquoise_diff_c5e26a7e_BC.uasset",
+      "bytes": 958574,
+      "sha256": "9a15a8a2a4a79f0fc2179e8b102ee1ac7163a1c5c46f8e40c13ba3bed65576b9",
+      "last_write_utc": "2026-10-30T21:59:40.337176+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrim_turquoise_em_bffda2e7_E.uasset",
+      "bytes": 603595,
+      "sha256": "0cdde3a81e938766b0e21d63a10a21c1433bda089e0d62a521d33f3bf8005fd7",
+      "last_write_utc": "2026-10-30T21:59:40.508547+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_alphablack_diff_ae9315c4_A.uasset",
+      "bytes": 13344,
+      "sha256": "5645d26124f92acb08b35313492f188bc8c204de80439fd73feb07da79ddf678",
+      "last_write_utc": "2026-10-30T21:59:38.953325+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_alphablack_diff_ae9315c4_BC.uasset",
+      "bytes": 930714,
+      "sha256": "521b058c72b3d0e45a1dbce61b89aee83bacafb1164b6f42677c8b6bd70b2b37",
+      "last_write_utc": "2026-10-30T21:59:38.903853+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_ddna_1c6fe598_N.uasset",
+      "bytes": 1970637,
+      "sha256": "396401b22ea6107febe709e6e41a605f215b70ee2ea4d7a13ad81d62e11a47ef",
+      "last_write_utc": "2026-10-30T21:59:39.001248+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_ddna_1c6fe598_R.uasset",
+      "bytes": 652301,
+      "sha256": "2012b96aa2f5882c1db74b6ef81ff4244f9151b71808da57121aae71bcaf6ce3",
+      "last_write_utc": "2026-10-30T21:59:39.044937+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_diff_27589585_A.uasset",
+      "bytes": 470440,
+      "sha256": "e4c5a40d433772f3ca8525e147b6a7526457c754361fcdbf291654e26fb50e1b",
+      "last_write_utc": "2026-10-30T21:26:09.084353+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_diff_27589585_BC.uasset",
+      "bytes": 1491361,
+      "sha256": "b6b3c84fe1439d86ac0b3e42389ed6138bec7376d8f1811218adab9c78e3ed4c",
+      "last_write_utc": "2026-10-30T21:26:08.971605+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_grass_diff_8f8aa3bf_A.uasset",
+      "bytes": 470673,
+      "sha256": "15ffb821e6bac438c8eb5d17a373da221d849199b18593f0dd9984f3a2b12b26",
+      "last_write_utc": "2026-10-30T21:26:08.662868+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_grass_diff_8f8aa3bf_BC.uasset",
+      "bytes": 1536324,
+      "sha256": "f0027d8e1377c60cd15b60719a4b3a862c46fb57f62db6a33e155f04e110a3ea",
+      "last_write_utc": "2026-10-30T21:26:08.558043+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_paint_ddna_fb5f497b_N.uasset",
+      "bytes": 1601582,
+      "sha256": "e436fce49039786a269ec351ec0c35531a7e87373f6499ab46c26502b37b3dcf",
+      "last_write_utc": "2026-10-30T21:26:09.188884+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrima_paint_ddna_fb5f497b_R.uasset",
+      "bytes": 615416,
+      "sha256": "1f2c0d38918ccce6805085b0f73107d51769194c354a0131ceda9eaa2532ad30",
+      "last_write_utc": "2026-10-30T21:26:09.282915+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrimb_ddna_2c6d6c6a_N.uasset",
+      "bytes": 1252207,
+      "sha256": "82b2865254415c0d5e727278e20281aea1e0f05cdea7f977428792d443e0cb46",
+      "last_write_utc": "2026-10-30T21:26:11.254584+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrimb_ddna_2c6d6c6a_R.uasset",
+      "bytes": 570851,
+      "sha256": "eed9b9f4e04f656fa9fef0b599a93ec1ceec23552c70bd3934f31a7958820703",
+      "last_write_utc": "2026-10-30T21:26:11.348030+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_arenatrimb_diff_d9de8667_BC.uasset",
+      "bytes": 953328,
+      "sha256": "f49874c71ebc1b7d535edf0ea05885cf7fd2706fe43c083e106ad2dc1a481a88",
+      "last_write_utc": "2026-10-30T21:26:11.150984+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_cloud9logo_ddna_108de616_N.uasset",
+      "bytes": 609734,
+      "sha256": "50d514021e6a291d50343eab3ec7c1e4a641de4ce3300f1173b29cef40bca2f2",
+      "last_write_utc": "2026-10-30T19:52:09.368120+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_cloud9logo_ddna_108de616_R.uasset",
+      "bytes": 252341,
+      "sha256": "6645ef72a96a3226e1204e0aa8eb2ac9c35ab80d9ebd4404f23df75918c0e29f",
+      "last_write_utc": "2026-10-30T19:52:09.699496+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_cloud9logo_diff_2d306cb1_A.uasset",
+      "bytes": 34854,
+      "sha256": "0b6b60b6c07a5015f175dba76c79e59ed3d1120105bd2685fb63c8909d7145b6",
+      "last_write_utc": "2026-10-30T19:52:09.117677+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_cloud9logo_diff_2d306cb1_BC.uasset",
+      "bytes": 4607511,
+      "sha256": "1fb39bc943c6bb4a95d1f72a3bc8ad7abdf347fec787ca06dd9b29c3f34f826e",
+      "last_write_utc": "2026-10-30T19:52:08.947096+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_echofoxlogo_ddna_cc107cfa_N.uasset",
+      "bytes": 1814012,
+      "sha256": "87fbe55ebce13cab547957f6fc583e8adedc65b6fed1925c7588b88877c129fe",
+      "last_write_utc": "2026-10-30T19:52:10.908629+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_echofoxlogo_ddna_cc107cfa_R.uasset",
+      "bytes": 423652,
+      "sha256": "b7e9f84b2c1e23d3da0e192c48b7628e03557e3cbc5bd58b8a501bdf7fbc9aac",
+      "last_write_utc": "2026-10-30T19:52:11.285311+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_echofoxlogo_diff_822876ac_A.uasset",
+      "bytes": 57896,
+      "sha256": "067785a0cbb2402c7705927919dc111d9f878227f378608f604ca36f61e8a34d",
+      "last_write_utc": "2026-10-30T19:52:10.347893+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_echofoxlogo_diff_822876ac_BC.uasset",
+      "bytes": 4414907,
+      "sha256": "27726db40a3ba67c6915ec9d6182bf33c3efc52f98b1c3fad95f479b51265e57",
+      "last_write_utc": "2026-10-30T19:52:10.155184+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_logo_blend_ca98405b_Mask.uasset",
+      "bytes": 281508,
+      "sha256": "9c45a90e22e69791c90dcdf7f0f54df0d7df289c1acd1bf05afbff5fbc554ff4",
+      "last_write_utc": "2026-10-30T21:59:37.332040+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_logo_ddna_1cec9d5e_N.uasset",
+      "bytes": 1219622,
+      "sha256": "ac3fc72c6675faac947c9fae2cf9e2514ac4dbba775c2bb50e149bbad29b2bc1",
+      "last_write_utc": "2026-10-30T21:59:37.241694+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_logo_ddna_1cec9d5e_R.uasset",
+      "bytes": 496173,
+      "sha256": "d5d8309a07cc3c40ba8b3cba6aa21c0d1452a4e35c95c2f21c50ec1a12a900e8",
+      "last_write_utc": "2026-10-30T21:59:37.288335+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_logo_diff_39698487_A.uasset",
+      "bytes": 57414,
+      "sha256": "8465e957822f01c8fd1495a7135cbee8033ee9187b4d794e78e1c6e34d3f074b",
+      "last_write_utc": "2026-10-30T21:59:37.187480+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_logo_diff_39698487_BC.uasset",
+      "bytes": 1201807,
+      "sha256": "a830f20cac80a9b70872449680048ec7faca09040de296686daf7e9a5c3cad3c",
+      "last_write_utc": "2026-10-30T21:59:37.147949+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_nrglogo_ddna_543f6870_N.uasset",
+      "bytes": 569100,
+      "sha256": "73042c484912cd364368f2275fd9cc883a95d4ab0c9e43f0f7ec0bda82e3d555",
+      "last_write_utc": "2026-10-30T19:52:12.969153+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_nrglogo_ddna_543f6870_R.uasset",
+      "bytes": 238522,
+      "sha256": "0e312090cfab67d12208b5af8bb5d744877570aabea969e2ff6887c25e8fed2c",
+      "last_write_utc": "2026-10-30T19:52:13.295181+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_nrglogo_diff_4597f10f_A.uasset",
+      "bytes": 30031,
+      "sha256": "1316b883c583c40bff3f0cc43215e34ebe994cf6c972007a962803b0cf6e3b09",
+      "last_write_utc": "2026-10-30T19:52:12.336202+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_nrglogo_diff_4597f10f_BC.uasset",
+      "bytes": 4589634,
+      "sha256": "89ad9ba9d4f37de5caf085dac4d4dd7bedee4cc4325fd1b9e574086fe5846602",
+      "last_write_utc": "2026-10-30T19:52:12.071958+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_ucilogo_ddna_b90fdc25_N.uasset",
+      "bytes": 542646,
+      "sha256": "7d31533476086d7b0c031dd2ccca646115a6e8062b93c37407b7afb1b84ce40c",
+      "last_write_utc": "2026-10-30T19:52:14.616591+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_ucilogo_ddna_b90fdc25_R.uasset",
+      "bytes": 291035,
+      "sha256": "205afee621f27b5d3b6dde4cfaa06a888f224e5113e25b2f87e1ce99091162f9",
+      "last_write_utc": "2026-10-30T19:52:14.879655+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_ucilogo_diff_ee89dbb1_A.uasset",
+      "bytes": 27016,
+      "sha256": "5bf11beabe413a984f4f02dd67ed1b841bb425060c17168504ba3332b5e9439f",
+      "last_write_utc": "2026-10-30T19:52:13.993298+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_breakaway_ucilogo_diff_ee89dbb1_BC.uasset",
+      "bytes": 1087553,
+      "sha256": "4e2a11f4c5c6d24a138431589626c318fbc3f9b91eb1d68757071872ecbb949f",
+      "last_write_utc": "2026-10-30T19:52:13.783906+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_large_ddna_17d2d57e_N.uasset",
+      "bytes": 1896702,
+      "sha256": "08973aa96db7bfd899dbdb310540a4c94efe8a9f04c639657c8fa004bf3e8ded",
+      "last_write_utc": "2026-10-30T21:26:33.557969+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_large_ddna_17d2d57e_R.uasset",
+      "bytes": 265162,
+      "sha256": "fc7c6eff2e252908bb4777a3bf359933a295410165192dc91e43c1ac08e48d98",
+      "last_write_utc": "2026-10-30T21:26:33.650538+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_large_diff_4495acd0_BC.uasset",
+      "bytes": 1133256,
+      "sha256": "7533c4d710303a2276387d225d7f3a8c59d404592768c4c915e4ac6c39fa2b5f",
+      "last_write_utc": "2026-10-30T21:26:33.454718+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_a_ddna_b141f46a_N.uasset",
+      "bytes": 1771625,
+      "sha256": "11d605168d8a93488402f70be7ba6580f2c724f40a9f4066e2be0bfe5e610de5",
+      "last_write_utc": "2026-10-30T21:26:33.989640+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_a_ddna_b141f46a_R.uasset",
+      "bytes": 662814,
+      "sha256": "8ef338b699be2867c977d257f94bb4648d374de5d4edf88273e71b762a01872a",
+      "last_write_utc": "2026-10-30T21:26:34.084309+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_a_diff_0b591ed1_BC.uasset",
+      "bytes": 1118759,
+      "sha256": "e72f6c7c3ae5db7a6d5cafe83fff2ee77da73e321c0a57008b61b724f5027cf1",
+      "last_write_utc": "2026-10-30T21:26:33.886643+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_b_ddna_d0cd9fdc_N.uasset",
+      "bytes": 1845863,
+      "sha256": "fb0adc4dd1f3ef3c084135fdbe5e9975febec2408abd1cb9769fd0124fe84ad6",
+      "last_write_utc": "2026-10-30T21:26:34.440408+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_b_ddna_d0cd9fdc_R.uasset",
+      "bytes": 658948,
+      "sha256": "e1dfda538cf10c5afee9fa2aff3e10036b37632081b82a6da7e8a931c34bea51",
+      "last_write_utc": "2026-10-30T21:26:34.534114+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_b_diff_041df588_BC.uasset",
+      "bytes": 1109244,
+      "sha256": "2dd41adcb0e41906e842efe9582f3796af8064ff23e186f0154a97f62fb7dec9",
+      "last_write_utc": "2026-10-30T21:26:34.337809+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_c_ddna_e6ab11de_N.uasset",
+      "bytes": 1835870,
+      "sha256": "e3c0770a79df7d26bafa513bbab04229cf29ff8142812045d006eaadc2383026",
+      "last_write_utc": "2026-10-30T21:26:34.906405+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_c_ddna_e6ab11de_R.uasset",
+      "bytes": 673377,
+      "sha256": "a0d668ae801d529eba938f2cd02423ed7cc8249c5e2107144ae8d0a445be17f8",
+      "last_write_utc": "2026-10-30T21:26:34.999182+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_island_small_c_diff_370397ef_BC.uasset",
+      "bytes": 1116205,
+      "sha256": "1a60a0d259e7b31211a512e9a227ddec9ee84490ffc374a6b20e4488bb6e0ef4",
+      "last_write_utc": "2026-10-30T21:26:34.803992+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_prxy_mid_steps_blend_b66aa6d5_Mask.uasset",
+      "bytes": 79906,
+      "sha256": "455f30a05843b2f8ba21ff26862926f23374300d5cd70da388d337cd49729acd",
+      "last_write_utc": "2026-10-30T21:26:27.212418+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_prxy_mid_steps_ddna_f8e4f8cb_N.uasset",
+      "bytes": 649542,
+      "sha256": "b0ae6c27ec8b89b15f22f713bbd246c162a87cd0ef250026a8d641a4b9142cec",
+      "last_write_utc": "2026-10-30T21:26:26.901583+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_prxy_mid_steps_ddna_f8e4f8cb_R.uasset",
+      "bytes": 171121,
+      "sha256": "b16dd708b15ccee1f3fb027b063b49148aee519a82275ba8099f8ee3764ef55a",
+      "last_write_utc": "2026-10-30T21:26:26.999598+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_prxy_mid_steps_spec_75a0b28b_Spec.uasset",
+      "bytes": 17571,
+      "sha256": "0d6c5905987eeb46c2e34e1db5578b252bdf6472de4f0610953628c50f73babf",
+      "last_write_utc": "2026-10-30T21:26:27.095917+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_a_ddna_13b1adaf_N.uasset",
+      "bytes": 1543176,
+      "sha256": "4468356b0a93ee6bebcf0c73d13cfa7fcf467ca82ba88fcd342cdbe0563464f9",
+      "last_write_utc": "2026-10-30T21:59:50.277188+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_a_ddna_13b1adaf_R.uasset",
+      "bytes": 662223,
+      "sha256": "d98d756a64dfa0bd8343a553e9ecca432ccf00ad627a9f42e6cb0d5cb5503944",
+      "last_write_utc": "2026-10-30T21:59:50.352614+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_a_diff_82b09865_BC.uasset",
+      "bytes": 1096361,
+      "sha256": "df9a53d7b0726d97398059bffad47658a863085de94b050299b874c751a081ca",
+      "last_write_utc": "2026-10-30T21:59:50.190883+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_a_mask_960ba47f_Mask.uasset",
+      "bytes": 111566,
+      "sha256": "40a7b0732eb223fc82c8f026ebfe777886a3420c6cbfb2f4d3904a409b214600",
+      "last_write_utc": "2026-10-30T21:59:50.517164+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_b_ddna_76086829_N.uasset",
+      "bytes": 1989214,
+      "sha256": "8cd6b1b5cc69b1c55113e0f474232770b2141f041b68a3345bfcd3687805d66c",
+      "last_write_utc": "2026-10-30T21:59:50.829479+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_b_ddna_76086829_R.uasset",
+      "bytes": 670180,
+      "sha256": "9aa25b1785e1be1c5b798d09ed92b1d6801e204fed9d5733adfa2050ed66a2de",
+      "last_write_utc": "2026-10-30T21:59:50.901943+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_b_diff_37a510ea_BC.uasset",
+      "bytes": 1102650,
+      "sha256": "27cf0a986544af02c3aa234d89627c8bb089f24a169b7ae906a6c241bb427ba6",
+      "last_write_utc": "2026-10-30T21:59:50.742164+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_rock_b_mask_59a7703a_Mask.uasset",
+      "bytes": 199205,
+      "sha256": "a2ce3f43f048506248c33b1ae666124ea08fe86640210e01b02c0c192b8db1bd",
+      "last_write_utc": "2026-10-30T21:59:51.067621+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_temple_accents_171d1829_BC.uasset",
+      "bytes": 555710,
+      "sha256": "e2566833850d30591396df36f116b872217b01bd2d355cbe3747abe31c1cbb25",
+      "last_write_utc": "2026-10-30T21:26:39.466379+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_temple_accents_171d1829_M.uasset",
+      "bytes": 37520,
+      "sha256": "2e29592698f0abb685ef49636497364bac149c4d7d30a7d1118d8f1c4af52175",
+      "last_write_utc": "2026-10-30T21:26:39.593991+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_temple_accents_6ed17803_BC.uasset",
+      "bytes": 555710,
+      "sha256": "3f7491c3891619ce5339ca1c36db665b90b02de27d7cf7306bfeb46b4f4f9ecc",
+      "last_write_utc": "2026-10-30T21:26:37.217555+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_temple_accents_6ed17803_M.uasset",
+      "bytes": 37520,
+      "sha256": "023d3b4538c7881a094fddb31dc40801080f3f8305654f0a29534a1fc9b79720",
+      "last_write_utc": "2026-10-30T21:26:37.443950+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treeblobs_ddna_2f02bb2c_N.uasset",
+      "bytes": 626682,
+      "sha256": "b4c8bd22a72d8a54fa67d2dd0eca7ab1cc0e285bbc783c12a71aed8227a33cd2",
+      "last_write_utc": "2026-10-30T21:26:38.962665+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treeblobs_ddna_2f02bb2c_R.uasset",
+      "bytes": 122965,
+      "sha256": "f6d995e9e44f420f13d5b6bd0326c0384e2083b8a4fbb4784c8829415f63d122",
+      "last_write_utc": "2026-10-30T21:26:39.065264+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treeblobs_diff_db32745a_BC.uasset",
+      "bytes": 272851,
+      "sha256": "76ddc5454059b69a04782399aeaafb3ccafabcbf6f2136c38924dab343b6a1a7",
+      "last_write_utc": "2026-10-30T21:59:51.136171+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treeblobs_flat_ddna_0bf9e827_N.uasset",
+      "bytes": 540524,
+      "sha256": "dfee15d078988e78f80732c160646eada4893b523b2a45d3199aa2fd35bdc4cd",
+      "last_write_utc": "2026-10-30T21:26:35.349191+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treeblobs_flat_ddna_0bf9e827_R.uasset",
+      "bytes": 121396,
+      "sha256": "a95c7973762cfc09aa0c2a3f2f6d4e374d74a0e49352d0077597e0a92eefacde",
+      "last_write_utc": "2026-10-30T21:26:35.452564+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treecards_diff_ae0bee17_A.uasset",
+      "bytes": 78332,
+      "sha256": "beb12a0b2b6f3b4bdc719d031493c4d58ea376c582e6b2fe158b2db066da61fa",
+      "last_write_utc": "2026-10-30T21:26:37.947376+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_treecards_diff_ae0bee17_BC.uasset",
+      "bytes": 482075,
+      "sha256": "b5f27a42ab6a17db7796047e1cf3d64fe9f21b642e59383cdb83a317da03dbbf",
+      "last_write_utc": "2026-10-30T21:26:37.849681+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vines_cards_diff_e7fe0ef0_A.uasset",
+      "bytes": 116051,
+      "sha256": "c990e35aaff5ab35942273952ee4f2ce3a074a54f502740730f5b938db57078d",
+      "last_write_utc": "2026-10-30T21:26:42.661393+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vines_cards_diff_e7fe0ef0_BC.uasset",
+      "bytes": 502033,
+      "sha256": "f2504b366fb5512d7b9e5a85b8d2c064504766f30a5f79a36fe332e42e72b902",
+      "last_write_utc": "2026-10-30T21:26:42.564293+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud2_mat_99363de0_BC.uasset",
+      "bytes": 296679,
+      "sha256": "53345867308a851ce846432531121f2097448c75b23ae138415956d5b3a98cbf",
+      "last_write_utc": "2026-10-30T19:57:06.195896+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud2_mat_99363de0_M.uasset",
+      "bytes": 97700,
+      "sha256": "caed2bb73cab8fc5c784eb97a821fe5cbcd56417b6b2ad603239ff04baaafec5",
+      "last_write_utc": "2026-10-30T19:57:06.479133+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_c_warm_60246863_BC.uasset",
+      "bytes": 553292,
+      "sha256": "9b293bd7f5d0c470eacbe5f348ba02cb80b5a039af7851121e251149dccf630a",
+      "last_write_utc": "2026-10-30T19:57:05.130215+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_c_warm_60246863_M.uasset",
+      "bytes": 11277,
+      "sha256": "0819b1439c79a7fb885d3f1311f008438d58c5f2337e449ce67362bfddd3241f",
+      "last_write_utc": "2026-10-30T19:57:05.441700+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_diff_28595fa3_BC.uasset",
+      "bytes": 527433,
+      "sha256": "e8b3a0297a5a27e7c9f632c504adf19c29ff387732d199a28405dcc7beb3fd9b",
+      "last_write_utc": "2026-10-30T21:26:32.317107+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_dust2_diff_3209ff2d_Spec.uasset",
+      "bytes": 46050,
+      "sha256": "fe28091a5b957007e03ce4204cd183a3a33febae0201c01fd046ccdb6a029e94",
+      "last_write_utc": "2026-10-30T21:26:32.929797+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_dust_diff_363e65ee_Spec.uasset",
+      "bytes": 228452,
+      "sha256": "18ee72720a9f65e6216edd099a8bb03b4bdebbfac76d8a2bcb5732987367a666",
+      "last_write_utc": "2026-10-30T21:26:32.414443+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_mat_db1e61c5_BC.uasset",
+      "bytes": 552791,
+      "sha256": "de2db46822853fae50ebca3f4a6b7946f3018568a06cd8ad361f1cd2fa776762",
+      "last_write_utc": "2026-10-30T19:57:05.730849+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloud_mat_db1e61c5_M.uasset",
+      "bytes": 11208,
+      "sha256": "5916af54c5ce5394fd78efd13d20b995c4c538888f9352584bd77c23a2cddaef",
+      "last_write_utc": "2026-10-30T19:57:05.899533+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_el_vista_cloudsky_diff_87f4ebdf_BC.uasset",
+      "bytes": 505319,
+      "sha256": "eb2d139fe7ff160e9f1275fae4826077f2aecf754efb405f78ab4398071f6954",
+      "last_write_utc": "2026-10-30T21:26:32.833126+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_buff_spawn_blend_7c66e709_Mask.uasset",
+      "bytes": 206329,
+      "sha256": "39645eef83257d453f7cbd579aa981dd352bcf105b351dbb9dbf5de40b208dd3",
+      "last_write_utc": "2026-10-30T21:59:41.945279+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_buff_spawn_ddna_b7286ba3_N.uasset",
+      "bytes": 1036694,
+      "sha256": "9b7ec9df3ae4af07871186982d3268cbe18c479bc49076ccdc9731e6070bad3b",
+      "last_write_utc": "2026-10-30T21:59:41.712424+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_buff_spawn_ddna_b7286ba3_R.uasset",
+      "bytes": 406770,
+      "sha256": "2171f9d81cb06bd7f3e8113261bcadb90cb8abed8140b9b17c52b61cfb3620f1",
+      "last_write_utc": "2026-10-30T21:59:41.775625+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_buff_spawn_diff_2313fb19_A.uasset",
+      "bytes": 31301,
+      "sha256": "82f0e51090e0bcb3133323fc7b40500219b19e92749c0fb725a4de1e5a56ce47",
+      "last_write_utc": "2026-10-30T21:59:41.654170+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_buff_spawn_spec_828e5ca4_Spec.uasset",
+      "bytes": 419557,
+      "sha256": "898b1217a22c8d03e7f56b98e9d4dba98bfa06a40926f72d3d0d59f563a81ffd",
+      "last_write_utc": "2026-10-30T21:59:41.827247+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_b_ddn_4d95518e_N.uasset",
+      "bytes": 277393,
+      "sha256": "2bcf30a7d2388a5d76e5e414eade5cdde3e256d7f035f76c65df1caa80ca73c8",
+      "last_write_utc": "2026-10-30T19:52:20.298036+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_b_diffa_3a789bc2_A.uasset",
+      "bytes": 216882,
+      "sha256": "3ddc23c2909995f2f4ccc312330352316bc9b0e98cc14613dab518e94ee47721",
+      "last_write_utc": "2026-10-30T19:52:19.716032+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_b_diffa_3a789bc2_BC.uasset",
+      "bytes": 1458436,
+      "sha256": "c49d90891072750efc671290b55490af9bf35f58a90dcedc7a0ba1b606a524fc",
+      "last_write_utc": "2026-10-30T19:52:19.422731+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_ddn_bd0a18bf_N.uasset",
+      "bytes": 338149,
+      "sha256": "5d32a133990ba6b8c6a77bd6ab36061f467db9895eb0494cbd1372ade54627f9",
+      "last_write_utc": "2026-10-30T19:52:18.935609+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_diffa_399952f0_A.uasset",
+      "bytes": 87391,
+      "sha256": "5499526dd535353af4154efc05f1ead44eaac9d84390d687123991f10040967f",
+      "last_write_utc": "2026-10-30T19:52:18.380987+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_crack_decal_diffa_399952f0_BC.uasset",
+      "bytes": 376636,
+      "sha256": "736ab14fe505c6d8f0a23cb67f05c45914302a6fcf4a4da6145ac05d26c38ab2",
+      "last_write_utc": "2026-10-30T19:52:18.116048+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_floor_v2_mat_6f3fb11c_BC.uasset",
+      "bytes": 1003040,
+      "sha256": "0c683f150d1d0d2757590d8ae1c0835147b2a51d32099037d68431eb2e75beff",
+      "last_write_utc": "2026-10-30T21:59:47.023998+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_floor_v2_mat_6f3fb11c_M.uasset",
+      "bytes": 28142,
+      "sha256": "9f464d11c0bad6bc4e45a3e8163d1c4513e7da6c548d7edc8f354bbfa25f35c3",
+      "last_write_utc": "2026-10-30T21:59:47.617323+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_slab_ddna_09e1c615_N.uasset",
+      "bytes": 867665,
+      "sha256": "c3c1976446c0ce42b571c04bf4e8ee4df0f8c07f06f91833ecab1a27a9d5b1fa",
+      "last_write_utc": "2026-10-30T21:59:47.188659+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_slab_ddna_09e1c615_R.uasset",
+      "bytes": 452898,
+      "sha256": "3ade02eb3aeaf842644319ffec59a30e124645f8a8f94463ea13932fea875574",
+      "last_write_utc": "2026-10-30T21:59:47.272221+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_slab_diff_83800129_A.uasset",
+      "bytes": 28933,
+      "sha256": "65e999499ff446d51fa46a8ce80013d14f2ac6ddbeb84666f2f8c5dbcd4113dc",
+      "last_write_utc": "2026-10-30T21:59:47.100226+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_slab_height_ee1982ee_Mask.uasset",
+      "bytes": 39823,
+      "sha256": "ce9403eb527d09df6dc5c3ef48d8ab2a8a0881112be8fc21133d3990304de4b1",
+      "last_write_utc": "2026-10-30T21:59:47.432294+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_slab_spec_89d9173b_Spec.uasset",
+      "bytes": 18478,
+      "sha256": "11aed8e6b57f1602a76077df81e9ef69f235b0f4288a784443146b36cf73ec2c",
+      "last_write_utc": "2026-10-30T21:59:47.349784+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_v2_ddna_2e87fe07_N.uasset",
+      "bytes": 680921,
+      "sha256": "c34a4c68178b25ef8f8347bc6ff1d52e159d31d98a942e15a6dab063303e1a12",
+      "last_write_utc": "2026-10-30T21:26:16.584428+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_v2_ddna_2e87fe07_R.uasset",
+      "bytes": 405444,
+      "sha256": "adf50488d841c3b2510aa90570bb1821216f6f90ebcd8f9d5e4ac1acd1da0ced",
+      "last_write_utc": "2026-10-30T21:26:16.682768+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_v2_diff_7610dc8d_A.uasset",
+      "bytes": 13275,
+      "sha256": "73997d5579a8d54f78b7d8a11fd27e477623605f601074df3456b4847031d727",
+      "last_write_utc": "2026-10-30T21:26:16.478833+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_v2_diff_7610dc8d_BC.uasset",
+      "bytes": 1056976,
+      "sha256": "6c8797e8cfa99dc1d9dad73cd4af7512df31063b66d37671ebd94026a6c576e6",
+      "last_write_utc": "2026-10-30T21:26:16.372762+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_start_v2_height_f93a0a2d_Mask.uasset",
+      "bytes": 40066,
+      "sha256": "5d2d998543fa86d7b061ad4917c490d4590b03a1f093a603d5ec6483b9f9dc90",
+      "last_write_utc": "2026-10-30T21:26:16.777277+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_trim_start_v2_ddna_44646429_N.uasset",
+      "bytes": 512183,
+      "sha256": "7bd2b5937bd3569f113edc6dcb56ef3b172c91822626fa0191da1c1f1d34d94c",
+      "last_write_utc": "2026-10-30T21:26:18.519964+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_trim_start_v2_ddna_44646429_R.uasset",
+      "bytes": 440999,
+      "sha256": "66635be11160525c7e86154f1b3d67323267ec37b5e3b451c738022a77c413ea",
+      "last_write_utc": "2026-10-30T21:26:18.617173+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_trim_start_v2_diff_eac05800_A.uasset",
+      "bytes": 22819,
+      "sha256": "5fa1586802fd130497834ee0244fd3dac14ef03ee85f22b0557a7b1ace6e5a01",
+      "last_write_utc": "2026-10-30T21:26:18.410155+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_flr_trim_start_v2_diff_eac05800_BC.uasset",
+      "bytes": 893446,
+      "sha256": "26fcb5860eaa39753c4bb20c4d66d2c84d6cecc81a60fcbe1ec439035ef47c7b",
+      "last_write_utc": "2026-10-30T21:26:18.302847+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_01_blend_11102003_Mask.uasset",
+      "bytes": 600090,
+      "sha256": "05d91dc38d49d7971b6a5910e1f93a550af682797ed721277e000bad7ec41825",
+      "last_write_utc": "2026-10-30T21:59:44.205848+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_01_ddna_74822280_N.uasset",
+      "bytes": 3520472,
+      "sha256": "9d4791e35c2f1c7ee8c986ba0bf3edc9594f84a80e8227f283a2db878217c5e8",
+      "last_write_utc": "2026-10-30T21:59:44.038380+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_01_ddna_74822280_R.uasset",
+      "bytes": 1610358,
+      "sha256": "f3c2d0d796e7fb25d4d6a73bfd8157b238d72eb7c1780f27805030734da56f1b",
+      "last_write_utc": "2026-10-30T21:59:44.128582+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_01_diff_48854775_A.uasset",
+      "bytes": 36070,
+      "sha256": "a862734cb1c358464e8783313244691aca52ea5e15467b1527b4537e793b6efd",
+      "last_write_utc": "2026-10-30T21:59:44.298935+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_01_diff_48854775_BC.uasset",
+      "bytes": 1166579,
+      "sha256": "8b8a2517f8487589a64072bf889829fd0ef0286d319753a01448cf40b9db914a",
+      "last_write_utc": "2026-10-30T21:59:43.860510+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_02_blend_43ab7792_Mask.uasset",
+      "bytes": 195754,
+      "sha256": "9fd742aedc98d38c810e3d6f432515eb3ff4e308afc36a6acc8d319f0ebd4dda",
+      "last_write_utc": "2026-10-30T21:59:45.934438+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_02_ddna_06dceb05_N.uasset",
+      "bytes": 986256,
+      "sha256": "24bcc630eb0c68aa223f0b18dfa7daa5cfcfa8a7dcef0f3ec34cf78f1143d41c",
+      "last_write_utc": "2026-10-30T21:59:45.775081+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_02_ddna_06dceb05_R.uasset",
+      "bytes": 112532,
+      "sha256": "3883da1c04e3f1dccc5d848c20b5aa3eb8c8997c363fc2262b4fef90209906e7",
+      "last_write_utc": "2026-10-30T21:59:45.850082+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_02_diff_c7a62a03_A.uasset",
+      "bytes": 15907,
+      "sha256": "09b21ca30a99b42c1672fccc9db21ac89a8a9a599761b2ab256808c484a6f9a5",
+      "last_write_utc": "2026-10-30T21:59:46.033675+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mainfloor_02_diff_c7a62a03_BC.uasset",
+      "bytes": 1035045,
+      "sha256": "9936f0096a0eaf5620b163aad920d4d3794778b71750ffe327561b57d1b3c619",
+      "last_write_utc": "2026-10-30T21:59:45.610013+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_buff_temple_a_ddna_15b2cd18_N.uasset",
+      "bytes": 913787,
+      "sha256": "ee6485f04e6ba059646c98dc4fbe38ef3229b74816e6e388bbfba6b9f7ffdf05",
+      "last_write_utc": "2026-10-30T21:26:23.553846+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_buff_temple_a_ddna_15b2cd18_R.uasset",
+      "bytes": 249164,
+      "sha256": "ee7dafc8a324eb60866f35c8ec6b0f7505162cccce9dda05d42f5b3a51d1465f",
+      "last_write_utc": "2026-10-30T21:26:23.650521+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_buff_temple_a_spec_8be0afff_Spec.uasset",
+      "bytes": 14468,
+      "sha256": "6180fe185c08ca0881667f9ad0330fbbb117dc4aa1f0a586b336e3401966b7c9",
+      "last_write_utc": "2026-10-30T21:26:23.748114+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_buff_temple_mat_042c85aa_BC.uasset",
+      "bytes": 860435,
+      "sha256": "fe3759052982e15077179e56fad5498dd5eb96480d4cdfcee3d41f076744ffab",
+      "last_write_utc": "2026-10-30T21:26:23.453923+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_buff_temple_mat_042c85aa_M.uasset",
+      "bytes": 16310,
+      "sha256": "0dc39ee4b72384a950d2cce4d20d9302a524c943ebed13292c8ebe8a843c828c",
+      "last_write_utc": "2026-10-30T21:26:23.846784+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_circle_top_ramp_blend_64ad7170_Mask.uasset",
+      "bytes": 139951,
+      "sha256": "edd9db8efc58cb3aded86c4968b0bb07c01257e3168ddbef60e11d4f07a72c96",
+      "last_write_utc": "2026-10-30T21:26:22.130027+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_circle_top_ramp_ddna_044ca5dd_N.uasset",
+      "bytes": 690813,
+      "sha256": "fc638cde574f509e5e7009f7d5f42581144ae73c3ce40071c20c03bdd5d94fb1",
+      "last_write_utc": "2026-10-30T21:26:21.934839+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_circle_top_ramp_ddna_044ca5dd_R.uasset",
+      "bytes": 137359,
+      "sha256": "4e8461e8d31a88f6a37f53cb258545ed3d78f23e6f5fed6ad64ffdac7ff85090",
+      "last_write_utc": "2026-10-30T21:26:22.027539+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_circle_top_ramp_diff_d4a228f7_A.uasset",
+      "bytes": 51751,
+      "sha256": "5ba5e5aec151e67af5e157909fefaad4000cff44e76729b8b37bcb168dd0b96f",
+      "last_write_utc": "2026-10-30T21:26:21.827339+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_mid_circle_top_ramp_diff_d4a228f7_BC.uasset",
+      "bytes": 2695690,
+      "sha256": "3e4555fdc6b7f5a85a001ec88808e269831121434c907460d9059ef64c02ccbb",
+      "last_write_utc": "2026-10-30T21:26:21.736049+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_portal_glow_base_diff_7e7d282a_A.uasset",
+      "bytes": 498918,
+      "sha256": "5a883c790a4589445153da3fb8c8e13e9cbce4b2eac1b633d5a3940a96185ec0",
+      "last_write_utc": "2026-10-30T21:59:42.391916+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_portal_glow_base_diff_7e7d282a_BC.uasset",
+      "bytes": 580125,
+      "sha256": "788bbae1604134a6ddaa93a5af46b8e2efeb68adb59a264201e0b9017443cae6",
+      "last_write_utc": "2026-10-30T21:59:42.310075+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_portal_glow_base_diff_7e7d282a_E.uasset",
+      "bytes": 14848,
+      "sha256": "b1f3fbdc2db00168b36a45dcf69f0bcb1cd11af1b56f7957e0d020543ac90726",
+      "last_write_utc": "2026-10-30T21:59:42.469265+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_ramp_01_blend_ed871cc9_Mask.uasset",
+      "bytes": 157946,
+      "sha256": "d76cc95d05e8cdc35c9845b44325cee488b628becc449ab22f2919cf4397aefe",
+      "last_write_utc": "2026-10-30T21:26:16.113070+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_ramp_01_ddna_c4c4ab00_N.uasset",
+      "bytes": 912402,
+      "sha256": "9cadb12294fbc9f74511837adaf0e4ab024b156a044ed66674650722bda0280b",
+      "last_write_utc": "2026-10-30T21:26:15.920280+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_ramp_01_ddna_c4c4ab00_R.uasset",
+      "bytes": 47720,
+      "sha256": "b093cef51ebee883e696d5b74b7f5c3b96166fb0658b5acbbcb10068a3f3d97d",
+      "last_write_utc": "2026-10-30T21:26:16.009609+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_ramp_01_diff_98b48dfb_BC.uasset",
+      "bytes": 712717,
+      "sha256": "a35fe3bbafda3f496484474db24ba2d720f21648ae22dc2ed1a22c32555ee6a1",
+      "last_write_utc": "2026-10-30T21:26:15.819826+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_01_blend_1d1670c1_Mask.uasset",
+      "bytes": 210324,
+      "sha256": "8fbf53b4c70f0299d2eff5ec6249312ba0cd8f9b41afa26ae474058106fbdc71",
+      "last_write_utc": "2026-10-30T21:59:45.252227+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_01_ddna_a4193b47_N.uasset",
+      "bytes": 989643,
+      "sha256": "3f1dff1d4eb28c1b59417e833c1a7ce593d566a62b6d203291bfe8978b85f951",
+      "last_write_utc": "2026-10-30T21:59:45.008244+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_01_ddna_a4193b47_R.uasset",
+      "bytes": 382406,
+      "sha256": "109cf0b216de8be600709e1c5d982d209a0647a1574dbd701b10045dd64ac481",
+      "last_write_utc": "2026-10-30T21:59:45.089426+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_01_diff_6c0af3a3_A.uasset",
+      "bytes": 58812,
+      "sha256": "2356b959f72d2f5d1b775a0550420f996cf3146203b4e17ae8f866570d255e56",
+      "last_write_utc": "2026-10-30T21:59:44.916821+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_01_spec_337e28e6_Spec.uasset",
+      "bytes": 58516,
+      "sha256": "3f0f89f80d4ef8d89ca50ff005f0fadc622b55e86ccd851ca99161c9a858ee08",
+      "last_write_utc": "2026-10-30T21:59:45.167088+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_02_blend_43e47dfc_Mask.uasset",
+      "bytes": 194404,
+      "sha256": "40ceb762f7f9977cf30f8e92987beffed22795b98fcd2f012e75d7a2526f2386",
+      "last_write_utc": "2026-10-30T21:26:28.461230+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_02_ddna_148c9bac_N.uasset",
+      "bytes": 365085,
+      "sha256": "e5fb65e68b597f0567df5f95c7c4c455ebfc909d2f9b0654246da3df08ebccc7",
+      "last_write_utc": "2026-10-30T21:26:28.164451+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_02_ddna_148c9bac_R.uasset",
+      "bytes": 135220,
+      "sha256": "c43e063999187e4e6bc383625b406d220e303e1c969bef2b56e02482a4997c86",
+      "last_write_utc": "2026-10-30T21:26:28.263938+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_02_diff_27fd41fe_A.uasset",
+      "bytes": 20109,
+      "sha256": "ed82b7a4a47b2fa1fbb0865db01f7401ca6cc0f1be793f89440e689dc3a543da",
+      "last_write_utc": "2026-10-30T21:26:28.061707+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_relic_deco_02_spec_2cd12bdc_Spec.uasset",
+      "bytes": 52041,
+      "sha256": "a51921435ec5edcba8db80de787a6462285b50158d0d32151476c0e5518c28e4",
+      "last_write_utc": "2026-10-30T21:26:28.361242+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_body_ddna_a5498d87_N.uasset",
+      "bytes": 2215172,
+      "sha256": "db1925690a847c93d3557c7cdabcb2a4870a5df8edc74b9f66309e5ac17baaf9",
+      "last_write_utc": "2026-10-30T21:59:37.572600+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_body_ddna_a5498d87_R.uasset",
+      "bytes": 85616,
+      "sha256": "4b47d0189d151da951431801bce4e2470e71887d133cae87b6d042db7d474890",
+      "last_write_utc": "2026-10-30T21:59:37.619797+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_body_diff_2d7b3130_A.uasset",
+      "bytes": 19141,
+      "sha256": "fc7c5cd32880a20041080c0f91d96a5ada87c96c22ed59532a554febfad0edc0",
+      "last_write_utc": "2026-10-30T21:59:37.508747+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_body_spec_77927228_Spec.uasset",
+      "bytes": 21405,
+      "sha256": "b7d4e8b97d381fb410ff920a0b4669c06768118e88b8167f3e8404a7ab2f0c02",
+      "last_write_utc": "2026-10-30T21:59:37.662506+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_fornt_ddna_9a43424a_N.uasset",
+      "bytes": 1124314,
+      "sha256": "e45e3d34d9a163e2a755be8c4fc2f429042643add2a4f3cfe1738d3b40c3ddf9",
+      "last_write_utc": "2026-10-30T21:59:37.999398+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_fornt_ddna_9a43424a_R.uasset",
+      "bytes": 13690,
+      "sha256": "c78a4a5c209a20aea33fa7f4f105d0939675f6454e146d775b6fa34f9b626e60",
+      "last_write_utc": "2026-10-30T21:59:38.052447+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_fornt_diff_71694b36_A.uasset",
+      "bytes": 13390,
+      "sha256": "1d94fa91cb489f18d75a8242e933cd444d264bb82a18d642a7bcafb7a92c6cb7",
+      "last_write_utc": "2026-10-30T21:59:37.942784+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_fornt_diff_71694b36_BC.uasset",
+      "bytes": 772947,
+      "sha256": "307a83d6549ca71eced442fc81e7385d7312c4b79179fb94212d988c74c64e07",
+      "last_write_utc": "2026-10-30T21:59:37.871685+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_head_ddna_03ac92ec_N.uasset",
+      "bytes": 1420882,
+      "sha256": "12aa904e83a29468a2c1b244f70533de40df89bc5b5a9c1885093905f71192a5",
+      "last_write_utc": "2026-10-30T21:59:38.287558+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_head_ddna_03ac92ec_R.uasset",
+      "bytes": 66311,
+      "sha256": "ad982d101477b3ab98f975f4bb8f83bc6d9486dec2377b6ad5b77ffd8a6ef33e",
+      "last_write_utc": "2026-10-30T21:59:38.339705+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_head_diff_956980bb_A.uasset",
+      "bytes": 41393,
+      "sha256": "f9ccbcc449ee4f83ecad692d086498544365b09d99f1550add1e8f743b56274d",
+      "last_write_utc": "2026-10-30T21:59:38.229861+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_head_spec_33b3ec20_Spec.uasset",
+      "bytes": 44637,
+      "sha256": "af1af9e4f54e60033e4cd24d3ce5bca5cf1eb984d65a93b75b483f89bc49c7a4",
+      "last_write_utc": "2026-10-30T21:59:38.413660+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_pillar_ddna_42e17396_N.uasset",
+      "bytes": 772841,
+      "sha256": "c190032f74a6537e2440e4c8822ae03fcfa9ec256f51745cd92c8976be9d5ec7",
+      "last_write_utc": "2026-10-30T21:59:38.748318+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_pillar_ddna_42e17396_R.uasset",
+      "bytes": 13713,
+      "sha256": "42233907a1327d710c586b4cbc325c7f9056e9ddb471ce8fbea2d4be624350c4",
+      "last_write_utc": "2026-10-30T21:59:38.790248+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_pillar_diff_21837936_A.uasset",
+      "bytes": 44584,
+      "sha256": "f7d7fb3debb7a6efce34e88294727b124b5b02d58d4ba34d1189a3ce8646b4ee",
+      "last_write_utc": "2026-10-30T21:59:38.696552+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_serpentwall_pillar_diff_21837936_BC.uasset",
+      "bytes": 914448,
+      "sha256": "71392f7faecc4f00b0fc57e6df76306d71fee39363d47f5d0a9296085fbc9c9f",
+      "last_write_utc": "2026-10-30T21:59:38.653733+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_snakeheadpillar_01_ddna_587f2016_N.uasset",
+      "bytes": 1602924,
+      "sha256": "ad5a8823ae48b36ce574f42eca83d4cc674b1e42706ae576e74430851da10ba3",
+      "last_write_utc": "2026-10-30T21:59:41.314329+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_snakeheadpillar_01_ddna_587f2016_R.uasset",
+      "bytes": 620931,
+      "sha256": "9a5cd1aae4dbbf610e05917be1a807b1145698fe4013aa83c7ea999cdc35dfe8",
+      "last_write_utc": "2026-10-30T21:59:41.358509+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_snakeheadpillar_01_diff_1b01f8a0_A.uasset",
+      "bytes": 32038,
+      "sha256": "8674be81aa2b54bed2ba62a5a32715d3c8a8a6e57f9f73ff7c8a0a58dc1418ea",
+      "last_write_utc": "2026-10-30T21:59:41.260105+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_snakeheadpillar_01_em_89c999b7_E.uasset",
+      "bytes": 172213,
+      "sha256": "3fd375b072e1dc37d5ab0b84f0bbb5565e8d75ce4bbf36e5405623dd311fa129",
+      "last_write_utc": "2026-10-30T21:26:06.945843+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_snakeheadpillar_01_spec_970f94f2_Spec.uasset",
+      "bytes": 47876,
+      "sha256": "03ed925cd9cf2082f4832373d8df92a6d505f019fa3289a67d400f9b2666ccd8",
+      "last_write_utc": "2026-10-30T21:59:41.398260+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_solid_gold_ddna_12275958_N.uasset",
+      "bytes": 417419,
+      "sha256": "b5e9e265e7148affc0a34835325545b869fa722e97de140fe38f6894b7be6a37",
+      "last_write_utc": "2026-10-30T21:59:43.488731+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_solid_gold_ddna_12275958_R.uasset",
+      "bytes": 483572,
+      "sha256": "71c15386685eed23909fe613f786b2348475a56c4042e6135e3e13d1d88e95b2",
+      "last_write_utc": "2026-10-30T21:59:43.571633+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_stairs_01_blend_d8e194b6_Mask.uasset",
+      "bytes": 411186,
+      "sha256": "b2b7f98624072d9591e6549df0143658cc136d44b7efcc348c55af2cdd4726e5",
+      "last_write_utc": "2026-10-30T21:59:46.703443+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_stairs_01_ddna_3225eb5a_N.uasset",
+      "bytes": 1122212,
+      "sha256": "9247c758f59b8caea7d2accdf1cbaf6908ec705450958f99e21b2a1871340c25",
+      "last_write_utc": "2026-10-30T21:59:39.625996+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_stairs_01_ddna_3225eb5a_R.uasset",
+      "bytes": 801833,
+      "sha256": "380003d9d3c42d3827b9eb1b655183e6f099b86e245aa813b188f7ac259c5940",
+      "last_write_utc": "2026-10-30T21:59:39.679928+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_stairs_01_diff_e0dbfcbf_BC.uasset",
+      "bytes": 1123420,
+      "sha256": "8ec4cd8c22268bd32f1c41762492aa050b1e797bc04441df810c0520b61bcd8f",
+      "last_write_utc": "2026-10-30T21:59:39.568367+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_03_ddna_e86c4e21_N.uasset",
+      "bytes": 1106273,
+      "sha256": "cb3def24ce13a12fa5f883aafa218a8bbacf85f0882f4532655692030d67d850",
+      "last_write_utc": "2026-10-30T21:26:17.925697+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_03_ddna_e86c4e21_R.uasset",
+      "bytes": 722804,
+      "sha256": "48875ba4fa423bc9211a2d89a5dcceea66b3a3269db63dbdfc2713f1f4b160c0",
+      "last_write_utc": "2026-10-30T21:26:18.032577+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_03_diff_aa4fd216_A.uasset",
+      "bytes": 14570,
+      "sha256": "b712fbacdfbad620656e94d38db997885103d5bb418ff1257ef9e65ecd52751a",
+      "last_write_utc": "2026-10-30T21:26:17.812890+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_03_diff_aa4fd216_BC.uasset",
+      "bytes": 919615,
+      "sha256": "6b01e6051dac2b3ba27f6d43319ce38fbca7ce9e6cec9168e3493276b28c1d57",
+      "last_write_utc": "2026-10-30T21:26:17.705995+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_04_ddna_a7e5ae2f_N.uasset",
+      "bytes": 899903,
+      "sha256": "69ccdd660e5612d3caefab69e80cb1600f4b0778c02f2587819f424ffa69862e",
+      "last_write_utc": "2026-10-30T21:59:42.923899+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_04_ddna_a7e5ae2f_R.uasset",
+      "bytes": 404945,
+      "sha256": "ba7e67b4f57e3db02d65cd48cdaadeec9af076aba6bafc1c9f46e51db73af5ba",
+      "last_write_utc": "2026-10-30T21:59:43.008680+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_04_diff_0f68f015_A.uasset",
+      "bytes": 14714,
+      "sha256": "d4f47d09288d25b56b458f0b6735c5866c0991a1f86f52b66e0a2434355af645",
+      "last_write_utc": "2026-10-30T21:59:42.848109+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_04_spec_72b0bb0e_Spec.uasset",
+      "bytes": 14730,
+      "sha256": "83096e08e3c84d650b139c52c314ee08fb203a05dda2908bb729da7d8559eee5",
+      "last_write_utc": "2026-10-30T21:59:43.083955+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_mat_0a8a3d66_BC.uasset",
+      "bytes": 156283,
+      "sha256": "6e2451732f727b8ec794c806d0d043ab00ccc0c0259569b9701220d6f0caa044",
+      "last_write_utc": "2026-10-30T21:59:42.772231+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_eldorado_trim_mat_0a8a3d66_M.uasset",
+      "bytes": 16480,
+      "sha256": "b6ded62b27372cdf5ce7364db281bc91097b3ef89f6802c85f6e9efaa7dc8b30",
+      "last_write_utc": "2026-10-30T21:59:43.249604+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_geo_statue_serpent_a_ddna_424c6421_N.uasset",
+      "bytes": 1014520,
+      "sha256": "87361cc210d78ea81c987701e83dd5b7a229edc7f7d4197d747c458f99255751",
+      "last_write_utc": "2026-10-30T21:59:39.257795+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_geo_statue_serpent_a_ddna_424c6421_R.uasset",
+      "bytes": 551249,
+      "sha256": "ca12792d942678d58410b19817e0a346631fb19b59d0b50bc50182a8c3a7c1c5",
+      "last_write_utc": "2026-10-30T21:59:39.307461+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_geo_statue_serpent_a_diff_8131cbe9_A.uasset",
+      "bytes": 439613,
+      "sha256": "e0151e7523e5c8aab516333237e6f63ee848f0eb1730a836632342449e1bd896",
+      "last_write_utc": "2026-10-30T21:59:39.203672+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_geo_statue_serpent_a_spec_b9002059_Spec.uasset",
+      "bytes": 51278,
+      "sha256": "0a7f49565dfff917c4e1a09b3d31735c86cf3fa7c66d056a57b0c0fc478522f7",
+      "last_write_utc": "2026-10-30T21:59:39.357979+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_rel_temple_wall_stonetile_02_blend_f7608167_Mask.uasset",
+      "bytes": 583966,
+      "sha256": "3b0ced3f07c6c528d2d0c7f189a6cb3dc36b66edcf01d5f4cb3ec7a6a8c1f09e",
+      "last_write_utc": "2026-10-30T21:59:46.404070+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_center_deco_58438cf6_BC.uasset",
+      "bytes": 956068,
+      "sha256": "fcf43cc7023f1da4880b9b7a423d016612014174abed59c0c0da55ba7e60f44e",
+      "last_write_utc": "2026-10-30T21:26:27.553112+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_center_deco_58438cf6_M.uasset",
+      "bytes": 54753,
+      "sha256": "fc444871a683ac7f987da36972f93166dc18021f2e1848c630432a2edb275c7a",
+      "last_write_utc": "2026-10-30T21:26:27.712768+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_center_deco_f28fa3ae_BC.uasset",
+      "bytes": 956163,
+      "sha256": "45272e261f99b69c7d4a55c8b413541d4198c5b630a36b1e5c8394073752781a",
+      "last_write_utc": "2026-10-30T21:59:44.839752+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_center_deco_f28fa3ae_M.uasset",
+      "bytes": 54848,
+      "sha256": "427746163dd974c9e7f19b6b94cc3074eae17906ffd950fa1dc6b827787ca142",
+      "last_write_utc": "2026-10-30T21:59:45.433307+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_deco_mat_ae74d455_BC.uasset",
+      "bytes": 1210488,
+      "sha256": "40905e759e7c54b32c979d6c843ee9c3daaf0326d2f425d1462077c6977b5122",
+      "last_write_utc": "2026-10-30T21:26:27.969314+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_relic_deco_mat_ae74d455_M.uasset",
+      "bytes": 48886,
+      "sha256": "a4c09d4984ccdad973b9bf9f14b0d540f788f4a070517a052b477523e70976ac",
+      "last_write_utc": "2026-10-30T21:26:28.563534+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_Roughness.uasset",
+      "bytes": 11030,
+      "sha256": "b9e8f9f58e6fc79cf13f18972531b1b076d9338266db3277048a4c448cd5e6c7",
+      "last_write_utc": "2026-10-30T21:59:36.946905+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_snakeheadpillar_mat_a48dd2d4_BC.uasset",
+      "bytes": 1077512,
+      "sha256": "9449a7f468785260a47cea519c19e90cb03b5004c3c3657063c338f605d5db49",
+      "last_write_utc": "2026-10-30T21:59:41.208626+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_snakeheadpillar_mat_a48dd2d4_M.uasset",
+      "bytes": 42942,
+      "sha256": "b9c1ee38e0396b39bfbafa6eb8e028f605517552ccb303d1166da20cb58bb455",
+      "last_write_utc": "2026-10-30T21:59:41.497888+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_SpecularColor.uasset",
+      "bytes": 11099,
+      "sha256": "b3cace8396fd240b385b8d404d015f504edaea2714ff091de55fa93ac388b5f6",
+      "last_write_utc": "2026-10-30T21:59:36.985432+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_tree_temple_02_ddna_7c2674b5_N.uasset",
+      "bytes": 1707772,
+      "sha256": "f3c89f8213ab77f2ae17f9c07bf86c0b86d541cc26aaaed51413bac162fc26c6",
+      "last_write_utc": "2026-10-30T21:26:41.689264+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_tree_temple_02_ddna_7c2674b5_R.uasset",
+      "bytes": 833268,
+      "sha256": "6a0fcb443ac98c70dfa8ca50d814905ce5be61458aa2f2bcbc0e55da74962603",
+      "last_write_utc": "2026-10-30T21:26:41.783673+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_tree_temple_02_diffa_db1fd179_A.uasset",
+      "bytes": 1117297,
+      "sha256": "7889a37c47d212e92035e3018b7a84bff69be5e4388e76662b54d0329f9136a7",
+      "last_write_utc": "2026-10-30T21:26:41.590569+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_tree_temple_02_diffa_db1fd179_BC.uasset",
+      "bytes": 4490007,
+      "sha256": "eaca6badda59f64cae0cff430fb96cf15a542a1acebabed57613d078ee60d613",
+      "last_write_utc": "2026-10-30T21:26:41.491432+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_trim_mat_57ab3d0e_BC.uasset",
+      "bytes": 155984,
+      "sha256": "805364b2438d7a9e527ded080241c4b2fc67b9f3657a08c037614e421c6288cd",
+      "last_write_utc": "2026-10-30T21:59:44.468187+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_trim_mat_57ab3d0e_M.uasset",
+      "bytes": 16181,
+      "sha256": "290f6c730c226e7661b69bafd40479da406e6b0614073ff8d7ccc404a0a310a2",
+      "last_write_utc": "2026-10-30T21:59:44.667276+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_waterfall_eldorado_long_distance_middle_ma_db8c1bf0_BC.uasset",
+      "bytes": 289099,
+      "sha256": "6e9d29e2f8bb66d367173d4ca7a40efe163f8576b9b85bcbb451e6e5f6a37415",
+      "last_write_utc": "2026-10-30T21:59:52.822183+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_waterfall_eldorado_long_distance_middle_ma_db8c1bf0_M.uasset",
+      "bytes": 12809,
+      "sha256": "9b23f711fb1492c6b6895519ed9b7dba3e066b8a434a16f50afeed7ea7d7d64c",
+      "last_write_utc": "2026-10-30T21:59:52.902898+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_waterfall_eldorado_long_distance_middle_ma_dbab335a_BC.uasset",
+      "bytes": 289099,
+      "sha256": "6e1875aec8e3dfabfd7291101c5da481af225b07e6cb9ec4d2b21bc2497bd1ef",
+      "last_write_utc": "2026-10-30T21:59:52.272186+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_waterfall_eldorado_long_distance_middle_ma_dbab335a_M.uasset",
+      "bytes": 12809,
+      "sha256": "190084e308f8b1f3a332fb737c9cd9200f3eb6ca8ac69db9243234c22dd40026",
+      "last_write_utc": "2026-10-30T21:59:52.348621+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_white_8b18af91_BC.uasset",
+      "bytes": 11135,
+      "sha256": "457a8f4d373af6e0127ce46a903b1b68e535adcbbd9483e15078885219544e7f",
+      "last_write_utc": "2026-10-30T21:59:47.798718+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Textures/T_white_8b18af91_Spec.uasset",
+      "bytes": 11181,
+      "sha256": "952136fb1f3742f7395c1128f85ec6557d1ae516fad3b3d4c9ec944e22bb9657",
+      "last_write_utc": "2026-10-30T21:59:48.183381+00:00",
+      "stable_during_read": true
+    }
+  ]
+}

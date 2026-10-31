@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="proxy_mat" MtlFlags="2622592" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="mat_tile" Diffuse="1,0.082828999,0,1" Specular="0,0,0,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ElDorado_Stairs_Mat" MtlFlags="2621600" Shader="Illum" GenMask="2000040000021" StringGenMask="%ALLOW_SILHOUETTE_POM%BLENDLAYER%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_tile" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <PublicParams BlendFalloff="11.7" GlowTint="1,1,1" EmittanceMapGamma="1" BlendLayer2Tiling="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" BlendMaskTiling="1" GlowTintBlending="0" BlendFactor="3.1900001" AmbientBoost="0" BlendLayer2Specular="0.022500001" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ElDorado_Trim_Mat" MtlFlags="2621568" Shader="Illum" GenMask="2000040000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_metal_thick" Diffuse="1,1,1,1" Specular="0.98225069,0.42869052,0.070360102,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="shadowproxy_mat" MtlFlags="2621568" Shader="Illum" GenMask="2000000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0,0,0,1" Shininess="10" CloakAmount="0" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="1" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

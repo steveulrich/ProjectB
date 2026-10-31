@@ -1,0 +1,122 @@
+{
+  "generated_utc": "2026-10-30T21:17:09.331362+00:00",
+  "scope": "Diagnostic fixture correction only. No editor, geometry or collision edits. No prior result promoted to PASS. Fresh native validator run required.",
+  "prior_report_generated_utc": "2026-10-30T21:14:44.712481+00:00",
+  "prior_structural_status": "FAILED",
+  "prior_errors": [
+    {
+      "kind": "floor_sample_failed",
+      "sample": {
+        "xy_cm": [
+          25,
+          -2000
+        ],
+        "hit": true,
+        "location_cm": [
+          25.000000510771443,
+          -2000.000000141877,
+          97.11220555419888
+        ],
+        "normal": [
+          0.5108380754373397,
+          0.0043418795461586035,
+          0.8596659867445503
+        ],
+        "actor": "D_rel_ed_block_clump_d_group2_A5C77A90",
+        "expected_z_cm": 0,
+        "height_error_cm": 97.11220555419888,
+        "height_within_tolerance": false,
+        "upward_surface": true
+      }
+    },
+    {
+      "kind": "floor_sample_failed",
+      "sample": {
+        "xy_cm": [
+          25,
+          2000
+        ],
+        "hit": true,
+        "location_cm": [
+          24.999999937060466,
+          1999.9999995727517,
+          95.82409788818305
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "actor": "D_rel_ed_block_clump_d_group1_5C84F46D",
+        "expected_z_cm": 0,
+        "height_error_cm": 95.82409788818305,
+        "height_within_tolerance": false,
+        "upward_surface": true
+      }
+    }
+  ],
+  "source_backing": "Two exact rel_ed_block_clump_d instances are visible cover. Measured heights97.112cm/95.824cm are not floorZ0.",
+  "new_assertions": [
+    {
+      "xy_cm": [
+        25,
+        -2000
+      ],
+      "actor": "D_rel_ed_block_clump_d_group2_A5C77A90",
+      "expected_height_cm": 96,
+      "tolerance_cm": 5
+    },
+    {
+      "xy_cm": [
+        25,
+        2000
+      ],
+      "actor": "D_rel_ed_block_clump_d_group1_5C84F46D",
+      "expected_height_cm": 96,
+      "tolerance_cm": 5
+    }
+  ],
+  "unchanged_assertions": "Other13 floorpoints retain expectedZ0/tolerance65. All hits require upwardnormal>=.7. Centerline diagnostics retained. No actor exclusion.",
+  "validator_sha256": "46a4dfea6abb179f45d11e05f53ea3d769e1bcd903b0ff446a9ad26f5d69cfca",
+  "navigation_observation": {
+    "passed": true,
+    "paths": [
+      {
+        "route": "main_court_length",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      },
+      {
+        "route": "main_court_width",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      },
+      {
+        "route": "east_south_stairs",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      },
+      {
+        "route": "east_north_stairs",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      },
+      {
+        "route": "west_south_stairs",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      },
+      {
+        "route": "west_north_stairs",
+        "valid": true,
+        "partial": false,
+        "passed": true
+      }
+    ]
+  }
+}

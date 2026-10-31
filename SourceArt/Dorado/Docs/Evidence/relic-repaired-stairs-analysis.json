@@ -1,0 +1,280 @@
+{
+  "source": "Saved\\Logs\\dorado-reconstruction-20261030\\dorado-relic-stairs-down-03.json",
+  "sha256": "436c9ec7ce362b25fe9fe4bd2c68d7ca64709f8b9f16521dcda8ad57af4a8bbd",
+  "reported_result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+  "free_physics_samples_before_restore": 234,
+  "interval_wall_s": [
+    1.2969999999622814,
+    15.85899999999674
+  ],
+  "sampling_interval_s": {
+    "median": 0.062000000034458935,
+    "maximum": 0.06299999996554106
+  },
+  "first_position_cm": [
+    1255.0418950373094,
+    40.67161024723739,
+    309.57702247308964
+  ],
+  "final_position_cm": [
+    1272.2853972890919,
+    852.0650570824663,
+    15.42908976755653
+  ],
+  "position_bounds_cm": {
+    "min": [
+      1253.9743920438082,
+      40.67161024723739,
+      15.429027357437882
+    ],
+    "max": [
+      1272.2853972890919,
+      852.0650570824663,
+      309.57702247308964
+    ]
+  },
+  "sampled_path_length_cm": 910.6871017155527,
+  "net_displacement_cm": 863.237898989612,
+  "maximum_sampled_speed_cm_s": 1095.3133889643984,
+  "final_speed_cm_s": 0.0,
+  "final_velocity_cm_s": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "stationary_tail": {
+    "first_sample_wall_s": 10.85899999999674,
+    "duration_s": 5.0,
+    "samples": 81,
+    "speed_threshold_cm_s": 1.0,
+    "position_tolerance_cm": 0.1
+  },
+  "sphere_bounds_at_final_cm": {
+    "min": [
+      1256.9508162890918,
+      836.7304760824663,
+      0.0945087675565297
+    ],
+    "max": [
+      1287.619978289092,
+      867.3996380824663,
+      30.76367076755653
+    ]
+  },
+  "velocity_sign_change_threshold_cm_s": 10,
+  "velocity_sign_changes": {
+    "x": [],
+    "y": [],
+    "z": [
+      {
+        "from_wall_s": 1.5469999999622814,
+        "to_wall_s": 1.6089999999967404,
+        "from_velocity_cm_s": -397.794921875,
+        "to_velocity_cm_s": 76.93505096435547,
+        "position_cm": [
+          1255.0567529741732,
+          279.1263158999112,
+          224.9933100008044
+        ]
+      },
+      {
+        "from_wall_s": 1.6719999999622814,
+        "to_wall_s": 1.7339999999967404,
+        "from_velocity_cm_s": 13.537875175476074,
+        "to_velocity_cm_s": -45.39841079711914,
+        "position_cm": [
+          1255.093384430646,
+          328.39688217223375,
+          226.1631339529637
+        ]
+      },
+      {
+        "from_wall_s": 1.7969999999622814,
+        "to_wall_s": 1.8589999999967404,
+        "from_velocity_cm_s": -98.43927001953125,
+        "to_velocity_cm_s": 61.94789123535156,
+        "position_cm": [
+          1255.1247956356672,
+          372.3010634984004,
+          223.24926384271816
+        ]
+      },
+      {
+        "from_wall_s": 1.8589999999967404,
+        "to_wall_s": 1.9839999999967404,
+        "from_velocity_cm_s": 61.94789123535156,
+        "to_velocity_cm_s": -54.9201545715332,
+        "position_cm": [
+          1255.149428408235,
+          405.22781346238907,
+          222.96030414242048
+        ]
+      },
+      {
+        "from_wall_s": 2.1719999999622814,
+        "to_wall_s": 2.2339999999967404,
+        "from_velocity_cm_s": -200.0161895751953,
+        "to_velocity_cm_s": 11.656436920166016,
+        "position_cm": [
+          1255.1887627688282,
+          458.93715670475285,
+          196.98329767925836
+        ]
+      },
+      {
+        "from_wall_s": 2.2339999999967404,
+        "to_wall_s": 2.2969999999622814,
+        "from_velocity_cm_s": 11.656436920166016,
+        "to_velocity_cm_s": -43.711280822753906,
+        "position_cm": [
+          1255.1956811581854,
+          469.22812941347786,
+          195.79430260662784
+        ]
+      },
+      {
+        "from_wall_s": 2.4839999999967404,
+        "to_wall_s": 2.5469999999622814,
+        "from_velocity_cm_s": -195.3183135986328,
+        "to_velocity_cm_s": 19.534088134765625,
+        "position_cm": [
+          1255.2196106091112,
+          504.80429052223695,
+          170.8576933320818
+        ]
+      },
+      {
+        "from_wall_s": 2.5469999999622814,
+        "to_wall_s": 2.6089999999967404,
+        "from_velocity_cm_s": 19.534088134765625,
+        "to_velocity_cm_s": -44.100250244140625,
+        "position_cm": [
+          1255.2248465360092,
+          512.565569324781,
+          169.7386504250293
+        ]
+      },
+      {
+        "from_wall_s": 3.1089999999967404,
+        "to_wall_s": 3.1719999999622814,
+        "from_velocity_cm_s": -120.28813171386719,
+        "to_velocity_cm_s": 29.304779052734375,
+        "position_cm": [
+          1255.2494195728257,
+          558.2357419598032,
+          139.95806292999808
+        ]
+      },
+      {
+        "from_wall_s": 3.1719999999622814,
+        "to_wall_s": 3.2339999999967404,
+        "from_velocity_cm_s": 29.304779052734375,
+        "to_velocity_cm_s": -35.665916442871094,
+        "position_cm": [
+          1255.2517008811762,
+          562.6521862545967,
+          139.43582808873256
+        ]
+      },
+      {
+        "from_wall_s": 3.5469999999622814,
+        "to_wall_s": 3.6089999999967404,
+        "from_velocity_cm_s": -86.86905670166016,
+        "to_velocity_cm_s": 15.7127103805542,
+        "position_cm": [
+          1255.2589111633808,
+          585.0455349763483,
+          128.27606631562446
+        ]
+      },
+      {
+        "from_wall_s": 3.6089999999967404,
+        "to_wall_s": 3.7969999999622814,
+        "from_velocity_cm_s": 15.7127103805542,
+        "to_velocity_cm_s": -22.0645809173584,
+        "position_cm": [
+          1255.2618881655856,
+          596.6608469249785,
+          126.89121417774496
+        ]
+      },
+      {
+        "from_wall_s": 5.296999999962281,
+        "to_wall_s": 5.35899999999674,
+        "from_velocity_cm_s": -86.24895477294922,
+        "to_velocity_cm_s": 29.981416702270508,
+        "position_cm": [
+          1255.2776287400434,
+          687.3947328597147,
+          75.58583269672883
+        ]
+      },
+      {
+        "from_wall_s": 5.421999999962281,
+        "to_wall_s": 5.671999999962281,
+        "from_velocity_cm_s": 10.745939254760742,
+        "to_velocity_cm_s": -17.57801055908203,
+        "position_cm": [
+          1255.2854723293449,
+          703.9603606518414,
+          74.46782441291514
+        ]
+      },
+      {
+        "from_wall_s": 6.296999999962281,
+        "to_wall_s": 6.35899999999674,
+        "from_velocity_cm_s": -81.44189453125,
+        "to_velocity_cm_s": 27.82897186279297,
+        "position_cm": [
+          1254.6084818939726,
+          743.6406213233523,
+          50.665543390856065
+        ]
+      },
+      {
+        "from_wall_s": 6.35899999999674,
+        "to_wall_s": 6.48399999999674,
+        "from_velocity_cm_s": 27.82897186279297,
+        "to_velocity_cm_s": -18.773584365844727,
+        "position_cm": [
+          1254.4920594048817,
+          751.1099201081213,
+          49.733756357216826
+        ]
+      },
+      {
+        "from_wall_s": 6.60899999999674,
+        "to_wall_s": 6.671999999962281,
+        "from_velocity_cm_s": -68.25728607177734,
+        "to_velocity_cm_s": 27.754117965698242,
+        "position_cm": [
+          1254.3455985515297,
+          763.5006234159985,
+          39.239170362129194
+        ]
+      },
+      {
+        "from_wall_s": 6.671999999962281,
+        "to_wall_s": 6.85899999999674,
+        "from_velocity_cm_s": 27.754117965698242,
+        "to_velocity_cm_s": -16.92678451538086,
+        "position_cm": [
+          1254.2350864944503,
+          774.8732811796208,
+          38.38682127313309
+        ]
+      }
+    ]
+  },
+  "velocity_sign_change_counts": {
+    "x": 0,
+    "y": 0,
+    "z": 18
+  },
+  "mass_kg_free_samples": [
+    10.0
+  ],
+  "ccd_all_free_samples": true,
+  "final_is_not_resting": false,
+  "sampling_limits": "Sign changes describe sampled velocities, not exact hit actor, contact normal, bounce, rolling, tunneling or impact count. Sampled polyline length underestimates motion between samples."
+}

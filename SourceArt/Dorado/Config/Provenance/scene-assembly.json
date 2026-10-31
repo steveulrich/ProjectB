@@ -1,0 +1,1457 @@
+{
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "manifest": "geometry_manifest.json",
+  "placed": 288,
+  "failed": 0,
+  "actors": [
+    {
+      "label": "D_rel_el_dorado_center_point_a_group2_4923B404",
+      "source_id": "{4923B404-AE82-49EC-8F64-9F4A7B534E9C}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group24_0200AC07",
+      "source_id": "{0200AC07-6C5C-4407-8B5F-2A252E59B133}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_buff_border_a_group7_73716C09",
+      "source_id": "{73716C09-7290-4916-8516-E207A72C32EF}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_stair_c_group8_ED6E3B0A",
+      "source_id": "{ED6E3B0A-BED2-496D-8A4C-A86F53F3EBA7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_center_cap_a_group15_58906A0B",
+      "source_id": "{58906A0B-2DF0-4B5E-92AF-86BEC1240592}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_staris_a_group5_B161360C",
+      "source_id": "{B161360C-9FB1-4122-B1FB-E1CA12F1956D}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_c_group2_2E76571D",
+      "source_id": "{2E76571D-B16C-4801-B302-7127A8496D22}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_sidewall_gold_a_group2_59C4A71D",
+      "source_id": "{59C4A71D-44D9-4711-9701-AF70A43C6442}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides26_88B92E1F",
+      "source_id": "{88B92E1F-345A-4DFE-9EDA-28FBDA502BE3}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group5_BD398821",
+      "source_id": "{BD398821-67FE-47F0-9771-A333379A9734}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_startramp_clump_group2_53FE5C23",
+      "source_id": "{53FE5C23-4F19-46D4-B968-4FA46D5A145A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_staris_a_group17_27B54924",
+      "source_id": "{27B54924-1735-4F73-9D5B-78D4218C7AF7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_b_group4_4072C02D",
+      "source_id": "{4072C02D-2264-48B8-8626-666260CDFF21}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_staris_a_group16_A5E9782F",
+      "source_id": "{A5E9782F-B22E-404D-AB34-4AD26A9E9605}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_sidewall_gold_a_group4_E9E09E39",
+      "source_id": "{E9E09E39-2F75-4724-9EBD-E43344DC1D92}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_stair_c_group7_3E87C53E",
+      "source_id": "{3E87C53E-4CEB-4765-BC44-C02EB9E6D0C8}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_b_group2_1E14983F",
+      "source_id": "{1E14983F-D4AB-4559-8CA8-14DF44708632}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_buff_border_a_group1_0D30F23F",
+      "source_id": "{0D30F23F-024B-400F-B4CB-B7EAE2656733}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_center_point_a_group1_E73B324D",
+      "source_id": "{E73B324D-3041-49EA-ACB0-8BC3CF6F5487}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_pillar_group5_6B6E3B4E",
+      "source_id": "{6B6E3B4E-76A3-4035-8145-E2912A2F85DF}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides33_8921C558",
+      "source_id": "{8921C558-2947-4DD0-82F6-67BDA369BD93}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_stair_c_group9_4CE5565A",
+      "source_id": "{4CE5565A-71A4-40B6-85F3-6A642BCEB006}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_floor_v2_gapfill_group2_6034035C",
+      "source_id": "{6034035C-B472-4A58-8A96-E05FE248FDE8}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group16_D14F175D",
+      "source_id": "{D14F175D-84A6-4A43-BB12-4082E5CF1DD1}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_center_cap_a_group10_98D87F5D",
+      "source_id": "{98D87F5D-B6EA-426C-A108-C98C9927E6CE}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_banner01_group3_B86A4A63",
+      "source_id": "{B86A4A63-20FA-4F83-A8B5-F4C9B3F9618C}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group0_47DC4A67",
+      "source_id": "{47DC4A67-DD81-4EED-BC0A-B8FC26415199}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_b_clump_group3_F44C6967",
+      "source_id": "{F44C6967-6965-4370-AB0D-60B2701D0140}",
+      "collision": true
+    },
+    {
+      "label": "D_teamlogo_rel_el_logo1_material_891A046E",
+      "source_id": "{891A046E-8756-4CA1-BEC1-599CADB32C12}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides21_34FE956F",
+      "source_id": "{34FE956F-CAAC-4F68-BBDE-EC9CFC565249}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides30_9C9D3D72",
+      "source_id": "{9C9D3D72-70A8-4FCC-8FE3-E0A8F9358301}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_steps_b_group3_7DD11A7D",
+      "source_id": "{7DD11A7D-B632-4A43-9928-02D5F431CD43}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_circle_top_b_group3_7364C482",
+      "source_id": "{7364C482-C028-4ED7-A7E2-810A2E0D72F7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curvedpillar_a_group5_BDC94083",
+      "source_id": "{BDC94083-7AE9-42AF-878F-35B7A094D5CC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group7_6C2A1284",
+      "source_id": "{6C2A1284-5F5D-4B9E-8D1D-272D1D2590F4}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_sidewall_gold_a_group3_120AE685",
+      "source_id": "{120AE685-8F63-4849-8E37-26F8D4F66ABB}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_banner01_group4_49194087",
+      "source_id": "{49194087-DE1E-4328-8CCF-0DDFCB8DB922}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group19_689D5390",
+      "source_id": "{689D5390-94E7-4D8B-8AEC-929C5173B5AC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_d_group2_A5C77A90",
+      "source_id": "{A5C77A90-4EE7-455C-BD04-B76E3AB0B317}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group4_53625F92",
+      "source_id": "{53625F92-2230-4AD5-A593-1582200EF78E}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_buff_temple_a_group1_BFB00893",
+      "source_id": "{BFB00893-BB53-4AAF-8444-76266580BD5A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_buff_border_a_group3_EF697494",
+      "source_id": "{EF697494-5B9E-4BFE-9F7F-10347A7161CD}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_sidewall_gold_a_group1_D7D7DE95",
+      "source_id": "{D7D7DE95-49F3-42FA-B992-A333FB55F711}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides20_ADF8CB96",
+      "source_id": "{ADF8CB96-3598-47E5-8FB1-CA8186A59D2A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_stair_c_group4_A44BE49A",
+      "source_id": "{A44BE49A-1EA6-4496-80F2-BB16BAB42A09}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_floor_v2_gapfill_group1_337C3A9C",
+      "source_id": "{337C3A9C-BBED-4522-ABC6-5A0EF919E23F}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides24_6C0E4E9F",
+      "source_id": "{6C0E4E9F-FB8F-4A32-A3E2-6EEADDA08457}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group2_7DE699A0",
+      "source_id": "{7DE699A0-53CE-450A-8008-B4564AE0E366}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_staris_a_group1_8A67D4A2",
+      "source_id": "{8A67D4A2-0F8E-4290-9FCD-1475B9F79C9B}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_circle_top_b_group2_AD0209A3",
+      "source_id": "{AD0209A3-3DB6-4D43-81D9-52BE104F24FC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group1_0076EFA3",
+      "source_id": "{0076EFA3-B073-4450-AD00-36538E294898}",
+      "collision": true
+    },
+    {
+      "label": "D_mmgroup2_38BA48AB",
+      "source_id": "{38BA48AB-06DE-4105-A5A6-548B5FA9179A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group14_EB7088B9",
+      "source_id": "{EB7088B9-C73B-4828-A1D2-82EF8646EFF4}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_center_point_a_group3_C8452CBD",
+      "source_id": "{C8452CBD-99D8-4D6C-A357-02C24A74BD96}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_center_point_a_group4_F3BFD8BD",
+      "source_id": "{F3BFD8BD-6D03-455D-928E-DDF7910A5109}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_steps_b_group2_F540E5BF",
+      "source_id": "{F540E5BF-2EAD-4904-B008-F19618ADBECA}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_a_group3_EE3F36C8",
+      "source_id": "{EE3F36C8-5216-465A-B29D-A57779BF0C81}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curvedpillar_a_group0_D778BAC9",
+      "source_id": "{D778BAC9-AC72-4318-B71E-B63A202C10F2}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides17_7901D3CC",
+      "source_id": "{7901D3CC-1B75-4AB4-A30D-249EA01765E7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_a_group2_58BE8AD1",
+      "source_id": "{58BE8AD1-F832-4D3B-8433-064AAEE86EE5}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_center_cap_a_group17_861BC5D4",
+      "source_id": "{861BC5D4-802B-4DDF-8F44-0D8F4898F365}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides28_DC9081D5",
+      "source_id": "{DC9081D5-69EA-47B7-9575-D4416D16057C}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_steps_a_group5_02EBC2D9",
+      "source_id": "{02EBC2D9-2AE4-4DA1-B195-84366B7FE118}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group4_52E13FDA",
+      "source_id": "{52E13FDA-E19B-46E7-81A1-F64934810214}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group6_6BA57EE5",
+      "source_id": "{6BA57EE5-BFFF-4D53-A972-A21342444BBC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_e_group4_F8E5B7E7",
+      "source_id": "{F8E5B7E7-487F-4D60-B839-AFEE83EB7F27}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_flr_strt_a_group4_B8D026EC",
+      "source_id": "{B8D026EC-EA74-43B1-A82B-81D838A75C3D}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_e_group5_ED8EE5F0",
+      "source_id": "{ED8EE5F0-5EDB-4CC0-86FE-CDF9BF77CF36}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_a_clump_group2_302995F7",
+      "source_id": "{302995F7-DFB6-4B5A-9360-1FCD5011CB62}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group11_E825BFF7",
+      "source_id": "{E825BFF7-361F-4C8E-B804-5F3F405816D4}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_center_cap_a_group7_93172DF8",
+      "source_id": "{93172DF8-723D-4E87-8532-CE8DAEE4A910}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_steps_a_group3_14A842F9",
+      "source_id": "{14A842F9-8B95-4D3E-BE16-2E71D0B96E54}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_buff_border_a_group6_78D9A3FC",
+      "source_id": "{78D9A3FC-8A85-471F-B974-6926F022187B}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_circle_top_b_group1_79320FFE",
+      "source_id": "{79320FFE-6409-4264-8853-431D76E84285}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_a_group3_76856701",
+      "source_id": "{76856701-8F3E-419D-8A88-F21EAB20ABA6}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_b_group1_79203805",
+      "source_id": "{79203805-78E1-4244-89D6-77D44A5F97A2}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_a_group1_7C7F880C",
+      "source_id": "{7C7F880C-D5B7-45B4-9496-8FEC7AEAF626}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_tc_group2_05606010",
+      "source_id": "{05606010-88EC-4AA4-A076-B50803E79112}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_a_group2_D64D1114",
+      "source_id": "{D64D1114-9099-4F63-AA2D-3EC62BB4EAB6}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group5_3F56871D",
+      "source_id": "{3F56871D-39C1-4ADD-8C23-39CCA1601E28}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides27_F447D842",
+      "source_id": "{F447D842-E06E-4019-8C98-F450CB5B80DD}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_ground_collision_b_group1_456B1D46",
+      "source_id": "{456B1D46-194C-42B0-84AF-049CAA391527}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_groud_design_group1_921ACE50",
+      "source_id": "{921ACE50-7496-4844-8DF6-73ED0CB1C9F5}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_center_tc_group1_DEF50B56",
+      "source_id": "{DEF50B56-47B0-46F9-B509-B204CF9E5F85}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_b_group3_A0B15C59",
+      "source_id": "{A0B15C59-72F2-47D8-BADD-BAE69D704B43}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides1_86971563",
+      "source_id": "{86971563-B5CA-4526-9D51-10FF652E789B}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group6_CED8046D",
+      "source_id": "{CED8046D-9C50-438A-A467-4CE5B1231737}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_tc_group1_DB6D5D76",
+      "source_id": "{DB6D5D76-104A-422A-8EFA-8AD97DB24B8C}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_e_group3_69C34A7A",
+      "source_id": "{69C34A7A-9DFF-4EC9-A0BA-E1273CA058C8}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_d_group1_FB751180",
+      "source_id": "{FB751180-691A-4670-A2FC-0DA5AE0DEC38}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_center_tc_group2_014F8182",
+      "source_id": "{014F8182-239B-46FA-8E44-5C3899574C7E}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides4_7F771484",
+      "source_id": "{7F771484-CA87-409C-BED5-1015564A0363}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides32_321AB188",
+      "source_id": "{321AB188-6E21-44ED-812F-6A6B64578FFE}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_groud_design_group2_8D53998E",
+      "source_id": "{8D53998E-01AD-4260-B21D-1F346AFCC5A0}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_c_group3_D35AB58F",
+      "source_id": "{D35AB58F-275D-4E1C-8AFD-62B090EE172C}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_c_group1_2306EE90",
+      "source_id": "{2306EE90-A4F7-4861-BF43-86C31386CC62}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_relic_snake_b_group1_2951009A",
+      "source_id": "{2951009A-BABD-4758-A424-9F92D3FD455B}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_arenastatue_a_group5_4F9DA8A7",
+      "source_id": "{4F9DA8A7-0DE4-41A0-AD47-01C8A8DD5659}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group4_0FBC12AA",
+      "source_id": "{0FBC12AA-CF4B-4CB9-B31D-7937BE4FA34C}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_b_group2_7A4120AC",
+      "source_id": "{7A4120AC-2111-485E-8E8C-D946F8BE5971}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_centerline_group1_F1EB85BD",
+      "source_id": "{F1EB85BD-9128-46D0-BD8B-AE3FAA64C0A7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_dorado_relic_snake_a_group1_DCBEB5C0",
+      "source_id": "{DCBEB5C0-657C-4E6D-91CF-FE620AD3AACA}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides3_3B861BC5",
+      "source_id": "{3B861BC5-E99A-4744-88CE-42F1F0908077}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_mid_circle_top_a_group3_26412CC7",
+      "source_id": "{26412CC7-8039-46AE-A564-489C3FA9934E}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides25_C0CF36D7",
+      "source_id": "{C0CF36D7-7ADB-4B81-987A-880E865AAFAD}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_wall_trim_a2_EF33C2D7",
+      "source_id": "{EF33C2D7-B24F-4CB7-8338-CB3E3FBB1F62}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides31_82E27DD8",
+      "source_id": "{82E27DD8-71E2-4F51-9AD8-D0A5B2594124}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_b_group2_FCA15FDA",
+      "source_id": "{FCA15FDA-E48F-4C88-9B89-E2D5D6F7E624}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_circle_top_c_group1_8E1787DD",
+      "source_id": "{8E1787DD-FBD0-41EB-BDA0-9EF074E52825}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_relic_spawn_b_group1_D112BBE2",
+      "source_id": "{D112BBE2-7D7C-4563-9D55-EB3F9715BAB3}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_wall_trim_a1_7BD859EE",
+      "source_id": "{7BD859EE-D83E-49B5-AB58-56D1327C9FFD}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_mid_circle_top_c_group2_64DD37F0",
+      "source_id": "{64DD37F0-92BE-4562-B0A6-20549D0C0AF6}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_e_group2_777385F2",
+      "source_id": "{777385F2-2E5D-4107-8E27-0C7BDEDF1511}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_main_floor_f_group1_865D97FC",
+      "source_id": "{865D97FC-DCC2-40C7-A1B4-B64D8BD2408F}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides29_3697B9FF",
+      "source_id": "{3697B9FF-9CAA-4600-989E-BC23EDD7939F}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_b_clump_group1_F5EC7A00",
+      "source_id": "{F5EC7A00-4569-4A83-849E-DEC099CBC4E0}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group7_1FF19800",
+      "source_id": "{1FF19800-547A-46E6-B32B-3F7F59E7F2F4}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides34_CE5FFE02",
+      "source_id": "{CE5FFE02-808C-4494-B2CF-4535C1DA3181}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group9_7556DE04",
+      "source_id": "{7556DE04-E38E-4E01-9E7C-8D25E2CC8D88}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_c_group1_EB39F20B",
+      "source_id": "{EB39F20B-E6E6-4C38-8992-4FB5C7464FB4}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group8_7119601A",
+      "source_id": "{7119601A-96EC-43D3-B9FC-54E481768FDC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_pillar_group8_B09BE41C",
+      "source_id": "{B09BE41C-AE32-4EEF-A7D7-52DA7A305367}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides37_ED62C51E",
+      "source_id": "{ED62C51E-382E-464F-9C9A-5F0FF0688CB1}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_banner01_group2_E1A01622",
+      "source_id": "{E1A01622-1896-4B85-AEAF-30EAECE08D2B}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_block_clump_b_group1_2E381623",
+      "source_id": "{2E381623-E0C4-45B6-92BC-437AE9E644C3}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_e_group1_3E10E62C",
+      "source_id": "{3E10E62C-7E96-4BB2-A0CC-308D778FFC19}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group16_67DDAA2E",
+      "source_id": "{67DDAA2E-52A7-4579-9BDD-95F3B7DCFFDC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group1_06E70233",
+      "source_id": "{06E70233-2283-4276-A576-D6165BE8C44A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_e_group2_66C0444E",
+      "source_id": "{66C0444E-0E45-412B-80D5-B916A561CE3E}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_flr_strt_a_group19_67DB1250",
+      "source_id": "{67DB1250-2162-4251-B8F5-F1782FF66BA6}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_startramp_clump_group1_06CDC961",
+      "source_id": "{06CDC961-1919-434E-AE03-49EC42301640}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_a_group1_9250CD66",
+      "source_id": "{9250CD66-EB25-4E7C-ABE6-FD4670C81F83}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_block_clump_d_group1_5C84F46D",
+      "source_id": "{5C84F46D-DCF9-48ED-BB18-BE074CB428A7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group2_70833985",
+      "source_id": "{70833985-DBAC-4CFB-8F51-687A31C54D0A}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides36_912A0087",
+      "source_id": "{912A0087-6CCE-4AB7-B611-D41A2EE045BC}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group10_C3CD9C97",
+      "source_id": "{C3CD9C97-CD71-4005-8247-BDAEC90C6676}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_curved_wall_a_group18_543342A5",
+      "source_id": "{543342A5-D522-4303-AFD4-600A82051277}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_b_clump_group4_109B9FA6",
+      "source_id": "{109B9FA6-CF40-4630-B128-19D9FE08D980}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_prxy_eldorado_border_x4_a_group12_110592A7",
+      "source_id": "{110592A7-60C5-4455-A707-352BBDF5B504}",
+      "collision": true
+    },
+    {
+      "label": "D_teamlogo_rel_el_logo0_material_8D2775BA",
+      "source_id": "{8D2775BA-44D6-40B4-9987-77A5146E3268}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_a_clump_group3_DDDF59C0",
+      "source_id": "{DDDF59C0-64E4-4D29-91BA-EA2712C1A760}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_serpent_wall_a_clump_group1_D8BB18D7",
+      "source_id": "{D8BB18D7-F49D-4FD0-9C3E-EDA5795CAEDF}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_banner01_group1_8C1E10D8",
+      "source_id": "{8C1E10D8-0A40-4DFE-87FF-269A0ED00396}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_eldorado_stairs_sides35_1EEAEEEF",
+      "source_id": "{1EEAEEEF-2C95-4854-A91F-38262AC091E7}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_eldorado_snakeheadpillar_b_group5_56CBD3FE",
+      "source_id": "{56CBD3FE-D24F-40CA-A4B9-098F4A60FD48}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_ring_b_group2_C01AC007",
+      "source_id": "{C01AC007-FFF1-467F-934F-A7AD597D7E0A}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_ring_a_group2_4289D690",
+      "source_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vista_ring_a_group5_9223BBB1",
+      "source_id": "{9223BBB1-757B-4276-ACCF-91CE89BA6F61}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vista_ring_a_group4_654CE4B4",
+      "source_id": "{654CE4B4-1F57-4C99-A8F5-D2480F30C9F9}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vista_ring_a_group1_79753DB8",
+      "source_id": "{79753DB8-F85D-4748-9BD0-9EDAB9C3A871}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vista_ring_a_group3_91E71DD4",
+      "source_id": "{91E71DD4-A6E9-4B40-AC4E-5614D22C87F7}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a71_F2B5C802",
+      "source_id": "{F2B5C802-0D72-41C8-81E9-BDB80B33420D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a74_8468120C",
+      "source_id": "{8468120C-FD21-4F73-95E0-837D4A1C654D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a63_C1031910",
+      "source_id": "{C1031910-AFB4-43A6-BFE9-241D35B31999}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a33_DD2D3110",
+      "source_id": "{DD2D3110-D50B-4B5D-9005-1EC91F45E805}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a58_21463715",
+      "source_id": "{21463715-3104-400B-9F48-985F4CE2D4AF}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a42_D212F51D",
+      "source_id": "{D212F51D-2776-4986-B090-FD18370E82EC}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_b_group1_0BFA1323",
+      "source_id": "{0BFA1323-70CE-4568-A5B6-C63C0DD184D7}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_arenastatue_b_group1_C92C292B",
+      "source_id": "{C92C292B-28AA-433D-8745-FC05D580898B}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_island_small_a34_858A3B2B",
+      "source_id": "{858A3B2B-B985-4D1D-AC3A-C3F6DA22E486}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_e_group1_644E2336",
+      "source_id": "{644E2336-67B0-4CBA-B855-8DAFA01F1A33}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a44_9CE99836",
+      "source_id": "{9CE99836-6628-41F6-A8ED-78B28E976C3C}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_arenatemple_group1_14FD7C39",
+      "source_id": "{14FD7C39-A560-4F56-A3C9-2590C85E9F68}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_mountain_unique_a_group3_DBFEFE3B",
+      "source_id": "{DBFEFE3B-67D8-4C96-A16B-C1E7E8CC5D4A}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a50_70ED3A3C",
+      "source_id": "{70ED3A3C-EFD1-461B-9432-31B97D244D78}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a39_B7545B54",
+      "source_id": "{B7545B54-800D-4A8B-B50A-7E3B72D39FC8}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_f_group1_C339BA59",
+      "source_id": "{C339BA59-6420-4861-8A57-A0D1275290D1}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_arenastartarea_group37_FAD2175A",
+      "source_id": "{FAD2175A-3DA0-49D7-B2C7-11343DA32AB9}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_c_group1_48BE2B5F",
+      "source_id": "{48BE2B5F-44DF-464A-9544-303C2454A670}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a66_B095CA76",
+      "source_id": "{B095CA76-B575-44CC-80D2-D0198372A593}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a94_216EAE82",
+      "source_id": "{216EAE82-718E-443F-BD1E-BDDEEDFE7FAC}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_d_group1_6F92EA88",
+      "source_id": "{6F92EA88-7125-4A7E-B122-77C339C92439}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a60_0DD96191",
+      "source_id": "{0DD96191-E3E6-4524-8D46-B8F472B36FD5}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a41_A1FEE392",
+      "source_id": "{A1FEE392-8582-4DC8-9464-3A301DFFBF8E}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_temple_small10_81F4FF95",
+      "source_id": "{81F4FF95-2DFD-4A42-9B39-5B2BB202C54F}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistamountains_clump_a_group1_0EC995A8",
+      "source_id": "{0EC995A8-E975-4185-9A6D-B1BA3A25CB72}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a43_154C3EB0",
+      "source_id": "{154C3EB0-715A-4953-B347-8CBB2D017C83}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a14_91AE42B2",
+      "source_id": "{91AE42B2-C60B-4761-894C-B89E0751426A}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a31_14DE66BC",
+      "source_id": "{14DE66BC-321A-4C06-BD23-853608B63ED3}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a69_C0BFADC0",
+      "source_id": "{C0BFADC0-DA06-4D5E-A888-C0C8ED6158DD}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_arenastartarea_group36_565478CD",
+      "source_id": "{565478CD-C98D-4614-B67D-40E62C85DA3D}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_island_small_a72_2FFC62DE",
+      "source_id": "{2FFC62DE-2D1C-40B4-9CA2-9B08C1410828}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a64_CBC485EE",
+      "source_id": "{CBC485EE-9E51-417B-9A18-8D2FE83BFE39}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a68_C307A2F6",
+      "source_id": "{C307A2F6-ED5F-402F-8BB1-A8F9070F6497}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a6_B27F24FE",
+      "source_id": "{B27F24FE-AC28-445B-87F5-04C4A1B1B877}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_treecards_clump_a_group1_C8820F20",
+      "source_id": "{C8820F20-D6C8-44DC-9FF6-8D3E604BEC8E}",
+      "collision": false
+    },
+    {
+      "label": "D_trmple_tree_02_group51_27A24467",
+      "source_id": "{27A24467-8955-44DD-8FD5-B9546CFD5432}",
+      "collision": false
+    },
+    {
+      "label": "D_trmple_tree_02_group50_75BF4688",
+      "source_id": "{75BF4688-4B0C-4495-BA09-AD4B3F6F76CB}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_treecards_clump_b_group1_42CD8DA0",
+      "source_id": "{42CD8DA0-8794-4BA9-AAA8-6E5D2FD44F20}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_28_B1B27803",
+      "source_id": "{B1B27803-3CBF-47E1-AC73-BD621C8BA5A6}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_22_14370E04",
+      "source_id": "{14370E04-24FD-43D3-AB4B-A1990F075384}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistatrees_clump_b_group1_C4E7C113",
+      "source_id": "{C4E7C113-0C15-44A0-AD24-158F4E95BCA9}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_16_6A860314",
+      "source_id": "{6A860314-D14D-4B51-BEC8-68CF79578525}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_5_8EE7C51C",
+      "source_id": "{8EE7C51C-ED18-43AE-93F2-8EB240B772A6}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b13_2DB6DA1D",
+      "source_id": "{2DB6DA1D-7FEC-4859-AAB3-16A7BD7AAEC4}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a65_9EE38120",
+      "source_id": "{9EE38120-A3CF-48FE-B0C3-24A7B8984FBE}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistatrees_clump_a_group1_BB47932E",
+      "source_id": "{BB47932E-5BD4-4BF1-BBF3-C94E07CC6682}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_island_small_a70_0718F637",
+      "source_id": "{0718F637-441E-4DD0-A0C2-18102C850926}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_12_44573538",
+      "source_id": "{44573538-0702-4396-A545-3DB8D590B762}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_30_0E89623B",
+      "source_id": "{0E89623B-4648-4E7E-964A-45D0CA69573D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_26_5B00D141",
+      "source_id": "{5B00D141-7272-45FA-8375-587E2F1DAA4C}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_13_65C68745",
+      "source_id": "{65C68745-9EBB-4FA2-9922-5AA9887889C4}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_bundle_a14_D7DDB445",
+      "source_id": "{D7DDB445-EE9A-4117-87ED-90AC52E32D19}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_19_EB597051",
+      "source_id": "{EB597051-E3B8-433D-9A87-004D6FCE5E34}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_bundle_b1_F8AE1B54",
+      "source_id": "{F8AE1B54-8C29-4FD8-9515-0D6E913A9350}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b14_24B7BE55",
+      "source_id": "{24B7BE55-D0B0-4FA6-AA8C-9BA1376A4E3C}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_10_6BF0E356",
+      "source_id": "{6BF0E356-A63E-48BE-81AD-42FA89CB147D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_23_E5744A67",
+      "source_id": "{E5744A67-32DC-410B-99A0-27A3A0F907F1}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b19_2EC37669",
+      "source_id": "{2EC37669-2A07-451B-8E44-0D098CB1C545}",
+      "collision": false
+    },
+    {
+      "label": "D_magnet_force_01_group1_2C0D076B",
+      "source_id": "{2C0D076B-E776-4220-B7E9-AA0672AC2E91}",
+      "collision": true
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b2_6168686D",
+      "source_id": "{6168686D-BC78-4ED0-BB2C-AE792152048F}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b17_92214C74",
+      "source_id": "{92214C74-115E-48D4-98D9-0B7C3500E971}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_hanging_vine_leafs_a223_F52F527A",
+      "source_id": "{F52F527A-0544-4F25-8D53-3854FB65A617}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_11_51103A8B",
+      "source_id": "{51103A8B-1858-49FB-9C1C-8B9792FF4BBD}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_20_25BB788B",
+      "source_id": "{25BB788B-D773-4B64-8537-B69AC95DD5CF}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_24_EDD16990",
+      "source_id": "{EDD16990-4029-474D-9504-CC5FE97C4920}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b16_3DDF9891",
+      "source_id": "{3DDF9891-F264-4995-B0F6-6A3F269CF848}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_29_9FA1E591",
+      "source_id": "{9FA1E591-64B0-4616-BABB-3DBC2B9BCDAC}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_2_12A4E299",
+      "source_id": "{12A4E299-591E-4A5E-9930-E3E5CF8864D6}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_bundle_a12_AA94499A",
+      "source_id": "{AA94499A-D3B1-4F04-8979-02F8D64367D6}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_21_48732FA6",
+      "source_id": "{48732FA6-E1A9-42C1-A46F-7C24A47E62AB}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_grass_card_a66_0C8DC7AA",
+      "source_id": "{0C8DC7AA-A597-447C-A7AE-A6941AEAB899}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistatrees_clump_d_group1_44EAACBD",
+      "source_id": "{44EAACBD-D1D9-4CB0-A699-87FE905B659E}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_17_A9E9AFBF",
+      "source_id": "{A9E9AFBF-2DEB-4AE4-BC20-BEA44E4CB15D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_bundle_a11_7EA9A3C1",
+      "source_id": "{7EA9A3C1-1FAA-46A6-9353-11531DCDE016}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_25_95736CC9",
+      "source_id": "{95736CC9-9F6E-4565-ACEA-4C7D941085D9}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistatrees_clump_e_group1_CAAD4FCB",
+      "source_id": "{CAAD4FCB-E9C8-41B3-9B38-4F84E7AB7993}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_15_71B123DE",
+      "source_id": "{71B123DE-8B0C-446A-BC0C-6F1FAAC6295D}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_27_4997F2F3",
+      "source_id": "{4997F2F3-E426-4DC7-BE26-1113ECDBAD56}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_ed_vistatrees_clump_c_group1_2F2A6FFA",
+      "source_id": "{2F2A6FFA-6B9D-44FC-8C87-31612E538A4F}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_vista_cloudplane_hard_9_36D1CCFB",
+      "source_id": "{36D1CCFB-0618-44BD-A3E6-632C0889A114}",
+      "collision": false
+    },
+    {
+      "label": "D_rel_el_plant_vine_curve_b15_4CC4D3FF",
+      "source_id": "{4CC4D3FF-BF98-4525-9EEC-DAE917737308}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity16_C92E390E",
+      "source_id": "{C92E390E-C095-465C-AADC-C8BAD4B8A533}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity33_3D63D628",
+      "source_id": "{3D63D628-BC3B-4EE5-81CA-23C334EE4784}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity32_AF05F42E",
+      "source_id": "{AF05F42E-6E5A-4A92-B834-9870E6D578C7}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity18_9B4EFA54",
+      "source_id": "{9B4EFA54-75CA-4CB5-A5C1-9D07A5A8FEDA}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity15_065E1756",
+      "source_id": "{065E1756-77B7-47EA-9934-B8A9EB014D01}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity17_3C1AD863",
+      "source_id": "{3C1AD863-47EB-4A69-ABEA-4F87AE368BD1}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity21_AC986668",
+      "source_id": "{AC986668-E4EC-4643-98D7-2249729B7B65}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity24_082C3E82",
+      "source_id": "{082C3E82-C8A0-41CE-82F1-5FE7822E2E26}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity23_8133F583",
+      "source_id": "{8133F583-8992-4626-8590-A12AC68BBD8C}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity29_FF09559A",
+      "source_id": "{FF09559A-F355-41DD-9F28-218645F50228}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity30_8D6CF4A2",
+      "source_id": "{8D6CF4A2-E266-4686-82D9-47BCA7B5A738}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity35_E44CADA4",
+      "source_id": "{E44CADA4-B3E8-40BB-B95E-C26E64190708}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity25_58378AC8",
+      "source_id": "{58378AC8-7C1C-461C-8729-53AE736C3B11}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity36_CE8BDFD0",
+      "source_id": "{CE8BDFD0-E792-4512-8114-C0D1C4FE5F3D}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity37_CDD8D1D7",
+      "source_id": "{CDD8D1D7-647C-4C00-8E7D-09FB61010378}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity27_913C42DA",
+      "source_id": "{913C42DA-591A-450A-9B9F-A0F2826AE711}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity31_03C975DE",
+      "source_id": "{03C975DE-6A94-4DF0-B4A9-B1F93E341F73}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity26_3DF5B6F3",
+      "source_id": "{3DF5B6F3-FA5A-4AD2-B009-86BA98517D16}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity34_C2D0D8FE",
+      "source_id": "{C2D0D8FE-1847-4F1E-839B-CBD2AD8367D5}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity3_816E1006",
+      "source_id": "{816E1006-0B8D-4B6B-BC29-256B3C0B6BC2}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity4_80AD2E32",
+      "source_id": "{80AD2E32-D831-46BF-8C24-F7FEBFB410EC}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity13_FBA49569",
+      "source_id": "{FBA49569-F2FD-4A67-B962-5904D492EDAF}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity9_0DEA2E6B",
+      "source_id": "{0DEA2E6B-D398-43DA-9919-C3CA43F65818}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity10_6968A66D",
+      "source_id": "{6968A66D-385E-4E9B-B0AA-9BBA3A7E66F9}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity8_47EF3293",
+      "source_id": "{47EF3293-176C-469B-82C7-68FB2CDEC2B5}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity7_04493ABB",
+      "source_id": "{04493ABB-3B07-4EAB-8FDA-65D0585A6F34}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity38_8A75C5D2",
+      "source_id": "{8A75C5D2-30DC-44A2-A950-1F3B87C83686}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity11_4F8F12F1",
+      "source_id": "{4F8F12F1-BC0F-44E0-9A23-8730158F2853}",
+      "collision": false
+    },
+    {
+      "label": "D_BasicEntity6_1C1B9CF2",
+      "source_id": "{1C1B9CF2-BC4B-4070-81B1-4B7297FB90DE}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back24_C59BFB00",
+      "source_id": "{C59BFB00-3F73-42F5-9382-940536B8C83C}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back18_738B9001",
+      "source_id": "{738B9001-B45F-4910-B617-7B9267AF6553}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base10_918D680A",
+      "source_id": "{918D680A-8B6B-499B-955C-69CB9066D0DF}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back21_2BC22C1F",
+      "source_id": "{2BC22C1F-B96F-4830-AF97-59FDB90B97A6}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back22_DBC3A121",
+      "source_id": "{DBC3A121-2F66-4381-8F3D-ED4F8A4A1093}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back14_16BF5622",
+      "source_id": "{16BF5622-EB20-41BF-ABF3-D9825989949D}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back4_960A1132",
+      "source_id": "{960A1132-6C65-4335-B8D6-C60BAA7BC18F}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base20_57E31C32",
+      "source_id": "{57E31C32-14A5-4BA5-A78E-409FDE8518AF}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base26_EE93D937",
+      "source_id": "{EE93D937-770E-4298-B946-24DD70B6BB82}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base30_5F2DFB44",
+      "source_id": "{5F2DFB44-08EC-4D5F-B959-70AB975D7469}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base16_E1559B66",
+      "source_id": "{E1559B66-4D72-4B81-B651-90F715916DE5}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base23_C762E56A",
+      "source_id": "{C762E56A-5ED8-49F0-8DEB-EED76114716A}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base29_BF82DA6C",
+      "source_id": "{BF82DA6C-D042-4AFE-B64A-32F9D46FFE73}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base12_9CA90E71",
+      "source_id": "{9CA90E71-1C63-41F0-97C8-4C1C3381715A}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back25_D5215A76",
+      "source_id": "{D5215A76-310F-4609-950D-748E8D609077}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back1_B587FC7C",
+      "source_id": "{B587FC7C-0FC2-418C-8B2C-9400B42143C5}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base5_44D6AB82",
+      "source_id": "{44D6AB82-8D8F-42B8-8186-938604E73FA6}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back19_7A5B5885",
+      "source_id": "{7A5B5885-3122-4960-998A-C802A498CC63}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back16_B98E3B9E",
+      "source_id": "{B98E3B9E-AD34-4AFD-8B42-2CA8D61A0C1C}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back12_9F3810B3",
+      "source_id": "{9F3810B3-6327-4831-95BF-91909C73866A}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back2_C452F0CD",
+      "source_id": "{C452F0CD-F912-4388-8352-42E2C0A748BB}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back20_D4BFAAE5",
+      "source_id": "{D4BFAAE5-3C32-43B4-87A8-57CE53CF0644}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base6_15C015E6",
+      "source_id": "{15C015E6-8705-4007-BCF4-23E9799600AD}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base15_7474C6EC",
+      "source_id": "{7474C6EC-AE37-4CBF-86D5-2ADB1FF5D90D}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back8_31FFB0EF",
+      "source_id": "{31FFB0EF-856F-466F-82D3-5A5F3D2C8F74}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_single_base18_51FBBDF5",
+      "source_id": "{51FBBDF5-F6F5-4A15-9CE8-C210EC03FA49}",
+      "collision": false
+    },
+    {
+      "label": "D_sm_waterfall_long_distance_mist_back11_66E8E1F7",
+      "source_id": "{66E8E1F7-5C42-473A-AF71-FCC431345CD8}",
+      "collision": false
+    }
+  ],
+  "errors": [],
+  "reconciliation": {
+    "status": "complete",
+    "candidates": [],
+    "deleted": [],
+    "preserved_unowned": [],
+    "already_absent": []
+  },
+  "reconciliation_pending_labels": []
+}

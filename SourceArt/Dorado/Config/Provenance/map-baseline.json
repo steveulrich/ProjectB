@@ -1,0 +1,2544 @@
+[
+  {
+    "label": "LyraPlayerStart2",
+    "class": "LyraPlayerStart",
+    "location": [
+      -239.99999634961137,
+      3499.9999917257837,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart3",
+    "class": "LyraPlayerStart",
+    "location": [
+      -180.00000486718534,
+      -3410.000009004293,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart4",
+    "class": "LyraPlayerStart",
+    "location": [
+      -69.99999634961137,
+      3499.9999958628914,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart5",
+    "class": "LyraPlayerStart",
+    "location": [
+      19.99999513281432,
+      -3410.0000041371077,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart6",
+    "class": "LyraPlayerStart",
+    "location": [
+      100.00000365038966,
+      3500.000000000001,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart7",
+    "class": "LyraPlayerStart",
+    "location": [
+      -240.00000000000023,
+      3649.9999917257846,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart8",
+    "class": "LyraPlayerStart",
+    "location": [
+      -70.0000000000008,
+      3649.9999958628923,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart9",
+    "class": "LyraPlayerStart",
+    "location": [
+      100.0,
+      3650.0,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart10",
+    "class": "LyraPlayerStart",
+    "location": [
+      189.9999951328141,
+      -3410.0,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart11",
+    "class": "LyraPlayerStart",
+    "location": [
+      -179.99999999999966,
+      -3610.000009004294,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart12",
+    "class": "LyraPlayerStart",
+    "location": [
+      20.000000000000227,
+      -3610.0000041371077,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LyraPlayerStart13",
+    "class": "LyraPlayerStart",
+    "location": [
+      190.0,
+      -3610.0,
+      362.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "ExponentialHeightFog",
+    "class": "ExponentialHeightFog",
+    "location": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "VolumetricCloud",
+    "class": "VolumetricCloud",
+    "location": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "SkyAtmosphere",
+    "class": "SkyAtmosphere",
+    "location": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "DirectionalLight",
+    "class": "DirectionalLight",
+    "location": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      -105.0,
+      -31.0,
+      -14.0
+    ],
+    "scale": [
+      2.5,
+      2.5,
+      2.5
+    ]
+  },
+  {
+    "label": "SkyLight",
+    "class": "SkyLight",
+    "location": [
+      0.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "LevelScalar",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "bounds_extent": [
+      25.0,
+      25.0,
+      25.0
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "SphereReflectionCapture",
+    "class": "SphereReflectionCapture",
+    "location": [
+      -10.907654,
+      -9.328659,
+      266.861328
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "NavMeshBoundsVolume",
+    "class": "NavMeshBoundsVolume",
+    "location": [
+      -1080.0,
+      0.0,
+      150.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      1.5,
+      1.0
+    ]
+  },
+  {
+    "label": "RecastNavMesh-Default",
+    "class": "RecastNavMesh",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "Atmospheric Fog",
+    "class": "AtmosphericFog",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "SP_Relic",
+    "class": "BwaySpawnPoint",
+    "location": [
+      0.0,
+      0.0,
+      540.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "SP_GoalTeam2",
+    "class": "BwaySpawnPoint",
+    "location": [
+      0.0,
+      -4000.0,
+      230.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "SP_GoalTeam1",
+    "class": "BwaySpawnPoint",
+    "location": [
+      0.0,
+      4000.0,
+      230.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B2",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B.el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      935.9754141077248,
+      463.33521281787074,
+      97.7660140991211
+    ],
+    "bounds_extent": [
+      214.49103555968497,
+      317.54092929210424,
+      131.0668182373047
+    ],
+    "slots": [
+      "Rel_el_ArenaTrimA_MAT_005",
+      "rel_el_ArenaTrimADark_MAT_005",
+      "rel_el_ArenaTrimAGold_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      1130.0,
+      -140.0,
+      -10.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      2.25,
+      2.75,
+      2.25
+    ]
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B3",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      -0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B.el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      935.9753947453053,
+      -463.3352519315556,
+      97.7660140991211
+    ],
+    "bounds_extent": [
+      214.4910333741659,
+      317.5409278158402,
+      131.0668182373047
+    ],
+    "slots": [
+      "Rel_el_ArenaTrimA_MAT_005",
+      "rel_el_ArenaTrimADark_MAT_005",
+      "rel_el_ArenaTrimAGold_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM2",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      1400.0,
+      150.0,
+      -10.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      2.25,
+      2.75,
+      2.25
+    ]
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM3",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      1150.0,
+      150.0,
+      -10.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      2.25,
+      3.0,
+      2.25
+    ]
+  },
+  {
+    "label": "Cube13",
+    "class": "StaticMeshActor",
+    "location": [
+      1270.0,
+      10.0,
+      100.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      2.5,
+      3.0,
+      2.25
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      1270.0,
+      10.0,
+      100.0
+    ],
+    "bounds_extent": [
+      125.0,
+      150.0,
+      112.5
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM4",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      -1130.0000073007786,
+      140.00000681405956,
+      -10.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      90.0
+    ],
+    "scale": [
+      2.25,
+      2.75,
+      2.25
+    ]
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM5",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      -1399.99999318594,
+      -150.00000632734123,
+      -10.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -90.0
+    ],
+    "scale": [
+      2.25,
+      2.75,
+      2.25
+    ]
+  },
+  {
+    "label": "B_Tool_RampMakerControl_BGM6",
+    "class": "B_Tool_RampMakerControl_BGM_C",
+    "location": [
+      -1149.99999318594,
+      -149.99999415937722,
+      -10.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      3.943457045352261e-07
+    ],
+    "scale": [
+      2.25,
+      3.0,
+      2.25
+    ]
+  },
+  {
+    "label": "Cube14",
+    "class": "StaticMeshActor",
+    "location": [
+      -1270.0,
+      -10.0,
+      100.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      -180.0
+    ],
+    "scale": [
+      2.5,
+      3.0,
+      2.25
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -1270.0,
+      -10.0,
+      100.0
+    ],
+    "bounds_extent": [
+      125.00000365038977,
+      150.0000030419914,
+      112.5
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "BaseZone_Team1",
+    "class": "BwayBaseZone",
+    "location": [
+      -70.0,
+      3575.0,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "BaseZone_Team2",
+    "class": "BwayBaseZone",
+    "location": [
+      5.0,
+      -3510.0,
+      362.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B.el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -935.9754028320312,
+      -463.3352355957031,
+      97.7660140991211
+    ],
+    "bounds_extent": [
+      214.49102783203125,
+      317.5409240722656,
+      131.0668182373047
+    ],
+    "slots": [
+      "Rel_el_ArenaTrimA_MAT_005",
+      "rel_el_ArenaTrimADark_MAT_005",
+      "rel_el_ArenaTrimAGold_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001.el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.0009765625,
+      -4450.873046875,
+      682.4043579101562
+    ],
+    "bounds_extent": [
+      2137.500244140625,
+      1528.051025390625,
+      1129.059326171875
+    ],
+    "slots": [
+      "rel_el_Arena_COL_MAT_004",
+      "Rel_el_ArenaTrimA_MAT_004",
+      "rel_el_ArenaWallsA_MAT_004",
+      "rel_el_ArenaTrimADark_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A.el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -11.751350402832031,
+      -122.10791778564453,
+      -2.535588264465332
+    ],
+    "bounds_extent": [
+      253.54824829101562,
+      143.18951416015625,
+      6.85372257232666
+    ],
+    "slots": [
+      "Relic_Deco_mat"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B.el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      11.750312805175781,
+      122.10892486572266,
+      -2.5367202758789062
+    ],
+    "bounds_extent": [
+      253.54721069335938,
+      143.19052124023438,
+      6.852590560913086
+    ],
+    "slots": [
+      "Relic_Deco_mat_001"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_b",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_base_b.el_dorado_fbx_Scene_rel_eldorado_flr_base_b",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.029052734375,
+      430.4943542480469,
+      -122.38017272949219
+    ],
+    "bounds_extent": [
+      868.1552124023438,
+      594.8375244140625,
+      125.50311279296875
+    ],
+    "slots": [
+      "trim_02_material_001",
+      "Stonetile_02_mat_001",
+      "trim_01_mat_003"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_c",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_base_c.el_dorado_fbx_Scene_rel_eldorado_flr_base_c",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.352813720703125,
+      462.7616882324219,
+      -594.7957763671875
+    ],
+    "bounds_extent": [
+      924.571533203125,
+      625.5194091796875,
+      359.8917541503906
+    ],
+    "slots": [
+      "trim_03_material_002",
+      "Stonetile_02_mat_002"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_c",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_foot_c.el_dorado_fbx_Scene_rel_eldorado_flr_foot_c",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.034698486328125,
+      468.3048095703125,
+      -199.91481018066406
+    ],
+    "bounds_extent": [
+      929.156982421875,
+      631.488525390625,
+      200.1818389892578
+    ],
+    "slots": [
+      "trim_02_material_006"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_d",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_foot_d.el_dorado_fbx_Scene_rel_eldorado_flr_foot_d",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -7.8731842041015625,
+      212.167236328125,
+      -206.00042724609375
+    ],
+    "bounds_extent": [
+      438.9212646484375,
+      212.30526733398438,
+      207.67578125
+    ],
+    "slots": [
+      "trim_02_material_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_B",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_B.el_dorado_fbx_Scene_rel_eldorado_main_floor_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.00018310546875,
+      -1615.234375,
+      0.002176026813685894
+    ],
+    "bounds_extent": [
+      710.15625,
+      456.64068603515625,
+      0.0006260268855839968
+    ],
+    "slots": [
+      "main_ground_mat_004",
+      "trim_mat_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_C",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_C.el_dorado_fbx_Scene_rel_eldorado_main_floor_C",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      0.3905029296875,
+      -1267.6070556640625,
+      4.9700751304626465
+    ],
+    "bounds_extent": [
+      1426.171875,
+      1142.0594482421875,
+      5.222774982452393
+    ],
+    "slots": [
+      "Proxy_003",
+      "main_ground_mat_003",
+      "trim_mat_003",
+      "main_ground_02_mat_003"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_D",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_D.el_dorado_fbx_Scene_rel_eldorado_main_floor_D",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -3.0517578125e-05,
+      -320.5133972167969,
+      -6.178591251373291
+    ],
+    "bounds_extent": [
+      798.828125,
+      320.8928527832031,
+      6.30495023727417
+    ],
+    "slots": [
+      "main_ground_mat_002",
+      "trim_mat_002",
+      "Relic_center_deco_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_E",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_E.el_dorado_fbx_Scene_rel_eldorado_main_floor_E",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -0.000244140625,
+      -2058.593994140625,
+      4.478025913238525
+    ],
+    "bounds_extent": [
+      749.609375,
+      435.15655517578125,
+      4.475825786590576
+    ],
+    "slots": [
+      "main_ground_mat_005",
+      "Relic_center_deco_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_F",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_F.el_dorado_fbx_Scene_rel_eldorado_main_floor_F",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      3.0517578125e-05,
+      320.4285888671875,
+      -6.215035915374756
+    ],
+    "bounds_extent": [
+      798.828125,
+      320.9776611328125,
+      6.267191410064697
+    ],
+    "slots": [
+      "main_ground_mat_006",
+      "trim_mat_006",
+      "Relic_center_deco_008"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_TC",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_TC.el_dorado_fbx_Scene_rel_eldorado_main_floor_TC",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      0.0,
+      -736.9140014648438,
+      0.001075000036507845
+    ],
+    "bounds_extent": [
+      1248.4375,
+      531.0547485351562,
+      0.0007750000804662704
+    ],
+    "slots": [
+      "trim_mat_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A.el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      0.0,
+      -1628.3792724609375,
+      -52.92966842651367
+    ],
+    "bounds_extent": [
+      26.831052780151367,
+      26.8310546875,
+      26.855472564697266
+    ],
+    "slots": [
+      "pltfrm_mat_001"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_startramp_clump",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_startramp_clump.el_dorado_fbx_Scene_rel_eldorado_startramp_clump",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      0.066131591796875,
+      -2710.273193359375,
+      64.57952880859375
+    ],
+    "bounds_extent": [
+      622.962158203125,
+      460.533935546875,
+      181.76702880859375
+    ],
+    "slots": [
+      "REL_eldorado_floor_V2_mat_004",
+      "Rel_ElDorado_Stairs_Mat_001",
+      "gold_trim_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001.el_dorado_fbx_Scene_rel_el_ArenaStartAreaWall_B_001",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.001084878635993,
+      4455.8730468749745,
+      682.4043579101562
+    ],
+    "bounds_extent": [
+      2137.500281327167,
+      1528.0510774086815,
+      1129.059326171875
+    ],
+    "slots": [
+      "rel_el_Arena_COL_MAT_004",
+      "Rel_el_ArenaTrimA_MAT_004",
+      "rel_el_ArenaWallsA_MAT_004",
+      "rel_el_ArenaTrimADark_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A.el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_A",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      16.751353374441777,
+      127.10791749966442,
+      -2.535588264465332
+    ],
+    "bounds_extent": [
+      253.5482517756655,
+      143.18952033048868,
+      6.85372257232666
+    ],
+    "slots": [
+      "Relic_Deco_mat"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B.el_dorado_fbx_Scene_Rel_El_Dorado_Relic_Snake_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -6.750315776810055,
+      -117.1089245797678,
+      -2.5367202758789062
+    ],
+    "bounds_extent": [
+      253.5472141780338,
+      143.19052741054156,
+      6.852590560913086
+    ],
+    "slots": [
+      "Relic_Deco_mat_001"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_b2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_base_b.el_dorado_fbx_Scene_rel_eldorado_flr_base_b",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.029042257894389,
+      -425.49435424875367,
+      -122.38017272949219
+    ],
+    "bounds_extent": [
+      868.155226878268,
+      594.837545541427,
+      125.50311279296875
+    ],
+    "slots": [
+      "trim_02_material_001",
+      "Stonetile_02_mat_001",
+      "trim_01_mat_003"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_base_c2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_base_c.el_dorado_fbx_Scene_rel_eldorado_flr_base_c",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.3528024589669485,
+      -457.7616882410076,
+      -594.7957763671875
+    ],
+    "bounds_extent": [
+      924.5715484257213,
+      625.5194316799956,
+      359.8917541503906
+    ],
+    "slots": [
+      "trim_03_material_002",
+      "Stonetile_02_mat_002"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_c2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_foot_c.el_dorado_fbx_Scene_rel_eldorado_flr_foot_c",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.0346870896948985,
+      -463.30480957115674,
+      -199.91481018066406
+    ],
+    "bounds_extent": [
+      929.1569977897353,
+      631.4885480025243,
+      200.1818389892578
+    ],
+    "slots": [
+      "trim_02_material_006"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_flr_foot_d2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_flr_foot_d.el_dorado_fbx_Scene_rel_eldorado_flr_foot_d",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      12.873179040814478,
+      -207.16723651972617,
+      -206.00042724609375
+    ],
+    "bounds_extent": [
+      438.9212698150835,
+      212.30527801554157,
+      207.67578125
+    ],
+    "slots": [
+      "trim_02_material_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_B2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_B.el_dorado_fbx_Scene_rel_eldorado_main_floor_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.00022241369993,
+      1620.2343749999948,
+      0.002176026813685894
+    ],
+    "bounds_extent": [
+      710.1562611127756,
+      456.64070331746893,
+      0.0006260268855839968
+    ],
+    "slots": [
+      "main_ground_mat_004",
+      "trim_mat_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_C2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_C.el_dorado_fbx_Scene_rel_eldorado_main_floor_C",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      4.609527918709318,
+      1272.6070556735651,
+      4.9700751304626465
+    ],
+    "bounds_extent": [
+      1426.1719027930785,
+      1142.0594829494062,
+      5.222774982452393
+    ],
+    "slots": [
+      "Proxy_003",
+      "main_ground_mat_003",
+      "trim_mat_003",
+      "main_ground_02_mat_003"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_D2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_D.el_dorado_fbx_Scene_rel_eldorado_main_floor_D",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.000038317569761,
+      325.51339721679597,
+      -6.178591251373291
+    ],
+    "bounds_extent": [
+      798.8281328092257,
+      320.8928722234285,
+      6.30495023727417
+    ],
+    "slots": [
+      "main_ground_mat_002",
+      "trim_mat_002",
+      "Relic_center_deco_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_E2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_E.el_dorado_fbx_Scene_rel_eldorado_main_floor_E",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.000294238424885,
+      2063.593994140618,
+      4.478025913238525
+    ],
+    "bounds_extent": [
+      749.6093855899393,
+      435.1565734182227,
+      4.475825786590576
+    ],
+    "slots": [
+      "main_ground_mat_005",
+      "Relic_center_deco_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_F2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_F.el_dorado_fbx_Scene_rel_eldorado_main_floor_F",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      4.99996168449411,
+      -315.4285888671866,
+      -6.215035915374756
+    ],
+    "bounds_extent": [
+      798.8281328112896,
+      320.9776805730379,
+      6.267191410064697
+    ],
+    "slots": [
+      "main_ground_mat_006",
+      "trim_mat_006",
+      "Relic_center_deco_008"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_main_floor_TC2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_main_floor_TC.el_dorado_fbx_Scene_rel_eldorado_main_floor_TC",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.0000179334876975,
+      741.9140014648434,
+      0.001075000036507845
+    ],
+    "bounds_extent": [
+      1248.437512923711,
+      531.054778917044,
+      0.0007750000804662704
+    ],
+    "slots": [
+      "trim_mat_007"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A.el_dorado_fbx_Scene_Rel_eldorado_red_blocks_far_A",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      5.000039628124448,
+      1633.3792724609368,
+      -52.92966842651367
+    ],
+    "bounds_extent": [
+      26.831053433110032,
+      26.831055340458533,
+      26.855472564697266
+    ],
+    "slots": [
+      "pltfrm_mat_001"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_eldorado_startramp_clump2",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_eldorado_startramp_clump.el_dorado_fbx_Scene_rel_eldorado_startramp_clump",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      4.933934365222626,
+      2715.273193360983,
+      64.57952880859375
+    ],
+    "bounds_extent": [
+      622.9621694106465,
+      460.53395070723855,
+      181.76702880859375
+    ],
+    "slots": [
+      "REL_eldorado_floor_V2_mat_004",
+      "Rel_ElDorado_Stairs_Mat_001",
+      "gold_trim_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "WhiteboxScalar",
+    "class": "StaticMeshActor",
+    "location": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      0.5,
+      0.5
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      5.0,
+      5.0,
+      0.0
+    ],
+    "bounds_extent": [
+      25.0,
+      25.0,
+      25.0
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B4",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      0.5,
+      -0.5,
+      0.5
+    ],
+    "mesh": "/BreakawayCore/Environments/Levels/BW_Dorado/el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B.el_dorado_fbx_Scene_rel_el_ArenaPedestalLargeStair_B",
+    "materials": [
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic",
+      "/Game/Characters/Cosmetics/M_TeamColorBasic.M_TeamColorBasic"
+    ],
+    "bounds_origin": [
+      -935.9754028320312,
+      463.3352355957031,
+      97.7660140991211
+    ],
+    "bounds_extent": [
+      214.49102783203125,
+      317.5409240722656,
+      131.0668182373047
+    ],
+    "slots": [
+      "Rel_el_ArenaTrimA_MAT_005",
+      "rel_el_ArenaTrimADark_MAT_005",
+      "rel_el_ArenaTrimAGold_MAT_004"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      3926.0,
+      226.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      14.75,
+      15.125,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      3926.0,
+      226.0
+    ],
+    "bounds_extent": [
+      737.5,
+      756.25,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube2",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      1705.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      14.75,
+      15.125,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      1705.0,
+      0.0
+    ],
+    "bounds_extent": [
+      737.5,
+      756.25,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube3",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      590.0,
+      0.0
+    ],
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      28.25,
+      11.75,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      590.0,
+      0.0
+    ],
+    "bounds_extent": [
+      1412.5,
+      587.5,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube4",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      2605.0,
+      70.0
+    ],
+    "rotation": [
+      -25.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      2605.0,
+      70.0
+    ],
+    "bounds_extent": [
+      737.5,
+      155.58080342021822,
+      76.98125482971656
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube5",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      2915.0,
+      140.0
+    ],
+    "rotation": [
+      -1.9365910475244164e-07,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      2915.0,
+      140.0
+    ],
+    "bounds_extent": [
+      737.5,
+      168.75000002112483,
+      6.250000570373146
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube6",
+    "class": "StaticMeshActor",
+    "location": [
+      0.0,
+      3020.0,
+      155.0
+    ],
+    "rotation": [
+      -25.0,
+      0.0,
+      0.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      0.0,
+      3020.0,
+      155.0
+    ],
+    "bounds_extent": [
+      737.5,
+      155.58080319831424,
+      76.9812553377221
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube7",
+    "class": "StaticMeshActor",
+    "location": [
+      -5.000077321325108,
+      -3921.249999756632,
+      226.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      14.75,
+      15.125,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -5.0000773213250795,
+      -3921.249999756632,
+      226.0
+    ],
+    "bounds_extent": [
+      737.5000184040351,
+      756.2500179477365,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube8",
+    "class": "StaticMeshActor",
+    "location": [
+      -4.999969221134798,
+      -1700.2499997566442,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      14.75,
+      15.125,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -4.999969221134847,
+      -1700.2499997566442,
+      0.0
+    ],
+    "bounds_extent": [
+      737.5000184040351,
+      756.2500179477369,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube9",
+    "class": "StaticMeshActor",
+    "location": [
+      -4.999914952016269,
+      -585.2499997566524,
+      0.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      28.25,
+      11.75,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -4.999914952016297,
+      -585.2499997566524,
+      0.0
+    ],
+    "bounds_extent": [
+      1412.5000142973493,
+      587.5000343744794,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube10",
+    "class": "StaticMeshActor",
+    "location": [
+      -5.000013025805924,
+      -2600.249999756639,
+      70.0
+    ],
+    "rotation": [
+      -25.0,
+      9.677453066334052e-15,
+      180.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -5.00001302580597,
+      -2600.249999756639,
+      70.0
+    ],
+    "bounds_extent": [
+      737.5000037862017,
+      155.5808211460535,
+      76.98125533772222
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube11",
+    "class": "StaticMeshActor",
+    "location": [
+      -5.000028114080273,
+      -2910.2499997566374,
+      140.0
+    ],
+    "rotation": [
+      -0.0,
+      0.0,
+      180.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -5.000028114080237,
+      -2910.2499997566374,
+      140.0
+    ],
+    "bounds_extent": [
+      737.5000041066853,
+      168.75001794773698,
+      6.25
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  },
+  {
+    "label": "Cube12",
+    "class": "StaticMeshActor",
+    "location": [
+      -5.000033224624623,
+      -3015.2499997566374,
+      155.0
+    ],
+    "rotation": [
+      -25.0,
+      9.677453066334052e-15,
+      180.0
+    ],
+    "scale": [
+      14.75,
+      3.375,
+      0.125
+    ],
+    "mesh": "/Engine/BasicShapes/Cube.Cube",
+    "materials": [
+      "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
+    ],
+    "bounds_origin": [
+      -5.000033224624644,
+      -3015.2499997566374,
+      155.0
+    ],
+    "bounds_extent": [
+      737.5000037862017,
+      155.5808211460535,
+      76.98125533772222
+    ],
+    "slots": [
+      "WorldGridMaterial"
+    ],
+    "collision": "<CollisionEnabled.QUERY_AND_PHYSICS: 3>"
+  }
+]

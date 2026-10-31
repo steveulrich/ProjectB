@@ -1,0 +1,128 @@
+{
+  "scope": "Single fixed-camera PIE Development captures in WindowsEditor; not packaged or shipping performance.",
+  "detailed_report": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\performance-csv-comparison.json",
+  "percentile_method": "R-7 linear interpolation; all valid recorded frames retained; no outlier trimming.",
+  "captures": [
+    {
+      "file": "dorado-baseline-fixed.csv",
+      "frames": 600,
+      "timings_ms": {
+        "FrameTime": {
+          "mean": 13.525174,
+          "p50": 13.16045,
+          "p95": 16.13,
+          "p99": 19.622503
+        },
+        "GameThreadTime": {
+          "mean": 13.522321,
+          "p50": 13.1396,
+          "p95": 16.21936,
+          "p99": 20.362447
+        },
+        "GPUTime": {
+          "mean": 4.422203,
+          "p50": 4.2941,
+          "p95": 5.11487,
+          "p99": 5.730272
+        }
+      },
+      "counter_medians": {
+        "GPUMem/LocalUsedMB": 5611.4609,
+        "GPUMem/LocalBudgetMB": 11229.0,
+        "RHI/DrawCalls": 713.0,
+        "DrawCall/ShadowDepths": 115.0
+      },
+      "frames_over_threshold_ms": {
+        "16.67": 18,
+        "33.33": 0,
+        "50.0": 0
+      },
+      "vsm_counter_columns": [],
+      "lumen_counter_columns": [],
+      "gpu_pass_timing_columns": []
+    },
+    {
+      "file": "dorado-backdrop-gi.csv",
+      "frames": 600,
+      "timings_ms": {
+        "FrameTime": {
+          "mean": 14.490927,
+          "p50": 13.9812,
+          "p95": 18.5626,
+          "p99": 20.956889
+        },
+        "GameThreadTime": {
+          "mean": 14.489107,
+          "p50": 13.92665,
+          "p95": 18.67574,
+          "p99": 20.761749
+        },
+        "GPUTime": {
+          "mean": 4.489716,
+          "p50": 4.29555,
+          "p95": 5.382445,
+          "p99": 5.783841
+        }
+      },
+      "counter_medians": {
+        "GPUMem/LocalUsedMB": 5611.4609,
+        "GPUMem/LocalBudgetMB": 11229.0,
+        "RHI/DrawCalls": 708.0,
+        "DrawCall/ShadowDepths": 115.0
+      },
+      "frames_over_threshold_ms": {
+        "16.67": 79,
+        "33.33": 0,
+        "50.0": 0
+      },
+      "vsm_counter_columns": [],
+      "lumen_counter_columns": [],
+      "gpu_pass_timing_columns": []
+    },
+    {
+      "file": "dorado-backdrop-shadow.csv",
+      "frames": 600,
+      "timings_ms": {
+        "FrameTime": {
+          "mean": 14.511599,
+          "p50": 14.08845,
+          "p95": 18.11037,
+          "p99": 20.334021
+        },
+        "GameThreadTime": {
+          "mean": 14.510331,
+          "p50": 14.0781,
+          "p95": 18.057245,
+          "p99": 20.596695
+        },
+        "GPUTime": {
+          "mean": 4.471616,
+          "p50": 4.29095,
+          "p95": 5.341035,
+          "p99": 5.661922
+        }
+      },
+      "counter_medians": {
+        "GPUMem/LocalUsedMB": 5611.4609,
+        "GPUMem/LocalBudgetMB": 11229.0,
+        "RHI/DrawCalls": 706.0,
+        "DrawCall/ShadowDepths": 111.0
+      },
+      "frames_over_threshold_ms": {
+        "16.67": 74,
+        "33.33": 0,
+        "50.0": 0
+      },
+      "vsm_counter_columns": [],
+      "lumen_counter_columns": [],
+      "gpu_pass_timing_columns": []
+    }
+  ],
+  "limitations": [
+    "One capture per condition; order, warm-up and background-editor noise can affect differences.",
+    "Frame and thread timing do not alone identify the critical-path cause; GPU timing may contain synchronization.",
+    "Primary screen percentage, dynamic-resolution mode and camera are operator declarations, not CSV-verified fields.",
+    "Absence of explicit VSM/Lumen counters cannot prove warning removal; use the corresponding fresh UI evidence.",
+    "DynamicResolutionVSMNanite is a shadow/Nanite scaling counter, not verification of the primary view dynamic-resolution mode."
+  ]
+}

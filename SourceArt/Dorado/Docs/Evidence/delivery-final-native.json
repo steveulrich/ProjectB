@@ -1,0 +1,210 @@
+{
+  "generated_utc": "2026-10-30T22:22:01.648491+00:00",
+  "engine": "5.8.1-0+UE5",
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado.L_Dorado",
+  "actor_count": 340,
+  "cameras": [
+    {
+      "name": "CAM_Ref_01",
+      "location": [
+        1956.757,
+        -2883.705,
+        1270.09
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 97.94207000732422,
+      "aspect": 2.2309367656707764
+    },
+    {
+      "name": "CAM_Ref_02",
+      "location": [
+        415.94999999999993,
+        4357.46,
+        978.46
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 98.533203125,
+      "aspect": 2.2273781299591064
+    },
+    {
+      "name": "CAM_Ref_03",
+      "location": [
+        -965.357,
+        -3920.457,
+        730.868
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 96.08900451660156,
+      "aspect": 2.2273781299591064
+    },
+    {
+      "name": "CAM_TopDown",
+      "location": [
+        0.0,
+        0.0,
+        6000.0
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 82.0,
+      "aspect": 1.3333333730697632
+    },
+    {
+      "name": "CAM_Player_Center",
+      "location": [
+        0.0,
+        250.0,
+        165.0
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 90.0,
+      "aspect": 1.7777777910232544
+    },
+    {
+      "name": "CAM_Player_SidePad",
+      "location": [
+        1275.0,
+        40.0,
+        374.0
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 90.0,
+      "aspect": 1.7777777910232544
+    },
+    {
+      "name": "CAM_Player_ShrineEnd",
+      "location": [
+        450.0,
+        -3000.0,
+        327.303
+      ],
+      "projection": "<CameraProjectionMode.PERSPECTIVE: 0>",
+      "fov": 90.0,
+      "aspect": 1.7777777910232544
+    }
+  ],
+  "lights": {
+    "D_Sun": {
+      "intensity": 85000.0,
+      "color_rgb": [
+        255,
+        244,
+        228
+      ]
+    },
+    "D_Sky": {
+      "intensity": 2.5,
+      "color_rgb": [
+        160,
+        200,
+        255
+      ]
+    }
+  },
+  "stair_bevels": [
+    {
+      "actor": "D_rel_eldorado_mid_stair_c_group8_ED6E3B0A",
+      "angle": 47.0,
+      "behavior": "<WalkableSlopeBehavior.WALKABLE_SLOPE_INCREASE: 1>"
+    },
+    {
+      "actor": "D_rel_eldorado_mid_stair_c_group7_3E87C53E",
+      "angle": 47.0,
+      "behavior": "<WalkableSlopeBehavior.WALKABLE_SLOPE_INCREASE: 1>"
+    },
+    {
+      "actor": "D_rel_eldorado_mid_stair_c_group9_4CE5565A",
+      "angle": 47.0,
+      "behavior": "<WalkableSlopeBehavior.WALKABLE_SLOPE_INCREASE: 1>"
+    },
+    {
+      "actor": "D_rel_eldorado_mid_stair_c_group4_A44BE49A",
+      "angle": 47.0,
+      "behavior": "<WalkableSlopeBehavior.WALKABLE_SLOPE_INCREASE: 1>"
+    }
+  ],
+  "nanite_backdrops": [
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_a_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_b_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_c_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_d_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_e_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_f_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    },
+    {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_mountain_unique_c_group",
+      "enabled": true,
+      "explicit_tangents": true,
+      "fallback_percent_triangles": 1.0
+    }
+  ],
+  "master_materials": [
+    {
+      "name": "Surface",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+    },
+    {
+      "name": "Foliage",
+      "blend_mode": "<BlendMode.BLEND_MASKED: 1>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+    },
+    {
+      "name": "Water",
+      "blend_mode": "<BlendMode.BLEND_TRANSLUCENT: 2>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+    },
+    {
+      "name": "Energy",
+      "blend_mode": "<BlendMode.BLEND_TRANSLUCENT: 2>",
+      "shading_model": "<MaterialShadingModel.MSM_UNLIT: 0>"
+    },
+    {
+      "name": "Cloud",
+      "blend_mode": "<BlendMode.BLEND_TRANSLUCENT: 2>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+    },
+    {
+      "name": "MaskedLogo",
+      "blend_mode": "<BlendMode.BLEND_MASKED: 1>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+    },
+    {
+      "name": "Glow",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_UNLIT: 0>"
+    }
+  ],
+  "dirty_packages": [],
+  "pie_world_count": 0,
+  "map_sha256": "04557811baddff4baab92a7fc07752dbe4552303c7d25147e1c803696f8dc89d",
+  "persisted_settings_pass": true
+}

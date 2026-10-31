@@ -1,0 +1,162 @@
+{
+  "recommendation": "Enable exact original planar main_floor_tc and main_floor_center_tc static-mesh collision; remove only those two names from broad decoration NoCollision exclusion. No hidden box patches required.",
+  "scope": "Four source-authored floor-fill instances; leaves stairs, exposed edges, relic ornaments and other decorative collision exclusions unchanged.",
+  "meshes": [
+    {
+      "id": "SM_Dorado_rel_eldorado_main_floor_tc_group",
+      "triangles": 156,
+      "vertices": 468,
+      "collision_role": "architecture",
+      "source_local_bounds_cm": {
+        "min": [
+          -2496.875,
+          411.71881103515625,
+          0.0006000000284984708
+        ],
+        "max": [
+          2496.875,
+          2535.9375,
+          0.0037000002339482307
+        ]
+      },
+      "source_local_z_span_cm": 0.00310000020544976,
+      "native_bounds_min_cm": [
+        -2496.875,
+        -2535.9375,
+        0.0006000000284984708
+      ],
+      "native_bounds_max_cm": [
+        2496.875,
+        -411.7185974121094,
+        0.0037000002339482307
+      ],
+      "instances": [
+        {
+          "id": "{05606010-88EC-4AA4-A076-B50803E79112}",
+          "name": "rel_eldorado_main_floor_tc_group2",
+          "location_cm": [
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "rotation_quat_xyzw": [
+            -0.0,
+            0.0,
+            -1.0,
+            -4.3711388e-08
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "collision_role": "architecture"
+        },
+        {
+          "id": "{DB6D5D76-104A-422A-8EFA-8AD97DB24B8C}",
+          "name": "rel_eldorado_main_floor_tc_group1",
+          "location_cm": [
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "rotation_quat_xyzw": [
+            -0.0,
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "collision_role": "architecture"
+        }
+      ]
+    },
+    {
+      "id": "SM_Dorado_rel_eldorado_main_floor_center_tc_group",
+      "triangles": 148,
+      "vertices": 444,
+      "collision_role": "architecture",
+      "source_local_bounds_cm": {
+        "min": [
+          -1310.9375,
+          -0.0003000000142492354,
+          0.0
+        ],
+        "max": [
+          1310.9375,
+          1310.9375,
+          0.0018000000854954123
+        ]
+      },
+      "source_local_z_span_cm": 0.0018000000854954123,
+      "native_bounds_min_cm": [
+        -1310.9375,
+        -1310.9375,
+        0.0
+      ],
+      "native_bounds_max_cm": [
+        1310.9375,
+        0.00036724042729474604,
+        0.0018000000854954123
+      ],
+      "instances": [
+        {
+          "id": "{DEF50B56-47B0-46F9-B509-B204CF9E5F85}",
+          "name": "rel_eldorado_main_floor_center_tc_group1",
+          "location_cm": [
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "rotation_quat_xyzw": [
+            -0.0,
+            0.0,
+            -0.0,
+            1.0
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "collision_role": "architecture"
+        },
+        {
+          "id": "{014F8182-239B-46FA-8E44-5C3899574C7E}",
+          "name": "rel_eldorado_main_floor_center_tc_group2",
+          "location_cm": [
+            0.0,
+            -0.0,
+            0.0
+          ],
+          "rotation_quat_xyzw": [
+            -0.0,
+            0.0,
+            -1.0,
+            -4.3711388e-08
+          ],
+          "scale": [
+            0.5,
+            0.5,
+            0.5
+          ],
+          "collision_role": "architecture"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    "runtime-floor-grid.json",
+    "source-route-profiles.json",
+    "source-floor-gap-measurement.json"
+  ],
+  "native_acceptance_pending": [
+    "Native full-floor ray grid",
+    "Actual Relic sweeps/roll/drop across circle and longitudinal seams",
+    "Actual character crossing"
+  ]
+}

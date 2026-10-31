@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Col" MtlFlags="2622592" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="mat_rock" Diffuse="0,1.5,0.13482501,1" Specular="0,0,0,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Blocks_A_mat" MtlFlags="2621600" Shader="Illum" GenMask="10880008000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%PARALLAX_OCCLUSION_MAPPING%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="0,0,0,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" PomDisplacement="0.012" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" SelfShadowStrength="2.8499999" GlowTintBlending="0" HeightBias="0.64999998" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Blocks_B_mat" MtlFlags="2621600" Shader="Illum" GenMask="10880008000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%PARALLAX_OCCLUSION_MAPPING%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="0,0,0,1" Opacity="1" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" PomDisplacement="0.0082" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" SelfShadowStrength="5" GlowTintBlending="0" HeightBias="0.89099997" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="shadowproxy" MtlFlags="2621568" Shader="Illum" GenMask="80000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Shininess="10" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

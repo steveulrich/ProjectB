@@ -1,0 +1,20 @@
+# Preserve recovered/interchange geometry through the repository's LFS workflow.
+*.cgf filter=lfs diff=lfs merge=lfs -text
+*.dae filter=lfs diff=lfs merge=lfs -text
+
+# Preserve source XML bytes for recorded archive provenance hashes.
+*.mtl -text
+*.lyr -text
+*.xml -text
+
+# Snapshot manifests verify the archived evidence bytes on fresh checkouts.
+Config/Provenance/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+Docs/Evidence/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
+# Keep authored automation and gallery files consistent across platforms.
+*.py text eol=lf
+*.ps1 text eol=lf
+*.html text eol=lf
+*.svg text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf

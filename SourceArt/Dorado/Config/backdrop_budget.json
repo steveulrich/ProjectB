@@ -1,0 +1,23 @@
+{
+  "gi_off_asset_ids": [
+    "SM_Dorado_rel_ed_vistamountains_clump_a_group",
+    "SM_Dorado_rel_ed_vistamountains_clump_b_group",
+    "SM_Dorado_rel_ed_vistamountains_clump_c_group",
+    "SM_Dorado_rel_ed_vistamountains_clump_d_group",
+    "SM_Dorado_rel_ed_vistamountains_clump_e_group",
+    "SM_Dorado_rel_ed_vistamountains_clump_f_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_a_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_b_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_c_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_d_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_e_group",
+    "SM_Dorado_rel_el_mountain_unique_c_group"
+  ],
+  "cast_shadow_off_asset_ids": [
+    "SM_Dorado_rel_ed_vistatrees_clump_a_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_b_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_c_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_d_group",
+    "SM_Dorado_rel_ed_vistatrees_clump_e_group"
+  ]
+}

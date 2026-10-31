@@ -1,0 +1,4 @@
+{
+  "saved_map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "reason": "Avoid live child-MI UniformExpressionCache shader-map invalidation; assembly reloads saved scene."
+}

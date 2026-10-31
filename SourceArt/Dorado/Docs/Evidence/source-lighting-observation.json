@@ -1,0 +1,521 @@
+{
+  "source": "F:\\BreakawayConverted\\Unpacked\\assets\\levels\\01_eldorado_a_temple\\mission_mission0.xml",
+  "sha256": "26510f0d905758be6444d105d17146f0119ab9156e325862a531159b24a18e51",
+  "time_of_day": {
+    "Time": "7.5",
+    "TimeStart": "7.5000005",
+    "TimeEnd": "7.5000005",
+    "TimeAnimSpeed": "0"
+  },
+  "environment_lighting": {
+    "SunRotation": "360",
+    "SunHeight": "80",
+    "Algorithm": "3",
+    "Lighting": "1",
+    "Shadows": "1",
+    "ShadowIntensity": "100",
+    "ILQuality": "1",
+    "HemiSamplQuality": "5",
+    "Longitude": "111",
+    "DawnTime": "355",
+    "DawnDuration": "10",
+    "DuskTime": "365",
+    "DuskDuration": "10",
+    "SunVector": "1.0490734e-007,0.60000002,-0.79999989"
+  },
+  "variables": {
+    "Sun color": {
+      "Name": "Sun color",
+      "Color": "0.84958166,0.4324058,0.074219063"
+    },
+    "Sun intensity": {
+      "Name": "Sun intensity",
+      "Value": "85000.102"
+    },
+    "Sun specular multiplier": {
+      "Name": "Sun specular multiplier",
+      "Value": "0.99999994"
+    },
+    "Fog color": {
+      "Name": "Fog color",
+      "Color": "0.17884207,0.30374506,0.35281566"
+    },
+    "Fog color multiplier": {
+      "Name": "Fog color multiplier",
+      "Value": "3.4285748"
+    },
+    "Fog height (bottom)": {
+      "Name": "Fog height (bottom)",
+      "Value": "-1114.2869"
+    },
+    "Fog layer density (bottom)": {
+      "Name": "Fog layer density (bottom)",
+      "Value": "0.8571437"
+    },
+    "Fog color (top)": {
+      "Name": "Fog color (top)",
+      "Color": "0.10162918,0.17884207,0.51318902"
+    },
+    "Fog color (top) multiplier": {
+      "Name": "Fog color (top) multiplier",
+      "Value": "2.1428595"
+    },
+    "Fog height (top)": {
+      "Name": "Fog height (top)",
+      "Value": "1750.8586"
+    },
+    "Fog layer density (top)": {
+      "Name": "Fog layer density (top)",
+      "Value": "1.2857156e-005"
+    },
+    "Fog color height offset": {
+      "Name": "Fog color height offset",
+      "Value": "0.10714296"
+    },
+    "Fog color (radial)": {
+      "Name": "Fog color (radial)",
+      "Color": "0.54649931,0.27366358,0.093307003"
+    },
+    "Fog color (radial) multiplier": {
+      "Name": "Fog color (radial) multiplier",
+      "Value": "3.5714312"
+    },
+    "Fog radial size": {
+      "Name": "Fog radial size",
+      "Value": "0.74285686"
+    },
+    "Fog radial lobe": {
+      "Name": "Fog radial lobe",
+      "Value": "0.99999994"
+    },
+    "Volumetric fog: Final density clamp": {
+      "Name": "Volumetric fog: Final density clamp",
+      "Value": "0.99999994"
+    },
+    "Volumetric fog: Global density": {
+      "Name": "Volumetric fog: Global density",
+      "Value": "5.2857184"
+    },
+    "Volumetric fog: Ramp start": {
+      "Name": "Volumetric fog: Ramp start",
+      "Value": "27.428598"
+    },
+    "Volumetric fog: Ramp end": {
+      "Name": "Volumetric fog: Ramp end",
+      "Value": "438.85757"
+    },
+    "Volumetric fog: Ramp influence": {
+      "Name": "Volumetric fog: Ramp influence",
+      "Value": "0.8571437"
+    },
+    "Volumetric fog: Shadow darkening": {
+      "Name": "Volumetric fog: Shadow darkening",
+      "Value": "0"
+    },
+    "Volumetric fog: Shadow darkening sun": {
+      "Name": "Volumetric fog: Shadow darkening sun",
+      "Value": "0"
+    },
+    "Volumetric fog: Shadow darkening ambient": {
+      "Name": "Volumetric fog: Shadow darkening ambient",
+      "Value": "0"
+    },
+    "Volumetric fog: Shadow range": {
+      "Name": "Volumetric fog: Shadow range",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog height (bottom)": {
+      "Name": "Volumetric fog 2: Fog height (bottom)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog layer density (bottom)": {
+      "Name": "Volumetric fog 2: Fog layer density (bottom)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog height (top)": {
+      "Name": "Volumetric fog 2: Fog height (top)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog layer density (top)": {
+      "Name": "Volumetric fog 2: Fog layer density (top)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Global fog density": {
+      "Name": "Volumetric fog 2: Global fog density",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Ramp start": {
+      "Name": "Volumetric fog 2: Ramp start",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Ramp end": {
+      "Name": "Volumetric fog 2: Ramp end",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog albedo color (atmosphere)": {
+      "Name": "Volumetric fog 2: Fog albedo color (atmosphere)",
+      "Color": "0,0,0"
+    },
+    "Volumetric fog 2: Anisotropy factor (atmosphere)": {
+      "Name": "Volumetric fog 2: Anisotropy factor (atmosphere)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog albedo color (sun radial)": {
+      "Name": "Volumetric fog 2: Fog albedo color (sun radial)",
+      "Color": "0,0,0"
+    },
+    "Volumetric fog 2: Anisotropy factor (sun radial)": {
+      "Name": "Volumetric fog 2: Anisotropy factor (sun radial)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Blend factor for sun scattering": {
+      "Name": "Volumetric fog 2: Blend factor for sun scattering",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Blend mode for sun scattering": {
+      "Name": "Volumetric fog 2: Blend mode for sun scattering",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Fog albedo color (entities)": {
+      "Name": "Volumetric fog 2: Fog albedo color (entities)",
+      "Color": "0,0,0"
+    },
+    "Volumetric fog 2: Anisotropy factor (entities)": {
+      "Name": "Volumetric fog 2: Anisotropy factor (entities)",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Maximum range of ray-marching": {
+      "Name": "Volumetric fog 2: Maximum range of ray-marching",
+      "Value": "0"
+    },
+    "Volumetric fog 2: In-scattering factor": {
+      "Name": "Volumetric fog 2: In-scattering factor",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Extinction factor": {
+      "Name": "Volumetric fog 2: Extinction factor",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Analytical volumetric fog visibility": {
+      "Name": "Volumetric fog 2: Analytical volumetric fog visibility",
+      "Value": "0"
+    },
+    "Volumetric fog 2: Final density clamp": {
+      "Name": "Volumetric fog 2: Final density clamp",
+      "Value": "0"
+    },
+    "Sky light: Sun intensity": {
+      "Name": "Sky light: Sun intensity",
+      "Color": "0.2073738,0.24903272,0.30374506"
+    },
+    "Sky light: Sun intensity multiplier": {
+      "Name": "Sky light: Sun intensity multiplier",
+      "Value": "120.00012"
+    },
+    "Sky light: Mie scattering": {
+      "Name": "Sky light: Mie scattering",
+      "Value": "4.8000002"
+    },
+    "Sky light: Rayleigh scattering": {
+      "Name": "Sky light: Rayleigh scattering",
+      "Value": "1.9999999"
+    },
+    "Sky light: Sun anisotropy factor": {
+      "Name": "Sky light: Sun anisotropy factor",
+      "Value": "-0.9827857"
+    },
+    "Sky light: Wavelength (R)": {
+      "Name": "Sky light: Wavelength (R)",
+      "Value": "693.99994"
+    },
+    "Sky light: Wavelength (G)": {
+      "Name": "Sky light: Wavelength (G)",
+      "Value": "597"
+    },
+    "Sky light: Wavelength (B)": {
+      "Name": "Sky light: Wavelength (B)",
+      "Value": "487.99997"
+    },
+    "Night sky: Horizon color": {
+      "Name": "Night sky: Horizon color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Night sky: Horizon color multiplier": {
+      "Name": "Night sky: Horizon color multiplier",
+      "Value": "0"
+    },
+    "Night sky: Zenith color": {
+      "Name": "Night sky: Zenith color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Night sky: Zenith color multiplier": {
+      "Name": "Night sky: Zenith color multiplier",
+      "Value": "0"
+    },
+    "Night sky: Zenith shift": {
+      "Name": "Night sky: Zenith shift",
+      "Value": "0.99999994"
+    },
+    "Night sky: Star intensity": {
+      "Name": "Night sky: Star intensity",
+      "Value": "0"
+    },
+    "Night sky: Moon color": {
+      "Name": "Night sky: Moon color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Night sky: Moon color multiplier": {
+      "Name": "Night sky: Moon color multiplier",
+      "Value": "0"
+    },
+    "Night sky: Moon inner corona color": {
+      "Name": "Night sky: Moon inner corona color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Night sky: Moon inner corona color multiplier": {
+      "Name": "Night sky: Moon inner corona color multiplier",
+      "Value": "0"
+    },
+    "Night sky: Moon inner corona scale": {
+      "Name": "Night sky: Moon inner corona scale",
+      "Value": "0.99999994"
+    },
+    "Night sky: Moon outer corona color": {
+      "Name": "Night sky: Moon outer corona color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Night sky: Moon outer corona color multiplier": {
+      "Name": "Night sky: Moon outer corona color multiplier",
+      "Value": "0"
+    },
+    "Night sky: Moon outer corona scale": {
+      "Name": "Night sky: Moon outer corona scale",
+      "Value": "0.99999994"
+    },
+    "Cloud shading: Sun light multiplier": {
+      "Name": "Cloud shading: Sun light multiplier",
+      "Value": "0.99999994"
+    },
+    "Cloud shading: Sun custom color": {
+      "Name": "Cloud shading: Sun custom color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Cloud shading: Sun custom color multiplier": {
+      "Name": "Cloud shading: Sun custom color multiplier",
+      "Value": "0.99999994"
+    },
+    "Cloud shading: Sun custom color influence": {
+      "Name": "Cloud shading: Sun custom color influence",
+      "Value": "0"
+    },
+    "Sun shafts visibility": {
+      "Name": "Sun shafts visibility",
+      "Value": "0"
+    },
+    "Sun rays visibility": {
+      "Name": "Sun rays visibility",
+      "Value": "0.99999994"
+    },
+    "Sun rays attenuation": {
+      "Name": "Sun rays attenuation",
+      "Value": "1.4285718"
+    },
+    "Sun rays suncolor influence": {
+      "Name": "Sun rays suncolor influence",
+      "Value": "0.14285621"
+    },
+    "Sun rays custom color": {
+      "Name": "Sun rays custom color",
+      "Color": "0.54649931,0.31556422,0.090157092"
+    },
+    "Ocean fog color": {
+      "Name": "Ocean fog color",
+      "Color": "0.2389527,0.2389527,0.2389527"
+    },
+    "Ocean fog color multiplier": {
+      "Name": "Ocean fog color multiplier",
+      "Value": "0.99999994"
+    },
+    "Ocean fog density": {
+      "Name": "Ocean fog density",
+      "Value": "0.99999994"
+    },
+    "Skybox multiplier": {
+      "Name": "Skybox multiplier",
+      "Value": "0.99999994"
+    },
+    "Film curve shoulder scale": {
+      "Name": "Film curve shoulder scale",
+      "Value": "2.5000014"
+    },
+    "Film curve midtones scale": {
+      "Name": "Film curve midtones scale",
+      "Value": "0.49999997"
+    },
+    "Film curve toe scale": {
+      "Name": "Film curve toe scale",
+      "Value": "0.022857057"
+    },
+    "Film curve whitepoint": {
+      "Name": "Film curve whitepoint",
+      "Value": "1.2142859"
+    },
+    "Saturation": {
+      "Name": "Saturation",
+      "Value": "0.95714271"
+    },
+    "Color balance": {
+      "Name": "Color balance",
+      "Color": "0.99999994,0.99999994,0.99999994"
+    },
+    "Scene key": {
+      "Name": "Scene key",
+      "Value": "0"
+    },
+    "Min exposure": {
+      "Name": "Min exposure",
+      "Value": "0.60000002"
+    },
+    "Max exposure": {
+      "Name": "Max exposure",
+      "Value": "0.60000002"
+    },
+    "EV Min": {
+      "Name": "EV Min",
+      "Value": "0"
+    },
+    "EV Max": {
+      "Name": "EV Max",
+      "Value": "0"
+    },
+    "EV Auto compensation": {
+      "Name": "EV Auto compensation",
+      "Value": "0"
+    },
+    "Bloom amount": {
+      "Name": "Bloom amount",
+      "Value": "1.7142874"
+    },
+    "Filters: grain": {
+      "Name": "Filters: grain",
+      "Value": "0"
+    },
+    "Filters: photofilter color": {
+      "Name": "Filters: photofilter color",
+      "Color": "0.99999994,0.99999994,0.99999994"
+    },
+    "Filters: photofilter density": {
+      "Name": "Filters: photofilter density",
+      "Value": "0"
+    },
+    "Dof: focus range": {
+      "Name": "Dof: focus range",
+      "Value": "581.71381"
+    },
+    "Dof: blur amount": {
+      "Name": "Dof: blur amount",
+      "Value": "0.08571437"
+    },
+    "Cascade 0: Bias": {
+      "Name": "Cascade 0: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 0: Slope Bias": {
+      "Name": "Cascade 0: Slope Bias",
+      "Value": "157.85727"
+    },
+    "Cascade 1: Bias": {
+      "Name": "Cascade 1: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 1: Slope Bias": {
+      "Name": "Cascade 1: Slope Bias",
+      "Value": "157.85727"
+    },
+    "Cascade 2: Bias": {
+      "Name": "Cascade 2: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 2: Slope Bias": {
+      "Name": "Cascade 2: Slope Bias",
+      "Value": "157.85727"
+    },
+    "Cascade 3: Bias": {
+      "Name": "Cascade 3: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 3: Slope Bias": {
+      "Name": "Cascade 3: Slope Bias",
+      "Value": "157.85727"
+    },
+    "Cascade 4: Bias": {
+      "Name": "Cascade 4: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 4: Slope Bias": {
+      "Name": "Cascade 4: Slope Bias",
+      "Value": "157.85727"
+    },
+    "Cascade 5: Bias": {
+      "Name": "Cascade 5: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 5: Slope Bias": {
+      "Name": "Cascade 5: Slope Bias",
+      "Value": "24.999998"
+    },
+    "Cascade 6: Bias": {
+      "Name": "Cascade 6: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 6: Slope Bias": {
+      "Name": "Cascade 6: Slope Bias",
+      "Value": "24.999998"
+    },
+    "Cascade 7: Bias": {
+      "Name": "Cascade 7: Bias",
+      "Value": "0.00099999993"
+    },
+    "Cascade 7: Slope Bias": {
+      "Name": "Cascade 7: Slope Bias",
+      "Value": "24.999998"
+    },
+    "Shadow jittering": {
+      "Name": "Shadow jittering",
+      "Value": "1.9999999"
+    },
+    "HDR dynamic power factor": {
+      "Name": "HDR dynamic power factor",
+      "Value": "0"
+    },
+    "Sky brightening (terrain occlusion)": {
+      "Name": "Sky brightening (terrain occlusion)",
+      "Value": "0"
+    },
+    "Sun color multiplier": {
+      "Name": "Sun color multiplier",
+      "Value": "0"
+    }
+  },
+  "recommended_initial_unreal_adjustment": {
+    "directional_rotation_pitch_yaw_roll": [
+      -53.1301,
+      -90,
+      0
+    ],
+    "sun_intensity_lux": 85000,
+    "sun_color_srgb8": [
+      255,
+      220,
+      170
+    ],
+    "sky_intensity": 2.0,
+    "manual_ev100": 12.0
+  },
+  "status": "Source data verified; Unreal mapping is a starting inference and has not been applied by this agent.",
+  "limitations": [
+    "Source SunVector interpreted as incoming ray direction; confirm shadow direction visually.",
+    "CryEngine sun RGB is very warm and its tone-mapping/exposure model differs from UE.",
+    "Sky multiplier, fog densities and fixed exposure0.6 must not be copied numerically into UE."
+  ]
+}

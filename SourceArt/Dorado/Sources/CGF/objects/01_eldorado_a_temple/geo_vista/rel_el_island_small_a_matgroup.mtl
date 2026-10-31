@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="island_group_a" MtlFlags="2621568" Shader="Illum" GenMask="880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.03954624,0.03954624,0.03954624,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

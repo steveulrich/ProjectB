@@ -1,0 +1,705 @@
+{
+  "scope": "Read-only CPU analysis of exact active source texture paths plus current config multipliers, excluding illumination/tone mapping.",
+  "materials": [
+    {
+      "id": "rel_eldorado_main_ground_material__0__main_ground_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_01_diff_48854775_BC.png",
+      "mask_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_01_diff_48854775_A.png",
+      "tint": [
+        1.0,
+        1.1,
+        1.15
+      ],
+      "inlay_tint": [
+        0.3,
+        0.4363636363636363,
+        0.9565217391304349
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.2902,
+            0.2118,
+            0.1294
+          ],
+          "source_linear_median": [
+            0.06848,
+            0.03689,
+            0.01521
+          ],
+          "current_output_linear_median": [
+            0.06301,
+            0.04058,
+            0.01749
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 0.8104,
+          "source_srgb_median": [
+            0.2902,
+            0.2078,
+            0.1294
+          ],
+          "source_linear_median": [
+            0.06848,
+            0.0356,
+            0.01521
+          ],
+          "current_output_linear_median": [
+            0.06848,
+            0.03916,
+            0.01749
+          ]
+        },
+        {
+          "region": "high_mask",
+          "fraction": 0.185,
+          "source_srgb_median": [
+            0.3294,
+            0.3255,
+            0.3294
+          ],
+          "source_linear_median": [
+            0.08866,
+            0.0865,
+            0.08866
+          ],
+          "current_output_linear_median": [
+            0.0266,
+            0.04152,
+            0.09752
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_eldorado_main_ground_material__4__main_ground_02_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_02_diff_c7a62a03_BC.png",
+      "mask_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_02_diff_c7a62a03_A.png",
+      "tint": [
+        1.0,
+        1.1,
+        1.15
+      ],
+      "inlay_tint": [
+        0.3,
+        0.4363636363636363,
+        0.9565217391304349
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.3098,
+            0.2353,
+            0.1294
+          ],
+          "source_linear_median": [
+            0.07819,
+            0.04519,
+            0.01521
+          ],
+          "current_output_linear_median": [
+            0.07819,
+            0.0497,
+            0.01749
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 0.9777,
+          "source_srgb_median": [
+            0.3098,
+            0.2353,
+            0.1294
+          ],
+          "source_linear_median": [
+            0.07819,
+            0.04519,
+            0.01521
+          ],
+          "current_output_linear_median": [
+            0.07819,
+            0.0497,
+            0.01749
+          ]
+        },
+        {
+          "region": "high_mask",
+          "fraction": 0.0218,
+          "source_srgb_median": [
+            0.3647,
+            0.3569,
+            0.3647
+          ],
+          "source_linear_median": [
+            0.10946,
+            0.10462,
+            0.10946
+          ],
+          "current_output_linear_median": [
+            0.03284,
+            0.05022,
+            0.12041
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_el_arenamaster_mat__0__rel_el_arenatrima_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_el_arenatrima_alphablack_diff_ae9315c4_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.26,
+        0.34,
+        0.43
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5686,
+            0.5412,
+            0.4706
+          ],
+          "source_linear_median": [
+            0.28315,
+            0.25415,
+            0.18782
+          ],
+          "current_output_linear_median": [
+            0.07362,
+            0.08641,
+            0.08076
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5686,
+            0.5412,
+            0.4706
+          ],
+          "source_linear_median": [
+            0.28315,
+            0.25415,
+            0.18782
+          ],
+          "current_output_linear_median": [
+            0.07362,
+            0.08641,
+            0.08076
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_el_arenatrima_alphablack_diff_ae9315c4_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.18,
+        0.27,
+        0.36
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5686,
+            0.5412,
+            0.4706
+          ],
+          "source_linear_median": [
+            0.28315,
+            0.25415,
+            0.18782
+          ],
+          "current_output_linear_median": [
+            0.05097,
+            0.06862,
+            0.06762
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5686,
+            0.5412,
+            0.4706
+          ],
+          "source_linear_median": [
+            0.28315,
+            0.25415,
+            0.18782
+          ],
+          "current_output_linear_median": [
+            0.05097,
+            0.06862,
+            0.06762
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_el_arenatilewall_diff_f284cd48_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.29,
+        0.38,
+        0.46
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5176,
+            0.4902,
+            0.4196
+          ],
+          "source_linear_median": [
+            0.23074,
+            0.20508,
+            0.14703
+          ],
+          "current_output_linear_median": [
+            0.06691,
+            0.07793,
+            0.06763
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5176,
+            0.4902,
+            0.4196
+          ],
+          "source_linear_median": [
+            0.23074,
+            0.20508,
+            0.14703
+          ],
+          "current_output_linear_median": [
+            0.06691,
+            0.07793,
+            0.06763
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_el_arenatilewall_diff_f284cd48_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.3,
+        0.4,
+        0.46
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5176,
+            0.4902,
+            0.4196
+          ],
+          "source_linear_median": [
+            0.23074,
+            0.20508,
+            0.14703
+          ],
+          "current_output_linear_median": [
+            0.06922,
+            0.08203,
+            0.06763
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.5176,
+            0.4902,
+            0.4196
+          ],
+          "source_linear_median": [
+            0.23074,
+            0.20508,
+            0.14703
+          ],
+          "current_output_linear_median": [
+            0.06922,
+            0.08203,
+            0.06763
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_body_28a20d61_BC.png",
+      "mask_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_body_28a20d61_M.png",
+      "tint": [
+        0.28,
+        0.38,
+        0.47
+      ],
+      "inlay_tint": [
+        3.428571428571428,
+        3.81578947368421,
+        2.8723404255319154
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.549,
+            0.4745,
+            0.3725
+          ],
+          "source_linear_median": [
+            0.26225,
+            0.1912,
+            0.11444
+          ],
+          "current_output_linear_median": [
+            0.07343,
+            0.07527,
+            0.05378
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 0.9554,
+          "source_srgb_median": [
+            0.549,
+            0.4745,
+            0.3725
+          ],
+          "source_linear_median": [
+            0.26225,
+            0.1912,
+            0.11444
+          ],
+          "current_output_linear_median": [
+            0.07343,
+            0.07266,
+            0.05378
+          ]
+        },
+        {
+          "region": "high_mask",
+          "fraction": 0.0443,
+          "source_srgb_median": [
+            0.9765,
+            0.4275,
+            0.0706
+          ],
+          "source_linear_median": [
+            0.94731,
+            0.15293,
+            0.00605
+          ],
+          "current_output_linear_median": [
+            0.90941,
+            0.22174,
+            0.00817
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_head_a49f3579_BC.png",
+      "mask_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_head_a49f3579_M.png",
+      "tint": [
+        0.65,
+        0.78,
+        0.86
+      ],
+      "inlay_tint": [
+        1.4769230769230768,
+        1.8589743589743588,
+        1.5697674418604655
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.2392,
+            0.2157,
+            0.098
+          ],
+          "source_linear_median": [
+            0.04667,
+            0.0382,
+            0.00972
+          ],
+          "current_output_linear_median": [
+            0.03033,
+            0.0298,
+            0.00944
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 0.6699,
+          "source_srgb_median": [
+            0.2275,
+            0.1843,
+            0.1333
+          ],
+          "source_linear_median": [
+            0.04231,
+            0.02843,
+            0.016
+          ],
+          "current_output_linear_median": [
+            0.0275,
+            0.02217,
+            0.01376
+          ]
+        },
+        {
+          "region": "high_mask",
+          "fraction": 0.329,
+          "source_srgb_median": [
+            0.9765,
+            0.4275,
+            0.0706
+          ],
+          "source_linear_median": [
+            0.94731,
+            0.15293,
+            0.00605
+          ],
+          "current_output_linear_median": [
+            0.90941,
+            0.22174,
+            0.00817
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_eldorado_buff_spawn_material__1__buff_spawn_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_BC.png",
+      "mask_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_M.png",
+      "tint": [
+        1,
+        1,
+        1
+      ],
+      "inlay_tint": [
+        1,
+        1.45,
+        1.7
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            0.251,
+            0.2,
+            0.1216
+          ],
+          "source_linear_median": [
+            0.05127,
+            0.0331,
+            0.0137
+          ],
+          "current_output_linear_median": [
+            0.05127,
+            0.0331,
+            0.0137
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 0.8225,
+          "source_srgb_median": [
+            0.2471,
+            0.1961,
+            0.1216
+          ],
+          "source_linear_median": [
+            0.04971,
+            0.0319,
+            0.0137
+          ],
+          "current_output_linear_median": [
+            0.04971,
+            0.0319,
+            0.0137
+          ]
+        },
+        {
+          "region": "high_mask",
+          "fraction": 0.1774,
+          "source_srgb_median": [
+            0.9686,
+            0.4353,
+            0.0706
+          ],
+          "source_linear_median": [
+            0.93011,
+            0.15896,
+            0.00605
+          ],
+          "current_output_linear_median": [
+            0.93011,
+            0.23049,
+            0.01028
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_el_arenamaster_mat__9__rel_el_arenatrimagold_mat",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\white_8b18af91_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.98,
+        0.62,
+        0.12
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "source_linear_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "current_output_linear_median": [
+            0.98,
+            0.62,
+            0.12
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "source_linear_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "current_output_linear_median": [
+            0.98,
+            0.62,
+            0.12
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rel_eldorado_floor_v2_mat_matgroup__2__gold_trim",
+      "base_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\white_8b18af91_BC.png",
+      "mask_map": null,
+      "tint": [
+        0.98,
+        0.62,
+        0.12
+      ],
+      "inlay_tint": [
+        1,
+        1,
+        1
+      ],
+      "stats": [
+        {
+          "region": "all",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "source_linear_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "current_output_linear_median": [
+            0.98,
+            0.62,
+            0.12
+          ]
+        },
+        {
+          "region": "low_mask",
+          "fraction": 1.0,
+          "source_srgb_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "source_linear_median": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "current_output_linear_median": [
+            0.98,
+            0.62,
+            0.12
+          ]
+        }
+      ]
+    }
+  ]
+}

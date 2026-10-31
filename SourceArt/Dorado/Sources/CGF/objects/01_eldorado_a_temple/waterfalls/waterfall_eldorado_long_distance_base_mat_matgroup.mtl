@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Waterfall_ElDorado_Long_Distance_Base_MAT" MtlFlags="2623618" Shader="Waterfall" GenMask="7" StringGenMask="" SurfaceType="" Diffuse="0.20863689,0.73046088,0.84687334,1" Specular="0.47353151,0.47353151,0.75294232,1" Shininess="158" vertModifType="1" LayerAct="1">
+   <VertexDeform Type="1" DividerX="20.4" DividerY="0.0099999998" NoiseScale="5,5,5">
+    <WaveX Type="1" Amp="0" Level="0" Phase="0" Freq="0" />
+   </VertexDeform>
+   <PublicParams SunMultiplier="0" TillingLayer0="1" SpeedLayer0="2.5" SpeedLayer1="1" TillingLayer1="1" FoamMultiplier="1.393" FresnelBias="0.38999999" RefractionBumpScale="0.016000001" ReflectionAmount="0" BumpScaleLayer1="0.472" FoamDeform="0.014" AlphaBlendMul="1" BumpScaleLayer0="1.268" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Waterfall_ElDorado_Long_Distance_Middle_MAT" MtlFlags="2623618" Shader="Waterfall" GenMask="7" StringGenMask="" SurfaceType="" Diffuse="0.11193243,0.52099562,0.61720669,1" Specular="0.47353151,0.47353151,0.75294232,1" Opacity="1" Shininess="158" vertModifType="1" LayerAct="1">
+   <VertexDeform Type="1" DividerX="20.4" DividerY="0.0099999998" NoiseScale="5,5,5">
+    <WaveX Type="1" Amp="0" Level="0" Phase="0" Freq="0" />
+   </VertexDeform>
+   <PublicParams SunMultiplier="1.05" TillingLayer0="1" SpeedLayer0="2" SpeedLayer1="5" TillingLayer1="1" FoamMultiplier="4" FresnelBias="0.38999999" RefractionBumpScale="0.0199" ReflectionAmount="0" BumpScaleLayer1="0.472" FoamDeform="0.18799999" AlphaBlendMul="0.34" BumpScaleLayer0="0.373" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Rel_ed_treecard_A_mat" MtlFlags="2621568" Shader="Illum" GenMask="880008000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%PARALLAX_OCCLUSION_MAPPING%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="0.97344542,0.96468639,0.96468639,1" Specular="0.00060705398,0.00060705398,0.00060705398,1" Opacity="1" Shininess="255" AlphaTest="0.66000003" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" PomDisplacement="0.0242" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" SelfShadowStrength="1" GlowTintBlending="0" HeightBias="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

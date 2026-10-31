@@ -1,0 +1,16 @@
+{
+  "source_floor_cm": 162.3028,
+  "source_actor": "D_rel_eldorado_startramp_clump_group2_53FE5C23",
+  "camera_before_cm": [
+    450,
+    -3000,
+    165
+  ],
+  "camera_after_cm": [
+    450,
+    -3000,
+    327.303
+  ],
+  "eye_height_above_local_floor_cm": 165.0002,
+  "method": "Native Visibility trace; camera-only correction; no geometry or lighting changes"
+}

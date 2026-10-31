@@ -1,0 +1,121 @@
+{
+  "scope": "Read-only pixel analysis; blurred comparisons suppress high-frequency TAA noise but do not prove motion direction or eliminate all temporal lighting changes. No image files modified.",
+  "files": [
+    {
+      "path": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\Renders\\final\\CAM_Ref_03.png",
+      "sha256": "d82b61ad6e66ed9122c1a5c7f643c1425dbd502bcb2df56349a5b9c5b2641b27",
+      "mtime_utc": "2026-10-30T22:01:03.603045+00:00",
+      "dimensions": [
+        1920,
+        862
+      ]
+    },
+    {
+      "path": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\Renders\\effects-followup\\CAM_Ref_03.png",
+      "sha256": "c90e27d9fbd013c48017a76946d040f39eaa7f50e8de791cd12d51886ef1be03",
+      "mtime_utc": "2026-10-30T22:02:51.831134+00:00",
+      "dimensions": [
+        1920,
+        862
+      ]
+    }
+  ],
+  "regions": {
+    "water_upper_middle": {
+      "roi_xyxy": [
+        1100,
+        570,
+        1155,
+        720
+      ],
+      "mean_abs_rgb_difference_0_255": 12.10589898989899,
+      "mean_abs_difference_after_2px_blur": 9.134343434343434,
+      "fraction_pixels_any_channel_change_over_10": 0.6807272727272727,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.5763636363636364
+    },
+    "water_lower": {
+      "roi_xyxy": [
+        1095,
+        735,
+        1165,
+        842
+      ],
+      "mean_abs_rgb_difference_0_255": 10.76444147752559,
+      "mean_abs_difference_after_2px_blur": 8.644548286604362,
+      "fraction_pixels_any_channel_change_over_10": 0.6930574098798398,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.5878504672897197
+    },
+    "energy_lower_arc": {
+      "roi_xyxy": [
+        574,
+        655,
+        700,
+        839
+      ],
+      "mean_abs_rgb_difference_0_255": 20.036950770646424,
+      "mean_abs_difference_after_2px_blur": 18.501135840809752,
+      "fraction_pixels_any_channel_change_over_10": 0.7400793650793651,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.7395617667356797
+    },
+    "energy_mid_arc": {
+      "roi_xyxy": [
+        495,
+        432,
+        637,
+        647
+      ],
+      "mean_abs_rgb_difference_0_255": 19.0984496124031,
+      "mean_abs_difference_after_2px_blur": 18.081209739054483,
+      "fraction_pixels_any_channel_change_over_10": 0.5819849328529315,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.5990501146413364
+    },
+    "static_temple_panel": {
+      "roi_xyxy": [
+        267,
+        339,
+        368,
+        450
+      ],
+      "mean_abs_rgb_difference_0_255": 0.8796420182558796,
+      "mean_abs_difference_after_2px_blur": 0.3685665863883686,
+      "fraction_pixels_any_channel_change_over_10": 0.0021407546160021407,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.0
+    },
+    "static_near_cliff": {
+      "roi_xyxy": [
+        756,
+        601,
+        847,
+        708
+      ],
+      "mean_abs_rgb_difference_0_255": 0.9735373660607305,
+      "mean_abs_difference_after_2px_blur": 0.43404881722638733,
+      "fraction_pixels_any_channel_change_over_10": 0.0006162062236828592,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.0
+    },
+    "static_gold_triangle": {
+      "roi_xyxy": [
+        36,
+        319,
+        80,
+        394
+      ],
+      "mean_abs_rgb_difference_0_255": 0.8854545454545455,
+      "mean_abs_difference_after_2px_blur": 0.4074747474747475,
+      "fraction_pixels_any_channel_change_over_10": 0.004545454545454545,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.0
+    },
+    "static_hazy_sky": {
+      "roi_xyxy": [
+        1600,
+        340,
+        1770,
+        470
+      ],
+      "mean_abs_rgb_difference_0_255": 0.32894419306184014,
+      "mean_abs_difference_after_2px_blur": 0.16054298642533937,
+      "fraction_pixels_any_channel_change_over_10": 0.0,
+      "fraction_pixels_blurred_any_channel_change_over_10": 0.0
+    }
+  }
+}

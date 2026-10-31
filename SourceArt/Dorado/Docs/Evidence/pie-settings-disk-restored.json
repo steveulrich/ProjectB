@@ -1,0 +1,13 @@
+{
+  "path": "E:\\Unreal Projects\\ProjectB\\Saved\\Config\\WindowsEditor\\EditorPerProjectUserSettings.ini",
+  "changes": [
+    {
+      "key": "AdditionalServerGameOptions",
+      "after": "?NumBots=4?Experience=B_BW_Experience_Dev",
+      "before": "?Experience=B_BW_Experience_CaptureTheRelic?SkipHeroSelection=1?NumBots=0?Hero=Argus?PrematchDuration=1?WarmupDuration=1?RoundDuration=1800?PointsToWin=9"
+    }
+  ],
+  "scope": "Only four recorded PIE settings in generated user INI; editor closed; other text preserved.",
+  "generated_utc": "2026-10-30T22:20:20.7577824Z",
+  "restored": true
+}

@@ -1,0 +1,369 @@
+{
+  "scope": "Assembly Blend files, root manifests/dimensions, config and Python control scripts; texture and FBX checks are in source-package-path-audit.json.",
+  "files": [
+    {
+      "path": "calibration_manifest.json",
+      "bytes": 226,
+      "sha256": "670a32adc78c0bcd2cd402285f81ccd26c4dee449cc4e5c4b9f94e8f989c7a7b",
+      "last_write_utc": "2026-10-30T20:01:47.574310+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/additional_placements.json",
+      "bytes": 139815,
+      "sha256": "1682b11f6e73286600f8e7ce19c1bead3e05975bb1e3ce5c07d40a9fac1d5c82",
+      "last_write_utc": "2026-10-30T20:04:49.404998+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/backdrop_budget.json",
+      "bytes": 945,
+      "sha256": "e508cd9881594ccf9c7eece2e4c4449df53771f27a460631482e4433afb1b2e7",
+      "last_write_utc": "2026-10-30T20:53:49.498683+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/calibration.json",
+      "bytes": 555,
+      "sha256": "a4201e173a45d19acea725a17d4a8295afe2621e11ba545c408a6e21941b7bb0",
+      "last_write_utc": "2026-10-30T19:53:10.753381+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/camera_ref01_head_landmarks.json",
+      "bytes": 3573,
+      "sha256": "f17b51ad1cef96064cea782c45b5c5cd03d0ab59706811e030757eb223b41a0c",
+      "last_write_utc": "2026-10-30T20:34:25.196380+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/camera_ref01_landmarks.json",
+      "bytes": 1517,
+      "sha256": "be47c162185196fa6b54cccdc7b34b9e4ba0d01e1970ce8a82b4b571736bb7f1",
+      "last_write_utc": "2026-10-30T20:22:15.827823+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/camera_ref02_landmarks.json",
+      "bytes": 2737,
+      "sha256": "fa9875d7b8ed38482ba1442bdad8ed7e48fe4564ba11599108dd6682e5701cc2",
+      "last_write_utc": "2026-10-30T20:27:51.801199+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/camera_ref03_landmarks.json",
+      "bytes": 1922,
+      "sha256": "d7fc52e37161fcc09422c9685fe63acb7d290f6fc80ad5060389788150b5cc41",
+      "last_write_utc": "2026-10-30T20:30:32.010700+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/camera_ref03_surface_landmarks.json",
+      "bytes": 2018,
+      "sha256": "28da2c446930cac44363bf3a7d738991f9d6255799539c6f0fdb23b11365224d",
+      "last_write_utc": "2026-10-30T20:35:35.219468+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/geometry_stage.json",
+      "bytes": 3532451,
+      "sha256": "ac5a39e0ee135bba72516078c75b508405962e2d5cc8ab54ebcb229fe4406061",
+      "last_write_utc": "2026-10-30T19:53:51.935812+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/geometry_stage_rel_ed_ring_a_group.json",
+      "bytes": 16073,
+      "sha256": "4723a73e574098358161db92ded53005c834d0044e18703c352d37ec4258e848",
+      "last_write_utc": "2026-10-30T19:50:21.514432+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/inferred_glow_points.json",
+      "bytes": 33519,
+      "sha256": "23dd4fb667b4434c3a61d1ea411c06d5effbea57d488c9aa39927dd4fce930f4",
+      "last_write_utc": "2026-10-30T20:45:26.384773+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/material_art_overrides.json",
+      "bytes": 54062,
+      "sha256": "d2b7ca4ccd8723ddcac49f990589476b70162475946f3c5abc38c4caab9fea82",
+      "last_write_utc": "2026-10-30T21:59:30.429030+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/parent_transform_corrections.json",
+      "bytes": 4,
+      "sha256": "a5338d955b09046ec0b16f3a9625b7955c763aae07dc722e474e6078745f932f",
+      "last_write_utc": "2026-10-30T20:04:49.404998+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/ring_energy_geometry.json",
+      "bytes": 3422,
+      "sha256": "d4240479fdf20f0b6203fd00b0939cef7cac33f5a9abf2f96aeeabc98ca51338",
+      "last_write_utc": "2026-10-30T20:04:49.852830+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/ring_source_transforms.json",
+      "bytes": 2902,
+      "sha256": "4b34b5ca8fc9d1bd90fbe7ec3bb0301f245b991a82f0bae61f476a311dadb3b2",
+      "last_write_utc": "2026-10-30T20:04:49.406504+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Config/traversal_plan.json",
+      "bytes": 4948,
+      "sha256": "1d523fe2df7cf9c19757590063637a42beedcd53cc8c1bd02c1296f203e90025",
+      "last_write_utc": "2026-10-30T20:36:15.332821+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "dimensions.json",
+      "bytes": 18307,
+      "sha256": "b320dfc2d6ffbbb7d59393a36f097b1620cf7bfe5554de9d4a47c14a2534e4ea",
+      "last_write_utc": "2026-10-30T22:10:40.178670+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Dorado_Recovered.blend",
+      "bytes": 7519285,
+      "sha256": "c28905fb5f4e5a9b817588768df79b7969195b4b2a40ba9517b36262b4af265e",
+      "last_write_utc": "2026-10-30T20:15:15.606091+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Dorado_Recovered_rel_ed_ring_a_group.blend",
+      "bytes": 325113,
+      "sha256": "0dc7d3e41aacd60816f9d06cd8805d4ae36e10414a310d9e5bd9a12667c34d6b",
+      "last_write_utc": "2026-10-30T19:50:45.148837+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Dorado_RingEnergy_Reconstructed.blend",
+      "bytes": 105486,
+      "sha256": "bc5db5b148a10f2352cd863e52840ccd8e00bbc11513c6e8e8548565c8d3bc70",
+      "last_write_utc": "2026-10-30T20:02:44.753861+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "energy_manifest.json",
+      "bytes": 10269,
+      "sha256": "8a52ab971c4b13fffa23fe381267a0381aaf2dedad75f1dce1e82f783dbca891",
+      "last_write_utc": "2026-10-30T20:02:44.797846+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "geometry_manifest.json",
+      "bytes": 533603,
+      "sha256": "478963a17ea69d6243221033d430def1bffe3f3ec734e8e6bf9d2d6cb71c3e88",
+      "last_write_utc": "2026-10-30T20:15:15.316686+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "geometry_manifest_rel_ed_ring_a_group.json",
+      "bytes": 3203,
+      "sha256": "908c33907422e873b77b3a78d54e6046c1b9c9dc4e0eded0dc223cc718f5479d",
+      "last_write_utc": "2026-10-30T19:50:45.229447+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/analyze_performance_csv.py",
+      "bytes": 10801,
+      "sha256": "35a36dc51540a1f085295b5c0cace8f2b621d443d67532785088eec884520cde",
+      "last_write_utc": "2026-10-30T20:51:23.653848+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/analyze_relic_trajectories.py",
+      "bytes": 6539,
+      "sha256": "bee378b551abda2047d402a4191039e0792380fa36df4d5ceff9b23e5da5482c",
+      "last_write_utc": "2026-10-30T21:07:12.297162+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/analyze_ring_gaps.py",
+      "bytes": 7174,
+      "sha256": "9c8d7d924f2d520f993078bc9a833deee78f7db06c1c409ae6c6dd8f41df01ab",
+      "last_write_utc": "2026-10-30T20:33:57.797420+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/audit_package_paths.py",
+      "bytes": 6043,
+      "sha256": "e133bbe0e94321313554d5a331cd353103ab4ce72d460aaaa7e77b2db4de781d",
+      "last_write_utc": "2026-10-30T22:09:42.249899+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/audit_pad_occlusion.py",
+      "bytes": 4010,
+      "sha256": "cbc41d1ee8965bbdda29718b86d0c0e74efaccaf606e0d6ed4c6e471216d6ec6",
+      "last_write_utc": "2026-10-30T21:39:37.489366+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/audit_source_scope.py",
+      "bytes": 7071,
+      "sha256": "d871359739d40becada539bfc60fffb44d77918afd040e96a32b0ea44fd40973",
+      "last_write_utc": "2026-10-30T20:04:48.456257+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/build_ring_energy.py",
+      "bytes": 8679,
+      "sha256": "2ed935ad125080f4cac6219390107039685526d38e10dc94048f781771deab58",
+      "last_write_utc": "2026-10-30T20:04:48.773812+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/configure_nanite_backdrop.py",
+      "bytes": 8304,
+      "sha256": "febf2d5bdaefaf0c868c05e230b6dc98afe762a720aca6f2d1a2191ce4737804",
+      "last_write_utc": "2026-10-30T20:50:06.738935+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/dorado_dimensions.py",
+      "bytes": 12813,
+      "sha256": "27efc94c3b840fce4b24c3b46c1f1b71e6aa56bcec2dd1120648f4e66130376a",
+      "last_write_utc": "2026-10-30T20:32:42.373522+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/editor_job.py",
+      "bytes": 1974,
+      "sha256": "775cd1c7fde8bb5fea9e8ad3d54ddc9665593631c183128d5efed06b571955bb",
+      "last_write_utc": "2026-10-30T19:55:05.024200+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/fit_reference_camera.py",
+      "bytes": 3384,
+      "sha256": "36b8679ef5db4879ffc5b28e4b6cdbf935eac5bb9370e2abe01d9f5b592ea076",
+      "last_write_utc": "2026-10-30T20:22:16.086543+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/import_dorado.py",
+      "bytes": 51535,
+      "sha256": "4502cd0f946e7f3057bc84b215b99085afa87629fa55acdf1243c56bce3e79e5",
+      "last_write_utc": "2026-10-30T22:19:11.500064+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/inspect_delivery.py",
+      "bytes": 4509,
+      "sha256": "62f62564b4b2e0f43937d2e44e5e4a565826d037adb8d6e41ac4eb48748aafc6",
+      "last_write_utc": "2026-10-30T22:13:19.794741+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/inspect_excluded_floors.py",
+      "bytes": 6934,
+      "sha256": "7aacc45f8b6521ac8b2d74c1dbe594dd6a494d417485b384b990c0f478c01307",
+      "last_write_utc": "2026-10-30T21:24:30.821024+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/inspect_material_sources.py",
+      "bytes": 5148,
+      "sha256": "77b9b7b1a4e0816f4d1789ee3c8c1005269a280da21815ca027673ae1081cb3d",
+      "last_write_utc": "2026-10-30T19:52:30.064670+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/inspect_source.py",
+      "bytes": 3302,
+      "sha256": "fe5adca897ed33d58d1c3e13be1cd661010473b39a3dce5519fe8a85185a5647",
+      "last_write_utc": "2026-10-30T19:44:11.592354+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/inspect_stair_foot.py",
+      "bytes": 4513,
+      "sha256": "37cc4f710aec7e3afcdd0d97ece0260956cad54209515fe875b8c2ecef892ebd",
+      "last_write_utc": "2026-10-30T21:21:13.247910+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/measure_floor_gaps.py",
+      "bytes": 4262,
+      "sha256": "f65b581aeb8164ba1dad8c76c3eceffcdefa82b02d0f72c404315fa84bdecae0",
+      "last_write_utc": "2026-10-30T21:00:34.285132+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/pick_source_landmark.py",
+      "bytes": 3641,
+      "sha256": "2f6da8028df37c6cddbc407a0f683673fb1434e9e380e0faba356fb5b6ab4275",
+      "last_write_utc": "2026-10-30T20:33:58.034925+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/prepare_geometry.py",
+      "bytes": 28577,
+      "sha256": "23ef1de827c0b98a5b1f2626c16081e16c3c1e0adc9256123fc55fa4a43ccfa3",
+      "last_write_utc": "2026-10-30T20:15:02.398668+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/prepare_glow_points.py",
+      "bytes": 8448,
+      "sha256": "57825bc8cac1a09b31f568b024b9432045c5a1ffd3e45addd282d19e37cc29b0",
+      "last_write_utc": "2026-10-30T20:45:25.375475+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/prepare_textures.py",
+      "bytes": 20706,
+      "sha256": "adc5f94d772e5b3a81df88ac9a1bfc4a4476384f2674d6704f15b77aeaf98404",
+      "last_write_utc": "2026-10-30T20:09:37.504784+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/profile_traversal_routes.py",
+      "bytes": 4075,
+      "sha256": "296d5f10febe456be997a59ef0bc78b1c6226c72c9763edfadfeb9950318142d",
+      "last_write_utc": "2026-10-30T20:06:18.584832+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/regenerate_ring_dimensions.py",
+      "bytes": 5223,
+      "sha256": "bd2972c6caeb15e538a16cdbf4e24d9917516d8ec3544863e2670656887315df",
+      "last_write_utc": "2026-10-30T20:23:50.229648+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/test_dorado_dimensions.py",
+      "bytes": 9665,
+      "sha256": "2550eaa0be1d37d56701494d3ae55d007d71e991dca42b17aa59cb074eda5079",
+      "last_write_utc": "2026-10-30T20:31:32.105542+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/validate_dorado.py",
+      "bytes": 24654,
+      "sha256": "46a4dfea6abb179f45d11e05f53ea3d769e1bcd903b0ff446a9ad26f5d69cfca",
+      "last_write_utc": "2026-10-30T21:16:51.091666+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/validate_textures.py",
+      "bytes": 2601,
+      "sha256": "ef37f1173f2547fbfbff54e4220091068bff765716d3e54cd284356183ec4833",
+      "last_write_utc": "2026-10-30T19:51:17.242504+00:00",
+      "stable_during_read": true
+    },
+    {
+      "path": "Scripts/validate_traversal.py",
+      "bytes": 22277,
+      "sha256": "db5acede43c408a98dcb333773a25da27232cab636daa15e54d8542d84a22fcd",
+      "last_write_utc": "2026-10-30T20:57:59.996918+00:00",
+      "stable_during_read": true
+    }
+  ]
+}

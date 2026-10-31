@@ -1,0 +1,107 @@
+{
+  "source_level": "F:\\BreakawayConverted\\Unpacked\\levels\\levels\\01_eldorado_a_temple\\layers",
+  "effects": [
+    {
+      "name": "PE_MagnetRing_Lights",
+      "id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "layer": "sys_spec_min_off.lyr",
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetRing_Energy",
+      "id": "{A458A546-4132-400D-9667-88CED5D5FA2A}",
+      "layer": "sys_spec_min_off.lyr",
+      "source_world_matrix_m": [
+        [
+          0.9612615609673336,
+          -1.714456470265765e-07,
+          0.27563766797475453,
+          514.0000037011945
+        ],
+        [
+          1.7186671294647557e-07,
+          0.9999998998665809,
+          2.2626715147994834e-08,
+          666.3099462890619
+        ],
+        [
+          -0.2756376679747553,
+          2.5622751068555598e-08,
+          0.961261541100752,
+          73.10504690756606
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Energy",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": "{C01AC007-FFF1-467F-934F-A7AD597D7E0A}",
+      "status": "Native effect reconstruction required"
+    }
+  ]
+}

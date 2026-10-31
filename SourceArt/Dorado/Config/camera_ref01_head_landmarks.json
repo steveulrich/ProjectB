@@ -1,0 +1,130 @@
+{
+  "status": "Provisional manual correspondence; inspect resulting Unreal render before accepting.",
+  "image_width": 2048,
+  "image_height": 918,
+  "reference": "REF_01 / codex-clipboard-692f632a-02a6-46c4-b44f-99f43eab5843.png",
+  "baseline_capture": "Saved/Logs/dorado-reconstruction-20261030/Renders/iteration03/CAM_Ref_01.png",
+  "initial_camera_cm": [
+    2192.72110850397,
+    -3285.6607473655645,
+    1498.9541778323846
+  ],
+  "initial_yaw_pitch_degrees": [
+    132.50812212914045,
+    -19.60221305418177
+  ],
+  "initial_horizontal_fov_degrees": 93.89640140779022,
+  "landmarks": [
+    {
+      "name": "Central medallion",
+      "world_cm": [
+        0,
+        0,
+        0
+      ],
+      "reference_pixel": [
+        879,
+        483
+      ],
+      "evidence": "Recovered arena center; manual pixel center."
+    },
+    {
+      "name": "Blue lateral pad",
+      "world_cm": [
+        1441.570972768708,
+        -13.456707467751585,
+        208.33400000000006
+      ],
+      "reference_pixel": [
+        493,
+        535
+      ],
+      "evidence": "Corrected symbol center ray at pixel526,530 in iteration03 intersects pad height208.334cm."
+    },
+    {
+      "name": "Green lateral pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        1106,
+        375
+      ],
+      "evidence": "Initial rendered center ray intersected estimated pad elevation208.334cm."
+    },
+    {
+      "name": "Sun disc",
+      "world_cm": [
+        3,
+        5950,
+        961
+      ],
+      "reference_pixel": [
+        470,
+        190
+      ],
+      "evidence": "Bounds centers of the two64-vertex luminous disc components in recovered arena-temple LOD0, transformed by original source placement."
+    },
+    {
+      "name": "Near head upper curl",
+      "world_cm": [
+        676.9990637089791,
+        -2478.2792137080028,
+        950.7113543442101
+      ],
+      "reference_pixel": [
+        1508,
+        396
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1344, 444]; manually matched reference feature."
+    },
+    {
+      "name": "Near head lower curl",
+      "world_cm": [
+        674.9567955883701,
+        -2479.045337455348,
+        902.8125104795629
+      ],
+      "reference_pixel": [
+        1495,
+        437
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1342, 469]; manually matched reference feature."
+    },
+    {
+      "name": "Near head upper lip leading corner",
+      "world_cm": [
+        736.9303778201486,
+        -2580.5340201734975,
+        1109.4399328023949
+      ],
+      "reference_pixel": [
+        1595,
+        299
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1393, 374]; manually matched reference feature."
+    },
+    {
+      "name": "Far head upper lip leading corner",
+      "world_cm": [
+        -622.4453021055151,
+        -2556.754611584395,
+        1104.818239947252
+      ],
+      "reference_pixel": [
+        1779,
+        231
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1647, 283]; manually matched reference feature."
+    }
+  ],
+  "assumptions": [
+    "Perspective lens without distortion",
+    "Zero roll",
+    "Shared native2048x918 aspect",
+    "All pixel centers are manually estimated",
+    "Camera fit does not change geometry"
+  ]
+}

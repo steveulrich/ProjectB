@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="proxy" MtlFlags="2622592" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="" Diffuse="1,0,0,1" Specular="0,0,0,1" Opacity="1" vertModifType="0" LayerAct="1">
+   <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ED_Serpent_body" MtlFlags="2621568" Shader="Illum" GenMask="108A0000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="1,1,1,1" Opacity="1" Shininess="90" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ED_Serpent_front" MtlFlags="2621568" Shader="Illum" GenMask="10880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="0.0030352699,0.0030352699,0.0030352699,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ED_Serpent_head" MtlFlags="2621568" Shader="Illum" GenMask="108A0000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="1,1,1,1" Opacity="1" Shininess="90" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_ED_Serpent_pillar" MtlFlags="2621568" Shader="Illum" GenMask="10880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING%TINT_MASK_DIFFUSE_ALPHA" SurfaceType="" Diffuse="1,1,1,1" Specular="0.0030352699,0.0030352699,0.0030352699,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="shadowproxy1" MtlFlags="2621568" Shader="Onlyshadows" GenMask="0" StringGenMask="" SurfaceType="" Diffuse="0.30188799,0.5,0.2245,1" Specular="0.5,0.5,0.5,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <PublicParams IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

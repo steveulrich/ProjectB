@@ -1,0 +1,1122 @@
+{
+  "schema_version": 1,
+  "status": "Source-backed placements with reconstructed small core geometry; not yet rendered",
+  "source_library": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Sources\\Effects\\lvl_eldorado_seattle_a.xml",
+  "source_library_sha256": "969ee1feb28c046f81b00cce914d1f4a8dd0a79532d032a3dac7c5e37427bfb4",
+  "coordinate_convention": "world_cm=(source_m-center_m)*[50,-50,50]; integration scale already applied",
+  "source_center_m": [
+    513.97998,
+    666.29779,
+    73.674896
+  ],
+  "points": [
+    {
+      "name": "D_Glow_PE_MagnetLight_04",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        -684.5504999999974,
+        3387.1399999999994,
+        732.7415500000001
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{CDCED71E-7761-4C6D-A867-30D3531CB7AA}",
+      "source_effect_name": "PE_MagnetLight_04",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          500.28897
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          598.55499
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.329727
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_PE_MagnetLight_05",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        -15.578999999996768,
+        4396.227999999996,
+        749.2759999999997
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{AB4A8F75-C8BA-4DEB-8339-679D45A33B8E}",
+      "source_effect_name": "PE_MagnetLight_05",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          3.1640334241522794e-08,
+          -0.9999999683596658,
+          0.0,
+          513.6684
+        ],
+        [
+          0.9999999683596658,
+          3.1640334241522794e-08,
+          0.0,
+          578.37323
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.660416
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_PE_MagnetLight_01",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        681.3780000000008,
+        -3369.1710000000003,
+        728.7502499999995
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{82613A9A-0DC6-4801-961D-07CA96C3BE73}",
+      "source_effect_name": "PE_MagnetLight_01",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          -1.0,
+          8.7422776e-08,
+          -0.0,
+          527.60754
+        ],
+        [
+          -8.7422776e-08,
+          -1.0,
+          0.0,
+          733.68121
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.249901
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_PE_MagnetLight_02",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        1.00100000000225,
+        -4354.358000000002,
+        754.2552999999998
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{486AFEAC-7D4B-4058-B23A-72FD78C88BC5}",
+      "source_effect_name": "PE_MagnetLight_02",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          3.1640334241522794e-08,
+          0.9999999683596658,
+          0.0,
+          514.0
+        ],
+        [
+          -0.9999999683596658,
+          3.1640334241522794e-08,
+          -0.0,
+          753.38495
+        ],
+        [
+          -0.0,
+          0.0,
+          1.0,
+          88.760002
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_PE_MagnetLight_06",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        681.3780000000008,
+        3383.542,
+        730.8430000000001
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{93E5B7B4-3E19-4B70-84F2-B38DD2E4DF6F}",
+      "source_effect_name": "PE_MagnetLight_06",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          -1.0,
+          8.7422776e-08,
+          -0.0,
+          527.60754
+        ],
+        [
+          -8.7422776e-08,
+          -1.0,
+          0.0,
+          598.62695
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.291756
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_PE_MagnetLight_03",
+      "kind": "pedestal_orb",
+      "location_cm": [
+        -684.5504999999974,
+        -3365.5730000000003,
+        728.5221
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        44,
+        44,
+        44
+      ],
+      "scale_xyz": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "color_linear_normalized": [
+        0.1719,
+        0.0166,
+        1.0
+      ],
+      "source_effect_id": "{6C641BDB-0FD0-451E-8AD9-4D1B49877BA6}",
+      "source_effect_name": "PE_MagnetLight_03",
+      "source_layer": "vfx_a.lyr",
+      "source_effect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+      "source_children": [
+        "PinLight_Alpha",
+        "PinLight_Add"
+      ],
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          500.28897
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          733.60925
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.245338
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "placement_basis": "Exact original particle origin. PinLight children have no local offset.",
+      "size_basis": "Reconstructed 44cm core; REF02 nearest orb is approximately 30px across. Original particle halo is larger.",
+      "reference_support": "REF01 small violet pedestal accents; REF02 near-left orb and partially obscured near-right counterpart; source retains both end assemblies.",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_01_NegativeY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        1618.8526615395006,
+        -186.26835872804304,
+        1722.3453463657513
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "01",
+      "source_local_center_m": [
+        24.0,
+        0.0,
+        49.7
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        1618.8526615395006,
+        -0.615917427705881,
+        1722.3453463657513
+      ],
+      "surface_y_cm": -182.76835872804304,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 upper-right inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_01_PositiveY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        1618.8526615395006,
+        185.0470823930823,
+        1722.3453463657513
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "01",
+      "source_local_center_m": [
+        24.0,
+        0.0,
+        49.7
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        1618.8526615395006,
+        -0.615917427705881,
+        1722.3453463657513
+      ],
+      "surface_y_cm": 181.5470823930823,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 upper-right inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_02_NegativeY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        2350.2620435560857,
+        -186.23586815107012,
+        -707.3825777539455
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "02",
+      "source_local_center_m": [
+        55.2,
+        0.0,
+        1.2
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        2350.2620435560857,
+        -0.6158650529755505,
+        -707.3825777539455
+      ],
+      "surface_y_cm": -182.73586815107012,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 lower-right hanging segment inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_02_PositiveY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        2350.2620435560857,
+        185.01445698719863,
+        -707.3825777539455
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "02",
+      "source_local_center_m": [
+        55.2,
+        0.0,
+        1.2
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        2350.2620435560857,
+        -0.6158650529755505,
+        -707.3825777539455
+      ],
+      "surface_y_cm": 181.51445698719863,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 lower-right hanging segment inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_06_NegativeY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        -1216.3527962870774,
+        -186.34875852670802,
+        2011.2252937773342
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "06",
+      "source_local_center_m": [
+        -39.75,
+        0.0,
+        38.25
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        -1216.3527962870774,
+        -0.615914383939753,
+        2011.2252937773342
+      ],
+      "surface_y_cm": -182.84875852670802,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 upper-left inset and REF03 upper inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_06_PositiveY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        -1216.3527962870774,
+        185.1279769750522,
+        2011.2252937773342
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "06",
+      "source_local_center_m": [
+        -39.75,
+        0.0,
+        38.25
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        -1216.3527962870774,
+        -0.615914383939753,
+        2011.2252937773342
+      ],
+      "surface_y_cm": 181.6279769750522,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF02 upper-left inset and REF03 upper inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_07_NegativeY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        -2076.596427405565,
+        -186.33823080395803,
+        1166.2059874560618
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "07",
+      "source_local_center_m": [
+        -53.25,
+        0.0,
+        14.4
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        -2076.596427405565,
+        -0.615892408882246,
+        1166.2059874560618
+      ],
+      "surface_y_cm": -182.83823080395803,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF01 upper-right edge, REF02 left-side inset and REF03 lower inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    },
+    {
+      "name": "D_Glow_Ring_07_PositiveY",
+      "kind": "ring_inset_core",
+      "location_cm": [
+        -2076.596427405565,
+        185.11759658858227,
+        1166.2059874560618
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        0,
+        0,
+        0
+      ],
+      "primitive": "/Engine/BasicShapes/Sphere.Sphere",
+      "world_size_cm": [
+        22,
+        6,
+        22
+      ],
+      "scale_xyz": [
+        0.22,
+        0.06,
+        0.22
+      ],
+      "color_linear_normalized": [
+        0.17625,
+        0.04088,
+        1.0
+      ],
+      "source_effect_id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "source_effect_name": "PE_MagnetRing_Lights",
+      "source_effect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+      "source_layer": "sys_spec_min_off.lyr",
+      "source_child": "07",
+      "source_local_center_m": [
+        -53.25,
+        0.0,
+        14.4
+      ],
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "particle_center_target_cm": [
+        -2076.596427405565,
+        -0.615892408882246,
+        1166.2059874560618
+      ],
+      "surface_y_cm": 181.61759658858227,
+      "source_geometry_id": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "source_geometry_name": "rel_ed_ring_a_group2",
+      "source_asset_id": "SM_Dorado_rel_ed_ring_a_group",
+      "placement_basis": "Exact source particle center X/Z; source LOD0 outer front/back surface Y plus 3.5cm outward offset.",
+      "size_basis": "Reconstructed 22cm core fits the visible small diamond center. Flattened sphere has 6cm depth; its inner side clears source surface by 0.5cm.",
+      "reference_support": "REF01 upper-right edge, REF02 left-side inset and REF03 lower inset",
+      "collision_enabled": false,
+      "cast_shadow": false,
+      "affect_navigation": false,
+      "material_role": "small_violet_emissive_core",
+      "status": "Static native surrogate of original particle glow; visual confirmation required"
+    }
+  ],
+  "excluded_ring_children": {
+    "03": "Not clearly visible in supplied references",
+    "04": "Below arena and not clearly visible",
+    "05": "Below arena and not clearly visible"
+  },
+  "native_material_guidance": {
+    "scope": "Assign only to new small cores; never replace a pillar or ring material slot.",
+    "shading": "Unlit emissive. Source particle BlendType is Additive; an additive native core is a reconstruction, not the full original emitter.",
+    "core_size": "scale_xyz assumes the engine Sphere has100cm diameter. Prefer world_size_cm if primitive dimensions differ.",
+    "emission": "Use the existing owned violet emission MI. Tune brightness against fixed exposure, preserving a white-violet center and small purple bloom.",
+    "point_lights": "None required by this manifest."
+  }
+}

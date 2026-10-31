@@ -1,0 +1,220 @@
+{
+  "scope": "Selected original summaries plus explicitly derived compact records. Full logs/traces remain local and are not distributed. Absolute paths inside original evidence are historical provenance, not portable links.",
+  "files": {
+    "import-preflight.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/import-preflight.json",
+      "bytes": 369,
+      "sha256": "1a5e225af58cc0c0b6b5acb83324d43457aff7c34926827a51d6b6a005d88a21"
+    },
+    "final-delivery-inventory.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/final-delivery-inventory.json",
+      "bytes": 4227,
+      "sha256": "1d9f0ff72386ce21e6afb534c561364679e06731bd872613e8e5d454343b6db4"
+    },
+    "final-delivery-native-hashes.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/final-delivery-native-hashes.json",
+      "bytes": 166585,
+      "sha256": "1257d8b0bc87e8ae368a81764d5daf947b9c083856c8cc94b1cbcf2f89ab27fc"
+    },
+    "final-delivery-source-control-hashes.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/final-delivery-source-control-hashes.json",
+      "bytes": 14074,
+      "sha256": "202eebe93035a9978eddee33e21a49d967ef12e69e4770d930dfb754466f38e3"
+    },
+    "delivery-before-close.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/delivery-before-close.json",
+      "bytes": 5844,
+      "sha256": "ce77bd3c910c8d6594ccb75772c2b2f21f2a7e6dac4a93802e81e21b73add2bd"
+    },
+    "delivery-after-reopen.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/delivery-after-reopen.json",
+      "bytes": 5844,
+      "sha256": "0962d9321967ef262f9f3d73cb8b5c351af4d6953624f871677880b8b2954983"
+    },
+    "delivery-final-native.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/delivery-final-native.json",
+      "bytes": 5844,
+      "sha256": "f9b393d0b7aa28abac78f92155f7c5744e2ae327eefeffae88e256c05ce30f7b"
+    },
+    "presentation.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/presentation.json",
+      "bytes": 814,
+      "sha256": "843a6f6bd01255d992989945bf48672e5d31df8360c76fffb659d46bb311cd7a"
+    },
+    "performance-final-summary.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/performance-final-summary.json",
+      "bytes": 1922,
+      "sha256": "fd99f2edb354149343d875ced5c445548d11d5f07a7548718480ed710c223f5b"
+    },
+    "performance-final-metadata.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/performance-final-metadata.json",
+      "bytes": 3906,
+      "sha256": "68da94fa108eafb1c7437f569911a3ba01d05a6ea97f9f344fcbe1d32ea69fbc"
+    },
+    "performance-final-restored.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/performance-final-restored.json",
+      "bytes": 215,
+      "sha256": "1ed326ac6788c1e1c34e5e5256b716953f44d2b58d0cd33a39856272c79cdea5"
+    },
+    "performance-csv-comparison-summary.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/performance-csv-comparison-summary.json",
+      "bytes": 3917,
+      "sha256": "e3262eb97ce4f748b346ad140fb006e67c53900379e52f6245a17c4b39e9fcf8"
+    },
+    "effects-final-review.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/effects-final-review.json",
+      "bytes": 4569,
+      "sha256": "b21a6aec1c09086d87b987763fe17a16d39a52ee126384a1c44ec7d45503b0ba"
+    },
+    "effects-image-metrics.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/effects-image-metrics.json",
+      "bytes": 4064,
+      "sha256": "55a53101df72dc24f2f96f2cefa4ecd2599dd71aa68eb7c92cca7bc55d6d9452"
+    },
+    "water-source-axis-audit.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/water-source-axis-audit.json",
+      "bytes": 1763,
+      "sha256": "dde4207c87f874beede680ac0cb5978f32d73feb045d11a5f7a4775a07d37f27"
+    },
+    "relic-repaired-stairs-analysis.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/relic-repaired-stairs-analysis.json",
+      "bytes": 8065,
+      "sha256": "dfa8c3e0d4064e7349d35bc28c9af078871b08eb348793f2d865deb567c121a8"
+    },
+    "stairs-repaired-rest-support.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/stairs-repaired-rest-support.json",
+      "bytes": 2188,
+      "sha256": "d7ba441fce4611d440068b6bfe75bb579794e97acdc4795b0291be7e2d47ad51"
+    },
+    "repaired-center-floor-support.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/repaired-center-floor-support.json",
+      "bytes": 5514,
+      "sha256": "0313376c86f1c5805709a230cfe6ae2c260789bdc9f716dc2866f5fd6472b6a3"
+    },
+    "planar-floor-collision-remedy.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/planar-floor-collision-remedy.json",
+      "bytes": 4193,
+      "sha256": "a458f3935feed7eefad29896ec667b030d31f59d4c92d753af155eff68fd2149"
+    },
+    "stair-foot-collision-remedy.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/stair-foot-collision-remedy.json",
+      "bytes": 3033,
+      "sha256": "22ae4cdd95c29929d312dd7cc671a85cc64d603386536fd341d8ebce5301fe27"
+    },
+    "stair-bevel-walkability-trial.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/stair-bevel-walkability-trial.json",
+      "bytes": 538,
+      "sha256": "d8569c3c62b8960cee8943098e671402d2cfc7f0839bff9b0f3344034cc6330d"
+    },
+    "cover-sample-classification-adjustment.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/cover-sample-classification-adjustment.json",
+      "bytes": 3252,
+      "sha256": "6856e076e2fac0385c81a07ed1fd851a00587d02f9bf7a13bdf723366c11422b"
+    },
+    "pie-settings-disk-restored.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/pie-settings-disk-restored.json",
+      "bytes": 608,
+      "sha256": "fc24abb58830c60401e2e515ca8cebc0eb13e95034b0e852813365ea27781686"
+    },
+    "pie-settings-reopened-final.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/pie-settings-reopened-final.json",
+      "bytes": 486,
+      "sha256": "f82922e0de4eaf9a329fc17e0bfd78e2502eb5443013a05c02a77e143b575651"
+    },
+    "shrine-camera-floor-adjustment.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/shrine-camera-floor-adjustment.json",
+      "bytes": 376,
+      "sha256": "47c27022ccc61bb5d16863832d749cdcc497aedcc778c7535acae955214db44c"
+    },
+    "geometry-shader-filter-changes.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/geometry-shader-filter-changes.json",
+      "bytes": 6211,
+      "sha256": "a28372745fa283b3f8c165f46d0b913e823bc3cfba01e37497508d02d4cbad7c"
+    },
+    "source-lighting-observation.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/source-lighting-observation.json",
+      "bytes": 15521,
+      "sha256": "1fb322907c16600e2620cc44b06a9b62bc65021c8de3877281255129f4d05366"
+    },
+    "camera-ref01-fit-heads.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/camera-ref01-fit-heads.json",
+      "bytes": 4090,
+      "sha256": "770eecca2db8de649bcd031e64c92ac2ca0a0eb696617f2c8a1765525da683f2"
+    },
+    "camera-ref02-fit.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/camera-ref02-fit.json",
+      "bytes": 3285,
+      "sha256": "68496e223d9dcb4bedef2a7b73559ebb4337f0fb889de5d112fc5f08f873ff46"
+    },
+    "camera-ref03-fit-surfaces.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/camera-ref03-fit-surfaces.json",
+      "bytes": 2400,
+      "sha256": "6c0c667f06a7353d89d3153cb48d80870628334aada0b7e5cc2c67fca6faaa22"
+    },
+    "material-palette-trial12.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/material-palette-trial12.json",
+      "bytes": 52685,
+      "sha256": "876677eca76ea3069638ef87aa1f1ae3fd2cceecaf4758beb77f6d9edeae20fe"
+    },
+    "material-linear-palette-audit.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/material-linear-palette-audit.json",
+      "bytes": 16878,
+      "sha256": "085d6dcbfa2406416ad8962f6574507872744d69e52f90740f06a81083162473"
+    },
+    "material-scene-unload.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/material-scene-unload.json",
+      "bytes": 185,
+      "sha256": "6ac8586cc0d87f6ba6ced4f5ab9394d60489e9c63a70ca831fba64221535a10b"
+    },
+    "open-edge-cleanup.json": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/open-edge-cleanup.json",
+      "bytes": 3373,
+      "sha256": "b8e6af5b19aaf2753865ba674a078df161b1075caef735b4dce5bfcd9686771f"
+    },
+    "../Renders/CAM_Player_Center.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Player_Center.png",
+      "bytes": 3428191,
+      "sha256": "263ec8c4f267ce29ee5ba21da84844aeeb900ede1b9bd3ebfe8b6424fefd3e21"
+    },
+    "../Renders/CAM_Player_ShrineEnd.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Player_ShrineEnd.png",
+      "bytes": 3611137,
+      "sha256": "969c52ab56f8bd5ba6dc84b22ce5647ea1f3feafaf3d83a3456a047ef9b1ea4e"
+    },
+    "../Renders/CAM_Player_SidePad.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Player_SidePad.png",
+      "bytes": 3331727,
+      "sha256": "bb4273caadc264f0d23bea55117bb6800b8df428d029f3568c4e239a95dcdca7"
+    },
+    "../Renders/CAM_Ref_01.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Ref_01.png",
+      "bytes": 3319431,
+      "sha256": "26aeff1dfc8b2104bd899b4c86f2d014ad0f15f2fcde18936e9ac0716c1dd491"
+    },
+    "../Renders/CAM_Ref_02.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Ref_02.png",
+      "bytes": 2847577,
+      "sha256": "6812b710b5ba51267dad4d1c5c0d3147c8c86cfd88bcb79c950019b11a00ec8c"
+    },
+    "../Renders/CAM_Ref_03.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_Ref_03.png",
+      "bytes": 2294671,
+      "sha256": "d82b61ad6e66ed9122c1a5c7f643c1425dbd502bcb2df56349a5b9c5b2641b27"
+    },
+    "../Renders/CAM_TopDown.png": {
+      "source": "Saved/Logs/dorado-reconstruction-20261030/Renders/final/CAM_TopDown.png",
+      "bytes": 2952459,
+      "sha256": "cc60d6418a440c3cab7e41330192d7ede067bbd9ec46666607fad320b735f136"
+    },
+    "structural-summary.json": {
+      "derived": true,
+      "bytes": 8867,
+      "sha256": "c1abb02d919c9acf021b34ce28ca1705a6d3255bb1073d1641943f7b84e9be3a"
+    },
+    "runtime-validation-summary.json": {
+      "derived": true,
+      "bytes": 36210,
+      "sha256": "d3b352601a0177d502bc5b59db17216af4ed61517db7bc1664633c4298efaf4e"
+    }
+  }
+}

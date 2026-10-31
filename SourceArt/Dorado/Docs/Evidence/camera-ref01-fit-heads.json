@@ -1,0 +1,168 @@
+{
+  "status": "suggested_camera_only; requires Unreal visual comparison",
+  "input": "SourceArt\\Dorado\\Config\\camera_ref01_head_landmarks.json",
+  "location_cm": [
+    1956.757018134975,
+    -2883.7045446728725,
+    1270.0900040821955
+  ],
+  "rotation_pitch_yaw_roll_degrees": [
+    -18.925469994574698,
+    133.37941857510683,
+    0
+  ],
+  "horizontal_fov_degrees": 97.94206786062333,
+  "look_at_cm": [
+    -1941.4280179741938,
+    1241.4778161849736,
+    -675.9377228327737
+  ],
+  "rms_pixel_error": 4.097042363608008,
+  "predicted_pixels": [
+    [
+      888.2724777100018,
+      479.8415371496254
+    ],
+    [
+      487.5389675021569,
+      530.5456108552223
+    ],
+    [
+      1109.8065018017662,
+      376.18768017230497
+    ],
+    [
+      467.6521758974958,
+      192.59775537222424
+    ],
+    [
+      1502.4226027409702,
+      401.3398105816317
+    ],
+    [
+      1497.52571127023,
+      434.72751706226006
+    ],
+    [
+      1598.009942670776,
+      297.18383628325284
+    ],
+    [
+      1776.421687893557,
+      233.1498896859824
+    ]
+  ],
+  "landmarks": [
+    {
+      "name": "Central medallion",
+      "world_cm": [
+        0,
+        0,
+        0
+      ],
+      "reference_pixel": [
+        879,
+        483
+      ],
+      "evidence": "Recovered arena center; manual pixel center."
+    },
+    {
+      "name": "Blue lateral pad",
+      "world_cm": [
+        1441.570972768708,
+        -13.456707467751585,
+        208.33400000000006
+      ],
+      "reference_pixel": [
+        493,
+        535
+      ],
+      "evidence": "Corrected symbol center ray at pixel526,530 in iteration03 intersects pad height208.334cm."
+    },
+    {
+      "name": "Green lateral pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        1106,
+        375
+      ],
+      "evidence": "Initial rendered center ray intersected estimated pad elevation208.334cm."
+    },
+    {
+      "name": "Sun disc",
+      "world_cm": [
+        3,
+        5950,
+        961
+      ],
+      "reference_pixel": [
+        470,
+        190
+      ],
+      "evidence": "Bounds centers of the two64-vertex luminous disc components in recovered arena-temple LOD0, transformed by original source placement."
+    },
+    {
+      "name": "Near head upper curl",
+      "world_cm": [
+        676.9990637089791,
+        -2478.2792137080028,
+        950.7113543442101
+      ],
+      "reference_pixel": [
+        1508,
+        396
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1344, 444]; manually matched reference feature."
+    },
+    {
+      "name": "Near head lower curl",
+      "world_cm": [
+        674.9567955883701,
+        -2479.045337455348,
+        902.8125104795629
+      ],
+      "reference_pixel": [
+        1495,
+        437
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1342, 469]; manually matched reference feature."
+    },
+    {
+      "name": "Near head upper lip leading corner",
+      "world_cm": [
+        736.9303778201486,
+        -2580.5340201734975,
+        1109.4399328023949
+      ],
+      "reference_pixel": [
+        1595,
+        299
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1393, 374]; manually matched reference feature."
+    },
+    {
+      "name": "Far head upper lip leading corner",
+      "world_cm": [
+        -622.4453021055151,
+        -2556.754611584395,
+        1104.818239947252
+      ],
+      "reference_pixel": [
+        1779,
+        231
+      ],
+      "evidence": "Source LOD0 beauty triangle picked by ray through iteration03 pixel[1647, 283]; manually matched reference feature."
+    }
+  ],
+  "assumptions": [
+    "Perspective lens without distortion",
+    "Zero roll",
+    "Shared native2048x918 aspect",
+    "All pixel centers are manually estimated",
+    "Camera fit does not change geometry"
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "samples": [
+    {
+      "xy": [
+        -50,
+        -650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          -50.0,
+          -650.0,
+          0.0008896790677681565
+        ],
+        "normal": [
+          1.824696056462276e-07,
+          3.5555576687104113e-06,
+          0.9999999999936624
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    },
+    {
+      "xy": [
+        -25,
+        -650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          -25.0,
+          -650.0,
+          0.0008851173333823681
+        ],
+        "normal": [
+          1.824696056462276e-07,
+          3.5555576687104113e-06,
+          0.9999999999936624
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    },
+    {
+      "xy": [
+        0,
+        -650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          0.0,
+          -650.0,
+          0.0008805555989965796
+        ],
+        "normal": [
+          -1.589073264075463e-07,
+          3.5555578960841007e-06,
+          0.9999999999936664
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    },
+    {
+      "xy": [
+        25,
+        -650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          25.0,
+          -650.0,
+          0.0008845656993798912
+        ],
+        "normal": [
+          -1.9768864944917764e-07,
+          3.4470911032052827e-06,
+          0.9999999999940392
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    },
+    {
+      "xy": [
+        50,
+        -650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          50.0,
+          -650.0,
+          0.0008892896003089845
+        ],
+        "normal": [
+          -2.0577789427860104e-07,
+          3.5341226975794153e-06,
+          0.9999999999937339
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    },
+    {
+      "xy": [
+        -50,
+        650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          -50.00000039565421,
+          650.0000043711439,
+          0.0008892896003089845
+        ],
+        "normal": [
+          2.0577758531578207e-07,
+          -3.53412271556909e-06,
+          0.9999999999937339
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_140"
+      }
+    },
+    {
+      "xy": [
+        -25,
+        650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          -25.00000039565421,
+          650.0000021855744,
+          0.0008845656993798912
+        ],
+        "normal": [
+          1.976883480949023e-07,
+          -3.447091120487773e-06,
+          0.9999999999940392
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_140"
+      }
+    },
+    {
+      "xy": [
+        0,
+        650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          1.4495071809506044e-12,
+          650.000000000005,
+          0.0008805555989965796
+        ],
+        "normal": [
+          1.5890701557080275e-07,
+          -3.5555579099762203e-06,
+          0.9999999999936664
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_140"
+      }
+    },
+    {
+      "xy": [
+        25,
+        650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          24.99999960434579,
+          649.9999978144356,
+          0.0008851172751747072
+        ],
+        "normal": [
+          -1.8246991648295127e-07,
+          -3.5555576527584117e-06,
+          0.9999999999936624
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_140"
+      }
+    },
+    {
+      "xy": [
+        50,
+        650
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          49.99999960434579,
+          649.9999956288661,
+          0.0008896790095604956
+        ],
+        "normal": [
+          -1.8246991648295127e-07,
+          -3.5555576527584117e-06,
+          0.9999999999936624
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_140"
+      }
+    },
+    {
+      "xy": [
+        2.245509261,
+        -643.211931277
+      ],
+      "floor": {
+        "hit": true,
+        "point_cm": [
+          2.245509147644043,
+          -643.2119140625,
+          0.0008567770128138363
+        ],
+        "normal": [
+          -1.589073264075463e-07,
+          3.5555578960841007e-06,
+          0.9999999999936664
+        ],
+        "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_133"
+      }
+    }
+  ],
+  "actual_relic_rest_z": 15.335434454878536,
+  "actual_relic_radius_cm": 15.334581
+}

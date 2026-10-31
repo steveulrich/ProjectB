@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "status": "Source-grounded plan awaiting actual Unreal PIE execution",
+  "scope": "Single local authority world; actual project pawn and Relic; native simulated input. Physical input and network acceptance remain separate.",
+  "preconditions": [
+    "Root owns the current editor and saves/restores existing LevelEditorPlaySettings before requesting one local PIE world.",
+    "Use the preserved CaptureTheRelic experience and actual project character; no fixture pawn or test sphere.",
+    "Actual movement input must be enabled, pawn grounded with collision enabled, and match stable.",
+    "Observe and validate collision at each start before movement. Source mesh profiles do not establish Unreal collision.",
+    "Never stop PIE or travel while validate_traversal.status() is active: its native release timers must drain."
+  ],
+  "walking_routes": [
+    {
+      "label": "dorado-floor-seams-01",
+      "start_xy": [
+        450,
+        -650
+      ],
+      "end_xy": [
+        450,
+        650
+      ],
+      "seconds": 5,
+      "expected_end_z": 0,
+      "floor_z_hint": 0,
+      "purpose": "Walk across center slab and ornament seams; offset450cm avoids automatic pickup of the real Relic before ball cases."
+    },
+    {
+      "label": "dorado-cross-center-seam-01",
+      "start_xy": [
+        -125,
+        500
+      ],
+      "end_xy": [
+        125,
+        500
+      ],
+      "seconds": 2,
+      "expected_end_z": 0,
+      "floor_z_hint": 0,
+      "purpose": "Cross the exact center seam where a zero-width offline ray can miss both adjacent triangles."
+    },
+    {
+      "label": "dorado-east-stairs-up-01",
+      "start_xy": [
+        1275,
+        1025
+      ],
+      "end_xy": [
+        1275,
+        50
+      ],
+      "seconds": 5,
+      "expected_end_z": 209,
+      "floor_z_hint": 0,
+      "purpose": "Traverse both source stair flights and the intermediate landing to the raised pad."
+    },
+    {
+      "label": "dorado-east-stairs-down-01",
+      "start_xy": [
+        1275,
+        50
+      ],
+      "end_xy": [
+        1275,
+        1025
+      ],
+      "seconds": 5,
+      "expected_end_z": 0,
+      "floor_z_hint": 209,
+      "purpose": "Descend both stair flights without a substitute ramp collider."
+    },
+    {
+      "label": "dorado-west-stairs-up-01",
+      "start_xy": [
+        -1275,
+        1025
+      ],
+      "end_xy": [
+        -1275,
+        50
+      ],
+      "seconds": 5,
+      "expected_end_z": 209,
+      "floor_z_hint": 0,
+      "purpose": "Check the opposite side platform connection."
+    },
+    {
+      "label": "dorado-south-approach-01",
+      "start_xy": [
+        0,
+        -3000
+      ],
+      "end_xy": [
+        0,
+        -3850
+      ],
+      "seconds": 5,
+      "expected_end_z": 242,
+      "floor_z_hint": 175,
+      "purpose": "Traverse the temple approach and end landing."
+    }
+  ],
+  "ball_cases": [
+    {
+      "label": "dorado-relic-floor-01",
+      "start_xy": [
+        25,
+        -650
+      ],
+      "aim_xy": [
+        25,
+        650
+      ],
+      "seconds": 8,
+      "pitch": -12,
+      "charge": 0.25,
+      "floor_z_hint": 0,
+      "purpose": "Observe actual carried Relic release and subsequent physical travel over slab/ornament seams."
+    },
+    {
+      "label": "dorado-relic-stairs-down-01",
+      "start_xy": [
+        1275,
+        50
+      ],
+      "aim_xy": [
+        1275,
+        1025
+      ],
+      "seconds": 8,
+      "pitch": -15,
+      "charge": 0.15,
+      "floor_z_hint": 209,
+      "purpose": "Observe actual Relic descent and bounces on retained stair geometry."
+    }
+  ],
+  "open_edge_case": {
+    "status": "Choose from a fresh Unreal player-height view and actual collision rays; do not infer from an overhead source ray.",
+    "candidate": "Outside of the east pad, near X1425..1800,Y0; overhead portal ring must be excluded from ground selection.",
+    "expected": "Visible exposed edge permits a fall; existing out-of-bounds and respawn behavior remains unchanged.",
+    "warning": "Use a separate disposable PIE attempt if normal death/respawn replaces the pawn; that replacement is expected gameplay, not proof of a seamless walking route."
+  },
+  "evidence": {
+    "source_profiles": "Saved/Logs/dorado-reconstruction-20261030/source-route-profiles.json",
+    "runtime_report_pattern": "Saved/Logs/dorado-reconstruction-20261030/<fresh-label>.json",
+    "visual": "Root must inspect actual Unreal player-height views and ball footage. Sampled trajectories alone do not prove precise contact timing or perceptual smoothness.",
+    "cleanup": "Stop disposable PIE after all native delayed inputs have drained, restore original editor play settings, and retain unresolved acceptance steps explicitly."
+  }
+}

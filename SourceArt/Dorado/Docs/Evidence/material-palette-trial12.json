@@ -1,0 +1,1460 @@
+{
+  "scope": "Source-conditioned palette targets are image-inferred, not measured original reflectance. Exact source PNGs/masks preserved; five white-base puregold overrides unchanged.",
+  "before_sha256": "378f022f0f50591a0a606b979cb7ab3d0d3b5a71cf1d0021f289d0d5a052679b",
+  "after_sha256": "ff9b5a0f969a8d175a099dd5b635cf8e193f6c85cba2bf13a22a7ac6d0638f2a",
+  "changed_records": 25,
+  "changes": [
+    {
+      "id": "rel_el_arenamaster_mat__0__rel_el_arenatrima_mat",
+      "source_linear_median": [
+        0.2831487404299921,
+        0.25415209433082675,
+        0.18782077230067787
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.3884883960032916,
+        0.5901977726956945,
+        1.0648449452642261,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.26,
+            0.34,
+            0.43,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.3884883960032916,
+            0.5901977726956945,
+            1.0648449452642261,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat",
+      "source_linear_median": [
+        0.2831487404299921,
+        0.25415209433082675,
+        0.18782077230067787
+      ],
+      "inferred_stone_target_linear": [
+        0.07,
+        0.1,
+        0.15
+      ],
+      "tint": [
+        0.24721988836573106,
+        0.3934651817971297,
+        0.7986337089481695,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.18,
+            0.27,
+            0.36,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.24721988836573106,
+            0.3934651817971297,
+            0.7986337089481695,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat",
+      "source_linear_median": [
+        0.23074004852434915,
+        0.20507873639031693,
+        0.14702726649759498
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.4767269518381509,
+        0.7314263908595179,
+        1.3602919020688693,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.29,
+            0.38,
+            0.46,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.4767269518381509,
+            0.7314263908595179,
+            1.3602919020688693,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_el_arenamaster_mat__13__rel_el_arenawallsblend_mat",
+      "source_linear_median": [
+        0.25015828472995344,
+        0.2232279573168085,
+        0.15292615199615017
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.4397215951442316,
+        0.6719588433411041,
+        1.3078207840149858,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.29,
+            0.38,
+            0.46,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.4397215951442316,
+            0.6719588433411041,
+            1.3078207840149858,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__2__rel_ed_serpent_front",
+      "source_linear_median": [
+        0.2195261997292692,
+        0.1714411007328226,
+        0.11697066775851084
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.5010791428797909,
+        0.8749360530166167,
+        1.7098303688656844,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.27,
+            0.36,
+            0.44,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.5010791428797909,
+            0.8749360530166167,
+            1.7098303688656844,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__4__rel_ed_serpent_pillar",
+      "source_linear_median": [
+        0.18782077230067787,
+        0.15292615199615017,
+        0.10946171077829933
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.5856647198953243,
+        0.9808655880112392,
+        1.8271229142862053,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.27,
+            0.36,
+            0.44,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.5856647198953243,
+            0.9808655880112392,
+            1.8271229142862053,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat",
+      "source_linear_median": [
+        0.23074004852434915,
+        0.20507873639031693,
+        0.14702726649759498
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.4767269518381509,
+        0.7314263908595179,
+        1.3602919020688693,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.3,
+            0.4,
+            0.46,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.4767269518381509,
+            0.7314263908595179,
+            1.3602919020688693,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_eldorado_stair_sides_material__1__rel_eldorado_stone_mat",
+      "source_linear_median": [
+        0.23074004852434915,
+        0.20507873639031693,
+        0.14702726649759498
+      ],
+      "inferred_stone_target_linear": [
+        0.11,
+        0.15,
+        0.2
+      ],
+      "tint": [
+        0.4767269518381509,
+        0.7314263908595179,
+        1.3602919020688693,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.3,
+            0.4,
+            0.46,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            0.4767269518381509,
+            0.7314263908595179,
+            1.3602919020688693,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_eldorado_stairs_material__1__rel_eldorado_stairs_mat",
+      "source_linear_median": [
+        0.07818742180518633,
+        0.06301001765316767,
+        0.030713443732993635
+      ],
+      "inferred_stone_target_linear": [
+        0.22,
+        0.25,
+        0.28
+      ],
+      "tint": [
+        2.813751814814374,
+        3.9676230750497474,
+        9.116528984316162,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.5,
+            0.56,
+            0.62,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            2.813751814814374,
+            3.9676230750497474,
+            9.116528984316162,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_el_arenamaster_mat__4__rel_el_arenastairsa_mat",
+      "source_linear_median": [
+        0.07818742180518633,
+        0.06301001765316767,
+        0.030713443732993635
+      ],
+      "inferred_stone_target_linear": [
+        0.22,
+        0.25,
+        0.28
+      ],
+      "tint": [
+        2.813751814814374,
+        3.9676230750497474,
+        9.116528984316162,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.5,
+            0.56,
+            0.62,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            2.813751814814374,
+            3.9676230750497474,
+            9.116528984316162,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_ed_blocks_a_matgroup__1__blocks_a_mat",
+      "source_linear_median": [
+        0.162029375639111,
+        0.12477181756095049,
+        0.08437621154414882
+      ],
+      "inferred_stone_target_linear": [
+        0.17,
+        0.19,
+        0.22
+      ],
+      "tint": [
+        1.0491924648197253,
+        1.5227797728215815,
+        2.6073699680731424,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.5,
+            0.49,
+            0.48,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            1.0491924648197253,
+            1.5227797728215815,
+            2.6073699680731424,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_ed_blocks_a_matgroup__2__blocks_b_mat",
+      "source_linear_median": [
+        0.162029375639111,
+        0.1301364766903643,
+        0.08865558628577294
+      ],
+      "inferred_stone_target_linear": [
+        0.17,
+        0.19,
+        0.22
+      ],
+      "tint": [
+        1.0491924648197253,
+        1.4600057173214387,
+        2.4815131140281528,
+        1
+      ],
+      "before": {
+        "vectors": {
+          "Tint": [
+            0.5,
+            0.49,
+            0.48,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "inferred_reference_art_direction",
+        "reason": "REF01/REF03 masonry is slate blue/gray rather than the olive cast of iteration07. Raise the blue channel in the per-material linear tint; retain original base texture, normal, roughness and opaque surface behavior. This is image-inferred art direction, not a source measurement.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      },
+      "after": {
+        "vectors": {
+          "Tint": [
+            1.0491924648197253,
+            1.4600057173214387,
+            2.4815131140281528,
+            1
+          ]
+        },
+        "scalars": {
+          "Metallic": 0.0,
+          "EmissionStrength": 0.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "preserve": "Existing BaseColor, Normal and Roughness textures and UV scale are unchanged."
+      }
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body",
+      "source_linear_median": [
+        0.26225065752969623,
+        0.19120168274079138,
+        0.11443537382697373
+      ],
+      "inferred_stone_target_linear": [
+        0.09,
+        0.13,
+        0.18
+      ],
+      "tint": [
+        0.34318312429706205,
+        0.6799103341377943,
+        1.5729402017959933,
+        1
+      ],
+      "before": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_body_28a20d61_M.png"
+        },
+        "vectors": {
+          "Tint": [
+            0.28,
+            0.38,
+            0.47,
+            1
+          ],
+          "InlayTint": [
+            3.428571428571428,
+            3.81578947368421,
+            2.8723404255319154,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0,
+          "EmissionStrength": 0.0,
+          "RoughnessFloor": 0.3
+        },
+        "basis": "reference_inferred_stone_and_gold_finish_using_recovered_metal_mask",
+        "reason": "Image-inferred slate stone tint on the giant serpent body/head. The existing metallic-map mask and reciprocal InlayTint preserve the previous per-channel gold multiplier exactly: S*(1-M)+G*M. Keep all source texture maps and RoughnessFloor0.30.",
+        "shader_requirement": "Roughness=max(RoughnessMap.R*RoughnessScale,RoughnessFloor), default floor0. No global roughness change.",
+        "preserve": "Source BaseColor/Normal/Metallic and Roughness texture detail, UVs and geometry remain intact.",
+        "preserved_metal_multiplier_linear_rgb": [
+          0.96,
+          1.45,
+          1.35
+        ]
+      },
+      "source_gold_linear_median": [
+        0.9473065367331999,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "inferred_gold_target_linear": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_gold_multiplier": [
+        1.0028432858450322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_body_28a20d61_M.png"
+        },
+        "vectors": {
+          "Tint": [
+            0.34318312429706205,
+            0.6799103341377943,
+            1.5729402017959933,
+            1
+          ],
+          "InlayTint": [
+            2.9221812345788982,
+            5.289678617110596,
+            12.612391337254703,
+            1
+          ],
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1,
+          "EmissionStrength": 0.0,
+          "RoughnessFloor": 0.3
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "shader_requirement": "Roughness=max(RoughnessMap.R*RoughnessScale,RoughnessFloor), default floor0. No global roughness change.",
+        "preserve": "Source BaseColor/Normal/Metallic and Roughness texture detail, UVs and geometry remain intact.",
+        "preserved_metal_multiplier_linear_rgb": [
+          0.96,
+          1.45,
+          1.35
+        ]
+      }
+    },
+    {
+      "id": "rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head",
+      "source_linear_median": [
+        0.042311410620809675,
+        0.028426039504420793,
+        0.01599629336550963
+      ],
+      "inferred_stone_target_linear": [
+        0.07,
+        0.1,
+        0.14
+      ],
+      "tint": [
+        1.6544000536246002,
+        3.5179012533366842,
+        8.752027535445222,
+        1
+      ],
+      "before": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_head_a49f3579_M.png"
+        },
+        "vectors": {
+          "Tint": [
+            0.65,
+            0.78,
+            0.86,
+            1
+          ],
+          "InlayTint": [
+            1.4769230769230768,
+            1.8589743589743588,
+            1.5697674418604655,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0,
+          "EmissionStrength": 0.0,
+          "RoughnessFloor": 0.3
+        },
+        "basis": "reference_inferred_stone_and_gold_finish_using_recovered_metal_mask",
+        "reason": "Image-inferred slate stone tint on the giant serpent body/head. The existing metallic-map mask and reciprocal InlayTint preserve the previous per-channel gold multiplier exactly: S*(1-M)+G*M. Keep all source texture maps and RoughnessFloor0.30.",
+        "shader_requirement": "Roughness=max(RoughnessMap.R*RoughnessScale,RoughnessFloor), default floor0. No global roughness change.",
+        "preserve": "Source BaseColor/Normal/Metallic and Roughness texture detail, UVs and geometry remain intact.",
+        "preserved_metal_multiplier_linear_rgb": [
+          0.96,
+          1.45,
+          1.3500000000000003
+        ]
+      },
+      "source_gold_linear_median": [
+        0.9473065367331999,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "inferred_gold_target_linear": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_gold_multiplier": [
+        1.0028432858450322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_serpent_head_a49f3579_M.png"
+        },
+        "vectors": {
+          "Tint": [
+            1.6544000536246002,
+            3.5179012533366842,
+            8.752027535445222,
+            1
+          ],
+          "InlayTint": [
+            0.6061673436530167,
+            1.0223445449555952,
+            2.266736169968214,
+            1
+          ],
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1,
+          "EmissionStrength": 0.0,
+          "RoughnessFloor": 0.3
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Image-inferred material palette using measured linear source texture medians. Per-channel gain equals target linear albedo / source linear median; source texture variation, normals and roughness remain. This corrects warm source texture bias rather than applying a display-color tint blindly. Native comparison-render validation required.",
+        "shader_requirement": "Roughness=max(RoughnessMap.R*RoughnessScale,RoughnessFloor), default floor0. No global roughness change.",
+        "preserve": "Source BaseColor/Normal/Metallic and Roughness texture detail, UVs and geometry remain intact.",
+        "preserved_metal_multiplier_linear_rgb": [
+          0.96,
+          1.45,
+          1.3500000000000003
+        ]
+      }
+    },
+    {
+      "id": "rel_eldorado_main_ground_material__0__main_ground_mat",
+      "before": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_01_diff_48854775_A.png"
+        },
+        "vectors": {
+          "InlayTint": [
+            0.3,
+            0.4363636363636363,
+            0.9565217391304349,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ],
+          "Tint": [
+            1,
+            1.1,
+            1.15,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0
+        },
+        "basis": "source_mask_channel_with_reference_inferred_slab_and_inlay_color",
+        "reason": "Image-inferred follow-up after fixing Unreal byte-color BGRA construction. Remove the previous warm-light compensation that left slab stone orange-brown; neutral-cool multiplier restores warm tan source stone. Existing diffuse-alpha mask is unchanged, and reciprocal inlay tint targets linear slate(.3,.48,1.1) independently of the base tint. Native comparison-render validation remains required."
+      },
+      "source_slab_median": [
+        0.06847816984440017,
+        0.03560131487502034,
+        0.01520851442291271
+      ],
+      "source_inlay_median": [
+        0.08865558628577294,
+        0.08650046203654976,
+        0.08865558628577294
+      ],
+      "target_slab": [
+        0.1,
+        0.075,
+        0.05
+      ],
+      "target_inlay": [
+        0.04,
+        0.075,
+        0.2
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_01_diff_48854775_A.png"
+        },
+        "vectors": {
+          "InlayTint": [
+            0.308962684533684,
+            0.4115736961032349,
+            0.6861841451880761,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ],
+          "Tint": [
+            1.4603194014563394,
+            2.106663764057314,
+            3.287632086186633,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Measured source diffuse-alpha partitions: tan slab median differs from neutral inlay median. Target image-inferred linear tan(.10,.075,.05) outside mask and slate(.04,.075,.20) inside mask; use reciprocal inlay gain to keep regions independent. Source alpha mask, texture files and UVs unchanged. Native visual review required."
+      }
+    },
+    {
+      "id": "rel_eldorado_main_ground_material__4__main_ground_02_mat",
+      "before": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_02_diff_c7a62a03_A.png"
+        },
+        "vectors": {
+          "InlayTint": [
+            0.3,
+            0.4363636363636363,
+            0.9565217391304349,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ],
+          "Tint": [
+            1,
+            1.1,
+            1.15,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0
+        },
+        "basis": "source_mask_channel_with_reference_inferred_slab_and_inlay_color",
+        "reason": "Image-inferred follow-up after fixing Unreal byte-color BGRA construction. Remove the previous warm-light compensation that left slab stone orange-brown; neutral-cool multiplier restores warm tan source stone. Existing diffuse-alpha mask is unchanged, and reciprocal inlay tint targets linear slate(.3,.48,1.1) independently of the base tint. Native comparison-render validation remains required."
+      },
+      "source_slab_median": [
+        0.07818742180518633,
+        0.04518620438567554,
+        0.01520851442291271
+      ],
+      "source_inlay_median": [
+        0.10946171077829933,
+        0.10461648409110419,
+        0.10946171077829933
+      ],
+      "target_slab": [
+        0.1,
+        0.075,
+        0.05
+      ],
+      "target_inlay": [
+        0.04,
+        0.075,
+        0.2
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\Prepared\\rel_eldorado_mainfloor_02_diff_c7a62a03_A.png"
+        },
+        "vectors": {
+          "InlayTint": [
+            0.28571605997843363,
+            0.4319224143140349,
+            0.5557565038871211,
+            1
+          ],
+          "TintMaskUVScale": [
+            1.0,
+            1.0,
+            0,
+            0
+          ],
+          "Tint": [
+            1.2789780976428975,
+            1.6597986270290876,
+            3.287632086186633,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1.0
+        },
+        "basis": "source_texture_conditioned_reference_palette",
+        "reason": "Measured source diffuse-alpha partitions: tan slab median differs from neutral inlay median. Target image-inferred linear tan(.10,.075,.05) outside mask and slate(.04,.075,.20) inside mask; use reciprocal inlay gain to keep regions independent. Source alpha mask, texture files and UVs unchanged. Native visual review required."
+      }
+    },
+    {
+      "id": "rel_eldorado_buff_spawn_material__1__buff_spawn_mat",
+      "before": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1,
+            1.45,
+            1.7,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_reference_gold_hue",
+        "reason": "The recovered Buff_spawn_Mat colored specular map produces saturated orange metal in the PBR base color. Use its existing Metallic map to shift only metal toward the reference yellow-gold; preserve the stone base texture, source normal, roughness and geometry. The Power slot remains separately cyan/green per side pad. This is image-inferred art direction.",
+        "source_metal_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_M.png"
+      },
+      "source_metal_median": [
+        0.9301108583754237,
+        0.1589608350608804,
+        0.006048833022857054
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.0213836248071715,
+        3.459971758385363,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.0213836248071715,
+            3.459971758385363,
+            19.83853737515145,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending.",
+        "source_metal_map": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\buff_spawn_mat_bd772f22_M.png"
+      }
+    },
+    {
+      "id": "rel_ed_ring_a_matgroup__0__rel_ed_ring_a_mat",
+      "before": {
+        "scalars": {
+          "RoughnessScale": 0.68
+        },
+        "basis": "reference_inferred_surface_finish",
+        "reason": "Recovered ring uses DDN normal without gloss alpha, so imported roughness is default white x0.55. Increase constant roughness to0.68 for softer gold/stone reflections seen in supplied reference; retain exact mixed material BaseColor/Metallic maps."
+      },
+      "source_metal_median": [
+        0.7912979403326302,
+        0.12213877222960187,
+        0.005181516702338386
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.2005591719354882,
+        4.50307457623764,
+        23.159242147351325
+      ],
+      "after": {
+        "scalars": {
+          "RoughnessScale": 0.68,
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending.",
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_ring_a_mat_59b99209_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.2005591719354882,
+            4.50307457623764,
+            23.159242147351325,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "id": "rel_ed_ring_a_matgroup__1__rel_ed_ring_b_mat",
+      "before": {
+        "scalars": {
+          "RoughnessScale": 0.68
+        },
+        "basis": "reference_inferred_surface_finish",
+        "reason": "Recovered ring uses DDN normal without gloss alpha, so imported roughness is default white x0.55. Increase constant roughness to0.68 for softer gold/stone reflections seen in supplied reference; retain exact mixed material BaseColor/Metallic maps."
+      },
+      "source_metal_median": [
+        0.83879901174074,
+        0.3613067797835095,
+        0.05448027644244237
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.1325716729547488,
+        1.5222520881826607,
+        2.202631995209831
+      ],
+      "after": {
+        "scalars": {
+          "RoughnessScale": 0.68,
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending.",
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_ed_ring_b_mat_f02db215_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.1325716729547488,
+            1.5222520881826607,
+            2.202631995209831,
+            1
+          ]
+        }
+      }
+    },
+    {
+      "id": "rel_el_arenamaster_mat__3__rel_el_arenasnakeheadb_mat",
+      "before": {},
+      "source_metal_median": [
+        0.5775804404296506,
+        0.10461648409110419,
+        0.011612245179743885
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.6447925405737664,
+        5.257297688584508,
+        10.333918905650137
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_el_arenasnakeheadb_mat_db329e1b_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.6447925405737664,
+            5.257297688584508,
+            10.333918905650137,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    },
+    {
+      "id": "rel_el_dorado_snakeheadpillar_b_material__1__snakeheadpillar_mat",
+      "before": {},
+      "source_metal_median": [
+        0.9473065367331999,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.0028432858450322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\snakeheadpillar_mat_a48dd2d4_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.0028432858450322,
+            3.596507156041211,
+            19.83853737515145,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    },
+    {
+      "id": "rel_eldorado_buff_spawn_material__3__rel_eldorado_trim_mat",
+      "before": {},
+      "source_metal_median": [
+        0.9473065367331999,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.0028432858450322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_eldorado_trim_mat_0a8a3d66_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.0028432858450322,
+            3.596507156041211,
+            19.83853737515145,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    },
+    {
+      "id": "rel_eldorado_main_ground_material__1__trim_mat",
+      "before": {},
+      "source_metal_median": [
+        0.9473065367331999,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        1.0028432858450322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\trim_mat_57ab3d0e_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            1.0028432858450322,
+            3.596507156041211,
+            19.83853737515145,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    },
+    {
+      "id": "rel_eldorado_main_ground_material__3__relic_center_deco",
+      "before": {},
+      "source_metal_median": [
+        0.9559733532492861,
+        0.15292615199615017,
+        0.006048833022857054
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        0.9937515483784322,
+        3.596507156041211,
+        19.83853737515145
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\relic_center_deco_f28fa3ae_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            0.9937515483784322,
+            3.596507156041211,
+            19.83853737515145,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    },
+    {
+      "id": "rel_eldorado_startramp_clump_matgroup__0__rel_eldorado_floor_v2_mat",
+      "before": {},
+      "source_metal_median": [
+        0.9911020971138298,
+        0.4232676699860717,
+        0.06847816984440017
+      ],
+      "target_gold": [
+        0.95,
+        0.55,
+        0.12
+      ],
+      "total_metal_multiplier": [
+        0.9585288970394448,
+        1.2994141509038446,
+        1.7523832817476073
+      ],
+      "after": {
+        "textures": {
+          "TintMaskMap": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Textures\\PreparedPBR\\rel_eldorado_floor_v2_mat_6f3fb11c_M.png"
+        },
+        "vectors": {
+          "TintMaskUVScale": [
+            1,
+            1,
+            0,
+            0
+          ],
+          "InlayTint": [
+            0.9585288970394448,
+            1.2994141509038446,
+            1.7523832817476073,
+            1
+          ]
+        },
+        "scalars": {
+          "InlayTintStrength": 1
+        },
+        "basis": "source_metal_mask_with_source_conditioned_reference_gold",
+        "reason": "Use the existing source Metallic map only to bring colored-specular/PBR metal toward the image-inferred linear gold target(.95,.55,.12). Gain is target/source median in near-pure-metal texels; nonmetal stone and existing source texture detail remain unchanged. No master shader or floor-alpha-mask change. Native visual acceptance pending."
+      }
+    }
+  ]
+}

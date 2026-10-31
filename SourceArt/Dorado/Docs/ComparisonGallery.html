@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dorado — Unreal comparison gallery</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; background: #14191d; color: #e4e8eb; }
+    body { margin: 0; }
+    main { max-width: 1920px; margin: auto; padding: 24px; }
+    h1 { font-size: clamp(1.5rem, 3vw, 2.4rem); margin: 0 0 8px; }
+    h2 { font-size: 1.3rem; margin: 0 0 12px; }
+    p { max-width: 105ch; margin: 8px 0 16px; }
+    a { color: #a4d9f2; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 12px 0 24px; }
+    section { border-top: 1px solid #39434b; padding: 24px 0; }
+    .pair, .supplement { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    figure { margin: 0; min-width: 0; background: #20272d; border: 1px solid #39434b; border-radius: 5px; overflow: hidden; }
+    figcaption { padding: 9px 12px; color: #c8d0d5; font-size: .9rem; }
+    figure img { display: block; width: 100%; height: auto; }
+    .note { color: #bac4cc; font-size: .95rem; }
+    .supplement { align-items: start; }
+    footer { border-top: 1px solid #39434b; padding: 18px 0; color: #bac4cc; font-size: .9rem; }
+    @media (max-width: 800px) { main { padding: 16px; } .pair, .supplement { grid-template-columns: 1fr; } }
+    @media print { :root { color-scheme: light; background: white; color: black; } section { break-inside: avoid; } nav { display: none; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Dorado · Unreal comparison gallery</h1>
+  <p>Supplied references beside native Unreal Engine 5.8.1 captures from the same reconstructed ProjectB scene. Click any image to inspect the original PNG. Images are displayed without cropping, color adjustment, compositing, or generated retouching.</p>
+  <p class="note">The recovered court, signature architecture, and selected camera landmarks correspond closely. Remaining differences include warmer and paler distance, brighter orange gold highlights, weaker pad glow, streakier water, and more saturated violet energy. See the <a href="VisualIteration.md">visual review</a> and <a href="ValidationReport.md">validation report</a> for scope and limitations.</p>
+  <nav aria-label="Gallery sections"><a href="#ref01">REF01 · Court and sun façade</a><a href="#ref02">REF02 · Pylons and narrow shrine</a><a href="#ref03">REF03 · Exterior and islands</a><a href="#supplement">Layout and player views</a></nav>
+
+  <section id="ref01">
+    <h2>REF01 · Elevated court and sun façade</h2>
+    <div class="pair">
+      <figure><a href="../References/REF_01.png"><img src="../References/REF_01.png" alt="Supplied REF01: elevated court, sun façade at rear, giant serpent head at right" width="2048" height="918"></a><figcaption>Supplied reference · 2048 × 918</figcaption></figure>
+      <figure><a href="Renders/CAM_Ref_01.png"><img src="Renders/CAM_Ref_01.png" alt="Native Unreal REF01 camera with recovered court and near serpent head" width="2048" height="918"></a><figcaption>Unreal · CAM_Ref_01 · final saved PNG</figcaption></figure>
+    </div>
+    <p class="note">Court circles, stairs, side drums, sun surround, and serpent profiles agree well. Current masonry and cover faces are paler, highlights more orange, and cyan/green pad illumination weaker. The ring energy reads more blue-violet than the reference's airy lavender.</p>
+  </section>
+
+  <section id="ref02">
+    <h2>REF02 · Foreground pylons, broken ring, and narrow shrine</h2>
+    <div class="pair">
+      <figure><a href="../References/REF_02.png"><img src="../References/REF_02.png" alt="Supplied REF02: narrow shrine beyond foreground serpent pylons and broken ring" width="1920" height="862"></a><figcaption>Supplied reference · 1920 × 862</figcaption></figure>
+      <figure><a href="Renders/CAM_Ref_02.png"><img src="Renders/CAM_Ref_02.png" alt="Native Unreal REF02 camera with broken ring, narrow shrine, and distant stepped pyramid" width="1920" height="862"></a><figcaption>Unreal · CAM_Ref_02 · final saved PNG</figcaption></figure>
+    </div>
+    <p class="note">The distinct narrow shrine, ring terminals and upper break, pylon framing, and distant pyramid remain recognizable. The final distance is warmer and more washed out, reducing the reference's green forest layers and dark teal pyramid contrast. Pylon shadows have less purple fill.</p>
+  </section>
+
+  <section id="ref03">
+    <h2>REF03 · Sun temple, ring edge, and floating islands</h2>
+    <div class="pair">
+      <figure><a href="../References/REF_03.png"><img src="../References/REF_03.png" alt="Supplied REF03: sun temple and ring at left, floating islands and cyan waterfall at right" width="1920" height="862"></a><figcaption>Supplied reference · 1920 × 862</figcaption></figure>
+      <figure><a href="Renders/CAM_Ref_03.png"><img src="Renders/CAM_Ref_03.png" alt="Native Unreal REF03 camera showing recovered cliffs, floating island roots, waterfall, and sun temple" width="1920" height="862"></a><figcaption>Unreal · CAM_Ref_03 · final saved PNG</figcaption></figure>
+    </div>
+    <p class="note">The sun center, ring edge, island outlines, roots, and distant temple silhouette correspond. Yellow/cream haze replaces much of the reference's peach sky and blue-violet cliff shading. The prominent waterfall has stronger repeated streaks and less soft cyan translucency.</p>
+  </section>
+
+  <section id="supplement">
+    <h2>Layout and views between the comparison cameras</h2>
+    <div class="supplement">
+      <figure><a href="Renders/CAM_TopDown.png"><img src="Renders/CAM_TopDown.png" alt="Perspective top-down view of the entire main court, medallions, side platforms, and ring seen edge-on" loading="lazy"></a><figcaption>CAM_TopDown · perspective plan view, Z6000 cm / horizontal FOV82°. Main court complete; end-temple extents partly cropped. Not a metric orthographic drawing.</figcaption></figure>
+      <figure><a href="Renders/CAM_Player_Center.png"><img src="Renders/CAM_Player_Center.png" alt="Low view across court slabs and sparse cover toward the sun façade" loading="lazy"></a><figcaption>CAM_Player_Center · court seams, sparse cover, and temple approach.</figcaption></figure>
+      <figure><a href="Renders/CAM_Player_SidePad.png"><img src="Renders/CAM_Player_SidePad.png" alt="Side-platform view across the central circular ornament toward floating islands" loading="lazy"></a><figcaption>CAM_Player_SidePad · central ornament, stairs, ring depth, and exterior scenery.</figcaption></figure>
+      <figure><a href="Renders/CAM_Player_ShrineEnd.png"><img src="Renders/CAM_Player_ShrineEnd.png" alt="View from the narrow-shrine end back toward the broad sun temple" loading="lazy"></a><figcaption>CAM_Player_ShrineEnd · view toward the opposite, broad sun façade.</figcaption></figure>
+    </div>
+    <p class="note">These stills show selected sightlines and surfaces. They do not establish animation continuity, all-angle completeness, collision, or runtime traversal. Those checks have separate evidence.</p>
+  </section>
+  <footer>Project-specific environment delivery · 30 October 2026 · Native map: /BreakawayCore/Environments/Dorado/Maps/L_Dorado · <a href="IntegrationGuide.md">Integration guide</a>. Keep this file, SourceArt/Dorado/References, and SourceArt/Dorado/Docs/Renders in the same project-relative locations.</footer>
+</main>
+</body>
+</html>

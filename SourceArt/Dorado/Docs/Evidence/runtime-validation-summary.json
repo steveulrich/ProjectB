@@ -1,0 +1,986 @@
+{
+  "scope": "Derived summaries of original native runs; raw per-frame traces omitted. Failed attempts and original limitations preserved.",
+  "runs": [
+    {
+      "label": "dorado-floor-seams-01",
+      "kind": "walk",
+      "start_cm": [
+        450.0,
+        -650.0,
+        104.00112664641347
+      ],
+      "end_xy": [
+        450,
+        650
+      ],
+      "length_cm": 1300.0,
+      "seconds": 5,
+      "expected_end_z": 0,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 8.992572767714686e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.938000000023749,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-floor-seams-01.json",
+        "bytes": 385616,
+        "sha256": "3c029d26bc881dbee3a28143d01d53f1c1c1dc100e53ba9ae265d8dbc2c4db28"
+      },
+      "total_samples": 111,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-cross-center-seam-01",
+      "kind": "walk",
+      "start_cm": [
+        -125.0,
+        500.0,
+        103.7777087688446
+      ],
+      "end_xy": [
+        125,
+        500
+      ],
+      "length_cm": 250.0,
+      "seconds": 2,
+      "expected_end_z": 0,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 1.5960352470756344e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 3.9219999999622814,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-cross-center-seam-01.json",
+        "bytes": 223875,
+        "sha256": "24a2944a9e01ddc464a8f6637f6b084bbc83890001bc99c9674c470dff9f5c2f"
+      },
+      "total_samples": 63,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-east-stairs-up-01",
+      "kind": "walk",
+      "start_cm": [
+        1275.0,
+        1025.0,
+        104.00140628276858
+      ],
+      "end_xy": [
+        1275,
+        50
+      ],
+      "length_cm": 975.0,
+      "seconds": 5,
+      "expected_end_z": 209,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 2.438274748328695e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.875,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-east-stairs-up-01.json",
+        "bytes": 380680,
+        "sha256": "5b95caa5c6a01af9e31e02ab92522991fcf89b16903eaaba39d08d08e04fd4a8"
+      },
+      "total_samples": 110,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-east-stairs-down-01",
+      "kind": "walk",
+      "start_cm": [
+        1275.0,
+        50.0,
+        313.1704093318937
+      ],
+      "end_xy": [
+        1275,
+        1025
+      ],
+      "length_cm": 975.0,
+      "seconds": 5,
+      "expected_end_z": 0,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 1.9965438582403294e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.921999999962281,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-east-stairs-down-01.json",
+        "bytes": 384483,
+        "sha256": "558aaf6348e3e265ce84cae45b7aedc3a64e4bce45dcb35d8fb3566022852c67"
+      },
+      "total_samples": 111,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-west-stairs-up-01",
+      "kind": "walk",
+      "start_cm": [
+        -1275.0,
+        1025.0,
+        104.00140628276858
+      ],
+      "end_xy": [
+        -1275,
+        50
+      ],
+      "length_cm": 975.0,
+      "seconds": 5,
+      "expected_end_z": 209,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 2.575610551502905e-07
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.89100000000326,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-west-stairs-up-01.json",
+        "bytes": 380910,
+        "sha256": "c302bcc2705cbf2cfce0abf63ee7ecdeae096c98accfcc59a05ce6f3764d8471"
+      },
+      "total_samples": 110,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-south-approach-01",
+      "kind": "walk",
+      "start_cm": [
+        0.0,
+        -3000.0,
+        277.3473709228514
+      ],
+      "end_xy": [
+        0,
+        -3850
+      ],
+      "length_cm": 850.0,
+      "seconds": 5,
+      "expected_end_z": 242,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 5.819328180223238e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.936999999976251,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-south-approach-01.json",
+        "bytes": 383989,
+        "sha256": "0e8b2cdb37608b849959e74c42926b38de27c2811357c47d461a4317138d4013"
+      },
+      "total_samples": 111,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-repaired-center-seams-02",
+      "kind": "walk",
+      "start_cm": [
+        25.0,
+        -1000.0,
+        104.00160221231636
+      ],
+      "end_xy": [
+        25,
+        1000
+      ],
+      "length_cm": 2000.0,
+      "seconds": 6,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 5.092757329774232e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 7.938000000023749,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-repaired-center-seams-02.json",
+        "bytes": 436890,
+        "sha256": "4e007ff1dd4f0a7af7635092cfa377bd31fb151d718d2c58f1eb9b0018e65bdf"
+      },
+      "total_samples": 123,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-repaired-east-stairs-03",
+      "kind": "walk",
+      "start_cm": [
+        1275.0,
+        1025.0,
+        104.00140628276858
+      ],
+      "end_xy": [
+        1275,
+        50
+      ],
+      "length_cm": 975.0,
+      "seconds": 5,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route.",
+        "Unexpected airborne sample during grounded route."
+      ],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 3.419636129820039e-07
+      },
+      "result": "FAIL_ROUTE_OR_CLEANUP",
+      "duration_s": 6.9060000000172295,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-repaired-east-stairs-03.json",
+        "bytes": 398512,
+        "sha256": "c255fa1a45ab690236f05b525562efa656c546ccc642ae81818c169f0057998d"
+      },
+      "total_samples": 111,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-repaired-east-stairs-04",
+      "kind": "walk",
+      "start_cm": [
+        1275.0,
+        1025.0,
+        104.00140628276858
+      ],
+      "end_xy": [
+        1275,
+        50
+      ],
+      "length_cm": 975.0,
+      "seconds": 5,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 6.119878449339922e-06
+      },
+      "result": "PASS_SAMPLED_NATIVE_MOVEMENT",
+      "duration_s": 6.89100000000326,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-repaired-east-stairs-04.json",
+        "bytes": 394429,
+        "sha256": "f68d557dd2bc2817dfef3f205cbee4a93975d246421578014f785cb2e5e24b37"
+      },
+      "total_samples": 111,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-cover-block-01",
+      "kind": "walk",
+      "start_cm": [
+        0.0,
+        1750.0,
+        104.00237519084476
+      ],
+      "end_xy": [
+        0,
+        2250
+      ],
+      "length_cm": 500.0,
+      "seconds": 2,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 1.3151083066986757e-06
+      },
+      "result": "FAIL_OBSTACLE_OR_CLEANUP",
+      "duration_s": 3.9839999999967404,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "obstacle_observation": {
+        "maximum_progress_cm": 482.02043150545524,
+        "required_maximum_cm": 200.0,
+        "moved_then_stopped": false
+      },
+      "expected_blocking_maximum_progress_cm": 200.0,
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-cover-block-01.json",
+        "bytes": 223450,
+        "sha256": "5a3f1a91f4bccda08712f4e3c0819d9a2f6255edfe780d65636b09e2ef885241"
+      },
+      "total_samples": 63,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-cover-block-02",
+      "kind": "walk",
+      "start_cm": [
+        96.63,
+        1720.04,
+        104.00232688640244
+      ],
+      "end_xy": [
+        -36.63,
+        2201.96
+      ],
+      "length_cm": 500.00511397384736,
+      "seconds": 2,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 3.6671038401436817e-06
+      },
+      "result": "PASS_VISIBLE_OBSTACLE_BLOCKING",
+      "duration_s": 3.9060000000172295,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "obstacle_observation": {
+        "maximum_progress_cm": 212.7004013431818,
+        "required_maximum_cm": 235.0,
+        "moved_then_stopped": true
+      },
+      "expected_blocking_maximum_progress_cm": 235.0,
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-cover-block-02.json",
+        "bytes": 220702,
+        "sha256": "e5a18b6e3f263cbe15f01cec4f006dbbb3e8df2e0d124bb162972dc97432da24"
+      },
+      "total_samples": 62,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-open-edge-01",
+      "kind": "walk",
+      "start_cm": [
+        1560.0,
+        0.0,
+        311.6039344769476
+      ],
+      "end_xy": [
+        2000,
+        0
+      ],
+      "length_cm": 440.0,
+      "seconds": 1,
+      "expected_end_z": null,
+      "allow_fall": true,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 4.4428656451600546e-06
+      },
+      "result": "FAIL_EDGE_OR_CLEANUP",
+      "duration_s": 2.905999999959022,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "edge_observation": {
+        "falling_samples": 0,
+        "maximum_drop_cm": 0.0
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-open-edge-01.json",
+        "bytes": 166630,
+        "sha256": "9b1d57419d510073403b740909fb527beeb41337fb843c138a5fd220b04085f2"
+      },
+      "total_samples": 47,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-open-edge-02",
+      "kind": "walk",
+      "start_cm": [
+        770.0,
+        2165.0,
+        315.6893999999995
+      ],
+      "end_xy": [
+        1210,
+        2165
+      ],
+      "length_cm": 440.0,
+      "seconds": 1,
+      "expected_end_z": null,
+      "allow_fall": true,
+      "reached": true,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [
+        "Character restoration not verified."
+      ],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_FALLING: 3>",
+        "position_error_cm": 256.9607676359316
+      },
+      "result": "FAIL_EDGE_OR_CLEANUP",
+      "duration_s": 2.89000000001397,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "No Relic manipulation.",
+      "edge_observation": {
+        "falling_samples": 15,
+        "maximum_drop_cm": 406.8263265957798
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-open-edge-02.json",
+        "bytes": 157705,
+        "sha256": "42aaa303f8f563f4c735e40f8eb866af67cb7ee99b58691078a24d99e0966de6"
+      },
+      "total_samples": 46,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-relic-floor-openlane-01",
+      "kind": "ball",
+      "start_cm": [
+        450.0,
+        -650.0,
+        104.00112664641347
+      ],
+      "end_xy": [
+        450,
+        650
+      ],
+      "length_cm": 1300.0,
+      "seconds": 8,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 4.87629549184021e-07
+      },
+      "result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+      "duration_s": 9.671999999962281,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "End disposable PIE session after all probes.",
+      "ball_observation": {
+        "free_physics_samples": 122,
+        "maximum_speed_cm_s": 951.9322734396812,
+        "trajectory_observed": true,
+        "contact_assertions": "Not inferred solely from sampled motion; inspect floor/stair collision and video evidence."
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-relic-floor-openlane-01.json",
+        "bytes": 524136,
+        "sha256": "b480f73270e80679bb764de96fd4edc33c44730d0e8b0cffca78815d7825d3d6"
+      },
+      "total_samples": 154,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-relic-stairs-down-01",
+      "kind": "ball",
+      "start_cm": [
+        1275.0,
+        50.0,
+        313.1704093318937
+      ],
+      "end_xy": [
+        1275,
+        1025
+      ],
+      "length_cm": 975.0,
+      "seconds": 8,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 4.7377909595525125e-07
+      },
+      "result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+      "duration_s": 9.702999999979511,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "End disposable PIE session after all probes.",
+      "ball_observation": {
+        "free_physics_samples": 122,
+        "maximum_speed_cm_s": 1088.7946697695572,
+        "trajectory_observed": true,
+        "contact_assertions": "Not inferred solely from sampled motion; inspect floor/stair collision and video evidence."
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-relic-stairs-down-01.json",
+        "bytes": 528256,
+        "sha256": "5a06dfa01c3d8a7a6887e84bfc1b5bf79171fd308e0c34adc9e677c1fafaeac3"
+      },
+      "total_samples": 154,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-relic-stairs-down-02",
+      "kind": "ball",
+      "start_cm": [
+        1275.0,
+        50.0,
+        313.1704093318937
+      ],
+      "end_xy": [
+        1275,
+        1025
+      ],
+      "length_cm": 975.0,
+      "seconds": 15,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 4.545751451701108e-06
+      },
+      "result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+      "duration_s": 16.67200000002049,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "End disposable PIE session after all probes.",
+      "ball_observation": {
+        "free_physics_samples": 132,
+        "maximum_speed_cm_s": 1075.2974758981718,
+        "trajectory_observed": true,
+        "contact_assertions": "Not inferred solely from sampled motion; inspect floor/stair collision and video evidence."
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-relic-stairs-down-02.json",
+        "bytes": 685837,
+        "sha256": "fd6983a9211ee0d46fb6e31fb3fa8515c4cf3b55330c7fa91f2a67138ff6712c"
+      },
+      "total_samples": 260,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-relic-stairs-down-03",
+      "kind": "ball",
+      "start_cm": [
+        1275.0,
+        50.0,
+        313.1704093318937
+      ],
+      "end_xy": [
+        1275,
+        1025
+      ],
+      "length_cm": 975.0,
+      "seconds": 15,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 9.872263717625174e-08
+      },
+      "result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+      "duration_s": 16.67199999996228,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "End disposable PIE session after all probes.",
+      "ball_observation": {
+        "free_physics_samples": 234,
+        "maximum_speed_cm_s": 1095.3133889643984,
+        "trajectory_observed": true,
+        "contact_assertions": "Not inferred solely from sampled motion; inspect floor/stair collision and video evidence."
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-relic-stairs-down-03.json",
+        "bytes": 930013,
+        "sha256": "436c9ec7ce362b25fe9fe4bd2c68d7ca64709f8b9f16521dcda8ad57af4a8bbd"
+      },
+      "total_samples": 267,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    },
+    {
+      "label": "dorado-relic-repaired-center-02",
+      "kind": "ball",
+      "start_cm": [
+        25.0,
+        -1100.0,
+        104.00174372736365
+      ],
+      "end_xy": [
+        25,
+        600
+      ],
+      "length_cm": 1700.0,
+      "seconds": 14,
+      "expected_end_z": null,
+      "allow_fall": false,
+      "reached": false,
+      "scope": "One actual project character and actual Relic, one local PIE world, native simulated Enhanced Input. No physical input or network acceptance.",
+      "errors": [],
+      "cleanup": {
+        "collision_enabled": true,
+        "movement_mode": "<MovementMode.MOVE_WALKING: 1>",
+        "position_error_cm": 3.2597975945236612e-06
+      },
+      "result": "OBSERVED_ACTUAL_RELIC_TRAJECTORY",
+      "duration_s": 15.702999999979511,
+      "not_proven": [
+        "Physical input",
+        "Remote replication",
+        "Unsampled arena surfaces",
+        "Ball contact topology between samples",
+        "Manual visual traversal acceptance"
+      ],
+      "ball_state_cleanup": "End disposable PIE session after all probes.",
+      "ball_observation": {
+        "free_physics_samples": 217,
+        "maximum_speed_cm_s": 903.5966196661163,
+        "trajectory_observed": true,
+        "contact_assertions": "Not inferred solely from sampled motion; inspect floor/stair collision and video evidence."
+      },
+      "source_report": {
+        "path": "Saved/Logs/dorado-reconstruction-20261030/dorado-relic-repaired-center-02.json",
+        "bytes": 850452,
+        "sha256": "a18c116c57520965b840f9b012e50dad00ebeb6b8e1c3a96d181c8326099d377"
+      },
+      "total_samples": 246,
+      "character_settings": {
+        "pawn_class": "/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C",
+        "capsule_radius_cm": 35.0,
+        "capsule_half_height_cm": 96.0,
+        "max_step_height_cm": 50.0,
+        "max_walk_speed_cm_s": 600.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+# Regenerable conversion caches and local authoring backups.
+__pycache__/
+*.py[cod]
+*.blend[0-9]*
+Textures/RecoveredDDS/
+
+# Identical conversion intermediates; canonical DAE files are in Exports/DAE.
+Sources/CGF/**/*.dae
+
+# Disposable early ring-conversion pilot; final meshes and calibration are retained.
+Calibration/Ring/
+Dorado_Recovered_rel_ed_ring_a_group.blend
+geometry_manifest_rel_ed_ring_a_group.json
+Config/geometry_stage_rel_ed_ring_a_group.json

@@ -1,0 +1,292 @@
+{
+  "scope": "Seven owned opaque, noncolliding backdrop mesh assets. No gameplay meshes, cards, maps or actors saved.",
+  "api_source": "Installed UE5.8 StaticMeshEditorSubsystem.h:217,226; EngineTypes.h:3222,3285,3346-3359.",
+  "assets": {
+    "SM_Dorado_rel_ed_vistamountains_clump_a_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_a_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_a_group",
+      "index": 0,
+      "generated_utc": "2026-10-30T21:03:29.483356+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_a_group1_0EC995A8"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_b_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_b_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_b_group",
+      "index": 1,
+      "generated_utc": "2026-10-30T21:03:29.643290+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_b_group1_0BFA1323"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_c_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_c_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_c_group",
+      "index": 2,
+      "generated_utc": "2026-10-30T21:03:29.834865+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_c_group1_48BE2B5F"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_d_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_d_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_d_group",
+      "index": 3,
+      "generated_utc": "2026-10-30T21:03:30.326211+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a.MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a.MI_rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_d_group1_6F92EA88"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_e_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_e_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_e_group",
+      "index": 4,
+      "generated_utc": "2026-10-30T21:03:30.857336+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a.MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_e_group1_644E2336"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_f_group": {
+      "asset_id": "SM_Dorado_rel_ed_vistamountains_clump_f_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_f_group",
+      "index": 5,
+      "generated_utc": "2026-10-30T21:03:31.505030+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a.MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b"
+      ],
+      "instances": [
+        "D_rel_ed_vistamountains_clump_f_group1_C339BA59"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    },
+    "SM_Dorado_rel_el_mountain_unique_c_group": {
+      "asset_id": "SM_Dorado_rel_el_mountain_unique_c_group",
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_mountain_unique_c_group",
+      "index": 6,
+      "generated_utc": "2026-10-30T21:03:32.770834+00:00",
+      "materials": [
+        "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_mountain_c_matgroup__0__rel_el_mountain_c.MI_rel_el_mountain_c_matgroup__0__rel_el_mountain_c"
+      ],
+      "instances": [
+        "D_rel_el_mountain_unique_a_group3_DBFEFE3B"
+      ],
+      "before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "status": "configured_and_saved",
+      "original_before": {
+        "enabled": false,
+        "explicit_tangents": false,
+        "fallback_target": "<NaniteFallbackTarget.AUTO: 0>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 1.0
+      },
+      "after": {
+        "enabled": true,
+        "explicit_tangents": true,
+        "fallback_target": "<NaniteFallbackTarget.PERCENT_TRIANGLES: 1>",
+        "fallback_percent_triangles": 1.0,
+        "fallback_relative_error": 0.0
+      },
+      "build_scope": "Native post-edit rebuild requested and asset saved; render-resource readiness and warning removal require root verification."
+    }
+  },
+  "not_proven": [
+    "VSM warning removal",
+    "GPU performance improvement",
+    "Visual parity",
+    "Packaged behavior"
+  ],
+  "generated_utc": "2026-10-30T21:03:32.890428+00:00",
+  "configured_or_already_correct": 7,
+  "failed": 0
+}

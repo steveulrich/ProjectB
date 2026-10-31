@@ -1,0 +1,854 @@
+{
+  "saved": 125,
+  "texture_count": 142,
+  "failed": 0,
+  "materials": {
+    "eldorado_collision_matgroup__0__collision": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_collision_matgroup__0__collision.MI_eldorado_collision_matgroup__0__collision",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\eldorado_collision_matgroup.mtl",
+      "name": "Collision"
+    },
+    "eldorado_collision_matgroup__1__charcoal_grid": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_collision_matgroup__1__charcoal_grid.MI_eldorado_collision_matgroup__1__charcoal_grid",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\eldorado_collision_matgroup.mtl",
+      "name": "charcoal_grid"
+    },
+    "eldorado_start_collision_matgroup__0__vis_mesh": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_start_collision_matgroup__0__vis_mesh.MI_eldorado_start_collision_matgroup__0__vis_mesh",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\eldorado_start_collision_matgroup.mtl",
+      "name": "vis_mesh"
+    },
+    "eldorado_start_collision_matgroup__1__collision": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_start_collision_matgroup__1__collision.MI_eldorado_start_collision_matgroup__1__collision",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\eldorado_start_collision_matgroup.mtl",
+      "name": "Collision"
+    },
+    "rel_ed_ground_proxy_matgroup__0__rel_ed_ground_proxy": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_ground_proxy_matgroup__0__rel_ed_ground_proxy.MI_rel_ed_ground_proxy_matgroup__0__rel_ed_ground_proxy",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\rel_ed_ground_proxy_matgroup.mtl",
+      "name": "rel_ed_ground_proxy"
+    },
+    "rel_ed_ground_proxy_matgroup__1__rel_ground_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_ground_proxy_matgroup__1__rel_ground_mat.MI_rel_ed_ground_proxy_matgroup__1__rel_ground_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\collision\\rel_ed_ground_proxy_matgroup.mtl",
+      "name": "rel_ground_mat"
+    },
+    "rel_el_breakaway_material__0__rel_el_breakaway_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_breakaway_material__0__rel_el_breakaway_material.MI_rel_el_breakaway_material__0__rel_el_breakaway_material",
+      "family": "MaskedLogo",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_breakaway_material.mtl",
+      "name": "rel_el_breakaway_material",
+      "art_override_applied": true
+    },
+    "rel_el_breakaway_material_cine_override__0__rel_el_breakaway_material_cine_override": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_breakaway_material_cine_override__0__rel_el_breakaway_material_cine_override.MI_rel_el_breakaway_material_cine_override__0__rel_el_breakaway_material_cine_override",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_breakaway_material_cine_override.mtl",
+      "name": "rel_el_breakaway_material_cine_override"
+    },
+    "rel_el_cloud9_material__0__rel_el_cloud9_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_cloud9_material__0__rel_el_cloud9_material.MI_rel_el_cloud9_material__0__rel_el_cloud9_material",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_cloud9_material.mtl",
+      "name": "rel_el_cloud9_material"
+    },
+    "rel_el_echofox_logo_material__0__rel_el_echofox_logo_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_echofox_logo_material__0__rel_el_echofox_logo_material.MI_rel_el_echofox_logo_material__0__rel_el_echofox_logo_material",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_echofox_logo_material.mtl",
+      "name": "rel_el_echofox_logo_material"
+    },
+    "rel_el_echofox_material__0__rel_el_echofox_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_echofox_material__0__rel_el_echofox_material.MI_rel_el_echofox_material__0__rel_el_echofox_material",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_echofox_material.mtl",
+      "name": "rel_el_echofox_material"
+    },
+    "rel_el_nrg_material__0__rel_el_nrg_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_nrg_material__0__rel_el_nrg_material.MI_rel_el_nrg_material__0__rel_el_nrg_material",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_nrg_material.mtl",
+      "name": "rel_el_nrg_material"
+    },
+    "rel_el_uci_material__0__rel_el_uci_material": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_uci_material__0__rel_el_uci_material.MI_rel_el_uci_material__0__rel_el_uci_material",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\floor_decals\\rel_el_uci_material.mtl",
+      "name": "rel_el_uci_material"
+    },
+    "grass_decal__0__grass_decal": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_grass_decal__0__grass_decal.MI_grass_decal__0__grass_decal",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\grass_patch\\grass_decal.mtl",
+      "name": "grass_decal"
+    },
+    "grass_decal_player_start__0__grass_decal_player_start": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_grass_decal_player_start__0__grass_decal_player_start.MI_grass_decal_player_start__0__grass_decal_player_start",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\grass_patch\\grass_decal_player_start.mtl",
+      "name": "grass_decal_player_start"
+    },
+    "rel_ed_grass_patch_b__0__rel_ed_grass_patch_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_grass_patch_b__0__rel_ed_grass_patch_b.MI_rel_ed_grass_patch_b__0__rel_ed_grass_patch_b",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\grass_patch\\rel_ed_grass_patch_b.mtl",
+      "name": "rel_ed_grass_patch_b"
+    },
+    "rel_ed_crack_decal_a__0__rel_ed_crack_decal_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_crack_decal_a__0__rel_ed_crack_decal_a.MI_rel_ed_crack_decal_a__0__rel_ed_crack_decal_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\rock_decals\\rel_ed_crack_decal_a.mtl",
+      "name": "rel_ed_crack_decal_a"
+    },
+    "rel_ed_crack_decal_b__0__rel_ed_crack_decal_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_crack_decal_b__0__rel_ed_crack_decal_b.MI_rel_ed_crack_decal_b__0__rel_ed_crack_decal_b",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\rock_decals\\rel_ed_crack_decal_b.mtl",
+      "name": "rel_ed_crack_decal_b"
+    },
+    "rel_ed_rock_decal_a__0__rel_ed_rock_decal_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_rock_decal_a__0__rel_ed_rock_decal_a.MI_rel_ed_rock_decal_a__0__rel_ed_rock_decal_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\rock_decals\\rel_ed_rock_decal_a.mtl",
+      "name": "rel_ed_rock_decal_a"
+    },
+    "arrow_single__0__arrow_single": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_arrow_single__0__arrow_single.MI_arrow_single__0__arrow_single",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\tutorial_prompts\\arrow_single.mtl",
+      "name": "arrow_single"
+    },
+    "arrow_strip_matgroup__0__arrow_strip": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_arrow_strip_matgroup__0__arrow_strip.MI_arrow_strip_matgroup__0__arrow_strip",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\decals\\tutorial_prompts\\arrow_strip_matgroup.mtl",
+      "name": "arrow_strip"
+    },
+    "eldorado_ground_mateprial__0__green_stone_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_ground_mateprial__0__green_stone_mat.MI_eldorado_ground_mateprial__0__green_stone_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\eldorado_ground_mateprial.mtl",
+      "name": "green_stone_mat"
+    },
+    "eldorado_ground_mateprial__1__gold": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_ground_mateprial__1__gold.MI_eldorado_ground_mateprial__1__gold",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\eldorado_ground_mateprial.mtl",
+      "name": "gold"
+    },
+    "eldorado_ground_mateprial__2__stone": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_ground_mateprial__2__stone.MI_eldorado_ground_mateprial__2__stone",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\eldorado_ground_mateprial.mtl",
+      "name": "stone"
+    },
+    "eldorado_ground_mateprial__3__power_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_eldorado_ground_mateprial__3__power_mat.MI_eldorado_ground_mateprial__3__power_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\eldorado_ground_mateprial.mtl",
+      "name": "power_mat"
+    },
+    "gray_temp_a_matgroup__0__gray_temp_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_gray_temp_a_matgroup__0__gray_temp_a.MI_gray_temp_a_matgroup__0__gray_temp_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\gray_temp_a_matgroup.mtl",
+      "name": "Gray_temp_A"
+    },
+    "gray_temp_a_matgroup__1__temp_gem": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_gray_temp_a_matgroup__1__temp_gem.MI_gray_temp_a_matgroup__1__temp_gem",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\gray_temp_a_matgroup.mtl",
+      "name": "Temp_gem"
+    },
+    "rel_ed_serpent_body_matgroup__0__proxy": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_serpent_body_matgroup__0__proxy.MI_rel_ed_serpent_body_matgroup__0__proxy",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_ed_serpent_body_matgroup.mtl",
+      "name": "proxy"
+    },
+    "rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body.MI_rel_ed_serpent_body_matgroup__1__rel_ed_serpent_body",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_ed_serpent_body_matgroup.mtl",
+      "name": "Rel_ED_Serpent_body",
+      "art_override_applied": true
+    },
+    "rel_ed_serpent_body_matgroup__2__rel_ed_serpent_front": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_serpent_body_matgroup__2__rel_ed_serpent_front.MI_rel_ed_serpent_body_matgroup__2__rel_ed_serpent_front",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_ed_serpent_body_matgroup.mtl",
+      "name": "Rel_ED_Serpent_front",
+      "art_override_applied": true
+    },
+    "rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head.MI_rel_ed_serpent_body_matgroup__3__rel_ed_serpent_head",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_ed_serpent_body_matgroup.mtl",
+      "name": "Rel_ED_Serpent_head",
+      "art_override_applied": true
+    },
+    "rel_ed_serpent_body_matgroup__4__rel_ed_serpent_pillar": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_serpent_body_matgroup__4__rel_ed_serpent_pillar.MI_rel_ed_serpent_body_matgroup__4__rel_ed_serpent_pillar",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_ed_serpent_body_matgroup.mtl",
+      "name": "Rel_ED_Serpent_pillar",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__0__rel_el_arenatrima_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__0__rel_el_arenatrima_mat.MI_rel_el_arenamaster_mat__0__rel_el_arenatrima_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "Rel_el_ArenaTrimA_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__7__rel_el_arenatemplelights_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__7__rel_el_arenatemplelights_mat.MI_rel_el_arenamaster_mat__7__rel_el_arenatemplelights_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTempleLights_mat",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat.MI_rel_el_arenamaster_mat__8__rel_el_arenatrimadark_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTrimADark_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__9__rel_el_arenatrimagold_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__9__rel_el_arenatrimagold_mat.MI_rel_el_arenamaster_mat__9__rel_el_arenatrimagold_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTrimAGold_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__10__rel_el_arenatrimaturq_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__10__rel_el_arenatrimaturq_mat.MI_rel_el_arenamaster_mat__10__rel_el_arenatrimaturq_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTrimATurq_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat.MI_rel_el_arenamaster_mat__12__rel_el_arenawallsa_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaWallsA_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__13__rel_el_arenawallsblend_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__13__rel_el_arenawallsblend_mat.MI_rel_el_arenamaster_mat__13__rel_el_arenawallsblend_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaWallsBlend_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__14__rel_el_arena_col_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__14__rel_el_arena_col_mat.MI_rel_el_arenamaster_mat__14__rel_el_arena_col_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_Arena_COL_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_dorado_snakeheadpillar_b_material__1__snakeheadpillar_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_dorado_snakeheadpillar_b_material__1__snakeheadpillar_mat.MI_rel_el_dorado_snakeheadpillar_b_material__1__snakeheadpillar_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_dorado_snakeheadpillar_b_material.mtl",
+      "name": "SnakeHeadPillar_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_buff_spawn_material__1__buff_spawn_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_buff_spawn_material__1__buff_spawn_mat.MI_rel_eldorado_buff_spawn_material__1__buff_spawn_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_buff_spawn_material.mtl",
+      "name": "Buff_spawn_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_buff_spawn_material__2__power": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_buff_spawn_material__2__power.MI_rel_eldorado_buff_spawn_material__2__power",
+      "family": "Glow",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_buff_spawn_material.mtl",
+      "name": "power",
+      "art_override_applied": true
+    },
+    "rel_eldorado_buff_spawn_material__3__rel_eldorado_trim_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_buff_spawn_material__3__rel_eldorado_trim_mat.MI_rel_eldorado_buff_spawn_material__3__rel_eldorado_trim_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_buff_spawn_material.mtl",
+      "name": "Rel_ElDorado_Trim_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_buff_spawn_material__4__ramp_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_buff_spawn_material__4__ramp_mat.MI_rel_eldorado_buff_spawn_material__4__ramp_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_buff_spawn_material.mtl",
+      "name": "ramp_mat",
+      "art_override_applied": false
+    },
+    "rel_eldorado_floor_v2_mat_matgroup__0__brick_round": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__0__brick_round.MI_rel_eldorado_floor_v2_mat_matgroup__0__brick_round",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_floor_v2_mat_matgroup.mtl",
+      "name": "Brick_round",
+      "art_override_applied": false
+    },
+    "rel_eldorado_floor_v2_mat_matgroup__2__gold_trim": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__2__gold_trim.MI_rel_eldorado_floor_v2_mat_matgroup__2__gold_trim",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_floor_v2_mat_matgroup.mtl",
+      "name": "gold_trim",
+      "art_override_applied": true
+    },
+    "rel_eldorado_floor_v2_mat_matgroup__3__trim_02": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__3__trim_02.MI_rel_eldorado_floor_v2_mat_matgroup__3__trim_02",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_floor_v2_mat_matgroup.mtl",
+      "name": "trim_02",
+      "art_override_applied": false
+    },
+    "rel_eldorado_floor_v2_mat_matgroup__4__portal_rim": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_floor_v2_mat_matgroup__4__portal_rim.MI_rel_eldorado_floor_v2_mat_matgroup__4__portal_rim",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_floor_v2_mat_matgroup.mtl",
+      "name": "portal_rim",
+      "art_override_applied": false
+    },
+    "rel_eldorado_main_ground_material__0__main_ground_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_main_ground_material__0__main_ground_mat.MI_rel_eldorado_main_ground_material__0__main_ground_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_main_ground_material.mtl",
+      "name": "main_ground_mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_main_ground_material__1__trim_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_main_ground_material__1__trim_mat.MI_rel_eldorado_main_ground_material__1__trim_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_main_ground_material.mtl",
+      "name": "trim_mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_main_ground_material__3__relic_center_deco": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_main_ground_material__3__relic_center_deco.MI_rel_eldorado_main_ground_material__3__relic_center_deco",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_main_ground_material.mtl",
+      "name": "Relic_center_deco",
+      "art_override_applied": true
+    },
+    "rel_eldorado_main_ground_material__4__main_ground_02_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_main_ground_material__4__main_ground_02_mat.MI_rel_eldorado_main_ground_material__4__main_ground_02_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_main_ground_material.mtl",
+      "name": "main_ground_02_mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_mid_circle_top_ramp_matgroup__0__rel_eldorado_mid_circle_top_ramp": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_mid_circle_top_ramp_matgroup__0__rel_eldorado_mid_circle_top_ramp.MI_rel_eldorado_mid_circle_top_ramp_matgroup__0__rel_eldorado_mid_circle_top_ramp",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_mid_circle_top_ramp_matgroup.mtl",
+      "name": "rel_eldorado_mid_circle_top_ramp",
+      "art_override_applied": false
+    },
+    "rel_eldorado_mid_circle_top_ramp_matgroup__1__col": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_mid_circle_top_ramp_matgroup__1__col.MI_rel_eldorado_mid_circle_top_ramp_matgroup__1__col",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_mid_circle_top_ramp_matgroup.mtl",
+      "name": "COL"
+    },
+    "rel_eldorado_sidewall_material__1__rel_eldorado_solid_gold_01_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_sidewall_material__1__rel_eldorado_solid_gold_01_mat.MI_rel_eldorado_sidewall_material__1__rel_eldorado_solid_gold_01_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_sidewall_material.mtl",
+      "name": "Rel_ElDorado_Solid_Gold_01_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat.MI_rel_eldorado_sidewall_material__2__rel_eldorado_stone_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_sidewall_material.mtl",
+      "name": "Rel_ElDorado_Stone_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_sidewall_material__3__rel_eldorado_trim_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_sidewall_material__3__rel_eldorado_trim_mat.MI_rel_eldorado_sidewall_material__3__rel_eldorado_trim_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_sidewall_material.mtl",
+      "name": "Rel_ElDorado_Trim_Mat",
+      "art_override_applied": false
+    },
+    "rel_eldorado_sidewall_material__4__rel_el_arenateama_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_sidewall_material__4__rel_el_arenateama_mat.MI_rel_eldorado_sidewall_material__4__rel_el_arenateama_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_sidewall_material.mtl",
+      "name": "rel_el_ArenaTeamA_MAT",
+      "art_override_applied": false
+    },
+    "rel_eldorado_sidewall_material__5__rel_eldorado_mid_buff_temple_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_sidewall_material__5__rel_eldorado_mid_buff_temple_mat.MI_rel_eldorado_sidewall_material__5__rel_eldorado_mid_buff_temple_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_sidewall_material.mtl",
+      "name": "Rel_ElDorado_Mid_Buff_Temple_Mat",
+      "art_override_applied": false
+    },
+    "rel_eldorado_stair_sides_material__1__rel_eldorado_stone_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_stair_sides_material__1__rel_eldorado_stone_mat.MI_rel_eldorado_stair_sides_material__1__rel_eldorado_stone_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_stair_sides_material.mtl",
+      "name": "Rel_ElDorado_Stone_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_stair_sides_material__2__rel_eldorado_trim_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_stair_sides_material__2__rel_eldorado_trim_mat.MI_rel_eldorado_stair_sides_material__2__rel_eldorado_trim_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_stair_sides_material.mtl",
+      "name": "Rel_ElDorado_Trim_Mat",
+      "art_override_applied": false
+    },
+    "rel_eldorado_stair_sides_material__3__rel_el_arenateama_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_stair_sides_material__3__rel_el_arenateama_mat.MI_rel_eldorado_stair_sides_material__3__rel_el_arenateama_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_stair_sides_material.mtl",
+      "name": "rel_el_ArenaTeamA_MAT",
+      "art_override_applied": false
+    },
+    "rel_eldorado_stairs_material__1__rel_eldorado_stairs_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_stairs_material__1__rel_eldorado_stairs_mat.MI_rel_eldorado_stairs_material__1__rel_eldorado_stairs_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_stairs_material.mtl",
+      "name": "Rel_ElDorado_Stairs_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_stairs_material__2__rel_eldorado_trim_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_stairs_material__2__rel_eldorado_trim_mat.MI_rel_eldorado_stairs_material__2__rel_eldorado_trim_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_stairs_material.mtl",
+      "name": "Rel_ElDorado_Trim_Mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_startramp_clump_matgroup__0__rel_eldorado_floor_v2_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__0__rel_eldorado_floor_v2_mat.MI_rel_eldorado_startramp_clump_matgroup__0__rel_eldorado_floor_v2_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_startramp_clump_matgroup.mtl",
+      "name": "REL_eldorado_floor_V2_mat",
+      "art_override_applied": true
+    },
+    "rel_eldorado_startramp_clump_matgroup__1__rel_eldorado_stairs_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__1__rel_eldorado_stairs_mat.MI_rel_eldorado_startramp_clump_matgroup__1__rel_eldorado_stairs_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_startramp_clump_matgroup.mtl",
+      "name": "Rel_ElDorado_Stairs_Mat",
+      "art_override_applied": false
+    },
+    "rel_eldorado_startramp_clump_matgroup__2__gold_trim": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_eldorado_startramp_clump_matgroup__2__gold_trim.MI_rel_eldorado_startramp_clump_matgroup__2__gold_trim",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_eldorado_startramp_clump_matgroup.mtl",
+      "name": "gold_trim",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__1__rel_el_arenafloora_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__1__rel_el_arenafloora_mat.MI_rel_el_arenamaster_mat__1__rel_el_arenafloora_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaFloorA_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_arenamaster_mat__2__rel_el_arenasnakeheada_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__2__rel_el_arenasnakeheada_mat.MI_rel_el_arenamaster_mat__2__rel_el_arenasnakeheada_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaSnakeHeadA_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_arenamaster_mat__3__rel_el_arenasnakeheadb_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__3__rel_el_arenasnakeheadb_mat.MI_rel_el_arenamaster_mat__3__rel_el_arenasnakeheadb_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaSnakeHeadB_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__4__rel_el_arenastairsa_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__4__rel_el_arenastairsa_mat.MI_rel_el_arenamaster_mat__4__rel_el_arenastairsa_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaStairsA_MAT",
+      "art_override_applied": true
+    },
+    "rel_el_arenamaster_mat__5__rel_el_arenateama_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__5__rel_el_arenateama_mat.MI_rel_el_arenamaster_mat__5__rel_el_arenateama_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTeamA_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_arenamaster_mat__6__rel_el_arenateamb_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__6__rel_el_arenateamb_mat.MI_rel_el_arenamaster_mat__6__rel_el_arenateamb_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTeamB_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_arenamaster_mat__11__rel_el_arenatrimb_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__11__rel_el_arenatrimb_mat.MI_rel_el_arenamaster_mat__11__rel_el_arenatrimb_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "rel_el_ArenaTrimB_MAT",
+      "art_override_applied": false
+    },
+    "rel_el_arenamaster_mat__15__shadow": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_arenamaster_mat__15__shadow.MI_rel_el_arenamaster_mat__15__shadow",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_el_arenamaster_mat.mtl",
+      "name": "shadow",
+      "art_override_applied": false
+    },
+    "rel_prxy_eldorado_mid_steps_c_mat__0__mid_steps": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_prxy_eldorado_mid_steps_c_mat__0__mid_steps.MI_rel_prxy_eldorado_mid_steps_c_mat__0__mid_steps",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\rel_prxy_eldorado_mid_steps_c_mat.mtl",
+      "name": "Mid_Steps",
+      "art_override_applied": false
+    },
+    "relic_center_deco_matgroup__1__relic_center_deco": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_relic_center_deco_matgroup__1__relic_center_deco.MI_relic_center_deco_matgroup__1__relic_center_deco",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\relic_center_deco_matgroup.mtl",
+      "name": "Relic_center_deco",
+      "art_override_applied": false
+    },
+    "relic_center_deco_matgroup__2__relic_deco_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_relic_center_deco_matgroup__2__relic_deco_mat.MI_relic_center_deco_matgroup__2__relic_deco_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_architecture\\relic_center_deco_matgroup.mtl",
+      "name": "Relic_Deco_mat",
+      "art_override_applied": false
+    },
+    "mag_ring_01_matgroup__0__mag_ring_01": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_mag_ring_01_matgroup__0__mag_ring_01.MI_mag_ring_01_matgroup__0__mag_ring_01",
+      "family": "Energy",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+      "name": "Mag_Ring_01",
+      "art_override_applied": true
+    },
+    "mag_ring_01_matgroup__1__mag_ring_02": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_mag_ring_01_matgroup__1__mag_ring_02.MI_mag_ring_01_matgroup__1__mag_ring_02",
+      "family": "Energy",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+      "name": "Mag_Ring_02",
+      "art_override_applied": true
+    },
+    "rel_ed_banner01_matgroup__0__banner_a_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_banner01_matgroup__0__banner_a_mat.MI_rel_ed_banner01_matgroup__0__banner_a_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_banner01_matgroup.mtl",
+      "name": "Banner_A_Mat",
+      "art_override_applied": false
+    },
+    "rel_ed_blocks_a_matgroup__0__col": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_blocks_a_matgroup__0__col.MI_rel_ed_blocks_a_matgroup__0__col",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_blocks_a_matgroup.mtl",
+      "name": "Col"
+    },
+    "rel_ed_blocks_a_matgroup__1__blocks_a_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_blocks_a_matgroup__1__blocks_a_mat.MI_rel_ed_blocks_a_matgroup__1__blocks_a_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_blocks_a_matgroup.mtl",
+      "name": "Blocks_A_mat",
+      "art_override_applied": true
+    },
+    "rel_ed_blocks_a_matgroup__2__blocks_b_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_blocks_a_matgroup__2__blocks_b_mat.MI_rel_ed_blocks_a_matgroup__2__blocks_b_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_blocks_a_matgroup.mtl",
+      "name": "Blocks_B_mat",
+      "art_override_applied": true
+    },
+    "rel_ed_ring_a_matgroup__0__rel_ed_ring_a_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_ring_a_matgroup__0__rel_ed_ring_a_mat.MI_rel_ed_ring_a_matgroup__0__rel_ed_ring_a_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_ring_a_matgroup.mtl",
+      "name": "Rel_ED_Ring_A_Mat",
+      "art_override_applied": true
+    },
+    "rel_ed_ring_a_matgroup__1__rel_ed_ring_b_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_ring_a_matgroup__1__rel_ed_ring_b_mat.MI_rel_ed_ring_a_matgroup__1__rel_ed_ring_b_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\rel_ed_ring_a_matgroup.mtl",
+      "name": "Rel_ED_Ring_B_Mat",
+      "art_override_applied": true
+    },
+    "rel_el_vista_cloud_c_warm__0__rel_el_vista_cloud_c_warm": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_vista_cloud_c_warm__0__rel_el_vista_cloud_c_warm.MI_rel_el_vista_cloud_c_warm__0__rel_el_vista_cloud_c_warm",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\clouds\\rel_el_vista_cloud_c_warm.mtl",
+      "name": "rel_el_vista_cloud_c_warm",
+      "art_override_applied": false
+    },
+    "rel_el_vista_cloud_matgroup__0__rel_el_vista_cloud_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_vista_cloud_matgroup__0__rel_el_vista_cloud_mat.MI_rel_el_vista_cloud_matgroup__0__rel_el_vista_cloud_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\clouds\\rel_el_vista_cloud_matgroup.mtl",
+      "name": "Rel_El_Vista_Cloud_mat",
+      "art_override_applied": false
+    },
+    "rel_el_vista_cloud_matgroup__1__rel_el_vista_cloud2_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_vista_cloud_matgroup__1__rel_el_vista_cloud2_mat.MI_rel_el_vista_cloud_matgroup__1__rel_el_vista_cloud2_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\clouds\\rel_el_vista_cloud_matgroup.mtl",
+      "name": "Rel_El_Vista_Cloud2_mat",
+      "art_override_applied": false
+    },
+    "rel_ed_vista_ring_a_matgroup__0__rel_ed_ring_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vista_ring_a_matgroup__0__rel_ed_ring_mat.MI_rel_ed_vista_ring_a_matgroup__0__rel_ed_ring_mat",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vista_ring_a_matgroup.mtl",
+      "name": "Rel_ED_Ring_Mat",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large.MI_rel_ed_vistamountain_clump_matgroup__0__rel_el_island_large",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_island_large",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a.MI_rel_ed_vistamountain_clump_matgroup__1__rel_el_island_small_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_island_small_a",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b.MI_rel_ed_vistamountain_clump_matgroup__2__rel_el_island_small_b",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_island_small_b",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c.MI_rel_ed_vistamountain_clump_matgroup__3__rel_el_island_small_c",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_island_small_c",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a.MI_rel_ed_vistamountain_clump_matgroup__4__rel_el_mountain_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_mountain_a",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a.MI_rel_ed_vistamountain_clump_matgroup__5__rel_el_rock_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_rock_a",
+      "art_override_applied": true
+    },
+    "rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b.MI_rel_ed_vistamountain_clump_matgroup__6__rel_el_rock_b",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_rock_b",
+      "art_override_applied": true
+    },
+    "rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents.MI_rel_ed_vistamountain_clump_matgroup__7__rel_el_temple_accents",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_temple_accents",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick.MI_rel_ed_vistamountain_clump_matgroup__8__rel_el_temple_brick",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "rel_el_temple_brick",
+      "art_override_applied": false
+    },
+    "rel_ed_vistamountain_clump_matgroup__9__rel_ed_treecard_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vistamountain_clump_matgroup__9__rel_ed_treecard_mat.MI_rel_ed_vistamountain_clump_matgroup__9__rel_ed_treecard_mat",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_ed_vistamountain_clump_matgroup.mtl",
+      "name": "Rel_ED_TreeCard_Mat",
+      "art_override_applied": false
+    },
+    "rel_el_island_large_matgroup__0__rel_el_island_large": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_island_large_matgroup__0__rel_el_island_large.MI_rel_el_island_large_matgroup__0__rel_el_island_large",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_island_large_matgroup.mtl",
+      "name": "rel_el_island_large",
+      "art_override_applied": false
+    },
+    "rel_el_island_small_a_matgroup__0__island_group_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_island_small_a_matgroup__0__island_group_a.MI_rel_el_island_small_a_matgroup__0__island_group_a",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_island_small_a_matgroup.mtl",
+      "name": "island_group_a",
+      "art_override_applied": false
+    },
+    "rel_el_island_small_b_matgroup__0__rel_el_island_small_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_island_small_b_matgroup__0__rel_el_island_small_b.MI_rel_el_island_small_b_matgroup__0__rel_el_island_small_b",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_island_small_b_matgroup.mtl",
+      "name": "rel_el_island_small_b",
+      "art_override_applied": false
+    },
+    "rel_el_island_small_c_matgroup__0__rel_el_island_small_c": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_island_small_c_matgroup__0__rel_el_island_small_c.MI_rel_el_island_small_c_matgroup__0__rel_el_island_small_c",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_island_small_c_matgroup.mtl",
+      "name": "rel_el_island_small_c",
+      "art_override_applied": false
+    },
+    "rel_el_mountain_c_matgroup__0__rel_el_mountain_c": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_mountain_c_matgroup__0__rel_el_mountain_c.MI_rel_el_mountain_c_matgroup__0__rel_el_mountain_c",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_mountain_c_matgroup.mtl",
+      "name": "rel_el_mountain_c",
+      "art_override_applied": false
+    },
+    "rel_el_temple_vista_matgroup__0__rel_el_temple_brick": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_temple_vista_matgroup__0__rel_el_temple_brick.MI_rel_el_temple_vista_matgroup__0__rel_el_temple_brick",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_temple_vista_matgroup.mtl",
+      "name": "rel_el_temple_brick",
+      "art_override_applied": false
+    },
+    "rel_el_temple_vista_matgroup__1__rel_el_temple_accents": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_temple_vista_matgroup__1__rel_el_temple_accents.MI_rel_el_temple_vista_matgroup__1__rel_el_temple_accents",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_temple_vista_matgroup.mtl",
+      "name": "rel_el_temple_accents",
+      "art_override_applied": false
+    },
+    "rel_el_treecard_matgroup__0__rel_el_treecard": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_treecard_matgroup__0__rel_el_treecard.MI_rel_el_treecard_matgroup__0__rel_el_treecard",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\treecards\\rel_el_treecard_matgroup.mtl",
+      "name": "Rel_El_TreeCard",
+      "art_override_applied": false
+    },
+    "rel_el_plant_vine_matgroup__0__rel_el_plant_vine": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_plant_vine_matgroup__0__rel_el_plant_vine.MI_rel_el_plant_vine_matgroup__0__rel_el_plant_vine",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\plants\\rel_el_plant_vine_matgroup.mtl",
+      "name": "Rel_El_Plant_Vine",
+      "art_override_applied": false
+    },
+    "rel_ed_treecard_a_mat_matgroup__0__rel_ed_treecard_a_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_treecard_a_mat_matgroup__0__rel_ed_treecard_a_mat.MI_rel_ed_treecard_a_mat_matgroup__0__rel_ed_treecard_a_mat",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\trees\\rel_ed_treecard_a_mat_matgroup.mtl",
+      "name": "Rel_ed_treecard_A_mat",
+      "art_override_applied": false
+    },
+    "temple_tree_02_matgroup__0__temple_tree_02_leaves": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_temple_tree_02_matgroup__0__temple_tree_02_leaves.MI_temple_tree_02_matgroup__0__temple_tree_02_leaves",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\trees\\temple_tree_02_matgroup.mtl",
+      "name": "Temple_tree_02_leaves",
+      "art_override_applied": false
+    },
+    "temple_tree_02_matgroup__1__tremple_tree_02_trunk": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_temple_tree_02_matgroup__1__tremple_tree_02_trunk.MI_temple_tree_02_matgroup__1__tremple_tree_02_trunk",
+      "family": "Surface",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\trees\\temple_tree_02_matgroup.mtl",
+      "name": "Tremple_tree_02_trunk",
+      "art_override_applied": false
+    },
+    "rel_ed_vine_leaf_a_matgroup__0__rel_ed_vine_leaf_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_ed_vine_leaf_a_matgroup__0__rel_ed_vine_leaf_a.MI_rel_ed_vine_leaf_a_matgroup__0__rel_ed_vine_leaf_a",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\vines\\rel_ed_vine_leaf_a_matgroup.mtl",
+      "name": "Rel_ed_vine_leaf_a",
+      "art_override_applied": false
+    },
+    "rel_el_vine_card_matgroup__0__rel_el_vine_card": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_rel_el_vine_card_matgroup__0__rel_el_vine_card.MI_rel_el_vine_card_matgroup__0__rel_el_vine_card",
+      "family": "Foliage",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\vegetation\\vines\\rel_el_vine_card_matgroup.mtl",
+      "name": "Rel_El_Vine_Card",
+      "art_override_applied": false
+    },
+    "waterfall_distance_mist_large_2_mat_matgroup__0__waterfall_distance_mist_large_2_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup__0__waterfall_distance_mist_large_2_mat.MI_waterfall_distance_mist_large_2_mat_matgroup__0__waterfall_distance_mist_large_2_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup.mtl",
+      "name": "Waterfall_Distance_Mist_Large_2_MAT",
+      "art_override_applied": false
+    },
+    "waterfall_distance_mist_large_2_mat_matgroup__1__waterfall_distance_mist_large_1_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup__1__waterfall_distance_mist_large_1_mat.MI_waterfall_distance_mist_large_2_mat_matgroup__1__waterfall_distance_mist_large_1_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup.mtl",
+      "name": "Waterfall_Distance_Mist_Large_1_MAT",
+      "art_override_applied": false
+    },
+    "waterfall_distance_mist_large_2_mat_matgroup_opaque__0__waterfall_distance_mist_large_2_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__0__waterfall_distance_mist_large_2_mat.MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__0__waterfall_distance_mist_large_2_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup_opaque.mtl",
+      "name": "Waterfall_Distance_Mist_Large_2_MAT",
+      "art_override_applied": false
+    },
+    "waterfall_distance_mist_large_2_mat_matgroup_opaque__1__waterfall_distance_mist_large_1_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__1__waterfall_distance_mist_large_1_mat.MI_waterfall_distance_mist_large_2_mat_matgroup_opaque__1__waterfall_distance_mist_large_1_mat",
+      "family": "Cloud",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup_opaque.mtl",
+      "name": "Waterfall_Distance_Mist_Large_1_MAT",
+      "art_override_applied": false
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup__0__waterfall_eldorado_long_distance_base_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup__0__waterfall_eldorado_long_distance_base_mat.MI_waterfall_eldorado_long_distance_base_mat_matgroup__0__waterfall_eldorado_long_distance_base_mat",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "art_override_applied": true
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup__1__waterfall_eldorado_long_distance_middle_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup__1__waterfall_eldorado_long_distance_middle_mat.MI_waterfall_eldorado_long_distance_base_mat_matgroup__1__waterfall_eldorado_long_distance_middle_mat",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "art_override_applied": true
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup_opaque__0__waterfall_eldorado_long_distance_base_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__0__waterfall_eldorado_long_distance_base__3901281d.MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__0__waterfall_eldorado_long_distance_base__3901281d",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "art_override_applied": true
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup_opaque__1__waterfall_eldorado_long_distance_middle_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__1__waterfall_eldorado_long_distance_middl_dbab335a.MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque__1__waterfall_eldorado_long_distance_middl_dbab335a",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "art_override_applied": true
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__0__waterfall_eldorado_long_distance_base_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__0__waterfall_eldorado_long_distance__558d0da8.MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__0__waterfall_eldorado_long_distance__558d0da8",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "art_override_applied": true
+    },
+    "waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__1__waterfall_eldorado_long_distance_middle_mat": {
+      "path": "/BreakawayCore/Environments/Dorado/Materials/Instances/MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__1__waterfall_eldorado_long_distance__db8c1bf0.MI_waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark__1__waterfall_eldorado_long_distance__db8c1bf0",
+      "family": "Water",
+      "source": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark.mtl",
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "art_override_applied": true
+    }
+  },
+  "errors": []
+}

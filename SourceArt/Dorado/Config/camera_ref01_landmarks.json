@@ -1,0 +1,17 @@
+{
+  "status": "Provisional manual correspondence; inspect resulting Unreal render before accepting.",
+  "image_width": 2048,
+  "image_height": 918,
+  "reference": "REF_01 / codex-clipboard-692f632a-02a6-46c4-b44f-99f43eab5843.png",
+  "baseline_capture": "Saved/Logs/dorado-reconstruction-20261030/Renders/initial/CAM_Ref_01.png",
+  "initial_camera_cm": [2940.129, -3886.05, 1770.412],
+  "initial_yaw_pitch_degrees": [134.0782, -18.9401],
+  "initial_horizontal_fov_degrees": 78,
+  "landmarks": [
+    {"name": "Central medallion", "world_cm": [0, 0, 0], "reference_pixel": [879, 483], "evidence": "Recovered arena center; manual pixel center."},
+    {"name": "Blue lateral pad", "world_cm": [1534.0433, 40.5372, 208.334], "reference_pixel": [493, 535], "evidence": "Initial rendered center ray intersected estimated pad elevation208.334cm. Its visual symbol is offset from source actor pivot."},
+    {"name": "Green lateral pad", "world_cm": [-1368.2505, 5.275, 208.334], "reference_pixel": [1106, 375], "evidence": "Initial rendered center ray intersected estimated pad elevation208.334cm."},
+    {"name": "Sun disc", "world_cm": [3, 5950, 961], "reference_pixel": [470, 190], "evidence": "Bounds centers of the two64-vertex luminous disc components in recovered arena-temple LOD0, transformed by original source placement."}
+  ],
+  "assumptions": ["Perspective lens without distortion", "Zero roll", "Shared native2048x918 aspect", "All pixel centers are manually estimated", "Camera fit does not change geometry"]
+}

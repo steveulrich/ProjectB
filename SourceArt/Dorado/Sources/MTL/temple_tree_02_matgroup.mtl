@@ -1,0 +1,30 @@
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Temple_tree_02_leaves" MtlFlags="2621570" Shader="Vegetation" GenMask="8100101" StringGenMask="" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="86" AlphaTest="0.27000001" vertModifType="2" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/vegetation/trees/textures/rel_ed_canopy_a_diffa.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_ElDorado_A_Temple/vegetation/trees/textures/rel_ed_canopy_a_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <VertexDeform Type="2" DividerX="5" DividerY="0.0099999998" NoiseScale="10,10,10">
+    <WaveX Type="1" Amp="0.039999999" Level="0" Phase="0.1" Freq="1"/>
+   </VertexDeform>
+   <PublicParams bendDetailLeafAmplitude="0.2" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" BlendTerrainCol="0" VertexAlphaBlendFactor="1" NormalViewDependency="0.5" TransmittanceColor="1,1,0.60000002" CapOpacityFalloff="1" AllowDeferredDecals="1" BackDiffuseMultiplier="0.5" BlendTerrainColDist="0.211" IndirectColor="0.21223079,0.21223079,0.21223079"/>
+  </Material>
+  <Material Name="Tremple_tree_02_trunk" MtlFlags="2621568" Shader="Illum" GenMask="880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_eldorado_a_temple/vegetation/trees/textures/tree_temple_02_diffa.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_eldorado_a_temple/vegetation/trees/textures/tree_temple_02_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="proxy_tree_02" MtlFlags="2621568" Shader="Illum" GenMask="80000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,0,0,1" Specular="0.5,0.5,0.5,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

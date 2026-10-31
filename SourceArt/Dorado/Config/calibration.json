@@ -1,0 +1,38 @@
+{
+  "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_CentimeterCalibration.fbx",
+  "source_unit": "centimeters",
+  "source_bounds_cm": {
+    "min": [
+      -25,
+      -50,
+      -75
+    ],
+    "max": [
+      75,
+      150,
+      225
+    ]
+  },
+  "expected_ue_bounds_cm": {
+    "min": [
+      -25,
+      -150,
+      -75
+    ],
+    "max": [
+      75,
+      50,
+      225
+    ]
+  },
+  "expected_dimensions_cm": [
+    100,
+    200,
+    300
+  ],
+  "actor_scale": [
+    1,
+    1,
+    1
+  ]
+}

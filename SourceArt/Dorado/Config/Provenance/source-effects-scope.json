@@ -1,0 +1,5226 @@
+{
+  "layers": {
+    "_gameplay.lyr": {
+      "Entity": 25,
+      "Group": 2,
+      "NavigationSeedPoint": 2
+    },
+    "_tutorials.lyr": {},
+    "audio.lyr": {
+      "AudioTriggerSpot": 11,
+      "Shape": 4,
+      "AudioAreaEntity": 5,
+      "Entity": 1
+    },
+    "cinematics.lyr": {
+      "ParticleEntity": 39,
+      "GeomEntity": 24,
+      "SequenceObject": 28,
+      "Entity": 20,
+      "Camera": 24,
+      "Group": 2,
+      "CelebrationCameraObject": 1
+    },
+    "decal.lyr": {},
+    "environmental_effects.lyr": {
+      "Entity": 1
+    },
+    "geo_blue_start.lyr": {
+      "Brush": 73,
+      "GeomEntity": 1,
+      "Group": 1
+    },
+    "geo_middle.lyr": {
+      "Brush": 41,
+      "Entity": 1
+    },
+    "geo_red_start.lyr": {
+      "Brush": 29,
+      "GeomEntity": 1
+    },
+    "geo_visa_clouds.lyr": {
+      "SequenceObject": 1
+    },
+    "geo_vista_animation_entities.lyr": {
+      "GeomEntity": 6,
+      "Entity": 24,
+      "SequenceObject": 3
+    },
+    "geo_vista_mountains.lyr": {
+      "Brush": 34
+    },
+    "geo_vista_vegetation.lyr": {
+      "Brush": 4
+    },
+    "lighting.lyr": {},
+    "lights_high.lyr": {
+      "Entity": 57
+    },
+    "lights_team_portal.lyr": {
+      "Entity": 2
+    },
+    "practice.lyr": {
+      "Entity": 8
+    },
+    "sequences.lyr": {},
+    "sys_spec_min_off.lyr": {
+      "Decal": 50,
+      "Brush": 42,
+      "Entity": 11,
+      "ParticleEntity": 2,
+      "GeomEntity": 1
+    },
+    "vfx_a.lyr": {
+      "ParticleEntity": 10
+    },
+    "vfx_d.lyr": {
+      "GeomEntity": 27,
+      "ParticleEntity": 18
+    }
+  },
+  "additional_geometry_count": 56,
+  "additional_by_layer": {
+    "geo_vista_animation_entities.lyr": 19,
+    "sys_spec_min_off.lyr": 10,
+    "vfx_d.lyr": 27
+  },
+  "parent_transform_correction_count": 0,
+  "particle_effect_count": 30,
+  "particle_effects": [
+    {
+      "name": "PE_MagnetRing_Lights",
+      "id": "{2319B73D-EBD1-4609-99E1-262A2DA18735}",
+      "layer": "sys_spec_min_off.lyr",
+      "source_world_matrix_m": [
+        [
+          0.845910340065083,
+          -2.968533126692865e-09,
+          0.2425611333958544,
+          513.999896739454
+        ],
+        [
+          -2.621356448146295e-09,
+          0.8800000076848091,
+          1.9911510733902167e-08,
+          666.3101074218646
+        ],
+        [
+          -0.2425611333958556,
+          -1.9862718259428186e-08,
+          0.8459103323802727,
+          71.901526609516
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": "{4289D690-8EA6-431D-A1CA-C512CE610607}",
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetRing_Energy",
+      "id": "{A458A546-4132-400D-9667-88CED5D5FA2A}",
+      "layer": "sys_spec_min_off.lyr",
+      "source_world_matrix_m": [
+        [
+          0.9612615609673336,
+          -1.714456470265765e-07,
+          0.27563766797475453,
+          514.0000037011945
+        ],
+        [
+          1.7186671294647557e-07,
+          0.9999998998665809,
+          2.2626715147994834e-08,
+          666.3099462890619
+        ],
+        [
+          -0.2756376679747553,
+          2.5622751068555598e-08,
+          0.961261541100752,
+          73.10504690756606
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.CenterRing.MagnetRing_Energy",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": "{C01AC007-FFF1-467F-934F-A7AD597D7E0A}",
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_04",
+      "id": "{CDCED71E-7761-4C6D-A867-30D3531CB7AA}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          500.28897
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          598.55499
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.329727
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "ParticleEffect40",
+      "id": "{3C2A3F34-6D7D-46D7-94A2-C9A2C4BE94D6}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          476.42529
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          730.12213
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          91.304924
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.Birds",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "FX_Leaves_Blowing_3",
+      "id": "{2793D145-10C5-4BE5-A019-359278996C0B}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          543.57977
+        ],
+        [
+          0.0,
+          -0.7313538207795198,
+          -0.6819982965855359,
+          739.41901
+        ],
+        [
+          0.0,
+          0.6819982965855359,
+          -0.7313538207795198,
+          87.660088
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.Leaves_Blowing",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_05",
+      "id": "{AB4A8F75-C8BA-4DEB-8339-679D45A33B8E}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          3.1640334241522794e-08,
+          -0.9999999683596658,
+          0.0,
+          513.6684
+        ],
+        [
+          0.9999999683596658,
+          3.1640334241522794e-08,
+          0.0,
+          578.37323
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.660416
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "FX_leaves_falling",
+      "id": "{8FA22492-AD7D-45AF-B7A0-ADAD78854185}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          535.37585
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          751.33667
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          91.931129
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.Leaves",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "FX_Leaves_4",
+      "id": "{87F0E095-3FCA-4703-ADB2-DA69FE6B2C11}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          538.05231
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          730.16455
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          94.944168
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.Leaves",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_01",
+      "id": "{82613A9A-0DC6-4801-961D-07CA96C3BE73}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          -1.0,
+          8.7422776e-08,
+          -0.0,
+          527.60754
+        ],
+        [
+          -8.7422776e-08,
+          -1.0,
+          0.0,
+          733.68121
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.249901
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_02",
+      "id": "{486AFEAC-7D4B-4058-B23A-72FD78C88BC5}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          3.1640334241522794e-08,
+          0.9999999683596658,
+          0.0,
+          514.0
+        ],
+        [
+          -0.9999999683596658,
+          3.1640334241522794e-08,
+          -0.0,
+          753.38495
+        ],
+        [
+          -0.0,
+          0.0,
+          1.0,
+          88.760002
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_06",
+      "id": "{93E5B7B4-3E19-4B70-84F2-B38DD2E4DF6F}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          -1.0,
+          8.7422776e-08,
+          -0.0,
+          527.60754
+        ],
+        [
+          -8.7422776e-08,
+          -1.0,
+          0.0,
+          598.62695
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.291756
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "PE_MagnetLight_03",
+      "id": "{6C641BDB-0FD0-451E-8AD9-4D1B49877BA6}",
+      "layer": "vfx_a.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          500.28897
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          733.60925
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          88.245338
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_a.StartArea.Magnet_Lights",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Area",
+      "id": "{5D2A2B0D-DABD-43D4-A7CF-CC2623A55405}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          512.20404
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          687.62799
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.663948
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Area",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{A63F1E18-FB71-4D9B-8A18-8D9DBC0EA5D7}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          500.39182
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          621.20172
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.850151
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Local",
+      "id": "{24AA6A37-2BEF-4830-9175-42E77C0F0F70}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          535.57855
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          651.06964
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.858299
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{02CB9A52-7A01-4097-B792-BFEA39FB9AD1}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          527.11639
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          701.97601
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.850151
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Local",
+      "id": "{896F7358-FFA1-49B6-9AF7-A334012A350C}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          498.33322
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          700.09113
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.858299
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Local",
+      "id": "{BF41015D-977D-4668-A6B6-2E2A5CEB70BB}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          501.0596
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          636.08258
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.858299
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{9D961A5F-4D30-4C76-B181-D761BBEE2A7A}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          523.31409
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          745.23639
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{CD75996C-D37D-4C21-A651-3159FF9007A1}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          511.12665
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          751.08154
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Local",
+      "id": "{89D01E88-E69E-45CF-8253-EE05B448E130}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          499.88904
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          669.85724
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.858299
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Motes",
+      "id": "{C04CC792-8527-4CF7-B67D-C5E0C6DF0E8B}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          513.84918
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          666.71948
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.850151
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Environment.Motes",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{963B14A0-43CA-459A-AE79-E7FF2B2DD0FB}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          501.13583
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          710.42432
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.850151
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{AD2554A4-F82B-4A52-90A2-390B7C35DDFA}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          503.22104
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          742.64911
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{599A27BF-4EE1-4236-B5E5-AA84BD3AA61F}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          502.94073
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          597.91071
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Butterflies_Local",
+      "id": "{909EEDC3-5721-42E4-8142-3375F74D79AE}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          506.68625
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          688.9574
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.858299
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Butterflies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Ambient_Trails",
+      "id": "{70306FE2-63B0-4792-9856-10EFD6B837D6}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          506.53647
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          665.06543
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.736038
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Environment.Ambient_Trails",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{D3A43CE3-0CA9-4FC5-A54A-C36899B62BD2}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          511.89227
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          582.02112
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{DB0F61E3-0CCB-4A77-9B71-5CC9F946F34B}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          524.75452
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          592.63684
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          78.07769
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    },
+    {
+      "name": "VFX_Environment_Flies",
+      "id": "{43BE6EF5-0831-46A6-9039-68A26C53EE36}",
+      "layer": "vfx_d.lyr",
+      "source_world_matrix_m": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          522.8042
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          644.74438
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          73.850151
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "properties": {
+        "bActive": "1",
+        "esAttachForm": "",
+        "esAttachType": "",
+        "Comment": "",
+        "bCountPerUnit": "0",
+        "CountScale": "1",
+        "NetworkSync": "0",
+        "ParticleEffect": "lvl_eldorado_seattle_b.Insects.Flies_Local",
+        "bPrime": "1",
+        "PulsePeriod": "0",
+        "bRegisterByBBox": "0",
+        "Scale": "1",
+        "soclasses_SmartObjectClass": "",
+        "SpeedScale": "1",
+        "Strength": "-1",
+        "TimeScale": "1"
+      },
+      "parent": null,
+      "status": "Native effect reconstruction required"
+    }
+  ],
+  "effect_materials": [
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Mag_Ring_01",
+      "properties": {
+        "Name": "Mag_Ring_01",
+        "MtlFlags": "2623648",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.0097212186,0,0.32314324,1",
+        "Specular": "1,1,1,1",
+        "Emittance": "0,0,0,1",
+        "Opacity": "1",
+        "Shininess": "255",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.30000001"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "Textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "Textures/defaults/white.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part40\\textures\\defaults\\white.dds",
+              "bytes": 144,
+              "splitParts": [],
+              "height": 4,
+              "width": 4,
+              "mipCount": 0,
+              "fourCC": "DXT1"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "0",
+        "TillingLayer0": "0.1",
+        "SpeedLayer0": "0.5",
+        "SpeedLayer1": "0.5",
+        "TillingLayer1": "0.5",
+        "FoamMultiplier": "4",
+        "FresnelBias": "0.847",
+        "RefractionBumpScale": "0.025",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "2",
+        "FoamDeform": "0.25",
+        "AlphaBlendMul": "0",
+        "BumpScaleLayer0": "4"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+      "submaterial_index": 1,
+      "name": "Mag_Ring_02",
+      "properties": {
+        "Name": "Mag_Ring_02",
+        "MtlFlags": "2621604",
+        "Shader": "Illum",
+        "GenMask": "80000000001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING",
+        "SurfaceType": "",
+        "Diffuse": "0.30946895,0.14995982,0.65140575,1",
+        "Specular": "0.033104774,0.033104774,0.033104774,1",
+        "Emittance": "0.41788509,0.27467734,0.70110202,1",
+        "Opacity": "0.30000001",
+        "AlphaTest": "0.029999999",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "Textures/particles/liquids/fx_riverflow01a.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "5",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "-0.0049999999",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "1",
+            "TexMod_VOscillatorAmplitude": "0.1"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0.0099999998",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "AmbientBoost": "1",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\river\\rel_ed_river_a_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Rel_ed_river_A",
+      "properties": {
+        "Name": "Rel_ed_river_A",
+        "MtlFlags": "524448",
+        "Shader": "Illum",
+        "GenMask": "102100000021",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%BLENDLAYER%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "MatTemplate": "",
+        "Diffuse": "0.54572457,0.6795426,0.71569365",
+        "Specular": "0.10461649,0.24228115,0.25415212",
+        "Emissive": "1,1,1",
+        "Opacity": "1",
+        "Shininess": "255",
+        "GlowAmount": "0.25",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "0.89999998",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_VRotateCenter": "1.8",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "0.039999999",
+            "TexMod_VOscillatorPhase": "1",
+            "TexMod_VOscillatorAmplitude": "1",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.59875488",
+            "TexMod_WRotateAmplitude": "0.0054931641"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Decal",
+          "original": "Objects/01_ElDorado_A_Temple/Geo_Terrain/River/Textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Custom",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_a_diff.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "0.5",
+            "TileV": "0.5"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Opacity",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "BlendFalloff": "36.5",
+        "BlendLayer2Tiling": "10.86",
+        "OccluderFadingFactor": "0",
+        "SSSIndex": "0",
+        "BlendMaskTiling": "3.1400001",
+        "BlendFactor": "4.5900002",
+        "BlendLayer2Specular": "0.050000001",
+        "GlowMaskAmount": "0.58200002",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\river\\rel_ed_river_b_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Rel_ed_river_B",
+      "properties": {
+        "Name": "Rel_ed_river_B",
+        "MtlFlags": "524450",
+        "Shader": "Illum",
+        "GenMask": "100104000001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING",
+        "SurfaceType": "",
+        "MatTemplate": "",
+        "Diffuse": "0.36625263,0.36625263,0.36625263",
+        "Specular": "0.090841718,0.090841718,0.090841718",
+        "Emissive": "1,1,1",
+        "Opacity": "0.34",
+        "Shininess": "255",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "0.89999998",
+            "TileU": "3",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_VRotateCenter": "1.8",
+            "TileV": "3",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "0.02",
+            "TexMod_VOscillatorPhase": "0.60000002",
+            "TexMod_VOscillatorAmplitude": "1",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.59875488",
+            "TexMod_WRotateAmplitude": "0.0054931641"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "31.5",
+            "TexMod_UOscillatorPhase": "9.3999996",
+            "TexMod_UOscillatorAmplitude": "9.3999996",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "31",
+            "TexMod_VOscillatorPhase": "16.9",
+            "TexMod_VOscillatorAmplitude": "13.1"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Heightmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "OccluderFadingFactor": "0",
+        "SSSIndex": "0",
+        "GlowMaskAmount": "0.075999998",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2621600",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.16826943,0.19806935,0.24620135",
+        "Specular": "0.019382363,0.019382363,0.019382363",
+        "Emittance": "0.48514995,0.56471163,0.66538745,11",
+        "Opacity": "0.99000001",
+        "Shininess": "255",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "4",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.050000001",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.75"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "Textures/particles/liquids/waterflow_00_ddna.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.1a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.2a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.3a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.4a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.5a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.a"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend02.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend02.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx.mtl",
+      "submaterial_index": 1,
+      "name": "SubMtl2",
+      "properties": {
+        "Name": "SubMtl2",
+        "MtlFlags": "2621600",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.57758057,0.62396049,0.74540436",
+        "Specular": "0.38132605,0.51491767,0.62396049",
+        "Shininess": "180",
+        "AlphaTest": "0.1",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.1",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.5"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx.mtl",
+      "submaterial_index": 2,
+      "name": "SubMtl3",
+      "properties": {
+        "Name": "SubMtl3",
+        "MtlFlags": "2621604",
+        "Shader": "Vegetation",
+        "GenMask": "2C20000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%TEMP_VEGETATION%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.40197781,0.50288647,0.77582234",
+        "Specular": "0.042311415,0.19461785,0.3712377",
+        "Shininess": "125",
+        "AlphaTest": "0.029999999",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.079999998",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.40000001"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "bendDetailLeafAmplitude": "0.2",
+        "bendDetailFrequency": "1",
+        "bendDetailBranchAmplitude": "-0.5",
+        "BlendTerrainCol": "0",
+        "VertexAlphaBlendFactor": "1",
+        "AllowDeferredDecals": "1",
+        "BlendTerrainColDist": "0.5",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_0.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2621600",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.25818288,0.29177067,0.34191445",
+        "Specular": "0.017641956,0.017641956,0.017641956",
+        "Emittance": "0.48514995,0.56471163,0.66538745,11",
+        "Opacity": "0.99000001",
+        "Shininess": "255",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "4",
+            "OffsetU": "0.5",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.059999999",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.75",
+            "OffsetV": "0.2"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "Textures/particles/liquids/waterflow_00_ddna.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.1a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.2a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.3a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.4a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.5a",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part47\\textures\\particles\\liquids\\waterflow_00_ddna.dds.a"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend02.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend02.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_0.mtl",
+      "submaterial_index": 1,
+      "name": "SubMtl2",
+      "properties": {
+        "Name": "SubMtl2",
+        "MtlFlags": "2621600",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.57758057,0.62396049,0.74540436",
+        "Specular": "0.38132605,0.51491767,0.62396049",
+        "Shininess": "180",
+        "AlphaTest": "0.1",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.1",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.5"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_0.mtl",
+      "submaterial_index": 2,
+      "name": "SubMtl3",
+      "properties": {
+        "Name": "SubMtl3",
+        "MtlFlags": "2621604",
+        "Shader": "Vegetation",
+        "GenMask": "2C20000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%TEMP_VEGETATION%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.40197781,0.50288647,0.77582234",
+        "Specular": "0.042311415,0.19461785,0.3712377",
+        "Shininess": "125",
+        "AlphaTest": "0.029999999",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.079999998",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.40000001"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "bendDetailLeafAmplitude": "0.2",
+        "bendDetailFrequency": "1",
+        "bendDetailBranchAmplitude": "-0.5",
+        "BlendTerrainCol": "0",
+        "VertexAlphaBlendFactor": "1",
+        "AllowDeferredDecals": "1",
+        "BlendTerrainColDist": "0.5",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.75294232,0.82278591,0.91309881",
+        "Specular": "0.33716366,0.33716366,0.33716366",
+        "Emittance": "0.57112497,0.67244327,0.79910284,2",
+        "Opacity": "0.94999999",
+        "Shininess": "255",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.22",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "0.085000001",
+            "TexMod_VOscillatorAmplitude": "1"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_a_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1.mtl",
+      "submaterial_index": 1,
+      "name": "SubMtl2",
+      "properties": {
+        "Name": "SubMtl2",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.61049569,0.73791051,0.91309881",
+        "Specular": "1,1,1",
+        "Emittance": "0.61049569,0.73791051,0.91309881,650",
+        "Shininess": "255",
+        "AlphaTest": "0.050000001",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.30000001",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.1",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.5"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1.mtl",
+      "submaterial_index": 2,
+      "name": "SubMtl3",
+      "properties": {
+        "Name": "SubMtl3",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.024157634,0.13563335,0.74540436",
+        "Specular": "1,1,1",
+        "Emittance": "0.36130682,0.57112497,0.88792324,350",
+        "Shininess": "187",
+        "AlphaTest": "0.17",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.5",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.12",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.050000001",
+            "TexMod_VOscillatorAmplitude": "1"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1b.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.3467041,0.41788509,0.52099562",
+        "Specular": "0.67244327,0.67244327,0.67244327",
+        "Emittance": "0.64447981,0.73046088,0.83879912,2",
+        "Opacity": "0.99000001",
+        "Shininess": "255",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.22",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "0.085000001",
+            "TexMod_VOscillatorAmplitude": "1"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_a_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_diff.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1b.mtl",
+      "submaterial_index": 1,
+      "name": "SubMtl2",
+      "properties": {
+        "Name": "SubMtl2",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.61049569,0.73791051,0.91309881",
+        "Specular": "1,1,1",
+        "Emittance": "0.61049569,0.73791051,0.91309881,650",
+        "Shininess": "255",
+        "AlphaTest": "0.050000001",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.30000001",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.1",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.5"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_1b.mtl",
+      "submaterial_index": 2,
+      "name": "SubMtl3",
+      "properties": {
+        "Name": "SubMtl3",
+        "MtlFlags": "2621602",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.024157634,0.13563335,0.74540436",
+        "Specular": "1,1,1",
+        "Emittance": "0.36130682,0.57112497,0.88792324,350",
+        "Shininess": "187",
+        "AlphaTest": "0.17",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.5",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.12",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.050000001",
+            "TexMod_VOscillatorAmplitude": "1"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.5,0.5,0.5",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_2.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2621606",
+        "Shader": "Illum",
+        "GenMask": "3820000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.61049569,0.70110202,0.87136728",
+        "Specular": "1,1,1",
+        "Emittance": "0.61049569,0.70110202,0.87136728,40",
+        "Opacity": "0.12",
+        "Shininess": "255",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.40000001",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.2",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.75"
+          },
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "a",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_2.mtl",
+      "submaterial_index": 1,
+      "name": "SubMtl2",
+      "properties": {
+        "Name": "SubMtl2",
+        "MtlFlags": "2621602",
+        "Shader": "Vegetation",
+        "GenMask": "2C20000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%TEMP_VEGETATION%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.60382748,0.67244327,0.91309881",
+        "Specular": "1,1,1",
+        "Emittance": "0.60382748,0.67244327,0.91309881,40",
+        "Shininess": "166",
+        "AlphaTest": "0.0099999998",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.30000001",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.1",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1",
+            "TileV": "0.5"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_foam_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "bendDetailLeafAmplitude": "0.2",
+        "bendDetailFrequency": "1",
+        "bendDetailBranchAmplitude": "-0.5",
+        "BlendTerrainCol": "0",
+        "VertexAlphaBlendFactor": "1",
+        "AllowDeferredDecals": "1",
+        "BlendTerrainColDist": "0.5",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_danielvfx_2.mtl",
+      "submaterial_index": 2,
+      "name": "SubMtl3",
+      "properties": {
+        "Name": "SubMtl3",
+        "MtlFlags": "2621606",
+        "Shader": "Vegetation",
+        "GenMask": "2C20000000",
+        "StringGenMask": "%NORMAL_MAP%SPECULAR_MAP%TEMP_VEGETATION%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.57112497,0.6795426,0.93011099",
+        "Specular": "1,1,1",
+        "Emittance": "0.57112497,0.6795426,0.93011099,40",
+        "Shininess": "187",
+        "AlphaTest": "0.029999999",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "OffsetU": "0.5",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "0.12",
+            "TexMod_UOscillatorPhase": "1",
+            "TexMod_UOscillatorAmplitude": "1"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Emittance",
+          "original": "textures/particles/liquids/fx_riverflow01a.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "bendDetailLeafAmplitude": "0.2",
+        "bendDetailFrequency": "1",
+        "bendDetailBranchAmplitude": "-0.5",
+        "BlendTerrainCol": "0",
+        "VertexAlphaBlendFactor": "1",
+        "AllowDeferredDecals": "1",
+        "BlendTerrainColDist": "0.5",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "rel_ed_waterfall_1a",
+      "properties": {
+        "Name": "rel_ed_waterfall_1a",
+        "MtlFlags": "2623648",
+        "Shader": "Waterfall",
+        "GenMask": "5",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "1,1,1",
+        "Specular": "1,1,1",
+        "Emissive": "1,1,1",
+        "Opacity": "1",
+        "Shininess": "255",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_blend.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "objects/01_eldorado_a_temple/geo_terrain/river/textures/rel_ed_river_ddna.tif",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "2.8499999",
+        "TillingLayer0": "1.25",
+        "SpeedLayer0": "21.6",
+        "SpeedLayer1": "10.5",
+        "TillingLayer1": "0.23999999",
+        "FoamMultiplier": "4",
+        "FresnelBias": "0.25",
+        "RefractionBumpScale": "0.0094999997",
+        "ReflectionAmount": "1",
+        "BumpScaleLayer1": "1.337",
+        "FoamDeform": "0.015",
+        "AlphaBlendMul": "0.70999998",
+        "BumpScaleLayer0": "1.932"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_terrain\\water_fall\\rel_ed_waterfall_set_a_matgroup.mtl",
+      "submaterial_index": 1,
+      "name": "rel_ed_waterfall_1b",
+      "properties": {
+        "Name": "rel_ed_waterfall_1b",
+        "MtlFlags": "2621600",
+        "Shader": "Illum",
+        "GenMask": "800000000",
+        "StringGenMask": "%SUBSURFACE_SCATTERING",
+        "SurfaceType": "",
+        "Diffuse": "0.5,0.5,0.5",
+        "Specular": "0.5,0.5,0.5",
+        "Emissive": "0,0,0",
+        "Opacity": "1",
+        "Shininess": "10",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTint": "1,1,1",
+        "GlowMaskAmount": "1",
+        "GlowTintBlending": "0",
+        "IndirectColor": "0.25,0.25,0.25"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_vista\\rel_el_river_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "rel_el_river",
+      "properties": {
+        "Name": "rel_el_river",
+        "MtlFlags": "2623616",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.11193243,0.52099562,0.61720669,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Opacity": "1",
+        "Shininess": "158",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "1.05",
+        "TillingLayer0": "1",
+        "SpeedLayer0": "2",
+        "SpeedLayer1": "5",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "4",
+        "FresnelBias": "0.38999999",
+        "RefractionBumpScale": "0.0199",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.472",
+        "FoamDeform": "0.18799999",
+        "AlphaBlendMul": "0.34",
+        "BumpScaleLayer0": "0.373"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_Distance_Mist_Large_2_MAT",
+      "properties": {
+        "Name": "Waterfall_Distance_Mist_Large_2_MAT",
+        "MtlFlags": "2621568",
+        "Shader": "Illum",
+        "GenMask": "3000002001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.63075727,0.71569365,0.83077002,1",
+        "Specular": "1,1,1,1",
+        "Emittance": "0.13563335,0.65140575,0.76815128,2",
+        "Opacity": "0.85000002",
+        "Shininess": "10",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "3",
+            "TexMod_UOscillatorRate": "0.25",
+            "TexMod_UOscillatorPhase": "0.5",
+            "TexMod_UOscillatorAmplitude": "0.30000001",
+            "TileV": "3",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.25",
+            "TexMod_VOscillatorPhase": "1",
+            "TexMod_VOscillatorAmplitude": "0.2",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.99975586",
+            "TexMod_WRotateAmplitude": "0.99975586"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Detail",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "6",
+            "TileV": "6"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "DetailDiffuseScale": "0.5",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "DetailBumpScale": "0",
+        "FadeLighting": "0.31398875,0.73791051,0.9046613",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "DetailGlossScale": "0.5",
+        "AmbientBoost": "0.079999998",
+        "IndirectColor": "0.32314324,0.93011099,0.61049569"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_Distance_Mist_Large_1_MAT",
+      "properties": {
+        "Name": "Waterfall_Distance_Mist_Large_1_MAT",
+        "MtlFlags": "2621568",
+        "Shader": "Illum",
+        "GenMask": "3000002001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0.010329825,0.1441285,0.60382748,1",
+        "Specular": "1,1,1,1",
+        "Emittance": "0.13563335,0.65140575,0.76815128,3",
+        "Opacity": "0.95999998",
+        "Shininess": "10",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "3",
+            "TexMod_UOscillatorRate": "0.25",
+            "TexMod_UOscillatorPhase": "0.5",
+            "TexMod_UOscillatorAmplitude": "0.30000001",
+            "TileV": "2",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.25",
+            "TexMod_VOscillatorPhase": "1",
+            "TexMod_VOscillatorAmplitude": "0.5",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.99975586",
+            "TexMod_WRotateAmplitude": "0.99975586"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Detail",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "6",
+            "TileV": "6"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "DetailDiffuseScale": "0.5",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "DetailBumpScale": "0",
+        "FadeLighting": "0.31398875,0.73791051,0.9046613",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "DetailGlossScale": "0.5",
+        "AmbientBoost": "0.079999998",
+        "IndirectColor": "0.32314324,0.93011099,0.61049569"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup_opaque.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_Distance_Mist_Large_2_MAT",
+      "properties": {
+        "Name": "Waterfall_Distance_Mist_Large_2_MAT",
+        "MtlFlags": "2621568",
+        "Shader": "Illum",
+        "GenMask": "3000002001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0,0,0,1",
+        "Specular": "0,0,0,1",
+        "Emittance": "0.13563335,0.65140575,0.76815128,0",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "3",
+            "TexMod_UOscillatorRate": "0.25",
+            "TexMod_UOscillatorPhase": "0.5",
+            "TexMod_UOscillatorAmplitude": "0.30000001",
+            "TileV": "3",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.25",
+            "TexMod_VOscillatorPhase": "1",
+            "TexMod_VOscillatorAmplitude": "0.2",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.99975586",
+            "TexMod_WRotateAmplitude": "0.99975586"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist_2.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Detail",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "6",
+            "TileV": "6"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "DetailDiffuseScale": "0.5",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "DetailBumpScale": "0",
+        "FadeLighting": "0.31398875,0.73791051,0.9046613",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "DetailGlossScale": "0.5",
+        "AmbientBoost": "0.079999998",
+        "IndirectColor": "0.32314324,0.93011099,0.61049569"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_distance_mist_large_2_mat_matgroup_opaque.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_Distance_Mist_Large_1_MAT",
+      "properties": {
+        "Name": "Waterfall_Distance_Mist_Large_1_MAT",
+        "MtlFlags": "2621568",
+        "Shader": "Illum",
+        "GenMask": "3000002001",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%DETAIL_MAPPING%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "0,0,0,1",
+        "Specular": "0,0,0,1",
+        "Emittance": "0.13563335,0.65140575,0.76815128,0",
+        "vertModifType": "0",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "3",
+            "TexMod_UOscillatorRate": "0.25",
+            "TexMod_UOscillatorPhase": "0.5",
+            "TexMod_UOscillatorAmplitude": "0.30000001",
+            "TileV": "2",
+            "TexMod_VOscillatorType": "2",
+            "TexMod_VOscillatorRate": "-0.25",
+            "TexMod_VOscillatorPhase": "1",
+            "TexMod_VOscillatorAmplitude": "0.5",
+            "TexMod_WRotateRate": "0.99975586",
+            "TexMod_WRotatePhase": "0.99975586",
+            "TexMod_WRotateAmplitude": "0.99975586"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        },
+        {
+          "slot": "Detail",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_distance_mist.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "6",
+            "TileV": "6"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds",
+              "bytes": 820,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_distance_mist.dds.4"
+              ],
+              "height": 512,
+              "width": 256,
+              "mipCount": 7,
+              "fourCC": "DX10"
+            }
+          ]
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "DetailDiffuseScale": "0.5",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "DetailBumpScale": "0",
+        "FadeLighting": "0.31398875,0.73791051,0.9046613",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "DetailGlossScale": "0.5",
+        "AmbientBoost": "-0.0099999998",
+        "IndirectColor": "0.32314324,0.93011099,0.61049569"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_base_mat_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_ElDorado_Base_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Base_MAT",
+        "MtlFlags": "2623618",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.20863689,0.73046088,0.84687334,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Shininess": "158",
+        "vertModifType": "2",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.34999999"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "0",
+        "TillingLayer0": "2",
+        "SpeedLayer0": "28",
+        "SpeedLayer1": "17",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "3.0309999",
+        "FresnelBias": "0.38999999",
+        "RefractionBumpScale": "0.0106",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.62900001",
+        "FoamDeform": "0.111",
+        "AlphaBlendMul": "0.23",
+        "BumpScaleLayer0": "0.67900002"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_base_mat_matgroup.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_ElDorado_Middle_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Middle_MAT",
+        "MtlFlags": "2623618",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.20863689,0.73046088,0.84687334,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Opacity": "1",
+        "Shininess": "158",
+        "vertModifType": "2",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.34999999"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "10",
+        "TillingLayer0": "1",
+        "SpeedLayer0": "16",
+        "SpeedLayer1": "26",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "1.313",
+        "FresnelBias": "0.55800003",
+        "RefractionBumpScale": "0.0106",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.64899999",
+        "FoamDeform": "0.17",
+        "AlphaBlendMul": "1",
+        "BumpScaleLayer0": "0.82999998"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_base_mat_matgroup.mtl",
+      "submaterial_index": 2,
+      "name": "Waterfall_ElDorado_Top_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Top_MAT",
+        "MtlFlags": "2623618",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.20863689,0.73046088,0.84687334,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Shininess": "158",
+        "vertModifType": "2",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.34999999"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "2.6600001",
+        "TillingLayer0": "1",
+        "SpeedLayer0": "28",
+        "SpeedLayer1": "17",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "3.0309999",
+        "FresnelBias": "0.38999999",
+        "RefractionBumpScale": "0.0106",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.62900001",
+        "FoamDeform": "0.125",
+        "AlphaBlendMul": "1",
+        "BumpScaleLayer0": "0.67900002"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+        "MtlFlags": "2623618",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.20863689,0.73046088,0.84687334,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Shininess": "158",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.34999999"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base_2.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "0",
+        "TillingLayer0": "1",
+        "SpeedLayer0": "2.5",
+        "SpeedLayer1": "1",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "1.393",
+        "FresnelBias": "0.38999999",
+        "RefractionBumpScale": "0.016000001",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.472",
+        "FoamDeform": "0.014",
+        "AlphaBlendMul": "1",
+        "BumpScaleLayer0": "1.268"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+        "MtlFlags": "2623618",
+        "Shader": "Waterfall",
+        "GenMask": "7",
+        "StringGenMask": "",
+        "SurfaceType": "",
+        "Diffuse": "0.11193243,0.52099562,0.61720669,1",
+        "Specular": "0.47353151,0.47353151,0.75294232,1",
+        "Opacity": "1",
+        "Shininess": "158",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.34999999"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "SunMultiplier": "1.05",
+        "TillingLayer0": "1",
+        "SpeedLayer0": "2",
+        "SpeedLayer1": "5",
+        "TillingLayer1": "1",
+        "FoamMultiplier": "4",
+        "FresnelBias": "0.38999999",
+        "RefractionBumpScale": "0.0199",
+        "ReflectionAmount": "0",
+        "BumpScaleLayer1": "0.472",
+        "FoamDeform": "0.18799999",
+        "AlphaBlendMul": "0.34",
+        "BumpScaleLayer0": "0.373"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+        "MtlFlags": "2621570",
+        "Shader": "Illum",
+        "GenMask": "3820000005",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%ALPHAMASK_DETAILMAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "1,1,1,1",
+        "Specular": "0,0,0,1",
+        "Opacity": "0.99000001",
+        "Shininess": "156",
+        "AlphaTest": "0.47999999",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.07"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.18116426,0.10702311,0.14995982",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "AmbientBoost": "2.4200001",
+        "IndirectColor": "0,0,0"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+        "MtlFlags": "2621570",
+        "Shader": "Illum",
+        "GenMask": "3820000005",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%ALPHAMASK_DETAILMAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "1,1,1,1",
+        "Specular": "0,0,0,1",
+        "Opacity": "0.99000001",
+        "Shininess": "156",
+        "AlphaTest": "0.47999999",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.050000001"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.18116426,0.10702311,0.14995982",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "AmbientBoost": "2.4200001",
+        "IndirectColor": "0,0,0"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark.mtl",
+      "submaterial_index": 0,
+      "name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Base_MAT",
+        "MtlFlags": "2621570",
+        "Shader": "Illum",
+        "GenMask": "3820000005",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%ALPHAMASK_DETAILMAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "1,1,1,1",
+        "Specular": "0,0,0,1",
+        "Opacity": "0.99000001",
+        "Shininess": "156",
+        "AlphaTest": "0.43000001",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TileU": "2",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.07"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.18116426,0.10702311,0.14995982",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "AmbientBoost": "2.4200001",
+        "IndirectColor": "0,0,0"
+      }
+    },
+    {
+      "file": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\waterfalls\\waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark.mtl",
+      "submaterial_index": 1,
+      "name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+      "properties": {
+        "Name": "Waterfall_ElDorado_Long_Distance_Middle_MAT",
+        "MtlFlags": "2621570",
+        "Shader": "Illum",
+        "GenMask": "3820000005",
+        "StringGenMask": "%ALLOW_SILHOUETTE_POM%ALPHAMASK_DETAILMAP%NORMAL_MAP%SPECULAR_MAP%SUBSURFACE_SCATTERING%VERTCOLORS",
+        "SurfaceType": "",
+        "Diffuse": "1,1,1,1",
+        "Specular": "0,0,0,1",
+        "Opacity": "0.99000001",
+        "Shininess": "156",
+        "AlphaTest": "0.38",
+        "vertModifType": "1",
+        "LayerAct": "1"
+      },
+      "textures": [
+        {
+          "slot": "Diffuse",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_waterfall_eldorado_base.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_UOscillatorType": "2",
+            "TexMod_UOscillatorRate": "1",
+            "TexMod_UOscillatorAmplitude": "0.050000001"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds",
+              "bytes": 1492,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_waterfall_eldorado_base.dds.5"
+              ],
+              "height": 512,
+              "width": 2048,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Bumpmap",
+          "original": "textures/particles/liquids/fx_riverflow01a_n.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {
+            "TexMod_RotateType": "0",
+            "TexMod_TexGenType": "0",
+            "TexMod_bTexGenProjected": "0",
+            "TexMod_URotateCenter": "36",
+            "TexMod_VRotateCenter": "36",
+            "TexMod_WRotateRate": "35.996704",
+            "TexMod_WRotatePhase": "35.996704",
+            "TexMod_WRotateAmplitude": "35.996704"
+          },
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part46\\textures\\particles\\liquids\\fx_riverflow01a_n.dds.5"
+              ],
+              "height": 512,
+              "width": 512,
+              "mipCount": 8,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Specular",
+          "original": "objects/01_ElDorado_A_Temple/waterfalls/textures/fx_t_water_river_test_2.dds",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": [
+            {
+              "path": "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds",
+              "bytes": 484,
+              "splitParts": [
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.1",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.2",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.3",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.4",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.5",
+                "F:\\BreakawayConverted\\Unpacked\\textures-part11\\objects\\01_eldorado_a_temple\\waterfalls\\textures\\fx_t_water_river_test_2.dds.6"
+              ],
+              "height": 1024,
+              "width": 1024,
+              "mipCount": 9,
+              "fourCC": "DX10"
+            }
+          ]
+        },
+        {
+          "slot": "Environment",
+          "original": "nearest_cubemap",
+          "resolution": "exact_original_relative_path",
+          "texMod": {},
+          "resolved": []
+        }
+      ],
+      "publicParams": {
+        "GlowTint": "1,1,1",
+        "EmittanceMapGamma": "1",
+        "OccluderFadingFactor": "0",
+        "OccluderMaxFadingFactor": "1",
+        "SSSIndex": "0",
+        "FadeLighting": "0.18116426,0.10702311,0.14995982",
+        "UseGlobalTranspZPrePass": "0",
+        "GlowTintBlending": "0",
+        "AmbientBoost": "2.4200001",
+        "IndirectColor": "0,0,0"
+      }
+    }
+  ],
+  "errors": [],
+  "notes": [
+    "Source particles require native effects; source material names do not execute CryEngine shaders in Unreal.",
+    "Additional rows have resolved world transforms; do not apply original Parent transforms again.",
+    "Far treecards remain cards. Inspect player-visible foliage separately.",
+    "Source particle transforms do not reproduce their emitter geometry or animation."
+  ]
+}

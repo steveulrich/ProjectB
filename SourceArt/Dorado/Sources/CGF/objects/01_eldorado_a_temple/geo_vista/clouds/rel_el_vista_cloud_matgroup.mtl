@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Rel_El_Vista_Cloud_mat" MtlFlags="2621568" Shader="Geometrybeam" GenMask="1" StringGenMask="" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Emittance="1,1,1,1" Opacity="1" Shininess="11" vertModifType="0" LayerAct="1">
+   <PublicParams StartColor="0.14995982,0.18116426,0.18116426" EndColor="0.20863689,0.35640016,0.36130682" FinalMultiplier="2.6800001" turbStrength="0" SoftIntersectionFactor="0.0080000004" dustUVScale="2.069" viewDependencyFactor="3.1800001" baseUVScale="1" dustTimeScale="0.079999998" AmbStrength="1" uvRot="0" turbRatio="0" fadingFeaturing="0.148" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Rel_El_Vista_Cloud2_mat" MtlFlags="2621568" Shader="Geometrybeam" GenMask="1" StringGenMask="" SurfaceType="" Diffuse="1,1,1,1" Emittance="1,1,1,1" Opacity="1" Shininess="10" CloakAmount="0" vertModifType="1" LayerAct="1">
+   <VertexDeform Type="1" DividerX="4" DividerY="0.0099999998" NoiseScale="1,1,1">
+    <WaveX Type="1" Amp="0.1" Level="0" Phase="1" Freq="0.5" />
+   </VertexDeform>
+   <PublicParams StartColor="1,1,1" EndColor="1,1,1" FinalMultiplier="1" turbStrength="0" SoftIntersectionFactor="1" dustUVScale="2.069" viewDependencyFactor="2" baseUVScale="1" dustTimeScale="0.079999998" AmbStrength="0.12" uvRot="0" turbRatio="0" fadingFeaturing="0.55000001" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

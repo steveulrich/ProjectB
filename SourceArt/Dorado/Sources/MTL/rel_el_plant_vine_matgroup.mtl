@@ -1,0 +1,21 @@
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Rel_El_Plant_Vine" MtlFlags="2621568" Shader="Illum" GenMask="2000140000001" StringGenMask="%ALLOW_SILHOUETTE_POM%IGNORE_DIFFUSE_ALPHA%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/vegetation/plants/textures/rel_ed_veg_vines_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_ElDorado_A_Temple/vegetation/plants/textures/rel_ed_veg_vines_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="rel_Ed_Veg_FatLeaf_small" MtlFlags="2621568" Shader="Vegetation" GenMask="8100101" StringGenMask="" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" AlphaTest="0.41" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/vegetation/plants/textures/rel_ed_veg_fatleaf_a_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_ElDorado_A_Temple/vegetation/plants/textures/rel_ed_veg_fatleaf_a_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams bendDetailLeafAmplitude="0.2" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" BlendTerrainCol="0" VertexAlphaBlendFactor="1" NormalViewDependency="0.5" TransmittanceColor="1,1,0.60000002" CapOpacityFalloff="1" AllowDeferredDecals="1" BackDiffuseMultiplier="1" BlendTerrainColDist="0.5" IndirectColor="0.21223079,0.21223079,0.21223079"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

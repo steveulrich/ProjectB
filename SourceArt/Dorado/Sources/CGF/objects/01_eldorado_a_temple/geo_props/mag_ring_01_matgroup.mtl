@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Mag_Ring_01" MtlFlags="2623648" Shader="Waterfall" GenMask="7" StringGenMask="" SurfaceType="" Diffuse="0.0097212186,0,0.32314324,1" Specular="1,1,1,1" Emittance="0,0,0,1" Opacity="1" Shininess="255" vertModifType="1" LayerAct="1">
+   <VertexDeform Type="1" DividerX="2" DividerY="0.0099999998" NoiseScale="1,1,1">
+    <WaveX Type="1" Amp="0.55000001" Level="0" Phase="5" Freq="1" />
+   </VertexDeform>
+   <PublicParams SunMultiplier="0" TillingLayer0="0.1" SpeedLayer0="0.5" SpeedLayer1="0.5" TillingLayer1="0.5" FoamMultiplier="4" FresnelBias="0.847" RefractionBumpScale="0.025" ReflectionAmount="0" BumpScaleLayer1="2" FoamDeform="0.25" AlphaBlendMul="0" BumpScaleLayer0="4" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+  <Material Name="Mag_Ring_02" MtlFlags="2621604" Shader="Illum" GenMask="80000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="0.30946895,0.14995982,0.65140575,1" Specular="0.033104774,0.033104774,0.033104774,1" Emittance="0.41788509,0.27467734,0.70110202,1" Opacity="0.30000001" AlphaTest="0.029999999" vertModifType="1" LayerAct="1">
+   <VertexDeform Type="1" DividerX="1" DividerY="0.0099999998" NoiseScale="1,1,1">
+    <WaveX Type="1" Amp="0.69999999" Level="0" Phase="0" Freq="0.55000001" />
+   </VertexDeform>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0.0099999998" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="1" IndirectColor="0.25,0.25,0.25" />
+  <Textures><Texture Map="Diffuse" File="DoradoConversionPlaceholder.png" /></Textures></Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25" />
+</Material>

@@ -1,0 +1,52 @@
+{
+  "scope": "Single fixed-camera PIE Development captures in WindowsEditor; not packaged or shipping performance.",
+  "detailed_report": "Saved\\Logs\\dorado-reconstruction-20261030\\performance-final.json",
+  "percentile_method": "R-7 linear interpolation; all valid recorded frames retained; no outlier trimming.",
+  "captures": [
+    {
+      "file": "dorado-final.csv",
+      "frames": 600,
+      "timings_ms": {
+        "FrameTime": {
+          "mean": 8.839259,
+          "p50": 8.33985,
+          "p95": 10.79988,
+          "p99": 12.314211
+        },
+        "GameThreadTime": {
+          "mean": 8.614849,
+          "p50": 8.32695,
+          "p95": 10.74122,
+          "p99": 12.461241
+        },
+        "GPUTime": {
+          "mean": 4.777455,
+          "p50": 4.7052,
+          "p95": 5.75027,
+          "p99": 6.014046
+        }
+      },
+      "counter_medians": {
+        "GPUMem/LocalUsedMB": 5400.0625,
+        "GPUMem/LocalBudgetMB": 11229.0,
+        "RHI/DrawCalls": 654.0,
+        "DrawCall/ShadowDepths": 81.0
+      },
+      "frames_over_threshold_ms": {
+        "16.67": 1,
+        "33.33": 0,
+        "50.0": 0
+      },
+      "vsm_counter_columns": [],
+      "lumen_counter_columns": [],
+      "gpu_pass_timing_columns": []
+    }
+  ],
+  "limitations": [
+    "One capture per condition; order, warm-up and background-editor noise can affect differences.",
+    "Frame and thread timing do not alone identify the critical-path cause; GPU timing may contain synchronization.",
+    "Primary screen percentage, dynamic-resolution mode and camera are operator declarations, not CSV-verified fields.",
+    "Absence of explicit VSM/Lumen counters cannot prove warning removal; use the corresponding fresh UI evidence.",
+    "DynamicResolutionVSMNanite is a shadow/Nanite scaling counter, not verification of the primary view dynamic-resolution mode."
+  ]
+}

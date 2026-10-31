@@ -1,0 +1,38 @@
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="proxy_mat" MtlFlags="2622592" Shader="Nodraw" GenMask="0" StringGenMask="" SurfaceType="" Diffuse="1,0.082828999,0,1" Specular="0,0,0,1" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+  </Material>
+  <Material Name="Rel_ElDorado_Stone_Mat" MtlFlags="2621568" Shader="Illum" GenMask="880008000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%PARALLAX_OCCLUSION_MAPPING%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/geo_architecture/textures/rel_el_arenatilewall_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_ElDorado_A_Temple/geo_architecture/textures/rel_el_arenatilewall_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+    <Texture Map="Heightmap" File="objects/01_ElDorado_A_Temple/geo_architecture/textures/rel_el_arenatilewall_displ.dds"/>
+    <Texture Map="Custom" File="objects/01_eldorado_a_temple/vegetation/moss/rel_temple_moss_a_diff.tif"/>
+    <Texture Map="[1] Custom" File="objects/01_eldorado_a_temple/vegetation/moss/rel_temple_wall_moss_a_ddna.tif"/>
+    <Texture Map="Opacity" File="objects/01_eldorado_a_temple/geo_architecture/textures/rel_temple_wall_stonetile_02_blend.tif"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" PomDisplacement="0.0242" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" SelfShadowStrength="1" GlowTintBlending="0" HeightBias="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="Rel_ElDorado_Trim_Mat" MtlFlags="2621568" Shader="Illum" GenMask="880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.021219011,0.021219011,0.021219011,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_eldorado_a_temple/geo_architecture/textures/rel_eldorado_trim_03_diff.tif"/>
+    <Texture Map="Bumpmap" File="Objects/01_ElDorado_A_Temple/Geo_Architecture/textures/rel_eldorado_trim_03_ddna.tif"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="rel_el_ArenaTeamA_MAT" MtlFlags="2621600" Shader="Illum" GenMask="880000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%NORMAL_MAP%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="1,1,1,1" Specular="0.038204376,0.038204376,0.038204376,1" Opacity="1" Shininess="255" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="objects/01_ElDorado_A_Temple/geo_architecture/textures/rel_el_arenatrima_grass_diff.dds"/>
+    <Texture Map="Bumpmap" File="objects/01_ElDorado_A_Temple/geo_architecture/textures/rel_el_arenatrima_ddna.dds"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams GlowTint="1,1,1" EmittanceMapGamma="1" OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" FadeLighting="0.5,0.5,0.5" UseGlobalTranspZPrePass="0" GlowTintBlending="0" AmbientBoost="0" IndirectColor="0.25,0.25,0.25"/>
+</Material>

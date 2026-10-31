@@ -1,0 +1,61 @@
+{
+  "scope": "Read-only source water audit. No water material or importer edits performed.",
+  "source_material": "SourceArt/Dorado/Sources/MTL/waterfall_eldorado_long_distance_base_mat_matgroup.mtl",
+  "source_shader": "Waterfall",
+  "source_uv_animation": {
+    "axis": "U",
+    "oscillator_type": 2,
+    "rate": 1,
+    "amplitude": 0.34999999
+  },
+  "source_base_sun_multiplier": 0,
+  "native_master_before_trial": {
+    "panner_u": 0,
+    "panner_v": -0.12,
+    "water_emission_strength": 0,
+    "water_opacity_multiplier": 0.5
+  },
+  "mesh_uv_evidence": {
+    "asset": "SM_Dorado_sm_waterfall_long_distance_group",
+    "base_triangles": 320,
+    "base_xyz_bounds_m": [
+      [
+        -7.316406,
+        -40.6875,
+        -333.5
+      ],
+      [
+        7.320312,
+        40.6875,
+        1.794922
+      ]
+    ],
+    "base_uv_bounds": [
+      [
+        -2.225247,
+        0.005024
+      ],
+      [
+        1.555465,
+        0.996157
+      ]
+    ],
+    "correlation_U_with_Z": 0.9019026368813353,
+    "correlation_V_with_X": 0.995147699816702,
+    "interpretation": "U follows stream length/vertical direction; V crosses stream width. Panning V moves opacity edge mask sideways."
+  },
+  "recommended_trial_pending_approval": {
+    "water_master_panner": [
+      0.12,
+      0
+    ],
+    "six_existing_water_MI_scalars": {
+      "EmissionStrength": 2500,
+      "Opacity": 0.65,
+      "Specular": 0.15,
+      "RoughnessFloor": 0.45
+    },
+    "preserve": "Original recovered BaseColor/Opacity/Normal textures, current cyan Tint and source UVs.",
+    "basis": "Flow-axis correction is source-supported. Emission/opacity/roughness values are reference-inferred and require native render review."
+  }
+}

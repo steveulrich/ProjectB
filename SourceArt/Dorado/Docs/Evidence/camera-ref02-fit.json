@@ -1,0 +1,151 @@
+{
+  "status": "suggested_camera_only; requires Unreal visual comparison",
+  "input": "SourceArt\\Dorado\\Config\\camera_ref02_landmarks.json",
+  "location_cm": [
+    415.95312784569364,
+    4357.463050822476,
+    978.4582807511838
+  ],
+  "rotation_pitch_yaw_roll_degrees": [
+    -2.716604747744314,
+    -102.24684745667966,
+    0
+  ],
+  "horizontal_fov_degrees": 98.53320712632097,
+  "look_at_cm": [
+    -855.3599534149971,
+    -1499.4041632669405,
+    694.0826736047213
+  ],
+  "rms_pixel_error": 2.679170736584299,
+  "predicted_pixels": [
+    [
+      1057.5601782888116,
+      576.3225990589037
+    ],
+    [
+      814.5488973291484,
+      528.4651838390538
+    ],
+    [
+      1373.6817354939235,
+      550.5813779771936
+    ],
+    [
+      1012.4483730739953,
+      690.546845259703
+    ],
+    [
+      1179.6527000593635,
+      129.81802485606983
+    ],
+    [
+      917.6518552244069,
+      127.0851351499295
+    ],
+    [
+      1103.4666032598582,
+      155.40878295127555
+    ]
+  ],
+  "landmarks": [
+    {
+      "name": "Central medallion",
+      "world_cm": [
+        0,
+        0,
+        0
+      ],
+      "reference_pixel": [
+        1064,
+        576
+      ],
+      "evidence": "Recovered arena center."
+    },
+    {
+      "name": "Green pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        809,
+        529
+      ],
+      "evidence": "Visual center established from REF01 initial-render ray."
+    },
+    {
+      "name": "Blue pad",
+      "world_cm": [
+        1534.0433,
+        40.5372,
+        208.334
+      ],
+      "reference_pixel": [
+        1371,
+        547
+      ],
+      "evidence": "Visual center established from REF01 initial-render ray."
+    },
+    {
+      "name": "Near snake circle",
+      "world_cm": [
+        18.25062729614939,
+        1714.624265821422,
+        0.0
+      ],
+      "reference_pixel": [
+        1012,
+        692
+      ],
+      "evidence": "Initial REF02 center ray intersected floorZ0."
+    },
+    {
+      "name": "Ring eye",
+      "world_cm": [
+        599.083174442226,
+        0.0,
+        2292.7450316486697
+      ],
+      "reference_pixel": [
+        1180,
+        130
+      ],
+      "evidence": "Initial REF02 eye center ray intersected ringY0; thickness uncertain."
+    },
+    {
+      "name": "Upper-left cut",
+      "world_cm": [
+        -762.4183100033433,
+        0.0,
+        2397.134678196753
+      ],
+      "reference_pixel": [
+        919,
+        128
+      ],
+      "evidence": "Initial REF02 terminal corner ray intersected ringY0; thickness uncertain."
+    },
+    {
+      "name": "Shrine apex",
+      "world_cm": [
+        0.4455,
+        -5003.8665,
+        3578.14386
+      ],
+      "reference_pixel": [
+        1105,
+        156
+      ],
+      "evidence": "Recovered arenastatue_b world location plus transformed localmaxZ."
+    }
+  ],
+  "assumptions": [
+    "Perspective camera without distortion",
+    "Zero roll",
+    "Shared1920x862 aspect",
+    "Some world points derived from known plane/ray intersections",
+    "Manual pixel selections; compare projected pylon silhouette before acceptance"
+  ]
+}

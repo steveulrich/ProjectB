@@ -1,0 +1,528 @@
+<ObjectLayer>
+ <Layer Name="Geo_Vista_Animation_Entities" GUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Exportable="1" ExportLayerPak="1" DefaultLoaded="0" HavePhysics="1" IsDefaultColor="1" ParentGUID="{3656AC9C-CAF1-4C78-9709-F5EEB943DF7F}">
+  <LayerObjects>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{C01AC007-FFF1-467F-934F-A7AD597D7E0A}" Name="rel_ed_ring_b_group2" HideOrder="0" Pos="514,666.31,73.105034" FloorNumber="-1" Rotate="-4.338559e-008,0.13917327,5.3270868e-009,0.99026805" Scale="0.88000005,0.88,0.88000005" ColorRGB="65535" Geometry="objects/01_eldorado_a_temple/geo_props/rel_ed_ring_b_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="Ring_B" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="2" Class="Movement:RotateEntity" pos="-77,-168,0" flags="0" GraphEntity="0">
+       <Inputs Velocity="0,-4,0" Reference="0"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-260,-240,0" flags="0">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="2" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{EDCF8CAD-D2E3-4181-B0C4-6A8C958BAA05}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{C92E390E-C095-465C-AADC-C8BAD4B8A533}" Name="BasicEntity16" HideOrder="0" Parent="{24017B12-1080-497B-88A0-10DC07AD9B11}" Pos="-11.66687,-249.68265,-45.586109" FloorNumber="-1" Rotate="0.84339148,0,0,-0.53729951" Scale="2.0618,2.0618,2.0618" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/vegetation/plants/rel_el_plant_vine_curve_c.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="SequenceObject" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{BDAF610F-964E-4BF3-AC68-F713A424F850}" Name="Rock Island Small Animation" HideOrder="0" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16744319">
+    <Sequence SequenceVersion="3" Name="Rock Island Small Animation" Flags="4" StartTime="0" EndTime="20" ID="164">
+     <Nodes>
+      <Node Id="1" Type="Entity" Name="BasicEntitySmallAnim" Flags="4" paramIdVersion="9" EntityGUID="4377406B658C0E24">
+       <Track paramType="Position" Type="4" Flags="0" HasCustomColor="0" ValueType="1">
+        <NewSubTrack Flags="16" defaultValue="0,425.435" HasCustomColor="0">
+         <Key time="0" value="0,425.435" flags="73" ds="1,0" dd="1,0"/>
+        </NewSubTrack>
+        <NewSubTrack Flags="16" defaultValue="0,774.92627" HasCustomColor="0">
+         <Key time="0" value="0,774.92627" flags="73" ds="16.666668,0" dd="16.666668,0"/>
+        </NewSubTrack>
+        <NewSubTrack Flags="0" defaultValue="0,107.36607" HasCustomColor="0">
+         <Key time="0" value="0,102" flags="73" ds="0,0.12579739" dd="2.0607548,0.016471863"/>
+         <Key time="10" value="10,107.00645" flags="64" ds="3.3333335,0" dd="3.3333335,0"/>
+         <Key time="20" value="20,102" flags="65" ds="3.3322029,0.023345947" dd="0,0"/>
+        </NewSubTrack>
+       </Track>
+       <Track paramType="Event" Type="-1" Flags="0" StartTime="0" EndTime="20" HasCustomColor="0" ValueType="-1"/>
+      </Node>
+      <Node Id="2" Type="Entity" Name="BasicEntity19" Flags="4" paramIdVersion="9" EntityGUID="4847EB9420AA8B62">
+       <Track paramType="Position" Type="4" Flags="0" HasCustomColor="0" ValueType="1">
+        <NewSubTrack Flags="16" defaultValue="0,191.38139" HasCustomColor="0"/>
+        <NewSubTrack Flags="16" defaultValue="0,906.59875" HasCustomColor="0"/>
+        <NewSubTrack Flags="0" defaultValue="0,242.82401" HasCustomColor="0">
+         <Key time="0" value="0,242.50874" flags="72" ds="0,0" dd="3.2257109,-0.21647644"/>
+         <Key time="9.9909782" value="9.9909782,230.22655" flags="64" ds="3.3303263,4.3194235e-005" dd="3.3363407,4.3272241e-005"/>
+         <Key time="20" value="20,242.509" flags="65" ds="3.3120537,0.14004517" dd="0,0"/>
+        </NewSubTrack>
+       </Track>
+       <Track paramType="Event" Type="-1" Flags="0" StartTime="0" EndTime="20" HasCustomColor="0" ValueType="-1"/>
+      </Node>
+     </Nodes>
+     <Events />
+    </Sequence>
+    <ZoomScrollSettings dopeSheetZoom="20.971521" dopeSheetHScroll="-30" nodesListVScroll="0" curveEditorZoom="19.758976,13.038741" curveEditorScroll="-8.2121286,216.36952"/>
+    <ID value="164"/>
+   </Object>
+   <Object Type="SequenceObject" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{8B89D710-413B-46F1-88A4-E743C6856B43}" Name="Rock Island Medium Animaion" HideOrder="0" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16744319">
+    <Sequence SequenceVersion="3" Name="Rock Island Medium Animaion" Flags="4" StartTime="0" EndTime="25" ID="23">
+     <Nodes>
+      <Node Id="1" Type="Entity" Name="BasicEntity_RockAnim_Med" Flags="4" paramIdVersion="9" EntityGUID="429F7F76F8CADFDB">
+       <Track paramType="Position" Type="4" Flags="0" HasCustomColor="0" ValueType="1">
+        <NewSubTrack Flags="16" defaultValue="0,169.7562" HasCustomColor="0">
+         <Key time="0" value="0,169.7562" flags="73" ds="1,0" dd="0.58825094,0"/>
+         <Key time="12.512204" value="12.512204,169.75621" flags="73" ds="6.2604599,2.9919991e-006" dd="4.3820391,2.0942641e-006"/>
+         <Key time="25" value="25,169.7562" flags="73" ds="3.4312425,0" dd="8.333334,0"/>
+        </NewSubTrack>
+        <NewSubTrack Flags="16" defaultValue="0,947.36267" HasCustomColor="0">
+         <Key time="0" value="0,947.36267" flags="73" ds="1,0" dd="0.58825094,0"/>
+         <Key time="12.512204" value="12.512204,947.36279" flags="73" ds="6.2604599,2.3935992e-005" dd="4.3820391,1.6754113e-005"/>
+         <Key time="25" value="25,947.36267" flags="73" ds="3.4312425,0" dd="8.333334,0"/>
+        </NewSubTrack>
+        <NewSubTrack Flags="0" defaultValue="0,288.61258" HasCustomColor="0">
+         <Key time="0" value="0,288.61301" flags="72" ds="0,0" dd="3.1737204,0.033691406"/>
+         <Key time="12.547184" value="12.547184,310.76773" flags="64" ds="4.182395,-0.056410253" dd="4.150939,-0.055985987"/>
+         <Key time="25" value="25,288.27582" flags="73" ds="3.4556859,0" dd="8.333334,0"/>
+        </NewSubTrack>
+       </Track>
+       <Track paramType="Event" Type="-1" Flags="0" StartTime="0" EndTime="25" HasCustomColor="0" ValueType="-1"/>
+      </Node>
+     </Nodes>
+     <Events />
+    </Sequence>
+    <ZoomScrollSettings dopeSheetZoom="20.971521" dopeSheetHScroll="-30" nodesListVScroll="0" curveEditorZoom="28.32,265.45453" curveEditorScroll="0,-1.1"/>
+    <ID value="23"/>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{24017B12-1080-497B-88A0-10DC07AD9B11}" Name="BasicEntity_RockAnimSmall2" HideOrder="0" Pos="143.32849,747.30908,58.449471" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="objects/default/primitive_cube.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{658C0E24-406B-4377-A335-0CD06463673B}" Name="BasicEntitySmallAnim" HideOrder="0" Pos="425.435,774.92627,107.36607" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="objects/default/primitive_cube.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{3D63D628-BC3B-4EE5-81CA-23C334EE4784}" Name="BasicEntity33" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-32.287125,-520.61804,-156.44536" FloorNumber="-1" Rotate="0.86638522,0.0062791756,0.024838604,-0.49871865" Scale="1.3418751,1.341875,1.3418748" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/treecards/rel_el_treecard_l4.cgf" bPickable="1" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{AF05F42E-6E5A-4A92-B834-9870E6D578C7}" Name="BasicEntity32" HideOrder="0" Parent="{24017B12-1080-497B-88A0-10DC07AD9B11}" Pos="16.30629,-220.98303,4.1349792" FloorNumber="-1" Rotate="-0.46702027,-0.0183807,0.0035048551,0.88404858" Scale="1.816759,1.8167586,1.8167586" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/vegetation/plants/rel_el_plant_vine_bundle_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{9B4EFA54-75CA-4CB5-A5C1-9D07A5A8FEDA}" Name="BasicEntity18" HideOrder="0" Parent="{658C0E24-406B-4377-A335-0CD06463673B}" Pos="-278.65836,-234.81628,-160.48087" FloorNumber="-1" Rotate="-0.47715873,0,0,0.87881714" Scale="1.1837296,1.1837296,0.7812615" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_c.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{065E1756-77B7-47EA-9934-B8A9EB014D01}" Name="BasicEntity15" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-47.403343,-519.76868,-229.15878" FloorNumber="-1" Rotate="1,0,0,0" Scale="4.6289101,4.6289101,4.6289101" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/vegetation/plants/rel_el_plant_vine_curve_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{20AA8B62-EB94-4847-AADE-89BE3323A0FF}" Name="BasicEntity19" HideOrder="0" Pos="191.38139,906.59875,242.82401" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="objects/default/primitive_cube.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{3C1AD863-47EB-4A69-ABEA-4F87AE368BD1}" Name="BasicEntity17" HideOrder="0" Parent="{658C0E24-406B-4377-A335-0CD06463673B}" Pos="-293.98596,-236.94702,-149.38969" FloorNumber="-1" Rotate="-0.095666766,0.052601226,0.03098448,0.99353963" Scale="4.6289096,4.6289096,4.6289101" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/vegetation/plants/rel_el_plant_vine_curve_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{AC986668-E4EC-4643-98D7-2249729B7B65}" Name="BasicEntity21" HideOrder="0" Parent="{658C0E24-406B-4377-A335-0CD06463673B}" Pos="7.821228,-4.2442627,-4.6353149" FloorNumber="-1" Rotate="0.99965733,0,0,0.026176987" Scale="0.45777431,0.45777431,0.45777416" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_c.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{082C3E82-C8A0-41CE-82F1-5FE7822E2E26}" Name="BasicEntity24" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="36.971283,8.7003174,-20.245026" FloorNumber="-1" Rotate="0.5,0,0,0.86602545" Scale="0.34297261,0.34297261,0.34297249" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_a.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{8133F583-8992-4626-8590-A12AC68BBD8C}" Name="BasicEntity23" HideOrder="0" Parent="{20AA8B62-EB94-4847-AADE-89BE3323A0FF}" Pos="8.7727509,-2.5650024,-0.27682495" FloorNumber="-1" Rotate="0.99254614,0,0,-0.12186952" Scale="0.52398604,0.52398604,0.52398574" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_c.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{4289D690-8EA6-431D-A1CA-C512CE610607}" Name="rel_ed_ring_a_group2" HideOrder="0" Pos="514,666.31,71.901497" FloorNumber="-1" Rotate="-4.338559e-008,0.13917325,5.3270863e-009,0.99026805" Scale="0.88000011,0.88,0.88000011" ColorRGB="65535" Geometry="objects/01_eldorado_a_temple/geo_props/rel_ed_ring_a_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="230" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="Ring_A" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Movement:RotateEntity" pos="-50,-220,0" flags="1" GraphEntity="0">
+       <Inputs Velocity="0,0.65,0" Reference="0"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-240,-230,0" flags="1">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="1" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{DF4A3027-6EA3-4266-AE19-84739F7F35A4}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{1F326997-F19B-47EA-9187-F485DEDDFBF4}" Name="FG_CloudAnimation" HideOrder="0" Pos="516.02258,666.78265,73.808792" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="FlowgraphEntity">
+    <Properties>
+     <MultiplayerOptions bNetworked="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Relay:RoundStart" pos="-100,-140,0" flags="0"/>
+      <Node Id="2" Class="Animations:PlaySequence" pos="80,-220,0" flags="0">
+       <Inputs seq_Sequence_File="Cloud Background Animation" BreakOnStop="0" BlendPosSpeed="0" BlendRotSpeed="0" PerformBlendOut="0" StartTime="0" PlaySpeed="1" JumpToTime="0" seqid_SequenceId="0" BlendOutPosSpeed="0" BlendOutRotSpeed="0"/>
+      </Node>
+      <Node Id="3" Class="Game:Start" pos="-120,30,0" flags="0">
+       <Inputs InGame="1" InEditor="1"/>
+      </Node>
+      <Node Id="5" Class="Animations:PlaySequence" pos="80,80,0" flags="0">
+       <Inputs seq_Sequence_File="Rock Island Small Animation" BreakOnStop="0" BlendPosSpeed="0" BlendRotSpeed="0" PerformBlendOut="0" StartTime="0" PlaySpeed="1" JumpToTime="0" seqid_SequenceId="0" BlendOutPosSpeed="0" BlendOutRotSpeed="0"/>
+      </Node>
+      <Node Id="6" Class="Animations:PlaySequence" pos="80,380,0" flags="0">
+       <Inputs seq_Sequence_File="Rock Island Small Animaion 2" BreakOnStop="0" BlendPosSpeed="0" BlendRotSpeed="0" PerformBlendOut="0" StartTime="0" PlaySpeed="1" JumpToTime="0" seqid_SequenceId="0" BlendOutPosSpeed="0" BlendOutRotSpeed="0"/>
+      </Node>
+      <Node Id="7" Class="Animations:PlaySequence" pos="80,680,0" flags="0">
+       <Inputs seq_Sequence_File="Rock Island Medium Animaion" BreakOnStop="0" BlendPosSpeed="0" BlendRotSpeed="0" PerformBlendOut="0" StartTime="0" PlaySpeed="1" JumpToTime="0" seqid_SequenceId="0" BlendOutPosSpeed="0" BlendOutRotSpeed="0"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="2" nodeOut="3" portIn="Trigger" portOut="output" enabled="1"/>
+      <Edge nodeIn="5" nodeOut="3" portIn="Trigger" portOut="output" enabled="1"/>
+      <Edge nodeIn="6" nodeOut="3" portIn="Trigger" portOut="output" enabled="1"/>
+      <Edge nodeIn="7" nodeOut="3" portIn="Trigger" portOut="output" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{4668C80F-42BB-4AAF-8BFE-D056F64F146E}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{FF09559A-F355-41DD-9F28-218645F50228}" Name="BasicEntity29" HideOrder="0" Parent="{24017B12-1080-497B-88A0-10DC07AD9B11}" Pos="9.4753876,-2.3675537,0.84832001" FloorNumber="-1" Rotate="0.026176874,0,0,0.99965733" Scale="0.13981818,0.13981818,0.13981813" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{8D6CF4A2-E266-4686-82D9-47BCA7B5A738}" Name="BasicEntity30" HideOrder="0" Parent="{24017B12-1080-497B-88A0-10DC07AD9B11}" Pos="6.4616699,-244.60886,-16.121975" FloorNumber="-1" Rotate="0.58070296,0,0,0.81411552" Scale="0.25365642,0.25365642,0.25365642" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_a.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{E44CADA4-B3E8-40BB-B95E-C26E64190708}" Name="BasicEntity35" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-70.901978,-477.89841,-166.47366" FloorNumber="-1" Rotate="0.99619472,0,0,0.087155864" Scale="0.71422923,0.71422923,0.71422917" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{9223BBB1-757B-4276-ACCF-91CE89BA6F61}" Name="rel_ed_vista_ring_a_group5" HideOrder="0" Pos="-3330.5586,-530.66833,2414.3293" FloorNumber="-1" Rotate="0.819152,0,0,-0.57357651" Scale="2478.625,2478.625,2478.623" ColorRGB="65535" Geometry="objects/01_eldorado_a_temple/geo_vista/rel_ed_vista_ring_a_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Movement:RotateEntity" pos="110,-200,0" flags="0" GraphEntity="0">
+       <Inputs Velocity="0,8,0" Reference="1"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-130,-190,0" flags="0">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="1" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{1E6A67BB-0008-4FA6-A436-53C01E8669E9}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{654CE4B4-1F57-4C99-A8F5-D2480F30C9F9}" Name="rel_ed_vista_ring_a_group4" HideOrder="0" Pos="-3330.5586,-530.66833,2414.3293" FloorNumber="-1" Rotate="0.819152,0,0,-0.57357651" Scale="2360.5952,2360.5952,2360.5935" ColorRGB="16776960" Geometry="objects/01_eldorado_a_temple/geo_vista/rel_ed_vista_ring_a_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Movement:RotateEntity" pos="215,-77,0" flags="0" GraphEntity="0">
+       <Inputs Velocity="0,-8,0" Reference="1"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-25,-67,0" flags="0">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="1" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{DDFDBA11-6E28-4B15-BC7E-43DCF0F22036}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{79753DB8-F85D-4748-9BD0-9EDAB9C3A871}" Name="rel_ed_vista_ring_a_group1" HideOrder="0" Pos="-2627.3477,2397.0222,2910.7666" FloorNumber="-1" Rotate="0.99144489,0,0,0.13052619" Scale="2594.0601,2594.0601,2594.0588" ColorRGB="16776960" Geometry="objects/01_eldorado_a_temple/geo_vista/rel_ed_vista_ring_a_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="Vista_Ring_A2" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Movement:RotateEntity" pos="110,-200,0" flags="1" GraphEntity="0">
+       <Inputs Velocity="0,8,0" Reference="1"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-130,-190,0" flags="1">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="1" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{273F9125-EABC-41E6-92C7-F0B73EC688FF}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{58378AC8-7C1C-461C-8729-53AE736C3B11}" Name="BasicEntity25" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="11.681442,11.39209,20.604797" FloorNumber="-1" Rotate="0.9359808,0.16284718,-0.18283375,0.25296763" Scale="1.5572352,1.5572356,1.5572356" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/treecards/rel_el_treecard_l3.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{CE8BDFD0-E792-4512-8114-C0D1C4FE5F3D}" Name="BasicEntity36" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-42.095802,-517.8175,-249.62131" FloorNumber="-1" Rotate="0.31658527,0.027039682,0.0078628119,0.94814599" Scale="0.061976712,0.061976727,0.061976675" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_large.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{91E71DD4-A6E9-4B40-AC4E-5614D22C87F7}" Name="rel_ed_vista_ring_a_group3" HideOrder="0" Pos="-2621.6812,2398.5405,2910.7666" FloorNumber="-1" Rotate="0.99144489,0,0,0.13052619" Scale="2360.5952,2360.5952,2360.5935" ColorRGB="16776960" Geometry="objects/01_eldorado_a_temple/geo_vista/rel_ed_vista_ring_a_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+    <FlowGraph Description="" Group="Vista_Ring_A" enabled="1" MultiPlayer="ClientServer">
+     <Nodes>
+      <Node Id="1" Class="Movement:RotateEntity" pos="215,-77,0" flags="1" GraphEntity="0">
+       <Inputs Velocity="0,-8,0" Reference="1"/>
+      </Node>
+      <Node Id="3" Class="Relay:SysSpecChanged" pos="-25,-67,0" flags="0">
+       <Inputs InGame="1" InEditor="1" OnStart="1"/>
+      </Node>
+     </Nodes>
+     <Edges>
+      <Edge nodeIn="1" nodeOut="3" portIn="Enable" portOut="OnChanged" enabled="1"/>
+     </Edges>
+     <HyperGraphId Id="{1F893352-D6EA-404A-A1D2-6634CCE35011}"/>
+     <GraphTokens />
+    </FlowGraph>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{CDD8D1D7-647C-4C00-8E7D-09FB61010378}" Name="BasicEntity37" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-58.30114,-451.36545,-162.8985" FloorNumber="-1" Rotate="0.53629738,-0.03280136,-0.051487818,-0.84181839" Scale="2.1755884,2.1755881,2.1755874" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/vegetation/plants/rel_el_plant_vine_curve_b.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{913C42DA-591A-450A-9B9F-A0F2826AE711}" Name="BasicEntity27" HideOrder="0" Parent="{658C0E24-406B-4377-A335-0CD06463673B}" Pos="-283.28387,-234.81366,-204.6351" FloorNumber="-1" Rotate="0.92387956,-0,0,-0.3826834" Scale="0.62747335,0.62747335,0.62747335" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/rel_el_island_small_c.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Name="BasicEntity_RockAnim_Med" HideOrder="0" Pos="169.7562,947.36267,288.61258" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="objects/default/primitive_cube.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{03C975DE-6A94-4DF0-B4A9-B1F93E341F73}" Name="BasicEntity31" HideOrder="0" Parent="{24017B12-1080-497B-88A0-10DC07AD9B11}" Pos="-2.283493,-233.83044,19.998337" FloorNumber="-1" Rotate="0.59325045,-0.022651365,0.017377844,0.80451161" Scale="0.76486892,0.76486897,0.76486874" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/treecards/rel_el_treecard_l5.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="SequenceObject" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{26A7F5E8-7B20-4DFC-AB8A-59AC639F8990}" Name="Rock Island Small Animaion 2" HideOrder="0" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16744319">
+    <Sequence SequenceVersion="3" Name="Rock Island Small Animaion 2" Flags="4" StartTime="0" EndTime="15" ID="24">
+     <Nodes>
+      <Node Id="1" Type="Entity" Name="BasicEntity_RockAnimSmall2" Flags="4" paramIdVersion="9" EntityGUID="497B108024017B12">
+       <Track paramType="Position" Type="4" Flags="0" HasCustomColor="0" ValueType="1">
+        <NewSubTrack Flags="16" defaultValue="0,143.32849" HasCustomColor="0"/>
+        <NewSubTrack Flags="16" defaultValue="0,747.30908" HasCustomColor="0"/>
+        <NewSubTrack Flags="0" defaultValue="0,58.449471" HasCustomColor="0">
+         <Key time="0" value="0,58.057873" flags="73" ds="1.8203391,-0.0051689856" dd="1,-0.0028395338"/>
+         <Key time="7.3744068" value="7.3744068,53.493309" flags="73" ds="2.5685625,0" dd="2.5685625,0"/>
+         <Key time="15" value="15,58.057899" flags="9" ds="1,0.003669573" dd="1,0"/>
+        </NewSubTrack>
+       </Track>
+       <Track paramType="Event" Type="-1" Flags="0" StartTime="0" EndTime="15" HasCustomColor="0" ValueType="-1"/>
+      </Node>
+     </Nodes>
+     <Events />
+    </Sequence>
+    <ZoomScrollSettings dopeSheetZoom="100" dopeSheetHScroll="0" nodesListVScroll="0" curveEditorZoom="121.33334,931.34332" curveEditorScroll="0,0"/>
+    <ID value="24"/>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{3DF5B6F3-FA5A-4AD2-B009-86BA98517D16}" Name="BasicEntity26" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="53.300964,17.052246,19.740692" FloorNumber="-1" Rotate="0.9359808,0.16284718,-0.18283375,0.25296763" Scale="1.5572352,1.5572356,1.5572356" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/treecards/rel_el_treecard_l3.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+   <Object Type="Entity" Layer="Geo_Vista_Animation_Entities" LayerGUID="{3F6FDB29-647D-4FFF-A62A-4FA12B55A73A}" Id="{C2D0D8FE-1847-4F1E-839B-CBD2AD8367D5}" Name="BasicEntity34" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="-84.84375,-478.36728,-144.40004" FloorNumber="-1" Rotate="0.62777805,-0.02338782,0.016373267,0.77786863" Scale="1.3418751,1.341875,1.3418747" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="10" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="BasicEntity">
+    <Properties bCanTriggerAreas="0" DmgFactorWhenCollidingAI="1" bExcludeCover="0" esFaction="" bHeavyObject="0" bInteractLargeObject="0" bMissionCritical="0" object_Model="Objects/01_ElDorado_A_Temple/geo_vista/treecards/rel_el_treecard_l4.cgf" bPickable="0" soclasses_SmartObjectClass="" bUsable="0" UseMessage="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <MultiplayerOptions bNetworked="0"/>
+     <Physics Density="-1" Mass="-1" bPhysicalize="1" bPushableByPlayers="1" bRigidBody="1" bSyncRigidBodyToGroundCollider="0">
+      <CollisionFiltering>
+       <collisionIgnore bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+       <collisionType bT_collision_class_articulated="0" bT_collision_class_living="0" bT_collision_class_particle="0" bT_collision_class_soft="0" bT_collision_class_terrain="0" bT_collision_class_wheeled="0" bT_gcc_ai="0" bT_gcc_camera_occluder_only="0" bT_gcc_coins="0" bT_gcc_large_kickable="0" bT_gcc_non_buildable_surface="0" bT_gcc_player_body="0" bT_gcc_player_capsule="0" bT_gcc_player_team0="0" bT_gcc_player_team1="0" bT_gcc_projectile_pass_through="0" bT_gcc_ragdoll="0" bT_gcc_rigid="0" bT_gcc_treasure="0"/>
+      </CollisionFiltering>
+     </Physics>
+    </Properties>
+   </Object>
+  </LayerObjects>
+ </Layer>
+</ObjectLayer>

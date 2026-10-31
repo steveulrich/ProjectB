@@ -1,0 +1,688 @@
+{
+  "schema_version": 1,
+  "status": "Source placements recovered; target unit scale confirmed against installed map; camera fit and imported landmark bounds pending Unreal comparison.",
+  "coordinate_system": {
+    "length_axis": "Y",
+    "width_axis": "X",
+    "up_axis": "Z",
+    "reason": "Preserves installed ProjectB Dorado gameplay convention.",
+    "source_units": "meters",
+    "target_units": "centimeters",
+    "centimeters_per_source_unit": 100.0,
+    "integration_uniform_scale": 0.5,
+    "scale_evidence": "Existing map-baseline.json floor actors have scale [0.5,0.5,0.5]; goals are near Y +/-4000 cm. This is ProjectB integration scale, not original scene measurement.",
+    "source_center_m": [
+      513.97998,
+      666.29779,
+      73.674896
+    ],
+    "target_center_cm": [
+      0,
+      0,
+      0
+    ],
+    "source_to_target_axis_signs": [
+      1,
+      -1,
+      1
+    ],
+    "position_formula": "target_cm = 100 * integration_uniform_scale * diag(1,-1,1) * (source_m - source_center_m)",
+    "rotation_formula": "Convert source quaternion to matrix R; R_target = H * R * H where H=diag(1,-1,1), then convert to UE Rotator. Do not negate just one Euler angle.",
+    "handedness_evidence": "Blender main_floor_B bounds center Y=32.30469m matches existing Unreal mesh world center Y=-1615.234375cm at actor scale0.5. Verify recovered conversion with asymmetric calibration mesh.",
+    "mesh_note": "Apply source placement once. If exports bake placements/centering/scale, import at identity; do not apply these transforms again.",
+    "calibration_status": "Existing floor pair verified; recovered CGF calibration pending root editor verification."
+  },
+  "parameters": {
+    "arena_length_cm": 8000.0,
+    "arena_width_cm": 2950.0,
+    "main_floor_core_width_cm": 1800.0,
+    "main_floor_elevation_cm": 0.0,
+    "end_approach_rise_cm": 239.6469,
+    "side_platform_height_cm": 208.33435,
+    "side_platform_radius_cm": 300.0,
+    "pylon_spacing_cm": 1900.0,
+    "ring_outer_diameter_cm": 5167.25,
+    "ring_axial_depth_cm": 370.5625,
+    "ring_radial_thickness_cm": 370.0,
+    "sun_temple_dimensions_cm": [
+      5000.0,
+      3000.0,
+      8000.0
+    ],
+    "narrow_shrine_dimensions_cm": [
+      1600.0,
+      1200.0,
+      4000.0
+    ]
+  },
+  "parameter_evidence": {
+    "arena_length_cm": "Integration reference: existing goals +/-4000cm; source start-ramp centers are 7201.9775cm apart.",
+    "arena_width_cm": "Approximate pad-center span2847.2185cm plus local geometry; replace with final imported bounds.",
+    "main_floor_core_width_cm": "Approximate; individual recovered main-floor B module width is1420.3125cm at integration scale.",
+    "end_approach_rise_cm": "Recovered start-ramp pivot z78.467834 minus center z73.674896, times50; actual walking surface requires geometry bounds.",
+    "side_platform_height_cm": "Recovered luminous pad anchor z77.841583 minus center z73.674896, times50; check actual top surface.",
+    "side_platform_radius_cm": "Provisional estimate pending recovered mesh bounds.",
+    "pylon_spacing_cm": "Nominal control baseline1900 preserves recovered giant serpent-wall body/clump spacing; changes apply spacing deltas to their paired centers. Actual measured giant pair center gaps are1350.824/1356.595cm. Small edge-support heads remain unchanged.",
+    "ring_outer_diameter_cm": "Raw ring_a OBJ X span117.4375m * placementScale0.88 *50; ignores rotation and alternate ring_b extents.",
+    "ring_axial_depth_cm": "Raw ring_a OBJ Y span8.421875m *0.88 *50.",
+    "ring_radial_thickness_cm": "Provisional silhouette estimate; axial depth is independently measured.",
+    "temple_dimensions_cm": "Provisional envelopes only; recovered meshes and placements are authoritative once visually compared."
+  },
+  "source_anchors": [
+    {
+      "name": "rel_eldorado_startramp_clump_group2",
+      "source_layer": "geo_blue_start.lyr",
+      "source_position_m": [
+        514.0,
+        738.36926,
+        78.467827
+      ],
+      "target_position_cm": [
+        1.001,
+        -3603.5735,
+        239.64655
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "Objects/01_eldorado_a_temple/geo_architecture/rel_eldorado_startramp_clump_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group0",
+      "source_layer": "geo_blue_start.lyr",
+      "source_position_m": [
+        533.0,
+        723.5,
+        55.5
+      ],
+      "target_position_cm": [
+        951.001,
+        -2860.1105,
+        -908.7448
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        -0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_curvedpillar_a_group5",
+      "source_layer": "geo_blue_start.lyr",
+      "source_position_m": [
+        533.0,
+        699.84521,
+        55.200001
+      ],
+      "target_position_cm": [
+        951.001,
+        -1677.371,
+        -923.74475
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        -0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_curvedpillar_a_group0",
+      "source_layer": "geo_blue_start.lyr",
+      "source_position_m": [
+        495.0,
+        723.5,
+        55.5
+      ],
+      "target_position_cm": [
+        -948.999,
+        -2860.1105,
+        -908.7448
+      ],
+      "source_rotation_wxyz": [
+        0.70710677,
+        0.0,
+        0.0,
+        0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group4",
+      "source_layer": "geo_blue_start.lyr",
+      "source_position_m": [
+        495.0,
+        699.98999,
+        55.200001
+      ],
+      "target_position_cm": [
+        -948.999,
+        -1684.61,
+        -923.74475
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_relic_spawn_a_group3",
+      "source_layer": "geo_middle.lyr",
+      "source_position_m": [
+        485.47116,
+        666.30713,
+        77.841583
+      ],
+      "target_position_cm": [
+        -1425.441,
+        -0.467,
+        208.33435
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "source_scale_xyz": [
+        0.61330497,
+        0.61330497,
+        0.61330497
+      ],
+      "asset": "Objects/01_eldorado_a_temple/geo_architecture/rel_eldorado_relic_spawn_a_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_main_floor_b_group1",
+      "source_layer": "geo_middle.lyr",
+      "source_position_m": [
+        513.97998,
+        666.29779,
+        73.674896
+      ],
+      "target_position_cm": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "Objects/01_eldorado_a_temple/geo_architecture/rel_eldorado_main_floor_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_relic_spawn_a_group2",
+      "source_layer": "geo_middle.lyr",
+      "source_position_m": [
+        542.41553,
+        666.30713,
+        77.841583
+      ],
+      "target_position_cm": [
+        1421.7775,
+        -0.467,
+        208.33435
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "source_scale_xyz": [
+        0.61330497,
+        0.61330497,
+        0.61330497
+      ],
+      "asset": "Objects/01_eldorado_a_temple/geo_architecture/rel_eldorado_relic_spawn_a_group.cgf"
+    },
+    {
+      "name": "rel_el_arenastatue_a_group5",
+      "source_layer": "geo_middle.lyr",
+      "source_position_m": [
+        513.95532,
+        756.87903,
+        83.04715
+      ],
+      "target_position_cm": [
+        -1.233,
+        -4529.062,
+        468.6127
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        1.1126268e-07
+      ],
+      "source_scale_xyz": [
+        0.73000002,
+        0.73000002,
+        0.73000002
+      ],
+      "asset": "Objects/01_ElDorado_A_Temple/geo_architecture/rel_el_arenastatue_a_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group7",
+      "source_layer": "geo_red_start.lyr",
+      "source_position_m": [
+        495.0,
+        609.0,
+        55.5
+      ],
+      "target_position_cm": [
+        -948.999,
+        2864.8895,
+        -908.7448
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group1",
+      "source_layer": "geo_red_start.lyr",
+      "source_position_m": [
+        533.0,
+        609.0,
+        55.5
+      ],
+      "target_position_cm": [
+        951.001,
+        2864.8895,
+        -908.7448
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        -0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_startramp_clump_group1",
+      "source_layer": "geo_red_start.lyr",
+      "source_position_m": [
+        513.81006,
+        594.32971,
+        78.467834
+      ],
+      "target_position_cm": [
+        -8.496,
+        3598.404,
+        239.6469
+      ],
+      "source_rotation_wxyz": [
+        4.3711388e-08,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "Objects/01_eldorado_a_temple/geo_architecture/rel_eldorado_startramp_clump_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group2",
+      "source_layer": "geo_red_start.lyr",
+      "source_position_m": [
+        533.0,
+        632.90002,
+        55.200001
+      ],
+      "target_position_cm": [
+        951.001,
+        1669.8885,
+        -923.74475
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        -0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_eldorado_snakeheadpillar_b_group5",
+      "source_layer": "geo_red_start.lyr",
+      "source_position_m": [
+        495.0,
+        632.90002,
+        55.200001
+      ],
+      "target_position_cm": [
+        -948.999,
+        1669.8885,
+        -923.74475
+      ],
+      "source_rotation_wxyz": [
+        0.70710683,
+        0.0,
+        0.0,
+        0.70710677
+      ],
+      "source_scale_xyz": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_architecture/rel_el_dorado_snakeheadpillar_b_group.cgf"
+    },
+    {
+      "name": "rel_ed_ring_b_group2",
+      "source_layer": "geo_vista_animation_entities.lyr",
+      "source_position_m": [
+        514.0,
+        666.31,
+        73.105034
+      ],
+      "target_position_cm": [
+        1.001,
+        -0.6105,
+        -28.4931
+      ],
+      "source_rotation_wxyz": [
+        -4.338559e-08,
+        0.13917327,
+        5.3270868e-09,
+        0.99026805
+      ],
+      "source_scale_xyz": [
+        0.88000005,
+        0.88,
+        0.88000005
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_props/rel_ed_ring_b_group.cgf"
+    },
+    {
+      "name": "rel_ed_ring_a_group2",
+      "source_layer": "geo_vista_animation_entities.lyr",
+      "source_position_m": [
+        514.0,
+        666.31,
+        71.901497
+      ],
+      "target_position_cm": [
+        1.001,
+        -0.6105,
+        -88.66995
+      ],
+      "source_rotation_wxyz": [
+        -4.338559e-08,
+        0.13917325,
+        5.3270863e-09,
+        0.99026805
+      ],
+      "source_scale_xyz": [
+        0.88000011,
+        0.88,
+        0.88000011
+      ],
+      "asset": "objects/01_eldorado_a_temple/geo_props/rel_ed_ring_a_group.cgf"
+    },
+    {
+      "name": "rel_el_arenatemple_group1",
+      "source_layer": "geo_vista_mountains.lyr",
+      "source_position_m": [
+        513.96802,
+        479.10562,
+        169.60968
+      ],
+      "target_position_cm": [
+        -0.598,
+        9359.6085,
+        4796.7392
+      ],
+      "source_rotation_wxyz": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "source_scale_xyz": [
+        1.05,
+        1.05,
+        1.05
+      ],
+      "asset": "Objects/01_ElDorado_A_Temple/geo_architecture/rel_el_arenatemple_group.cgf"
+    }
+  ],
+  "cameras": [
+    {
+      "name": "CAM_Ref_01",
+      "status": "Three-landmark initial fit, estimated 78deg lens; pending native render confirmation",
+      "source_position_m": [
+        560,
+        710,
+        115
+      ],
+      "source_look_at_m": [
+        512,
+        650,
+        80
+      ],
+      "location_cm": [
+        1956.757,
+        -2883.705,
+        1270.09
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        -18.92547,
+        133.379419,
+        0
+      ],
+      "horizontal_fov_degrees": 97.942068,
+      "image_width": 2048,
+      "image_height": 918,
+      "aspect_ratio": 2.2309368191721135,
+      "exposure_compensation_ev": 0,
+      "projection": "perspective"
+    },
+    {
+      "name": "CAM_Ref_02",
+      "status": "estimated; requires saved Unreal render comparison",
+      "source_position_m": [
+        510.38,
+        570.29779,
+        98.674896
+      ],
+      "source_look_at_m": [
+        513.97998,
+        674.29779,
+        93.674896
+      ],
+      "location_cm": [
+        415.95,
+        4357.46,
+        978.46
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        -2.7166,
+        -102.2468,
+        0
+      ],
+      "horizontal_fov_degrees": 98.5332,
+      "image_width": 1920,
+      "image_height": 862,
+      "aspect_ratio": 2.2273781902552203,
+      "exposure_compensation_ev": 0,
+      "projection": "perspective"
+    },
+    {
+      "name": "CAM_Ref_03",
+      "status": "estimated; requires saved Unreal render comparison",
+      "source_position_m": [
+        485,
+        687,
+        102
+      ],
+      "source_look_at_m": [
+        465,
+        600,
+        109
+      ],
+      "location_cm": [
+        -965.357,
+        -3920.457,
+        730.868
+      ],
+      "rotation_pitch_yaw_roll_deg": [
+        11.807556,
+        128.392766,
+        0
+      ],
+      "horizontal_fov_degrees": 96.089002,
+      "image_width": 1920,
+      "image_height": 862,
+      "aspect_ratio": 2.2273781902552203,
+      "exposure_compensation_ev": 0,
+      "projection": "perspective"
+    }
+  ],
+  "supplementary_views": [
+    {
+      "name": "CAM_TopDown",
+      "location_cm": [
+        0,
+        0,
+        6000
+      ],
+      "look_at_cm": [
+        0,
+        0,
+        0
+      ],
+      "projection": "perspective",
+      "horizontal_fov_degrees": 82,
+      "image_width": 1600,
+      "image_height": 1200
+    },
+    {
+      "name": "CAM_Player_Center",
+      "location_cm": [
+        0,
+        250,
+        165
+      ],
+      "look_at_cm": [
+        0,
+        3000,
+        165
+      ],
+      "projection": "perspective",
+      "horizontal_fov_degrees": 90,
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "name": "CAM_Player_SidePad",
+      "location_cm": [
+        1275,
+        40,
+        374
+      ],
+      "look_at_cm": [
+        -500,
+        500,
+        165
+      ],
+      "horizontal_fov_degrees": 90,
+      "image_width": 1920,
+      "image_height": 1080
+    },
+    {
+      "name": "CAM_Player_ShrineEnd",
+      "location_cm": [
+        450,
+        -3000,
+        327.303
+      ],
+      "look_at_cm": [
+        0,
+        2000,
+        165
+      ],
+      "horizontal_fov_degrees": 90,
+      "image_width": 1920,
+      "image_height": 1080
+    }
+  ],
+  "camera_notes": [
+    "Reference camera transforms are original estimates, not recovered cinematic camera identities.",
+    "Source cinematics.lyr includes gameplay/celebration cameras; none has been identified as these three supplied images.",
+    "Use one shared lighting setup. Exposure compensation defaults0 for all views and must be logged if changed.",
+    "Sun fa\u00e7ade corresponds provisionally to source negativeY / target positiveY; narrow shrine corresponds to source positiveY / target negativeY."
+  ],
+  "sources": [
+    "Saved/Logs/dorado-reconstruction-20261030/source-material-mapping.json",
+    "Saved/Logs/dorado-reconstruction-20261030/source-blender-inventory.json",
+    "Saved/Logs/dorado-reconstruction-20261030/map-baseline.json",
+    "SourceArt/Dorado/Calibration/Ring/rel_ed_ring_a_group.obj"
+  ],
+  "seed": 20261030
+}

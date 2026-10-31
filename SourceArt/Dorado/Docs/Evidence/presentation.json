@@ -1,0 +1,35 @@
+{
+  "sun_lux": 85000,
+  "sun_color_rgb": [
+    255,
+    244,
+    228
+  ],
+  "sun_rotation_pitch_yaw_roll": [
+    -35,
+    -20,
+    0
+  ],
+  "exposure_EV100": 11.0,
+  "sky_intensity": 2.5,
+  "bloom": 0.35,
+  "white_balance_K": 6500,
+  "fog_density": 0.003,
+  "fog_falloff": 0.035,
+  "directional_fog_linear": [
+    0.045,
+    0.018,
+    0.015
+  ],
+  "directional_fog_exponent": 4,
+  "rayleigh_scale": 0.5,
+  "mie_scale": 0.2,
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "scope": "Warm daylight and cool base atmosphere; coherent image-inferred lighting across all cameras. Color uses explicit RGB keywords to avoid native BGRA constructor ordering.",
+  "sky_color_rgb": [
+    160,
+    200,
+    255
+  ],
+  "sky_color_verified_from": "delivery-after-reopen.json"
+}

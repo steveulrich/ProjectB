@@ -1,0 +1,342 @@
+{
+  "generated_utc": "2026-10-30T22:15:22.885820+00:00",
+  "engine": "5.8.1-0+UE5",
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado.L_Dorado",
+  "scope": "Read-only saved-asset, dependency, transform, camera, and sampled collision/navigation checks.",
+  "not_proven": [
+    "Visual match",
+    "Character traversal",
+    "Ball physics",
+    "Runtime cost",
+    "Migration",
+    "Close/reopen success",
+    "Physical input"
+  ],
+  "errors": [],
+  "warnings": [
+    {
+      "kind": "inherited_stale_external_dependency",
+      "path": "/Game/System/FrontEnd/Maps/L_LyraFrontEnd_BuiltData",
+      "baseline_dependency_chain": [
+        "/BreakawayCore/Maps/L_BW_Dorado",
+        "/BreakawayCore/GameModes/B_BWayGameMode_Default",
+        "/BreakawayCore/GameModes/B_BWayGameMode",
+        "/BreakawayCore/GameModes/BP_BW_GameState",
+        "/Game/System/FrontEnd/Maps/L_LyraFrontEnd",
+        "/Game/System/FrontEnd/Maps/L_LyraFrontEnd_BuiltData"
+      ],
+      "provenance": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\inherited-frontend-builddata.json",
+      "classification": "Inherited stale external frontend lighting-data reference; unchanged source assets match Git HEAD LFS payload hashes.",
+      "action": "Reference retained. Repair belongs to the existing frontend content; migration/packaging must still account for it."
+    },
+    {
+      "kind": "centerline_collision_diagnostic",
+      "sample": {
+        "xy_cm": [
+          0,
+          -2000
+        ],
+        "hit": true,
+        "location_cm": [
+          4.937632276380555e-07,
+          -2000.000000201288,
+          97.80809788818326
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "actor": "D_rel_ed_block_clump_d_group2_A5C77A90",
+        "expected_z_cm": 0,
+        "height_error_cm": 97.80809788818326,
+        "height_within_tolerance": false,
+        "upward_surface": true
+      },
+      "note": "Centerline includes cover blocks and exact mesh seams. Retained diagnostic; actual capsule/Relic movement decides seam behavior."
+    },
+    {
+      "kind": "centerline_collision_diagnostic",
+      "sample": {
+        "xy_cm": [
+          0,
+          2000
+        ],
+        "hit": true,
+        "location_cm": [
+          -7.78195271777804e-07,
+          1999.9999995727517,
+          95.82409788818305
+        ],
+        "normal": [
+          0.0,
+          0.0,
+          1.0
+        ],
+        "actor": "D_rel_ed_block_clump_d_group1_5C84F46D",
+        "expected_z_cm": 0,
+        "height_error_cm": 95.82409788818305,
+        "height_within_tolerance": false,
+        "upward_surface": true
+      },
+      "note": "Centerline includes cover blocks and exact mesh seams. Retained diagnostic; actual capsule/Relic movement decides seam behavior."
+    }
+  ],
+  "dirty_owned_packages": [],
+  "calibration": {
+    "passed": true,
+    "actual": {
+      "min": [
+        -25.00001335144043,
+        -150.0,
+        -75.0
+      ],
+      "max": [
+        75.00000762939453,
+        50.000003814697266,
+        225.0
+      ]
+    },
+    "expected": {
+      "min": [
+        -25,
+        -150,
+        -75
+      ],
+      "max": [
+        75,
+        50,
+        225
+      ]
+    },
+    "max_error_cm": 1.33514404296875e-05,
+    "note": "Checks numerical scale/axis bounds only; visual face, UV, and normal checks remain required."
+  },
+  "protected_gameplay": {
+    "checked": [
+      "LyraPlayerStart2",
+      "LyraPlayerStart3",
+      "LyraPlayerStart4",
+      "LyraPlayerStart5",
+      "LyraPlayerStart6",
+      "LyraPlayerStart7",
+      "LyraPlayerStart8",
+      "LyraPlayerStart9",
+      "LyraPlayerStart10",
+      "LyraPlayerStart11",
+      "LyraPlayerStart12",
+      "LyraPlayerStart13",
+      "NavMeshBoundsVolume",
+      "SP_Relic",
+      "SP_GoalTeam2",
+      "SP_GoalTeam1",
+      "BaseZone_Team1",
+      "BaseZone_Team2"
+    ],
+    "note": "Class and location comparison only; not full gameplay property or runtime validation."
+  },
+  "structural_status": "PASSED_SAMPLED_STRUCTURAL_SCOPE_ONLY",
+  "ready_to_integrate": false,
+  "ready_to_integrate_reason": "This script cannot satisfy visual, traversal, ball, reopening, or migration requirements.",
+  "source_report": {
+    "path": "Saved/Logs/dorado-reconstruction-20261030/validation-structural.json",
+    "bytes": 327019,
+    "sha256": "4fffd4b12361e84fec81ed6363e48f180e2540435a8a61843ed12478df45003a"
+  },
+  "asset_counts": {
+    "World": 1,
+    "Material": 7,
+    "MaterialInstanceConstant": 133,
+    "StaticMesh": 103,
+    "Texture2D": 313
+  },
+  "saved_asset_count": 557,
+  "navigation_paths": [
+    {
+      "route": "main_court_length",
+      "requested_start_cm": [
+        450,
+        -2000,
+        10
+      ],
+      "requested_end_cm": [
+        450,
+        2000,
+        10
+      ],
+      "projected_start_cm": [
+        450.0,
+        -2000.0,
+        19.210526315789473
+      ],
+      "start_projection_error_cm": 9.210526315789473,
+      "projected_end_cm": [
+        450.0,
+        2000.0,
+        10.0
+      ],
+      "end_projection_error_cm": 0.0,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 4143.96038066017,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    },
+    {
+      "route": "main_court_width",
+      "requested_start_cm": [
+        -600,
+        500,
+        10
+      ],
+      "requested_end_cm": [
+        600,
+        500,
+        10
+      ],
+      "projected_start_cm": [
+        -600.0,
+        500.0,
+        16.392795061836985
+      ],
+      "start_projection_error_cm": 6.392795061836985,
+      "projected_end_cm": [
+        600.0,
+        500.0,
+        14.055711256521601
+      ],
+      "end_projection_error_cm": 4.055711256521601,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 1200.0022758148057,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    },
+    {
+      "route": "east_south_stairs",
+      "requested_start_cm": [
+        1275,
+        -1050,
+        10
+      ],
+      "requested_end_cm": [
+        1275,
+        -50,
+        219
+      ],
+      "projected_start_cm": [
+        1275.0,
+        -1050.0,
+        10.732265446224256
+      ],
+      "start_projection_error_cm": 0.7322654462242557,
+      "projected_end_cm": [
+        1275.0,
+        -50.0,
+        223.78947368421052
+      ],
+      "end_projection_error_cm": 4.78947368421052,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 1068.932855538777,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    },
+    {
+      "route": "east_north_stairs",
+      "requested_start_cm": [
+        1275,
+        1050,
+        10
+      ],
+      "requested_end_cm": [
+        1275,
+        50,
+        219
+      ],
+      "projected_start_cm": [
+        1275.0,
+        1050.0,
+        10.0
+      ],
+      "start_projection_error_cm": 0.0,
+      "projected_end_cm": [
+        1275.0,
+        50.0,
+        223.78947368421052
+      ],
+      "end_projection_error_cm": 4.78947368421052,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 1068.926659372432,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    },
+    {
+      "route": "west_south_stairs",
+      "requested_start_cm": [
+        -1275,
+        -1050,
+        10
+      ],
+      "requested_end_cm": [
+        -1275,
+        -50,
+        219
+      ],
+      "projected_start_cm": [
+        -1275.0,
+        -1050.0,
+        10.0
+      ],
+      "start_projection_error_cm": 0.0,
+      "projected_end_cm": [
+        -1275.0,
+        -50.0,
+        223.78947368421052
+      ],
+      "end_projection_error_cm": 4.78947368421052,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 1068.4600757858636,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    },
+    {
+      "route": "west_north_stairs",
+      "requested_start_cm": [
+        -1275,
+        1050,
+        10
+      ],
+      "requested_end_cm": [
+        -1275,
+        50,
+        219
+      ],
+      "projected_start_cm": [
+        -1275.0,
+        1050.0,
+        10.0
+      ],
+      "start_projection_error_cm": 0.0,
+      "projected_end_cm": [
+        -1275.0,
+        50.0,
+        223.78947368421052
+      ],
+      "end_projection_error_cm": 4.78947368421052,
+      "valid": true,
+      "partial": false,
+      "path_length_cm": 1068.4600757858636,
+      "start_error_cm": 0.0,
+      "end_error_cm": 0.0,
+      "passed": true
+    }
+  ]
+}

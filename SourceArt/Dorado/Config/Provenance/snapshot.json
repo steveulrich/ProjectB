@@ -1,0 +1,46 @@
+{
+  "scope": "Archived starting inputs and native registries; not a new validation run. No PIE user baseline.",
+  "source_directory": "Saved/Logs/dorado-reconstruction-20261030",
+  "files": {
+    "source-material-mapping.json": {
+      "bytes": 2116327,
+      "sha256": "e4bac307d545bb9a73614dd1817f0e4b35b6a8e7931fea14c16ff6a47a1f5029"
+    },
+    "source-effects-scope.json": {
+      "bytes": 198470,
+      "sha256": "8a31fc1bbcf15bade4c87845e3b8d24df34500c55b26cce098f971dbff1466d1"
+    },
+    "map-baseline.json": {
+      "bytes": 54419,
+      "sha256": "43896c08a638a50987ba0a7b3bdb1068fb3cb54d47a8f3ce21f46d4b86c456cd"
+    },
+    "inherited-frontend-builddata.json": {
+      "bytes": 1540,
+      "sha256": "d8be432d7e4bcea4ac0049ef3671ba12b24e086df9e7385280263280c20557ff"
+    },
+    "material-import.json": {
+      "bytes": 63463,
+      "sha256": "b9626f08da271b402753c1f85e94e22120a6d209baa664ac8d38e82d61cd51c9"
+    },
+    "geometry-import.json": {
+      "bytes": 64285,
+      "sha256": "fc076ace442e88f906058f101e92ff705017e7ac40d9995c7086581f0584b91f"
+    },
+    "scene-assembly.json": {
+      "bytes": 47139,
+      "sha256": "0976f53cd5d984697fcf09d8d400893a500deb52c3852860d6e5a4a6ec04e4ac"
+    },
+    "scene-assembly-energy.json": {
+      "bytes": 1008,
+      "sha256": "c46a7d4dd5f31195f61198915ef79409ec5b97c844226cb5ff46d4d84c0c76e1"
+    },
+    "geometry-shader-filter-changes.json": {
+      "bytes": 6211,
+      "sha256": "a28372745fa283b3f8c165f46d0b913e823bc3cfba01e37497508d02d4cbad7c"
+    },
+    "nanite-backdrop-configuration.json": {
+      "bytes": 17527,
+      "sha256": "957aab4a58070927158ce9e70edb9136ab15ae9b8836bc089ee2ffbe825cf536"
+    }
+  }
+}

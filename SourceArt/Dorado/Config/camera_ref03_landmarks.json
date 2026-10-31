@@ -1,0 +1,78 @@
+{
+  "status": "Provisional source/ray correspondence; island identification uncertain.",
+  "image_width": 1920,
+  "image_height": 862,
+  "reference": "REF_03",
+  "baseline_capture": "Saved/Logs/dorado-reconstruction-20261030/Renders/iteration01/CAM_Ref_03.png",
+  "initial_camera_cm": [
+    -1449,
+    -4000,
+    1500
+  ],
+  "initial_yaw_pitch_degrees": [
+    130,
+    5
+  ],
+  "initial_horizontal_fov_degrees": 100,
+  "landmarks": [
+    {
+      "name": "Sun disc",
+      "world_cm": [
+        3,
+        5950,
+        961
+      ],
+      "reference_pixel": [
+        95,
+        585
+      ],
+      "evidence": "Recovered luminous disc position."
+    },
+    {
+      "name": "Green pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        399,
+        761
+      ],
+      "evidence": "Visual pad center established from REF01 baseline rays."
+    },
+    {
+      "name": "Lower visible ring insert",
+      "world_cm": [
+        -2245.3978672110998,
+        0.0,
+        1147.1657310059272
+      ],
+      "reference_pixel": [
+        630,
+        455
+      ],
+      "evidence": "Current REF03 visible insert ray intersected ringY0; layer thickness uncertain."
+    },
+    {
+      "name": "Large island left rim",
+      "world_cm": [
+        -13829.87338448371,
+        12105.36,
+        1593.0493050619984
+      ],
+      "reference_pixel": [
+        976,
+        574
+      ],
+      "evidence": "Approximate shared island silhouette; depth uses BasicEntity36 center plane; needs visual confirmation."
+    }
+  ],
+  "assumptions": [
+    "Perspective camera without distortion",
+    "Zero roll",
+    "Shared1920x862 aspect",
+    "Ring rays useY0plane; waterfall island rim uses approximate centerdepth",
+    "Manual correspondence; inspect island shape and upper ring before acceptance"
+  ]
+}

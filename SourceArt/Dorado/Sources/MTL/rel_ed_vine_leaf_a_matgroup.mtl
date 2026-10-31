@@ -1,0 +1,19 @@
+<Material MtlFlags="2621696" vertModifType="0">
+ <SubMaterials>
+  <Material Name="Rel_ed_vine_leaf_a" MtlFlags="2621568" Shader="Vegetation" GenMask="2404800000" StringGenMask="%LEAVES%NORMAL_MAP%TEMP_VEGETATION%VERTCOLORS" SurfaceType="" Diffuse="1,1,1" Specular="0.019382363,0.019382363,0.019382363" Emissive="0,0,0" Opacity="1" Shininess="255" AlphaTest="0.63" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Diffuse" File="Objects/01_ElDorado_A_Temple/Vegetation/Vines/textures/rel_ed_vine_leafs_diffa.tif"/>
+    <Texture Map="Bumpmap" File="Objects/01_ElDorado_A_Temple/Vegetation/Vines/textures/rel_ed_vine_leafs_ddna.tif"/>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams bendDetailLeafAmplitude="0.2" bendDetailFrequency="1" bendDetailBranchAmplitude="-0.5" BlendTerrainCol="0" VertexAlphaBlendFactor="1" TransmittanceColor="1,0.59061897,0.59061897" CapOpacityFalloff="1" AllowDeferredDecals="1" BlendMaskTiling="1" BackViewDep="0.5" BackDiffuseMultiplier="0.85000002" BlendTerrainColDist="0.5" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+  <Material Name="leaf_proxy" MtlFlags="2621568" Shader="Illum" GenMask="100000000001" StringGenMask="%ALLOW_SILHOUETTE_POM%SUBSURFACE_SCATTERING" SurfaceType="" Diffuse="0.5,0.5,0.5" Specular="0.5,0.5,0.5" Emissive="0,0,0" Opacity="1" Shininess="10" vertModifType="0" LayerAct="1">
+   <Textures>
+    <Texture Map="Environment" File="nearest_cubemap" TexType="7"/>
+   </Textures>
+   <PublicParams OccluderFadingFactor="0" OccluderMaxFadingFactor="1" SSSIndex="0" UseGlobalTranspZPrePass="0" GlowMaskAmount="1" IndirectColor="0.25,0.25,0.25"/>
+  </Material>
+ </SubMaterials>
+ <PublicParams OccluderFadingFactor="0.34333336" OccluderMaxFadingFactor="1" SSSIndex="0" UseGlobalTranspZPrePass="0" GlowMaskAmount="1" IndirectColor="0.25,0.25,0.25"/>
+</Material>

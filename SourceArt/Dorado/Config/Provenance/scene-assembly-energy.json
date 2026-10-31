@@ -1,0 +1,37 @@
+{
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "manifest": "energy_manifest.json",
+  "placed": 4,
+  "failed": 0,
+  "actors": [
+    {
+      "label": "D_D_Dorado_RingEnergy_Gap_01_2A4CC57C",
+      "source_id": "{2A4CC57C-030A-5779-8B98-C4D6C9F5A5C2}",
+      "collision": false
+    },
+    {
+      "label": "D_D_Dorado_RingEnergy_Gap_02_39FC0259",
+      "source_id": "{39FC0259-586A-54EC-A16F-15E0F298C556}",
+      "collision": false
+    },
+    {
+      "label": "D_D_Dorado_RingEnergy_Gap_03_25DE4310",
+      "source_id": "{25DE4310-A84B-559C-9E93-B6486FBA5F7F}",
+      "collision": false
+    },
+    {
+      "label": "D_D_Dorado_RingEnergy_Gap_04_104E4DBC",
+      "source_id": "{104E4DBC-758A-59DC-947D-E82A396AEF9A}",
+      "collision": false
+    }
+  ],
+  "errors": [],
+  "reconciliation": {
+    "status": "complete",
+    "candidates": [],
+    "deleted": [],
+    "preserved_unowned": [],
+    "already_absent": []
+  },
+  "reconciliation_pending_labels": []
+}

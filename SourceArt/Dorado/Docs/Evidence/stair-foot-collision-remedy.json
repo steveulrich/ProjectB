@@ -1,0 +1,31 @@
+{
+  "status": "source cause confirmed; native remediation and runtime retest owned by root",
+  "scope": "Offline source triangles and existing native traces. No editor mutation, no helper ramps, no geometry changes.",
+  "cause": "Broad center_point collision exclusion disables the four shallow visible floor tiles at platform stair feet. Stairs continue below the visible floor and terminate before the surrounding floor resumes.",
+  "center_point_remedy": {
+    "asset": "SM_Dorado_rel_el_dorado_center_point_a_group",
+    "triangles_per_instance": 171,
+    "instance_ids": ["{4923B404-AE82-49EC-8F64-9F4A7B534E9C}", "{E73B324D-3041-49EA-ACB0-8BC3CF6F5487}", "{C8452CBD-99D8-4D6C-A357-02C24A74BD96}", "{F3BFD8BD-6D03-455D-928E-DDF7910A5109}"],
+    "world_z_span_including_underside_cm": 6.928068,
+    "observed_restored_lane_top_z_range_cm": [-2.29364, 1.99634],
+    "change": "Remove center_point from the decoration exclusion. Existing architecture role then enables exact source triangle collision for all four instances.",
+    "offline_check": "Eight lanes at X +/-1258 and +/-1275, Y +/-700..1125 every 1cm: before 58..108 missing samples per lane, after zero. All actual stair geometry stays unchanged."
+  },
+  "additional_ground_design_fill": {
+    "asset": "SM_Dorado_rel_el_dorado_groud_design_group",
+    "triangles_per_instance": 486,
+    "instance_ids": ["{921ACE50-7496-4844-8DF6-73ED0CB1C9F5}", "{8D53998E-01AD-4260-B21D-1F346AFCC5A0}"],
+    "world_z_range_cm": [-17.33815, 8.35765],
+    "finding": "Opaque visible floor strips have no backing within 10 cm. Several outer strips at |Y| 2351..2686 have sampled unsupported widths of 67..98 cm near |X| 620..720, larger than the actual ball diameter of 30.6692 cm.",
+    "recommended_change": "Remove groud_design from the decoration exclusion and retain its exact source triangle collision, preserving visible relief and exposed edges.",
+    "suggested_native_xy_probes_cm": [[670,2500],[-670,2500],[670,-2500],[-670,-2500],[240,2360],[-240,2360],[240,-2360],[-240,-2360]]
+  },
+  "other_exclusions": {
+    "primitive_plane": "Two 395 cm square floor-logo planes at Z 0.21285 cm: 361 interior backing samples each, zero misses; underlying floor B Z 0.00195..0.00246 cm. Keep noncolliding.",
+    "banner01": "Four vertical banners; minimum world Z 344.5 cm. No walking-floor fill.",
+    "relic_deco": "No current mesh asset ID matches this substring.",
+    "relic_snake": "Two 208-triangle opaque central emblem halves; full mesh world Z -11.5482..1.82155 cm. All 136 upward polygon centroids have backing floor, but its surface is about 10.81..11.07 cm below the visible emblem. No void demonstrated. Exact triangle collision is a possible separate visual-contact correction."
+  },
+  "evidence": ["stair-foot-source-inspection.json", "excluded-floor-support-audit.json"],
+  "limitations": "Source BVH probes establish geometry/policy mismatch, not native contact behavior. Verify native rays, real-character traversal, and the actual Relic after scoped restoration."
+}

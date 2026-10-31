@@ -1,0 +1,258 @@
+<ObjectLayer>
+ <Layer Name="VFX_D" GUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Exportable="1" ExportLayerPak="1" DefaultLoaded="1" HavePhysics="1" IsDefaultColor="0" Specs="-17" Color="1044720">
+  <LayerObjects>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{C59BFB00-3F73-42F5-9382-940536B8C83C}" Name="sm_waterfall_long_distance_mist_back24" HideOrder="0" Pos="-1977.2963,2392.8569,1715.6971" FloorNumber="-1" Rotate="-0.3907313,0,0,0.92050481" Scale="1.2209193,1.4184207,1.8134233" ColorRGB="65535" Material="objects/01_eldorado_a_temple/waterfalls/waterfall_distance_mist_large_2_mat_matgroup_opaque" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{738B9001-B45F-4910-B617-7B9267AF6553}" Name="sm_waterfall_long_distance_mist_back18" HideOrder="0" Pos="289.50259,807.86823,-121.61226" FloorNumber="-1" Rotate="-0.33380699,0,0,0.94264144" Scale="0.95770365,0.7565859,0.96728051" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{918D680A-8B6B-499B-955C-69CB9066D0DF}" Name="sm_waterfall_single_base10" HideOrder="0" Pos="1264.0199,543.37445,106.91286" FloorNumber="-1" Rotate="0.87881702,0,0,0.47715899" Scale="0.63346761,0.63346761,0.63346779" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{5D2A2B0D-DABD-43D4-A7CF-CC2623A55405}" Name="VFX_Environment_Butterflies_Area" HideOrder="0" Pos="512.20404,687.62799,73.663948" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Area" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{A63F1E18-FB71-4D9B-8A18-8D9DBC0EA5D7}" Name="VFX_Environment_Flies" HideOrder="0" Pos="500.39182,621.20172,73.850151" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{2BC22C1F-B96F-4830-AF97-59FDB90B97A6}" Name="sm_waterfall_long_distance_mist_back21" HideOrder="0" Pos="-303.7496,663.2865,-34.644878" FloorNumber="-1" Rotate="0.52249867,0,0,-0.85264009" Scale="0.7624073,0.60230178,0.77003109" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{DBC3A121-2F66-4381-8F3D-ED4F8A4A1093}" Name="sm_waterfall_long_distance_mist_back22" HideOrder="0" Pos="-214.56619,797.69861,-30.450008" FloorNumber="-1" Rotate="0.65605915,0,0,-0.75470948" Scale="0.51843697,0.60230178,0.77003109" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{16BF5622-EB20-41BF-ABF3-D9825989949D}" Name="sm_waterfall_long_distance_mist_back14" HideOrder="0" Pos="192.57372,810.93817,12.808887" FloorNumber="-1" Rotate="-0.4771589,0,0,0.87881702" Scale="0.22909774,0.18098721,0.23138867" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{960A1132-6C65-4335-B8D6-C60BAA7BC18F}" Name="sm_waterfall_long_distance_mist_back4" HideOrder="0" Pos="1256.8811,557.99872,73.970901" FloorNumber="-1" Rotate="0.6755901,0,0,0.73727739" Scale="0.31230456,0.3953222,0.40326813" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{57E31C32-14A5-4BA5-A78E-409FDE8518AF}" Name="sm_waterfall_single_base20" HideOrder="0" Pos="291.6673,941.47461,230.59331" FloorNumber="-1" Rotate="0.095845513,0,0,0.9953962" Scale="0.69810724,0.69810724,0.69810736" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{24AA6A37-2BEF-4830-9175-42E77C0F0F70}" Name="VFX_Environment_Butterflies_Local" HideOrder="0" Pos="535.57855,651.06964,73.858299" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{EE93D937-770E-4298-B946-24DD70B6BB82}" Name="sm_waterfall_single_base26" HideOrder="0" Pos="-327.23822,690.32135,-34.45219" FloorNumber="-1" Rotate="-0.39073133,0,0,0.92050475" Scale="1.4171574,1.4171574,1.417158" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{5F2DFB44-08EC-4D5F-B959-70AB975D7469}" Name="sm_waterfall_single_base30" HideOrder="0" Pos="-2876.2131,1852.8287,1940.4557" FloorNumber="-1" Rotate="-0.43837139,0,0,0.89879394" Scale="4.4053745,4.4053745,6.125236" ColorRGB="16776960" Material="objects/01_eldorado_a_temple/waterfalls/waterfall_eldorado_long_distance_base_mat_matgroup_opaque_dark" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{02CB9A52-7A01-4097-B792-BFEA39FB9AD1}" Name="VFX_Environment_Flies" HideOrder="0" Pos="527.11639,701.97601,73.850151" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{896F7358-FFA1-49B6-9AF7-A334012A350C}" Name="VFX_Environment_Butterflies_Local" HideOrder="0" Pos="498.33322,700.09113,73.858299" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{BF41015D-977D-4668-A6B6-2E2A5CEB70BB}" Name="VFX_Environment_Butterflies_Local" HideOrder="0" Pos="501.0596,636.08258,73.858299" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{9D961A5F-4D30-4C76-B181-D761BBEE2A7A}" Name="VFX_Environment_Flies" HideOrder="0" Pos="523.31409,745.23639,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{E1559B66-4D72-4B81-B651-90F715916DE5}" Name="sm_waterfall_single_base16" HideOrder="0" Pos="189.644,802.60889,70.836502" FloorNumber="-1" Rotate="-0.29237193,0,0,0.95630467" Scale="0.69810724,0.69810724,0.69810736" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{C762E56A-5ED8-49F0-8DEB-EED76114716A}" Name="sm_waterfall_single_base23" HideOrder="0" Pos="264.87537,838.29431,-102.89529" FloorNumber="-1" Rotate="-0.30901724,0,0,0.95105642" Scale="1.7801733,1.7801733,1.7801738" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{CD75996C-D37D-4C21-A651-3159FF9007A1}" Name="VFX_Environment_Flies" HideOrder="0" Pos="511.12665,751.08154,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{BF82DA6C-D042-4AFE-B64A-32F9D46FFE73}" Name="sm_waterfall_single_base29" HideOrder="0" Pos="-2137.5129,2423.9849,1792.4408" FloorNumber="-1" Rotate="0.53729975,0,0,-0.8433913" Scale="4.0048862,6.6748104,6.6748142" ColorRGB="65535" Material="objects/01_eldorado_a_temple/waterfalls/waterfall_eldorado_long_distance_base_mat_matgroup_opaque" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{9CA90E71-1C63-41F0-97C8-4C1C3381715A}" Name="sm_waterfall_single_base12" HideOrder="0" Pos="1283.3055,625.81342,-11.231901" FloorNumber="-1" Rotate="0.82412606,0,0,0.56640643" Scale="0.44976202,0.44976202,0.44976217" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{D5215A76-310F-4609-950D-748E8D609077}" Name="sm_waterfall_long_distance_mist_back25" HideOrder="0" Pos="-2774.6919,1769.5468,1940.2631" FloorNumber="-1" Rotate="0.56640637,0,0,-0.82412612" Scale="1.6116132,1.872315,2.3937187" ColorRGB="16776960" Material="objects/01_eldorado_a_temple/waterfalls/waterfall_distance_mist_large_2_mat_matgroup_opaque" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{B587FC7C-0FC2-418C-8B2C-9400B42143C5}" Name="sm_waterfall_long_distance_mist_back1" HideOrder="0" Pos="1536.3708,817.0296,526.44745" FloorNumber="-1" Rotate="0.81411546,0,0,0.58070302" Scale="0.71080118,0.97370034,0.97370005" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{44D6AB82-8D8F-42B8-8186-938604E73FA6}" Name="sm_waterfall_single_base5" HideOrder="0" Pos="1568.2544,810.28522,572.67957" FloorNumber="-1" Rotate="0.81411541,0,0,0.58070314" Scale="1.292791,1.292791,1.2927914" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{7A5B5885-3122-4960-998A-C802A498CC63}" Name="sm_waterfall_long_distance_mist_back19" HideOrder="0" Parent="{F8CADFDB-7F76-429F-984D-60E0E8D8D03F}" Pos="6.5332031,-480.44519,-178.88464" FloorNumber="-1" Rotate="0.95371699,-0,0,-0.30070573" Scale="0.29670039,0.37557009,0.37932569" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{89D01E88-E69E-45CF-8253-EE05B448E130}" Name="VFX_Environment_Butterflies_Local" HideOrder="0" Pos="499.88904,669.85724,73.858299" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{C04CC792-8527-4CF7-B67D-C5E0C6DF0E8B}" Name="VFX_Environment_Motes" HideOrder="0" Pos="513.84918,666.71948,73.850151" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Environment.Motes" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{B98E3B9E-AD34-4AFD-8B42-2CA8D61A0C1C}" Name="sm_waterfall_long_distance_mist_back16" HideOrder="0" Pos="289.62802,922.11774,225.02257" FloorNumber="-1" Rotate="0.069756344,0,0,0.99756408" Scale="0.29670036,0.37557006,0.37932569" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{963B14A0-43CA-459A-AE79-E7FF2B2DD0FB}" Name="VFX_Environment_Flies" HideOrder="0" Pos="501.13583,710.42432,73.850151" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{AD2554A4-F82B-4A52-90A2-390B7C35DDFA}" Name="VFX_Environment_Flies" HideOrder="0" Pos="503.22104,742.64911,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{9F3810B3-6327-4831-95BF-91909C73866A}" Name="sm_waterfall_long_distance_mist_back12" HideOrder="0" Pos="201.31575,785.84625,70.643814" FloorNumber="-1" Rotate="-0.31730479,0,0,0.94832361" Scale="0.37557006,0.29670036,0.37932569" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{599A27BF-4EE1-4236-B5E5-AA84BD3AA61F}" Name="VFX_Environment_Flies" HideOrder="0" Pos="502.94073,597.91071,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{909EEDC3-5721-42E4-8142-3375F74D79AE}" Name="VFX_Environment_Butterflies_Local" HideOrder="0" Pos="506.68625,688.9574,73.858299" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="65535" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Butterflies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{C452F0CD-F912-4388-8352-42E2C0A748BB}" Name="sm_waterfall_long_distance_mist_back2" HideOrder="0" Pos="1392.4652,461.69382,361.23489" FloorNumber="-1" Rotate="0.79863548,0,0,0.6018151" Scale="0.54944509,0.69550008,0.70245498" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{70306FE2-63B0-4792-9856-10EFD6B837D6}" Name="VFX_Environment_Ambient_Trails" HideOrder="0" Pos="506.53647,665.06543,73.736038" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Environment.Ambient_Trails" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{D3A43CE3-0CA9-4FC5-A54A-C36899B62BD2}" Name="VFX_Environment_Flies" HideOrder="0" Pos="511.89227,582.02112,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{DB0F61E3-0CCB-4A77-9B71-5CC9F946F34B}" Name="VFX_Environment_Flies" HideOrder="0" Pos="524.75452,592.63684,78.07769" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{D4BFAAE5-3C32-43B4-87A8-57CE53CF0644}" Name="sm_waterfall_long_distance_mist_back20" HideOrder="0" Pos="134.8903,746.31641,-114.9212" FloorNumber="-1" Rotate="-0.31730479,0,0,0.94832361" Scale="0.37557006,0.29670036,0.37932569" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{15C015E6-8705-4007-BCF4-23E9799600AD}" Name="sm_waterfall_single_base6" HideOrder="0" Pos="1414.894,456.56961,437.28152" FloorNumber="-1" Rotate="0.81411541,0,0,0.58070314" Scale="1.292791,1.292791,1.2927914" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{7474C6EC-AE37-4CBF-86D5-2ADB1FF5D90D}" Name="sm_waterfall_single_base15" HideOrder="0" Pos="1265.5173,1037.6582,14.066111" FloorNumber="-1" Rotate="0.19080876,0,0,0.98162723" Scale="0.72411692,0.72411692,0.72411704" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{31FFB0EF-856F-466F-82D3-5A5F3D2C8F74}" Name="sm_waterfall_long_distance_mist_back8" HideOrder="0" Pos="1274.9558,632.65527,-14.030282" FloorNumber="-1" Rotate="0.6755901,0,0,0.73727739" Scale="0.21861319,0.27672553,0.28228772" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="ParticleEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{43BE6EF5-0831-46A6-9039-68A26C53EE36}" Name="VFX_Environment_Flies" HideOrder="0" Pos="522.8042,644.74438,73.850151" FloorNumber="-1" Rotate="1,0,0,0" ColorRGB="16776960" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="ParticleEffect">
+    <Properties bActive="1" esAttachForm="" esAttachType="" Comment="" bCountPerUnit="0" CountScale="1" NetworkSync="0" ParticleEffect="lvl_eldorado_seattle_b.Insects.Flies_Local" bPrime="1" PulsePeriod="0" bRegisterByBBox="0" Scale="1" soclasses_SmartObjectClass="" SpeedScale="1" Strength="-1" TimeScale="1">
+     <Audio bEnableAudio="0" audioRTPCRtpc="particlefx"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{51FBBDF5-F6F5-4A15-9CE8-C210EC03FA49}" Name="sm_waterfall_single_base18" HideOrder="0" Pos="171.82196,825.10016,13.001575" FloorNumber="-1" Rotate="-0.4539907,0,0,0.89100641" Scale="0.69810724,0.69810724,0.69810736" ColorRGB="65535" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_long_distance_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+   <Object Type="GeomEntity" Layer="VFX_D" LayerGUID="{8309CCDB-DF29-421D-9CB5-4A410FC92AFC}" Id="{66E8E1F7-5C42-473A-AF71-FCC431345CD8}" Name="sm_waterfall_long_distance_mist_back11" HideOrder="0" Pos="1259.1013,1004.8525,15.075481" FloorNumber="-1" Rotate="0.6755901,0,0,0.73727739" Scale="0.27031082,0.34216556,0.34904316" ColorRGB="16776960" Geometry="objects/01_ElDorado_A_Temple/waterfalls/sm_waterfall_distance_mist_large_2_group.cgf" OutdoorOnly="0" CastShadow="1" CastShadowMinspec="1" LodRatio="100" ViewDistanceMultiplier="1" HiddenInGame="0" RecvWind="0" RenderNearest="0" NoStaticDecals="0" CreatedThroughPool="0" ObstructionMultiplier="1" EntityClass="GeomEntity">
+    <Properties esFaction="">
+     <Health bInvulnerable="0" MaxHealth="500" bOnlyEnemyFire="1"/>
+     <RenderProxyOptions bAnimateOffScreenShadow="0"/>
+    </Properties>
+   </Object>
+  </LayerObjects>
+ </Layer>
+</ObjectLayer>

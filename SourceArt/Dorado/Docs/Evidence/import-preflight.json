@@ -1,0 +1,9 @@
+{
+  "engine": "5.8.1-0+UE5",
+  "root": "/BreakawayCore/Environments/Dorado",
+  "map": "/BreakawayCore/Environments/Dorado/Maps/L_Dorado",
+  "dirty_packages": [],
+  "source": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado",
+  "map_exists": false,
+  "scope": "Owned environment assets/map only; gameplay maps, assets, input and collision profiles preserved."
+}

@@ -1,0 +1,11 @@
+{
+  "scope": "Transient component-only walkability for recovered 45.55-degree stair bevels. Character floor-angle44.765 and max-step50 unchanged; triangle ball collision unchanged.",
+  "angle": 47,
+  "actors": [
+    "D_rel_eldorado_mid_stair_c_group8_ED6E3B0A",
+    "D_rel_eldorado_mid_stair_c_group7_3E87C53E",
+    "D_rel_eldorado_mid_stair_c_group9_4CE5565A",
+    "D_rel_eldorado_mid_stair_c_group4_A44BE49A"
+  ],
+  "causal_evidence": "dorado-repaired-east-stairs-03.json blocked with MOVE_FALLING at Y506 and normalZ.70034"
+}

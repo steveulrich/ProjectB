@@ -1,0 +1,145 @@
+{
+  "pipeline_version": 2,
+  "changed_count": 9,
+  "changes": [
+    {
+      "id": "SM_Dorado_rel_ed_block_clump_c_group",
+      "before_triangles": 1212,
+      "after_triangles": 1156,
+      "before_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Col",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "after_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_ed_block_clump_c_group.fbx",
+      "fbx_sha256": "5fb0c174fdab236b9014e21c39306cfb31c27dd6832e2ac15dbf84309c1ac2c2"
+    },
+    {
+      "id": "SM_Dorado_rel_ed_block_clump_b_group",
+      "before_triangles": 1612,
+      "after_triangles": 1552,
+      "before_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Col",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_B_mat"
+      ],
+      "after_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_B_mat"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_ed_block_clump_b_group.fbx",
+      "fbx_sha256": "f0c9ca75f50b5b5148ce00af547c6423f5eca9eabce58a715ff990a19752a70f"
+    },
+    {
+      "id": "SM_Dorado_rel_ed_block_clump_d_group",
+      "before_triangles": 332,
+      "after_triangles": 284,
+      "before_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Col",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "after_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_ed_block_clump_d_group.fbx",
+      "fbx_sha256": "8257f399d9282a4bd801ffaf2f3741923aded6941626b8784eea5204e9805c59"
+    },
+    {
+      "id": "SM_Dorado_rel_ed_block_clump_a_group",
+      "before_triangles": 962,
+      "after_triangles": 904,
+      "before_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Col",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "after_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_A_mat"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_ed_block_clump_a_group.fbx",
+      "fbx_sha256": "1bae69d8e144998d22c9876732978d1e0692a85bf9102f197cd97b3332347b92"
+    },
+    {
+      "id": "SM_Dorado_rel_ed_block_clump_e_group",
+      "before_triangles": 512,
+      "after_triangles": 460,
+      "before_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Col",
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_B_mat"
+      ],
+      "after_slots": [
+        "rel_ed_blocks_a_matgroup_mtl_Blocks_B_mat"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_ed_block_clump_e_group.fbx",
+      "fbx_sha256": "57041a058cc17fd77e19ce0ceecec56877f669a77ab82b348cc102295fc73190"
+    },
+    {
+      "id": "SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group",
+      "before_triangles": 217,
+      "after_triangles": 169,
+      "before_slots": [
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_COL",
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_rel_eldorado_mid_circle_top_ramp"
+      ],
+      "after_slots": [
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_rel_eldorado_mid_circle_top_ramp"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group.fbx",
+      "fbx_sha256": "c46af5eece7e4a9a5dce5ebb1674c76412982cd43c96009cbad853133baf78b2"
+    },
+    {
+      "id": "SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group",
+      "before_triangles": 217,
+      "after_triangles": 169,
+      "before_slots": [
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_COL",
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_rel_eldorado_mid_circle_top_ramp"
+      ],
+      "after_slots": [
+        "rel_eldorado_mid_circle_top_ramp_matgroup_mtl_rel_eldorado_mid_circle_top_ramp"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group.fbx",
+      "fbx_sha256": "9d4abc143d0fbacefd3ca251e4608704db2e8a4482b0f0d75282f92aafa073cb"
+    },
+    {
+      "id": "SM_Dorado_rel_el_arenastatue_a_group",
+      "before_triangles": 2980,
+      "after_triangles": 2848,
+      "before_slots": [
+        "rel_el_arenamaster_mat_mtl_rel_el_Arena_COL_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimADark_MAT",
+        "rel_el_arenamaster_mat_mtl_Rel_el_ArenaTrimA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimAGold_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimATurq_MAT"
+      ],
+      "after_slots": [
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimADark_MAT",
+        "rel_el_arenamaster_mat_mtl_Rel_el_ArenaTrimA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimAGold_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimATurq_MAT"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_el_arenastatue_a_group.fbx",
+      "fbx_sha256": "6d4c6f4d3b26c9eebe234fee28dad0030b9038256cbc9be131c3b9e40c998596"
+    },
+    {
+      "id": "SM_Dorado_rel_el_arenastartareawall_b_group",
+      "before_triangles": 1698,
+      "after_triangles": 1426,
+      "before_slots": [
+        "rel_el_arenamaster_mat_mtl_rel_el_Arena_COL_MAT",
+        "rel_el_arenamaster_mat_mtl_Rel_el_ArenaTrimA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaWallsA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimADark_MAT"
+      ],
+      "after_slots": [
+        "rel_el_arenamaster_mat_mtl_Rel_el_ArenaTrimA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaWallsA_MAT",
+        "rel_el_arenamaster_mat_mtl_rel_el_ArenaTrimADark_MAT"
+      ],
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_rel_el_arenastartareawall_b_group.fbx",
+      "fbx_sha256": "7450b7209b50502db8f43047cee3ec6bdd1300129d9faf1bc7846d29f0cfb212"
+    }
+  ],
+  "failures": []
+}

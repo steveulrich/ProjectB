@@ -1,0 +1,85 @@
+{
+  "scope": "Independent visual review of two native Unreal captures from the same saved camera, plus read-only image metrics and importer wiring inspection. No editor calls or asset changes.",
+  "outcome": "OBSERVED_TIME_VARYING_WATER_AND_VIOLET_ENERGY_APPEARANCE",
+  "images": [
+    {
+      "path": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\Renders\\final\\CAM_Ref_03.png",
+      "sha256": "d82b61ad6e66ed9122c1a5c7f643c1425dbd502bcb2df56349a5b9c5b2641b27",
+      "mtime_utc": "2026-10-30T22:01:03.603045+00:00",
+      "dimensions": [
+        1920,
+        862
+      ]
+    },
+    {
+      "path": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\Renders\\effects-followup\\CAM_Ref_03.png",
+      "sha256": "c90e27d9fbd013c48017a76946d040f39eaa7f50e8de791cd12d51886ef1be03",
+      "mtime_utc": "2026-10-30T22:02:51.831134+00:00",
+      "dimensions": [
+        1920,
+        862
+      ]
+    }
+  ],
+  "wall_clock_file_timestamp_separation_seconds": 108.228089,
+  "visual_findings": [
+    {
+      "feature": "Violet energy on broken ring",
+      "finding": "Broad violet bands and bright strand coverage change visibly along the middle/lower ring arc, while adjacent stone/gold geometry stays aligned. The change occupies broad regions, rather than only noisy edges.",
+      "evidence_regions": [
+        "energy_mid_arc",
+        "energy_lower_arc"
+      ]
+    },
+    {
+      "feature": "Waterfall on prominent floating island",
+      "finding": "Internal pale/blue streak and highlight patterns differ between captures across the upper/middle and lower fall. The island silhouette stays aligned. The pair supports changing water appearance; it does not independently establish downward velocity or a complete looping cycle.",
+      "evidence_regions": [
+        "water_upper_middle",
+        "water_lower"
+      ]
+    }
+  ],
+  "temporal_noise_check": {
+    "method": "Compare corresponding RGB pixels, then repeat after a2px Gaussian blur to suppress high-frequency temporal-antialiasing noise. Compare effect regions with stable temple/cliff/gold/sky controls. No image files are modified.",
+    "blurred_mean_abs_rgb_difference_0_255": {
+      "water_upper_middle": 9.134343434343434,
+      "water_lower": 8.644548286604362,
+      "energy_lower_arc": 18.501135840809752,
+      "energy_mid_arc": 18.081209739054483,
+      "static_temple_panel": 0.3685665863883686,
+      "static_near_cliff": 0.43404881722638733,
+      "static_gold_triangle": 0.4074747474747475,
+      "static_hazy_sky": 0.16054298642533937
+    },
+    "interpretation": "Effect differences remain about8.6\u201318.5levels after blur; controls remain about0.16\u20130.43. This is substantially beyond the measured static-region TAA/noise baseline. It supports broad effect changes, not exact optical flow or shader pass isolation."
+  },
+  "source_wiring": {
+    "script": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Scripts\\import_dorado.py",
+    "sha256": "00db85fb69432206185dd49ab972db1dd337e4511b70c29ca7df53e43316ff01",
+    "panner_creation_line": 135,
+    "water_uv_rate": [
+      0.12,
+      0
+    ],
+    "energy_uv_rate": [
+      0,
+      0.045
+    ],
+    "connections": [
+      "TextureCoordinate \u00d7 per-texture UVScale \u2192 Panner.Coordinate",
+      "Time \u00d7 AnimationRate \u2192 Panner.Time",
+      "Panner \u2192 texture sampler.UVs"
+    ],
+    "default_animation_rate": 1,
+    "water_flow_axis_basis": "Source Waterfall shader animates U; source waterfall mesh has U along stream length/vertical direction and V across width (water-source-axis-audit.json).",
+    "native_graph_evidence": "effects-native-graphs.json enumerates Time/Panner nodes for native families, but may include deleted/orphaned expression objects. Node counts are not treated as connected-node counts."
+  },
+  "limitations": [
+    "Two still captures do not establish motion direction, speed, smoothness, seam-free wrap, or a fully observed repeat period.",
+    "File timestamp separation is wall-clock time, not recorded material simulation time.",
+    "This is a native UV-panner approximation, not a verified reconstruction of the original CryEngine procedural waterfall/energy simulation.",
+    "The comparison is not a controlled render-pass isolation test; low-frequency temporal lighting/translucency variation cannot be wholly excluded.",
+    "Water remains more pale/veined and energy more saturated than the supplied reference target."
+  ]
+}

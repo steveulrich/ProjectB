@@ -1,0 +1,117 @@
+{
+  "status": "Provisional render-derived correspondences; original screenshots remain visual authority.",
+  "image_width": 1920,
+  "image_height": 862,
+  "reference": "REF_02",
+  "baseline_capture": "Saved/Logs/dorado-reconstruction-20261030/Renders/iteration01/CAM_Ref_02.png",
+  "initial_camera_cm": [
+    -179.999,
+    4800.0,
+    1250.0
+  ],
+  "initial_yaw_pitch_degrees": [
+    -88.01748714414809,
+    -2.750840382230807
+  ],
+  "initial_horizontal_fov_degrees": 94,
+  "landmarks": [
+    {
+      "name": "Central medallion",
+      "world_cm": [
+        0,
+        0,
+        0
+      ],
+      "reference_pixel": [
+        1064,
+        576
+      ],
+      "evidence": "Recovered arena center."
+    },
+    {
+      "name": "Green pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        809,
+        529
+      ],
+      "evidence": "Visual center established from REF01 initial-render ray."
+    },
+    {
+      "name": "Blue pad",
+      "world_cm": [
+        1534.0433,
+        40.5372,
+        208.334
+      ],
+      "reference_pixel": [
+        1371,
+        547
+      ],
+      "evidence": "Visual center established from REF01 initial-render ray."
+    },
+    {
+      "name": "Near snake circle",
+      "world_cm": [
+        18.25062729614939,
+        1714.624265821422,
+        0.0
+      ],
+      "reference_pixel": [
+        1012,
+        692
+      ],
+      "evidence": "Initial REF02 center ray intersected floorZ0."
+    },
+    {
+      "name": "Ring eye",
+      "world_cm": [
+        599.083174442226,
+        0.0,
+        2292.7450316486697
+      ],
+      "reference_pixel": [
+        1180,
+        130
+      ],
+      "evidence": "Initial REF02 eye center ray intersected ringY0; thickness uncertain."
+    },
+    {
+      "name": "Upper-left cut",
+      "world_cm": [
+        -762.4183100033433,
+        0.0,
+        2397.134678196753
+      ],
+      "reference_pixel": [
+        919,
+        128
+      ],
+      "evidence": "Initial REF02 terminal corner ray intersected ringY0; thickness uncertain."
+    },
+    {
+      "name": "Shrine apex",
+      "world_cm": [
+        0.4455,
+        -5003.8665,
+        3578.14386
+      ],
+      "reference_pixel": [
+        1105,
+        156
+      ],
+      "evidence": "Recovered arenastatue_b world location plus transformed localmaxZ."
+    }
+  ],
+  "assumptions": [
+    "Perspective camera without distortion",
+    "Zero roll",
+    "Shared1920x862 aspect",
+    "Some world points derived from known plane/ray intersections",
+    "Manual pixel selections; compare projected pylon silhouette before acceptance"
+  ]
+}

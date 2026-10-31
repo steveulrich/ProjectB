@@ -1,0 +1,74 @@
+{
+  "relic": {
+    "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.BP_BW_RelicActor_C_0",
+    "class": "/BreakawayCore/GameModes/BallMode/Relic/BP_BW_RelicActor.BP_BW_RelicActor_C",
+    "position_cm": [
+      1272.2853972890919,
+      852.0650570824663,
+      15.42908976755653
+    ],
+    "state": "<RelicState.THROWN: 3>",
+    "carrier": null,
+    "physics_velocity_cm_s": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "simulating": true,
+    "mass_kg": 10.0,
+    "component_scale": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "collision_profile": "Custom",
+    "mesh_local_bounds_cm": {
+      "min": [
+        -15.03905963897705,
+        -14.3310546875,
+        -13.92822551727295
+      ],
+      "max": [
+        15.03905963897705,
+        14.3310546875,
+        13.92822551727295
+      ]
+    },
+    "mesh_asset": "/BreakawayCore/GameModes/BallMode/Relic/Mesh/SM_BW_Relic.SM_BW_Relic",
+    "size_note": "Actual mesh bounds; not an assumed test-sphere radius or collision primitive radius.",
+    "collision_actor_bounds": {
+      "origin_cm": [
+        1272.2853972890919,
+        852.0650570824662,
+        15.429089767556519
+      ],
+      "extent_cm": [
+        221.6852365553741,
+        244.24233853834784,
+        227.81417538138862
+      ],
+      "approximate_max_extent_cm": 244.24233853834784,
+      "note": "Colliding actor bounds may include pickup query sphere; not a precise ball collision radius."
+    },
+    "ccd": true,
+    "physical_material_override": null,
+    "settings_asset": "/BreakawayCore/GameModes/BallMode/Relic/DA_BW_RelicSettings_Default.DA_BW_RelicSettings_Default",
+    "linear_damping": 1.5,
+    "angular_damping": 1.0
+  },
+  "floor": {
+    "hit": true,
+    "point_cm": [
+      1272.2853973198864,
+      852.0650553754501,
+      0.09449812368168864
+    ],
+    "normal": [
+      -4.28539211236673e-07,
+      -1.6459578853802632e-06,
+      0.9999999999985536
+    ],
+    "actor": "/BreakawayCore/Environments/Dorado/Maps/UEDPIE_0_L_Dorado.L_Dorado:PersistentLevel.StaticMeshActor_87"
+  },
+  "bottom_minus_floor_cm": 1.0643874841065326e-05
+}

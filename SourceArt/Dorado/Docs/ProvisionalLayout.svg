@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="850" viewBox="0 0 1120 850">
+  <title>Dorado provisional top-down layout</title>
+  <desc>Conceptual layout inferred from three screenshots. Distinct sun and narrow-shrine ends, a central medallion, lateral pads, sparse barriers, and a provisional transverse ring plane. Distances and unseen repeated features remain unverified.</desc>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9d6a1a"/></marker></defs>
+  <rect width="1120" height="850" fill="#f5f1e6"/>
+  <g font-family="Arial,sans-serif" fill="#253a3d">
+    <text x="45" y="48" font-size="28" font-weight="bold">Dorado • provisional top-down relationships</text>
+    <text x="45" y="77" font-size="15">Reconstruction inference • centimeters at implementation • drawing is not a surveyed floor plan</text>
+    <rect x="365" y="184" width="330" height="470" rx="9" fill="#c8b28b" stroke="#877652" stroke-width="8"/>
+    <path d="M530 665V170" stroke="#f6e0a0" stroke-width="2" stroke-dasharray="8 8" marker-end="url(#arrow)"/>
+    <text x="543" y="610" font-size="15">+Y toward sun end</text>
+    <path d="M510 425H300" stroke="#9d6a1a" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="292" y="447" font-size="15">+X</text>
+    <path d="M405 183L435 115H625L655 183Z" fill="#536e70" stroke="#cba83e" stroke-width="6"/>
+    <circle cx="530" cy="148" r="27" fill="#fff5b8" stroke="#cba83e" stroke-width="7"/>
+    <text x="730" y="142" font-size="20" font-weight="bold">Broad sun façade</text>
+    <text x="730" y="167" font-size="15">Observed: REF_01 + REF_03</text>
+    <path d="M660 147H715" stroke="#6d7d7c" stroke-width="2"/>
+    <rect x="430" y="187" width="200" height="45" fill="#a2a59b" stroke="#aa8f45" stroke-width="3"/>
+    <g stroke="#697d7d" stroke-width="2"><path d="M431 197H629M431 207H629M431 217H629"/></g>
+    <circle cx="530" cy="290" r="50" fill="#a9acb6" stroke="#dcb643" stroke-width="5" stroke-dasharray="8 3"/>
+    <text x="515" y="286" font-size="22">?</text><text x="470" y="312" font-size="12">inferred counterpart</text>
+    <circle cx="530" cy="420" r="66" fill="#7f91a3" stroke="#e3bb4d" stroke-width="6"/>
+    <circle cx="530" cy="420" r="24" fill="#b89452" stroke="#ffe0a2" stroke-width="4"/>
+    <circle cx="530" cy="420" r="54" fill="none" stroke="#e3bb4d" stroke-width="4" stroke-dasharray="11 5"/>
+    <text x="803" y="409" font-size="19" font-weight="bold">Central medallion</text>
+    <text x="803" y="434" font-size="15">Open lanes around it</text>
+    <path d="M600 402H790" stroke="#6d7d7c" stroke-width="2"/>
+    <path d="M365 358H315A49 49 0 0 0 315 456H365Z" fill="#89b0bf" stroke="#cba83e" stroke-width="5"/>
+    <circle cx="326" cy="407" r="25" fill="#d2f4fa" stroke="#efcf70" stroke-width="4"/>
+    <path d="M695 358H745A49 49 0 0 1 745 456H695Z" fill="#6d9b88" stroke="#cba83e" stroke-width="5"/>
+    <circle cx="734" cy="407" r="25" fill="#a4f5b1" stroke="#efcf70" stroke-width="4"/>
+    <path d="M367 365H420V449H367M693 365H640V449H693" fill="#b7a97d" stroke="#cba83e" stroke-width="4"/>
+    <path d="M378 369V445M390 369V445M402 369V445M652 369V445M664 369V445M676 369V445" stroke="#68787c" stroke-width="2"/>
+    <text x="80" y="396" font-size="18">Blue-white pad</text><text x="80" y="420" font-size="14">Observed color, no role assigned</text>
+    <text x="803" y="359" font-size="18">Green pad</text>
+    <circle cx="530" cy="548" r="63" fill="#ad9a79" stroke="#dcb643" stroke-width="6"/>
+    <circle cx="530" cy="548" r="48" fill="none" stroke="#7f839d" stroke-width="12"/>
+    <path d="M510 549Q526 522 550 536Q565 559 535 565Q521 562 525 550" fill="none" stroke="#6b6253" stroke-width="3"/>
+    <g fill="#647e7e" stroke="#ad9c79" stroke-width="3"><rect x="397" y="325" width="70" height="18"/><rect x="592" y="325" width="70" height="18"/><rect x="380" y="502" width="67" height="20"/><rect x="615" y="502" width="57" height="20"/><rect x="570" y="565" width="22" height="22"/></g>
+    <path d="M275 374H790" stroke="#8a68ac" stroke-width="4" stroke-dasharray="9 6"/>
+    <text x="42" y="332" font-size="17">Ring plane provisional</text><text x="42" y="354" font-size="14">One assembly pending mesh inspection</text><path d="M250 349L281 371" stroke="#8a68ac" stroke-width="2"/>
+    <g fill="#536e70" stroke="#cba83e" stroke-width="5" stroke-dasharray="7 4"><rect x="350" y="603" width="40" height="70"/><rect x="670" y="603" width="40" height="70"/></g>
+    <text x="72" y="646" font-size="16">Pylon positions/count provisional</text>
+    <rect x="448" y="652" width="164" height="35" fill="#a2a59b" stroke="#aa8f45" stroke-width="3"/>
+    <path d="M480 688L530 759L580 688Z" fill="#536e70" stroke="#cba83e" stroke-width="5"/>
+    <path d="M530 697V742" stroke="#aa8be2" stroke-width="5"/>
+    <text x="735" y="698" font-size="20" font-weight="bold">Tall narrow violet shrine</text><text x="735" y="723" font-size="15">Observed: REF_02</text><path d="M583 701H720" stroke="#6d7d7c" stroke-width="2"/>
+    <text x="45" y="803" font-size="15">Solid: observed feature types. Dashed: uncertain placement or inferred repetition. Existing map dimensions take precedence after visual inspection.</text>
+    <text x="45" y="826" font-size="15">Source: two giant head pairs, four smaller brace pairs, and one complementary ring assembly. See dimensions.json for placements.</text>
+  </g>
+</svg>

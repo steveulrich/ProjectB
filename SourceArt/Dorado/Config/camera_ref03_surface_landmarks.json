@@ -1,0 +1,78 @@
+{
+  "status": "Provisional source/ray correspondence; island identification uncertain.",
+  "image_width": 1920,
+  "image_height": 862,
+  "reference": "REF_03",
+  "baseline_capture": "Saved/Logs/dorado-reconstruction-20261030/Renders/iteration01/CAM_Ref_03.png",
+  "initial_camera_cm": [
+    -919.394,
+    -3827.061,
+    613.136
+  ],
+  "initial_yaw_pitch_degrees": [
+    127.7386,
+    11.5498
+  ],
+  "initial_horizontal_fov_degrees": 92.5695,
+  "landmarks": [
+    {
+      "name": "Sun disc",
+      "world_cm": [
+        3,
+        5950,
+        961
+      ],
+      "reference_pixel": [
+        115,
+        589
+      ],
+      "evidence": "Recovered luminous disc position."
+    },
+    {
+      "name": "Green pad",
+      "world_cm": [
+        -1368.2505,
+        5.275,
+        208.334
+      ],
+      "reference_pixel": [
+        382,
+        761
+      ],
+      "evidence": "Visual pad center established from REF01 baseline rays."
+    },
+    {
+      "name": "Lower visible ring insert",
+      "world_cm": [
+        -2079.923574016684,
+        -182.7015011617093,
+        1166.4553898399536
+      ],
+      "reference_pixel": [
+        612,
+        499
+      ],
+      "evidence": "Corrected actual lower insert center, iteration01 pixel1453,809 ray intersected recovered LOD0 beauty triangle; this is on front surface Y=-182.70cm."
+    },
+    {
+      "name": "Large island left rim",
+      "world_cm": [
+        -16303.834563356704,
+        14634.145013457815,
+        1476.4703835620676
+      ],
+      "reference_pixel": [
+        977,
+        581
+      ],
+      "evidence": "Iteration01 pixel1613,514 ray picked BasicEntity36 LOD0 rock rim. Island silhouette correspondence remains approximate."
+    }
+  ],
+  "assumptions": [
+    "Perspective camera without distortion",
+    "Zero roll",
+    "Shared1920x862 aspect",
+    "Ring insert uses exact LOD0 front surface pick",
+    "Manual island silhouette correspondence needs confirmation"
+  ]
+}

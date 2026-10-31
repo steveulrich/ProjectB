@@ -1,0 +1,16 @@
+{
+  "generated_utc": "2026-10-30T22:21:36.415840+00:00",
+  "current": {
+    "PlayNumberOfClients": 1,
+    "RunUnderOneProcess": true,
+    "AdditionalServerGameOptions": "?NumBots=4?Experience=B_BW_Experience_Dev",
+    "bLaunchSeparateServer": false
+  },
+  "expected": {
+    "PlayNumberOfClients": 1,
+    "RunUnderOneProcess": true,
+    "AdditionalServerGameOptions": "?NumBots=4?Experience=B_BW_Experience_Dev",
+    "bLaunchSeparateServer": false
+  },
+  "matches": true
+}

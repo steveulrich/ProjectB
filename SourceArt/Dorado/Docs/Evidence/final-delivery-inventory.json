@@ -1,0 +1,129 @@
+{
+  "generated_utc": "2026-10-30T22:23:45.361014+00:00",
+  "scope": "Read-only owned SourceArt and native delivery snapshot, plus the explicitly protected original map. No editor calls or asset changes.",
+  "native": {
+    "root": "E:\\Unreal Projects\\ProjectB\\Plugins\\GameFeatures\\BreakawayCore\\Content\\Environments\\Dorado",
+    "total_files": 557,
+    "uasset_files": 556,
+    "umap_files": 1,
+    "bytes": 233332447,
+    "folder_counts": {
+      "Maps": 1,
+      "Materials/Instances": 133,
+      "Materials": 7,
+      "Meshes": 103,
+      "Textures": 313
+    },
+    "asset_class_counts_from_structural_report": {
+      "World": 1,
+      "Material": 7,
+      "MaterialInstanceConstant": 133,
+      "StaticMesh": 103,
+      "Texture2D": 313
+    },
+    "asset_class_report_generated_utc": "2026-10-30T22:15:22.885820+00:00",
+    "native_uasset_payload_aggregate_sha256": "91b44385078b8a47f9654131d705a938f76ab2ec84da99795f8c9c5bf2709a14",
+    "map_files": [
+      {
+        "path": "Maps/L_Dorado.umap",
+        "bytes": 792561,
+        "sha256": "04557811baddff4baab92a7fc07752dbe4552303c7d25147e1c803696f8dc89d",
+        "last_write_utc": "2026-10-30T22:10:45.801500+00:00",
+        "stable_during_read": true,
+        "hash_status": "FINAL_ON_DISK_SNAPSHOT"
+      }
+    ],
+    "unstable_files_during_hash": [],
+    "file_hash_manifest": "final-delivery-native-hashes.json"
+  },
+  "source": {
+    "root": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado",
+    "files_excluding_python_cache": 4355,
+    "python_cache_files_excluded": 21,
+    "bytes_excluding_python_cache": 1243385714,
+    "file_extension_counts": {
+      ".0": 250,
+      ".1": 250,
+      ".1a": 81,
+      ".2": 250,
+      ".2a": 81,
+      ".3": 250,
+      ".3a": 81,
+      ".4": 250,
+      ".4a": 81,
+      ".5": 228,
+      ".5a": 80,
+      ".6": 198,
+      ".6a": 70,
+      ".7": 16,
+      ".7a": 6,
+      ".a": 79,
+      ".blend": 3,
+      ".blend1": 2,
+      ".cgf": 99,
+      ".dae": 197,
+      ".dds": 590,
+      ".fbx": 103,
+      ".glb": 1,
+      ".html": 1,
+      ".json": 120,
+      ".lyr": 8,
+      ".md": 10,
+      ".mtl": 71,
+      ".obj": 1,
+      ".png": 619,
+      ".ps1": 1,
+      ".py": 28,
+      ".svg": 1,
+      ".txt": 248,
+      ".xml": 1
+    },
+    "manifests": {
+      "geometry_manifest.json": {
+        "assets": 98,
+        "instances": 288,
+        "triangles": 171450
+      },
+      "energy_manifest.json": {
+        "assets": 4,
+        "instances": 4,
+        "triangles": 576
+      },
+      "calibration_manifest.json": {
+        "assets": 1,
+        "instances": 0,
+        "triangles": 0
+      }
+    },
+    "control_files_hashed": 52,
+    "control_file_aggregate_sha256": "6f71e3c10193f3a4ec138a70046b45b26a7e3da9ff793c2fc71b4cf7c26ce51a",
+    "control_hash_manifest": "final-delivery-source-control-hashes.json"
+  },
+  "package_dependency_audit": {
+    "generated_utc": "2026-10-30T22:09:43.299908+00:00",
+    "status": "PASS_STAGED_FILE_AUDIT",
+    "required_files_checked": 888,
+    "prepared_texture_paths": 495,
+    "art_override_texture_paths": 30,
+    "staged_mtl_pairs": 34,
+    "missing_files": [],
+    "required_paths_outside_source_package": [],
+    "fbx_paths_fingerprinted": 103,
+    "fbx_recorded_hashes_checked": 98,
+    "fbx_without_recorded_hash": 5,
+    "fbx_hash_mismatch_count": 0
+  },
+  "protected_original_map": {
+    "path": "Plugins/GameFeatures/BreakawayCore/Content/Maps/L_BW_Dorado.umap",
+    "bytes": 238395,
+    "sha256": "ce94942a07e88d760b9a152dfe757a421306df82a043ea0a8beb1124d497139d",
+    "last_write_utc": "2026-10-30T20:02:30.182488+00:00",
+    "stable_during_read": true,
+    "head_lfs_sha256": "ce94942a07e88d760b9a152dfe757a421306df82a043ea0a8beb1124d497139d",
+    "matches_head_payload": true
+  },
+  "workspace_scope_reference": "source-final-scope-audit.json records fourteen already-dirty concurrent HUD/UI content deltas and one additional HUD.cpp. This scoped refresh does not recapture unrelated gameplay source.",
+  "limitations": [
+    "File existence and hashes do not establish native runtime, packaged-build, or visual acceptance."
+  ]
+}

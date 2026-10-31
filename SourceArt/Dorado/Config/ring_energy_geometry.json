@@ -1,0 +1,135 @@
+{
+  "status": "Geometry-derived gap arcs and source particle marker correspondence; visual validation pending.",
+  "effect_source_world_matrix_m": [
+    [
+      0.9612615609673336,
+      -1.714456470265765e-07,
+      0.27563766797475453,
+      514.0000037011945
+    ],
+    [
+      1.7186671294647557e-07,
+      0.9999998998665809,
+      2.2626715147994834e-08,
+      666.3099462890619
+    ],
+    [
+      -0.2756376679747553,
+      2.5622751068555598e-08,
+      0.961261541100752,
+      73.10504690756606
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "radius_sample_median_m": 45.37198772410865,
+  "gaps": [
+    {
+      "start_angle_degrees": 15.0,
+      "end_angle_degrees": 39.0,
+      "angular_span_degrees": 24.0
+    },
+    {
+      "start_angle_degrees": 103.5,
+      "end_angle_degrees": 122.0,
+      "angular_span_degrees": 18.5
+    },
+    {
+      "start_angle_degrees": 208.5,
+      "end_angle_degrees": 231.5,
+      "angular_span_degrees": 23.0
+    },
+    {
+      "start_angle_degrees": 290.5,
+      "end_angle_degrees": 317.0,
+      "angular_span_degrees": 26.5
+    }
+  ],
+  "source_markers": [
+    {
+      "name": "Gap_01",
+      "energy_local_m": [
+        -23.0,
+        0,
+        38.0
+      ],
+      "target_center_cm": [
+        -580.7380409006726,
+        -0.6076597971400588,
+        2114.8877916407
+      ],
+      "angle_degrees": 121.18497465873838,
+      "source_marker_alpha": "0,Random=0,EmitterStrength=,ParticleAge="
+    },
+    {
+      "name": "Gap_02",
+      "energy_local_m": [
+        -36.0,
+        0,
+        -28.0
+      ],
+      "target_center_cm": [
+        -2115.16235984613,
+        -0.607473415612958,
+        -878.1108098081902
+      ],
+      "angle_degrees": 217.87498365109818,
+      "source_marker_alpha": "0,Random=0,EmitterStrength=,ParticleAge="
+    },
+    {
+      "name": "Gap_03",
+      "energy_local_m": [
+        20.0,
+        0,
+        -40.0
+      ],
+      "target_center_cm": [
+        410.9874100775528,
+        -0.6079410663801355,
+        -2226.6532047979563
+      ],
+      "angle_degrees": 296.565051177078,
+      "source_marker_alpha": "0,Random=0,EmitterStrength=,ParticleAge="
+    },
+    {
+      "name": "Gap_04",
+      "energy_local_m": [
+        41.0,
+        0,
+        20.0
+      ],
+      "target_center_cm": [
+        2247.2250530175133,
+        -0.6081894065744109,
+        367.7118671308065
+      ],
+      "angle_degrees": 26.003345844511443,
+      "source_marker_alpha": "0,Random=0,EmitterStrength=,ParticleAge="
+    },
+    {
+      "name": "Gap_05",
+      "energy_local_m": [
+        27.0,
+        0,
+        38.0
+      ],
+      "target_center_cm": [
+        1822.4158615176577,
+        -0.6080894639183043,
+        1425.7936217038123
+      ],
+      "angle_degrees": 54.60520415501294,
+      "source_marker_alpha": "0,Random=0,EmitterStrength=,ParticleAge="
+    }
+  ],
+  "notes": [
+    "Source Gap_01..05 emitters use alpha0 and are invisible debris containers, not visible ribbon artwork.",
+    "Mag_Ring material exists in source resources, but no direct energy CGF placement was recovered.",
+    "Gap endpoints derive from occupied LOD0 triangles in 0.5-degree bins and radial band38..55m.",
+    "Native ribbon mesh/material reconstruction must preserve these gaps and remain non-colliding."
+  ]
+}

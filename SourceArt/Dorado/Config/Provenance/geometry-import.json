@@ -1,0 +1,1973 @@
+{
+  "saved": 103,
+  "failed": 0,
+  "meshes": {
+    "SM_Dorado_rel_ed_ring_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_ring_a_group.SM_Dorado_rel_ed_ring_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "ec0b9e3e203fdb5230a461e3743f9d7e8c3aba91bd4b0264c498bc6e6d648295",
+      "bounds_min": [
+        -5912.5,
+        -421.0942687988281,
+        -5896.875
+      ],
+      "bounds_max": [
+        5831.25,
+        421.0942687988281,
+        5712.5
+      ],
+      "slots": [
+        "DOR_70b30b285cea3bd8"
+      ]
+    },
+    "SM_Dorado_rel_el_dorado_center_point_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_dorado_center_point_a_group.SM_Dorado_rel_el_dorado_center_point_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "49612c53bccf14b54247e5c3045ba675c47f262edaee1f8df2489ed893fc7cf5",
+      "bounds_min": [
+        -411.7189025878906,
+        -1946.875,
+        -16.186500549316406
+      ],
+      "bounds_max": [
+        409.7654724121094,
+        -1141.4061279296875,
+        5.682399749755859
+      ],
+      "slots": [
+        "DOR_9422ec7c5784a8a8"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_curved_wall_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_curved_wall_b_group.SM_Dorado_rel_eldorado_curved_wall_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "b7cc18a62cbcefc6c12b53e403d657f3ea3a0a7d4cfbcef45f75f1957a043259",
+      "bounds_min": [
+        -5403.125,
+        -187.89059448242188,
+        0.0
+      ],
+      "bounds_max": [
+        5.252123832702637,
+        270.8988342285156,
+        1483.5938720703125
+      ],
+      "slots": [
+        "DOR_257c0e3b314fd490",
+        "DOR_2ae7ed8398a585e2"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_buff_border_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_buff_border_a_group.SM_Dorado_rel_eldorado_mid_buff_border_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "f034547bb81ecdf79c19acdf0a5432fc09dc545bd036bd49d809cf47ff66a2d9",
+      "bounds_min": [
+        -54.2968864440918,
+        -811.7188720703125,
+        -240.82028198242188
+      ],
+      "bounds_max": [
+        54.296974182128906,
+        862.5,
+        225.5858917236328
+      ],
+      "slots": [
+        "DOR_606b0c6b694f6321"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_stair_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_stair_c_group.SM_Dorado_rel_eldorado_mid_stair_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "dc06bbb6364a06e4a50f52f5b957b76830593764491f00797123e578c0be1c04",
+      "bounds_min": [
+        -300.7812194824219,
+        -190.4297332763672,
+        -92.87110137939453
+      ],
+      "bounds_max": [
+        298.828125,
+        215.62503051757812,
+        99.70700073242188
+      ],
+      "slots": [
+        "DOR_e5beaf368f38c83b",
+        "DOR_606b0c6b694f6321"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_relic_center_cap_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_relic_center_cap_a_group.SM_Dorado_rel_eldorado_relic_center_cap_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "8b578b30cb8ab6ce89299382ecbff56f4df0d28113bf031d433c0fb83662cb22",
+      "bounds_min": [
+        -1235.1561279296875,
+        -1.047439455986023,
+        -22.045900344848633
+      ],
+      "bounds_max": [
+        -689.8438110351562,
+        26.904409408569336,
+        7.672099590301514
+      ],
+      "slots": [
+        "DOR_72f4c3938fc2b34f"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_staris_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_staris_a_group.SM_Dorado_rel_eldorado_mid_staris_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "8cada8cdf5c5eccb8a95f83974e54d42473fc5a569fe90459eec9dc100becc94",
+      "bounds_min": [
+        -300.00006103515625,
+        -739.4530639648438,
+        -4.553199768066406
+      ],
+      "bounds_max": [
+        300.0,
+        9.54590129852295,
+        386.71881103515625
+      ],
+      "slots": [
+        "DOR_e5beaf368f38c83b",
+        "DOR_606b0c6b694f6321"
+      ]
+    },
+    "SM_Dorado_rel_ed_block_clump_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_block_clump_c_group.SM_Dorado_rel_ed_block_clump_c_group",
+      "unresolved_slots": [
+        "DOR_b877abd0aabb6638"
+      ],
+      "fbx_sha256": "5fb0c174fdab236b9014e21c39306cfb31c27dd6832e2ac15dbf84309c1ac2c2",
+      "bounds_min": [
+        -118.35935974121094,
+        -541.0155639648438,
+        -0.0007000000332482159
+      ],
+      "bounds_max": [
+        118.3593521118164,
+        541.0155639648438,
+        425.0
+      ],
+      "slots": [
+        "DOR_b877abd0aabb6638",
+        "DOR_36bd74df0df59776"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_sidewall_gold_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_sidewall_gold_a_group.SM_Dorado_rel_eldorado_sidewall_gold_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "565c4fc91e8405b950c2700ddda97415f47d426cc68211824f7af5427678cd39",
+      "bounds_min": [
+        -31.860401153564453,
+        -34.2041015625,
+        -675.7811889648438
+      ],
+      "bounds_max": [
+        31.860401153564453,
+        34.2041015625,
+        675.7811889648438
+      ],
+      "slots": [
+        "DOR_aeaf21999bf6179f"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_stairs_sides_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_stairs_sides_a_group.SM_Dorado_rel_eldorado_stairs_sides_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "bfe7c9ef46af94cbbc888800ce283afb5625d7929b504542fc8586930dd82c38",
+      "bounds_min": [
+        -34.81452941894531,
+        -722.2655639648438,
+        -255.07809448242188
+      ],
+      "bounds_max": [
+        32.348567962646484,
+        365.03912353515625,
+        341.60162353515625
+      ],
+      "slots": [
+        "DOR_2ae7ed8398a585e2",
+        "DOR_27d6f3df69de596e"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_startramp_clump_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_startramp_clump_group.SM_Dorado_rel_eldorado_startramp_clump_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "01b8588b0fe4a877060caf294e6fc4db9e8755cc2b758ed9bac4c830d75dffb7",
+      "bounds_min": [
+        -1232.031005859375,
+        860.156005859375,
+        -684.375
+      ],
+      "bounds_max": [
+        1232.0313720703125,
+        2693.75,
+        14.782699584960938
+      ],
+      "slots": [
+        "DOR_63d7a4a58867fba8",
+        "DOR_701b46323490de3e",
+        "DOR_5f4569c690a6b21f"
+      ]
+    },
+    "SM_Dorado_rel_ed_serpent_wall_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_serpent_wall_b_group.SM_Dorado_rel_ed_serpent_wall_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "f57710b45a62f1e0af5beb5c860bc43e829153c5a9798f34c5c8037dd434b26d",
+      "bounds_min": [
+        1128.125244140625,
+        1528.906005859375,
+        109.66800689697266
+      ],
+      "bounds_max": [
+        1580.468994140625,
+        3189.0625,
+        2156.25
+      ],
+      "slots": [
+        "DOR_b1e5c33568427242",
+        "DOR_f6ec5c85cab149f7",
+        "DOR_9e377e9020efa674"
+      ]
+    },
+    "SM_Dorado_rel_ed_block_clump_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_block_clump_b_group.SM_Dorado_rel_ed_block_clump_b_group",
+      "unresolved_slots": [
+        "DOR_b877abd0aabb6638"
+      ],
+      "fbx_sha256": "f0c9ca75f50b5b5148ce00af547c6423f5eca9eabce58a715ff990a19752a70f",
+      "bounds_min": [
+        -412.10943603515625,
+        -706.25,
+        -0.0009000000427477062
+      ],
+      "bounds_max": [
+        806.25,
+        705.4688720703125,
+        231.8358917236328
+      ],
+      "slots": [
+        "DOR_b877abd0aabb6638",
+        "DOR_36bd74df0df59776",
+        "DOR_1c4965175ffa36f3"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_buff_border_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_buff_border_b_group.SM_Dorado_rel_eldorado_mid_buff_border_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "f9fd51dc39ecd038c1a4de37b6d4433eef07e683b555bdde58b49bfda3362fd6",
+      "bounds_min": [
+        -54.29691696166992,
+        -862.5,
+        -240.82028198242188
+      ],
+      "bounds_max": [
+        54.29697036743164,
+        811.7188720703125,
+        225.5858917236328
+      ],
+      "slots": [
+        "DOR_606b0c6b694f6321"
+      ]
+    },
+    "SM_Dorado_rel_ed_serpent_pillar_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_serpent_pillar_group.SM_Dorado_rel_ed_serpent_pillar_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "cc02dd988bd3ee19f07f368ef0b4c082bbb977d64cef8cbd0df8391643b0deaa",
+      "bounds_min": [
+        -415.625,
+        -173.92579650878906,
+        -0.00019999999494757503
+      ],
+      "bounds_max": [
+        415.625,
+        173.92579650878906,
+        1460.9375
+      ],
+      "slots": [
+        "DOR_3b03494c327ee061"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_floor_v2_gapfill_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_floor_v2_gapfill_group.SM_Dorado_rel_eldorado_floor_v2_gapfill_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "f8dd4c702534390d1b59ad3b04c1525aa18ed1a0a5af84f80b4200670a1925a0",
+      "bounds_min": [
+        -1508.5938720703125,
+        -1793.75,
+        -183.5937957763672
+      ],
+      "bounds_max": [
+        1512.5001220703125,
+        1241.40625,
+        6.304900169372559
+      ],
+      "slots": [
+        "DOR_5b4e58abaa6dabfd"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_border_x4_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_border_x4_a_group.SM_Dorado_rel_eldorado_border_x4_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "1e3dbd6388f3c15efae1c998d3af5ffa33499532e6a347266dbd2f7f1fdc159a",
+      "bounds_min": [
+        7.50098991394043,
+        -2401.5625,
+        116.40620422363281
+      ],
+      "bounds_max": [
+        235.9375,
+        0.03299664333462715,
+        165.33200073242188
+      ],
+      "slots": [
+        "DOR_6c9444d6753686da",
+        "DOR_aeaf21999bf6179f"
+      ]
+    },
+    "SM_Dorado_rel_ed_banner01_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_banner01_group.SM_Dorado_rel_ed_banner01_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "b37532bc2a413b10c7480eac4f5ddc5489022fcb11b86b4be15151dc8deea462",
+      "bounds_min": [
+        -154.19918823242188,
+        -32.10451126098633,
+        -1114.8438720703125
+      ],
+      "bounds_max": [
+        156.54299926757812,
+        32.71480941772461,
+        32.397499084472656
+      ],
+      "slots": [
+        "DOR_19705e2a6954ce28"
+      ]
+    },
+    "SM_Dorado_rel_el_dorado_snakeheadpillar_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_dorado_snakeheadpillar_b_group.SM_Dorado_rel_el_dorado_snakeheadpillar_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "6cbd51e7f73f085e0bc5d2462ab4fe39b28061d3f22d6ef288da9c9fd1d32b49",
+      "bounds_min": [
+        -287.89056396484375,
+        -354.6874694824219,
+        -558.5938110351562
+      ],
+      "bounds_max": [
+        286.328125,
+        411.3280944824219,
+        1990.625
+      ],
+      "slots": [
+        "DOR_2e2250711bf707c4"
+      ]
+    },
+    "SM_Dorado_rel_ed_serpent_wall_b_clump_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_serpent_wall_b_clump_group.SM_Dorado_rel_ed_serpent_wall_b_clump_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "63ea39de7fddcc27db358d742acce621beda6bcdb4d7a4ad4eb8a699507e5a1f",
+      "bounds_min": [
+        93.21286010742188,
+        -785.5469360351562,
+        109.66800689697266
+      ],
+      "bounds_max": [
+        1528.1251220703125,
+        1796.8748779296875,
+        1696.875
+      ],
+      "slots": [
+        "DOR_b1e5c33568427242",
+        "DOR_3b03494c327ee061"
+      ]
+    },
+    "SM_Dorado_primitive_plane_noproxy": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_primitive_plane_noproxy.SM_Dorado_primitive_plane_noproxy",
+      "unresolved_slots": [
+        "DOR_f60e434572298d2e"
+      ],
+      "fbx_sha256": "6fd5d7d460065d7cef311ddd2baeb091457778ac89cfc69e8c6471677095361d",
+      "bounds_min": [
+        -500.0000305175781,
+        -500.0000305175781,
+        0.0
+      ],
+      "bounds_max": [
+        500.0000305175781,
+        500.0000305175781,
+        0.0
+      ],
+      "slots": [
+        "DOR_f60e434572298d2e"
+      ]
+    },
+    "SM_Dorado_rel_prxy_eldorado_mid_steps_d_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_prxy_eldorado_mid_steps_d_group.SM_Dorado_rel_prxy_eldorado_mid_steps_d_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "cc4a5ac78100b3f8ce8db911be2285f8927fda426727c15f16763cc65d35b35f",
+      "bounds_min": [
+        -2257.8125,
+        -1557.0308837890625,
+        -82.4218978881836
+      ],
+      "bounds_max": [
+        -1444.53125,
+        -291.7967834472656,
+        428.125
+      ],
+      "slots": [
+        "DOR_068c3bbaaa412863"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_circle_top_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_circle_top_b_group.SM_Dorado_rel_eldorado_mid_circle_top_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "d168416f614e29cf88266b8e42527aa5fbac78ea1dc74f3904be92d80f2850e1",
+      "bounds_min": [
+        -10.577339172363281,
+        -798.0469360351562,
+        185.1562042236328
+      ],
+      "bounds_max": [
+        802.3438720703125,
+        798.0469360351562,
+        283.2030944824219
+      ],
+      "slots": [
+        "DOR_aeaf21999bf6179f"
+      ]
+    },
+    "SM_Dorado_rel_ed_block_clump_d_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_block_clump_d_group.SM_Dorado_rel_ed_block_clump_d_group",
+      "unresolved_slots": [
+        "DOR_b877abd0aabb6638"
+      ],
+      "fbx_sha256": "8257f399d9282a4bd801ffaf2f3741923aded6941626b8784eea5204e9805c59",
+      "bounds_min": [
+        -121.1913833618164,
+        -122.0702896118164,
+        -0.00019999999494757503
+      ],
+      "bounds_max": [
+        128.9062042236328,
+        124.60939025878906,
+        192.9687957763672
+      ],
+      "slots": [
+        "DOR_b877abd0aabb6638",
+        "DOR_36bd74df0df59776"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_buff_temple_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_buff_temple_a_group.SM_Dorado_rel_eldorado_mid_buff_temple_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "99b5fd2345cce181a4762d9199687adc72182ac1cf97037c39876d3c5e843435",
+      "bounds_min": [
+        604.2969360351562,
+        -194.6289520263672,
+        282.22662353515625
+      ],
+      "bounds_max": [
+        776.5625,
+        194.82412719726562,
+        514.8438110351562
+      ],
+      "slots": [
+        "DOR_abb1647734e3601b"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_circle_top_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_circle_top_a_group.SM_Dorado_rel_eldorado_mid_circle_top_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "a720bef33bff4b8b654ae230cbdfdc5de79573510275e7a772659ef82dad71da",
+      "bounds_min": [
+        -1746.875,
+        -769.921875,
+        -331.25
+      ],
+      "bounds_max": [
+        623.8280639648438,
+        769.9219970703125,
+        202.1483917236328
+      ],
+      "slots": [
+        "DOR_451f2cbb3502d18f",
+        "DOR_44de50dac58d373d",
+        "DOR_1a7b25b66f8ed4de"
+      ]
+    },
+    "SM_Dorado_rel_prxy_eldorado_mid_steps_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_prxy_eldorado_mid_steps_c_group.SM_Dorado_rel_prxy_eldorado_mid_steps_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "e07e49f1e916bd18713656fbbe02a45c96be0c3b3a1742bc1624689aba0e971b",
+      "bounds_min": [
+        -2257.8125,
+        291.7970275878906,
+        -82.4218978881836
+      ],
+      "bounds_max": [
+        -1444.531005859375,
+        1557.0313720703125,
+        428.125
+      ],
+      "slots": [
+        "DOR_068c3bbaaa412863"
+      ]
+    },
+    "SM_Dorado_rel_ed_serpent_wall_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_serpent_wall_a_group.SM_Dorado_rel_ed_serpent_wall_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2bcbc49c55a17013651c0093cd91b758d9bbb8710f8a0e0c8d3e9764285af4f4",
+      "bounds_min": [
+        -1580.46875,
+        1528.90625,
+        109.66800689697266
+      ],
+      "bounds_max": [
+        -1128.124755859375,
+        3189.0625,
+        2156.25
+      ],
+      "slots": [
+        "DOR_b1e5c33568427242",
+        "DOR_f6ec5c85cab149f7",
+        "DOR_9e377e9020efa674"
+      ]
+    },
+    "SM_Dorado_rel_ed_block_clump_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_block_clump_a_group.SM_Dorado_rel_ed_block_clump_a_group",
+      "unresolved_slots": [
+        "DOR_b877abd0aabb6638"
+      ],
+      "fbx_sha256": "1bae69d8e144998d22c9876732978d1e0692a85bf9102f197cd97b3332347b92",
+      "bounds_min": [
+        -314.2577819824219,
+        -216.4061737060547,
+        -0.0003000000142492354
+      ],
+      "bounds_max": [
+        301.171875,
+        259.76556396484375,
+        409.76556396484375
+      ],
+      "slots": [
+        "DOR_b877abd0aabb6638",
+        "DOR_36bd74df0df59776"
+      ]
+    },
+    "SM_Dorado_rel_ed_block_clump_e_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_block_clump_e_group.SM_Dorado_rel_ed_block_clump_e_group",
+      "unresolved_slots": [
+        "DOR_b877abd0aabb6638"
+      ],
+      "fbx_sha256": "57041a058cc17fd77e19ce0ceecec56877f669a77ab82b348cc102295fc73190",
+      "bounds_min": [
+        -441.0155944824219,
+        -215.8203125,
+        -0.0003000000142492354
+      ],
+      "bounds_max": [
+        438.67193603515625,
+        215.0391387939453,
+        276.5625
+      ],
+      "slots": [
+        "DOR_b877abd0aabb6638",
+        "DOR_1c4965175ffa36f3"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_floor_v2_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_floor_v2_group.SM_Dorado_rel_eldorado_floor_v2_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "a79c3061e3e194d3c018c1d4b033130ee15be725eb99b5a0014aedbdccaec468",
+      "bounds_min": [
+        -1229.6875,
+        -1510.9375,
+        -29.809600830078125
+      ],
+      "bounds_max": [
+        1235.9376220703125,
+        939.0625610351562,
+        14.440899848937988
+      ],
+      "slots": [
+        "DOR_5b4e58abaa6dabfd",
+        "DOR_fadd3b3e201a3733",
+        "DOR_2b4f38fc04c90c3d",
+        "DOR_8930f4a9e0973711"
+      ]
+    },
+    "SM_Dorado_rel_ed_serpent_wall_a_clump_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_serpent_wall_a_clump_group.SM_Dorado_rel_ed_serpent_wall_a_clump_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "c34b0db8cbc5ea5ab0dc49fb4e946da5b39c576ea296f80c5ad22e230b7721a7",
+      "bounds_min": [
+        -1530.46875,
+        -785.5469360351562,
+        109.66800689697266
+      ],
+      "bounds_max": [
+        -93.21295166015625,
+        1796.8751220703125,
+        1696.875
+      ],
+      "slots": [
+        "DOR_b1e5c33568427242",
+        "DOR_3b03494c327ee061"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_relic_spawn_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_relic_spawn_a_group.SM_Dorado_rel_eldorado_relic_spawn_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "042901bbf277c6a878964cd5441b0a64cd99e864bf70017fb54078c89b642fe8",
+      "bounds_min": [
+        -524.2188110351562,
+        -0.2428468018770218,
+        -17.944299697875977
+      ],
+      "bounds_max": [
+        535.1561889648438,
+        527.3438110351562,
+        8.245800018310547
+      ],
+      "slots": [
+        "DOR_451f2cbb3502d18f",
+        "DOR_0d0cca8af39e0d0c"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_b_group.SM_Dorado_rel_eldorado_main_floor_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "8eb462eeb44687e9360f4d8d5c497b556e7393afe975b312fcbb17aedaaf0054",
+      "bounds_min": [
+        -1420.312744140625,
+        -4143.75,
+        0.0030999998562037945
+      ],
+      "bounds_max": [
+        1420.312255859375,
+        -2317.187255859375,
+        0.005600000265985727
+      ],
+      "slots": [
+        "DOR_ad34ff02da016b11",
+        "DOR_57ab3d0ef100e3f6"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_tc_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_tc_group.SM_Dorado_rel_eldorado_main_floor_tc_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "4c9d6b898111efdae3e997a8008a044bb12b65267a5cf2aac1a35841be5a0f50",
+      "bounds_min": [
+        -2496.875,
+        -2535.9375,
+        0.0006000000284984708
+      ],
+      "bounds_max": [
+        2496.875,
+        -411.7185974121094,
+        0.0037000002339482307
+      ],
+      "slots": [
+        "DOR_57ab3d0ef100e3f6"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group.SM_Dorado_rel_eldorado_mid_circle_top_ramp_b_group",
+      "unresolved_slots": [
+        "DOR_63ac291b885fd677"
+      ],
+      "fbx_sha256": "c46af5eece7e4a9a5dce5ebb1674c76412982cd43c96009cbad853133baf78b2",
+      "bounds_min": [
+        0.0,
+        -120.01951599121094,
+        -422.26556396484375
+      ],
+      "bounds_max": [
+        230.0782012939453,
+        1150.0,
+        3.674299955368042
+      ],
+      "slots": [
+        "DOR_63ac291b885fd677",
+        "DOR_51dc221d0cd74e60"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_sidewall_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_sidewall_a_group.SM_Dorado_rel_eldorado_mid_sidewall_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "29ed7d67d8ee54cd9afcc94aae8689f309bcdd2b6a7caf7043979cb173c8e141",
+      "bounds_min": [
+        -783.2030639648438,
+        -47.50986862182617,
+        -761.7188110351562
+      ],
+      "bounds_max": [
+        773.8280639648438,
+        47.38777160644531,
+        625.0
+      ],
+      "slots": [
+        "DOR_aeaf21999bf6179f",
+        "DOR_aee0136aa277b2ea"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_ground_collision_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_ground_collision_b_group.SM_Dorado_rel_eldorado_ground_collision_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "c9727988f6ac271d7dd1c4b2a2db2ffc53f87c17ba834bbf69d600285e818f12",
+      "bounds_min": [
+        -298.24224853515625,
+        -298.4375305175781,
+        -1756.25
+      ],
+      "bounds_max": [
+        298.24224853515625,
+        298.24224853515625,
+        -1160.1561279296875
+      ],
+      "slots": [
+        "DOR_e5beaf368f38c83b"
+      ]
+    },
+    "SM_Dorado_rel_el_dorado_groud_design_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_dorado_groud_design_group.SM_Dorado_rel_el_dorado_groud_design_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2a1e66eb50c3ae9a345226c13ac0db9a17f4cf7f91dbdc2ebf1a1a8abe225c07",
+      "bounds_min": [
+        -1472.6566162109375,
+        -5546.875,
+        -46.16699981689453
+      ],
+      "bounds_max": [
+        1472.6556396484375,
+        -2334.375244140625,
+        5.224599838256836
+      ],
+      "slots": [
+        "DOR_57ab3d0ef100e3f6"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_center_tc_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_center_tc_group.SM_Dorado_rel_eldorado_main_floor_center_tc_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "937b3bd26ffc4ee86d8acb063052bc252e8b84794eda3d884d02f0d45971f7de",
+      "bounds_min": [
+        -1310.9375,
+        -1310.9375,
+        0.0
+      ],
+      "bounds_max": [
+        1310.9375,
+        0.00036724042729474604,
+        0.0018000000854954123
+      ],
+      "slots": [
+        "DOR_57ab3d0ef100e3f6"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_relic_spawn_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_relic_spawn_b_group.SM_Dorado_rel_eldorado_relic_spawn_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "720c843b995c0ddf46c8ddefdcfceae31d8a17eeb40fa6162208826658bc1b65",
+      "bounds_min": [
+        -524.2188110351562,
+        -525.0,
+        -17.944299697875977
+      ],
+      "bounds_max": [
+        535.1561889648438,
+        7.141145706176758,
+        8.245800018310547
+      ],
+      "slots": [
+        "DOR_451f2cbb3502d18f",
+        "DOR_0d0cca8af39e0d0c"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group.SM_Dorado_rel_eldorado_mid_circle_top_ramp_a_group",
+      "unresolved_slots": [
+        "DOR_63ac291b885fd677"
+      ],
+      "fbx_sha256": "9d4abc143d0fbacefd3ca251e4608704db2e8a4482b0f0d75282f92aafa073cb",
+      "bounds_min": [
+        -235.35157775878906,
+        -118.94527435302734,
+        -422.26556396484375
+      ],
+      "bounds_max": [
+        1.146569866250502e-05,
+        1150.7811279296875,
+        3.5094997882843018
+      ],
+      "slots": [
+        "DOR_63ac291b885fd677",
+        "DOR_51dc221d0cd74e60"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_e_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_e_group.SM_Dorado_rel_eldorado_main_floor_e_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "5c196f814ebde3a3ccee4441aa2697a1d7023540c31544fda9d781a84a483398",
+      "bounds_min": [
+        -1499.2191162109375,
+        -4987.5,
+        0.004399999976158142
+      ],
+      "bounds_max": [
+        1499.2186279296875,
+        -3246.874755859375,
+        17.907699584960938
+      ],
+      "slots": [
+        "DOR_ad34ff02da016b11",
+        "DOR_a6ce1497ce9ecc18"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_d_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_d_group.SM_Dorado_rel_eldorado_main_floor_d_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "fa515b73496ede19aaadd478fc8af5fb7c5290792542b51d71dee49605741100",
+      "bounds_min": [
+        -1597.6561279296875,
+        -1282.8125,
+        -18.017601013183594
+      ],
+      "bounds_max": [
+        1597.6561279296875,
+        0.7588261961936951,
+        -0.44140002131462097
+      ],
+      "slots": [
+        "DOR_ad34ff02da016b11",
+        "DOR_57ab3d0ef100e3f6",
+        "DOR_a6ce1497ce9ecc18"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_c_group.SM_Dorado_rel_eldorado_main_floor_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "cc09fcb0ab2aa29773521aa4cc02745c183a69b3726ea4d8583b3c341ee5c7fd",
+      "bounds_min": [
+        -2851.562744140625,
+        -4815.625,
+        -0.5054000020027161
+      ],
+      "bounds_max": [
+        2851.562255859375,
+        -251.95289611816406,
+        20.385700225830078
+      ],
+      "slots": [
+        "DOR_ad34ff02da016b11",
+        "DOR_57ab3d0ef100e3f6",
+        "DOR_28669489f0ee8fd5"
+      ]
+    },
+    "SM_Dorado_rel_el_dorado_relic_snake_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_dorado_relic_snake_b_group.SM_Dorado_rel_el_dorado_relic_snake_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "ae7fe2a8f927cc0bda0a058b22163c8125f1591b3fdca056d63ddfffc96f5656",
+      "bounds_min": [
+        -483.59381103515625,
+        -42.16314697265625,
+        -18.5669002532959
+      ],
+      "bounds_max": [
+        530.4688110351562,
+        530.4688110351562,
+        8.172599792480469
+      ],
+      "slots": [
+        "DOR_9422ec7c5784a8a8"
+      ]
+    },
+    "SM_Dorado_rel_el_arenastatue_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_arenastatue_a_group.SM_Dorado_rel_el_arenastatue_a_group",
+      "unresolved_slots": [
+        "DOR_418d0d7f22ac76d1"
+      ],
+      "fbx_sha256": "6d4c6f4d3b26c9eebe234fee28dad0030b9038256cbc9be131c3b9e40c998596",
+      "bounds_min": [
+        -524.2188110351562,
+        -132.9102020263672,
+        -257.8125
+      ],
+      "bounds_max": [
+        524.2188110351562,
+        226.5625,
+        3403.125
+      ],
+      "slots": [
+        "DOR_418d0d7f22ac76d1",
+        "DOR_6fffd8b58af37284",
+        "DOR_6127dd4c739d4805",
+        "DOR_4cc9fab588c4fa09",
+        "DOR_e941236efeaf04c2"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_centerline_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_centerline_group.SM_Dorado_rel_eldorado_centerline_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "3633f4b3e026a0f6d44ececa3399ad2d952af938e8534fefd434fe3e6efabb84",
+      "bounds_min": [
+        -6506.25,
+        -108.98445129394531,
+        -224.60940551757812
+      ],
+      "bounds_max": [
+        627.3438110351562,
+        104.78577423095703,
+        211.5233917236328
+      ],
+      "slots": [
+        "DOR_44de50dac58d373d"
+      ]
+    },
+    "SM_Dorado_rel_el_dorado_relic_snake_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_dorado_relic_snake_a_group.SM_Dorado_rel_el_dorado_relic_snake_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "97f00dcb51a49a25927c343793cfbb6e083cfc1445a09c493efe77b3b76c34f3",
+      "bounds_min": [
+        -530.4688110351562,
+        -530.4688110351562,
+        -18.5669002532959
+      ],
+      "bounds_max": [
+        483.59381103515625,
+        42.16314697265625,
+        8.172599792480469
+      ],
+      "slots": [
+        "DOR_9422ec7c5784a8a8"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_wall_trim_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_wall_trim_a.SM_Dorado_rel_eldorado_wall_trim_a",
+      "unresolved_slots": [],
+      "fbx_sha256": "fef934554a48f82ae20618183d08e5b8bb60dca29126d03db50b3d88d548acf4",
+      "bounds_min": [
+        -113.57432556152344,
+        -1601.5628662109375,
+        -164.35549926757812
+      ],
+      "bounds_max": [
+        4865.625,
+        780.4686279296875,
+        398.4375
+      ],
+      "slots": [
+        "DOR_f79f73f3bcd58bce"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_mid_circle_top_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_mid_circle_top_c_group.SM_Dorado_rel_eldorado_mid_circle_top_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2b455cce88171d99cc57a100a2781fc2354096af7684d287734e6a6829c8cd57",
+      "bounds_min": [
+        -15.637141227722168,
+        -798.0469360351562,
+        -1604.6875
+      ],
+      "bounds_max": [
+        789.8438110351562,
+        798.0469360351562,
+        185.1562042236328
+      ],
+      "slots": [
+        "DOR_aee0136aa277b2ea",
+        "DOR_aeaf21999bf6179f"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_main_floor_f_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_main_floor_f_group.SM_Dorado_rel_eldorado_main_floor_f_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "b66f5b45bf328a4d84aad82af8301ea392752bbd7f48724c4ceb56e179e0f508",
+      "bounds_min": [
+        -1597.6561279296875,
+        -1.098026156425476,
+        -18.017601013183594
+      ],
+      "bounds_max": [
+        1597.6561279296875,
+        1282.8125,
+        -0.4433000087738037
+      ],
+      "slots": [
+        "DOR_ad34ff02da016b11",
+        "DOR_57ab3d0ef100e3f6",
+        "DOR_a6ce1497ce9ecc18"
+      ]
+    },
+    "SM_Dorado_rel_eldorado_curved_wall_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_eldorado_curved_wall_a_group.SM_Dorado_rel_eldorado_curved_wall_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "c9308cd8d31e2883ca0093797076ece8bcca124bf42768d8cbf5f7dcaa04def9",
+      "bounds_min": [
+        -1812.5,
+        -187.89059448242188,
+        0.0
+      ],
+      "bounds_max": [
+        11.749323844909668,
+        270.8985290527344,
+        1483.5938720703125
+      ],
+      "slots": [
+        "DOR_257c0e3b314fd490",
+        "DOR_2ae7ed8398a585e2"
+      ]
+    },
+    "SM_Dorado_rel_ed_ring_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_ring_b_group.SM_Dorado_rel_ed_ring_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "e411ac0e7d50366bfc521146549cc8faf7c8542cd4f1b1914207222547380fbb",
+      "bounds_min": [
+        -5681.25,
+        -272.26605224609375,
+        -5546.875
+      ],
+      "bounds_max": [
+        5628.125,
+        272.2660827636719,
+        5656.25
+      ],
+      "slots": [
+        "DOR_4769906b56ed2b81"
+      ]
+    },
+    "SM_Dorado_rel_ed_vista_ring_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vista_ring_a_group.SM_Dorado_rel_ed_vista_ring_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "21eee40cd5ecbed19b63aa7033e69b60e14a63c3469009d6f7cfd703c5b11ae4",
+      "bounds_min": [
+        -12.206999778747559,
+        -0.5657010674476624,
+        -11.57229995727539
+      ],
+      "bounds_max": [
+        12.206999778747559,
+        0.5657010674476624,
+        12.707500457763672
+      ],
+      "slots": [
+        "DOR_077e3b767e3f313d"
+      ]
+    },
+    "SM_Dorado_rel_el_island_small_c": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_island_small_c.SM_Dorado_rel_el_island_small_c",
+      "unresolved_slots": [],
+      "fbx_sha256": "48546dddec1931d7724508c959633add4ce5b3c4f1c5fef6408940615c339447",
+      "bounds_min": [
+        -1885.9375,
+        -1860.9375,
+        -2307.8125
+      ],
+      "bounds_max": [
+        1778.125,
+        1987.4998779296875,
+        2007.8125
+      ],
+      "slots": [
+        "DOR_ab7680f7c7c48cb3"
+      ]
+    },
+    "SM_Dorado_rel_el_island_small_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_island_small_b.SM_Dorado_rel_el_island_small_b",
+      "unresolved_slots": [],
+      "fbx_sha256": "672fb99980452d0fa825bc62705e09ac0854898efb01c237a9511179e5fdc8ca",
+      "bounds_min": [
+        -6443.75,
+        -10956.25,
+        -3123.4375
+      ],
+      "bounds_max": [
+        6431.24951171875,
+        10818.75,
+        3753.125
+      ],
+      "slots": [
+        "DOR_529fbfe66a413554"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_b_group.SM_Dorado_rel_ed_vistamountains_clump_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2a8f0e0470e17f83900760f49fe52e5ccdf068a1b6a66a471abf5808a800fef1",
+      "bounds_min": [
+        -914400.0,
+        -346399.96875,
+        -94850.0
+      ],
+      "bounds_max": [
+        -194900.03125,
+        118500.078125,
+        286800.0
+      ],
+      "slots": [
+        "DOR_4e11fc1fbe9b3cf2",
+        "DOR_92e011e60ffebd45",
+        "DOR_e0e0f54f932c08b5",
+        "DOR_9c0c75cbd862b246",
+        "DOR_6ed17803740c317a",
+        "DOR_10fcd80998fc8996"
+      ]
+    },
+    "SM_Dorado_rel_el_arenastatue_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_arenastatue_b_group.SM_Dorado_rel_el_arenastatue_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "7cd12808a371f87276386372c030b71e177d21094ca22b8f76d181ea2a036165",
+      "bounds_min": [
+        -2779.6875,
+        -885.9375,
+        -392.77337646484375
+      ],
+      "bounds_max": [
+        2764.0625,
+        106.7385482788086,
+        5800.0
+      ],
+      "slots": [
+        "DOR_6127dd4c739d4805",
+        "DOR_4cc9fab588c4fa09",
+        "DOR_6fffd8b58af37284",
+        "DOR_e941236efeaf04c2",
+        "DOR_6a09b6a489013ec8"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_e_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_e_group.SM_Dorado_rel_ed_vistamountains_clump_e_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "44aa4c35319a71f9c408a4aeb3b9fbd7db7bbf301dff118ce0dda13ecfb51f6f",
+      "bounds_min": [
+        -153599.984375,
+        -66350.015625,
+        -147200.0
+      ],
+      "bounds_max": [
+        289600.0,
+        250800.0,
+        233800.0
+      ],
+      "slots": [
+        "DOR_4e11fc1fbe9b3cf2",
+        "DOR_b9fbe0849ef9e11a",
+        "DOR_e0e0f54f932c08b5",
+        "DOR_9c0c75cbd862b246",
+        "DOR_4fdcd8224be59dbc",
+        "DOR_6ed17803740c317a",
+        "DOR_10fcd80998fc8996"
+      ]
+    },
+    "SM_Dorado_rel_el_arenatemple_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_arenatemple_group.SM_Dorado_rel_el_arenatemple_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "0cde0570fc4083f099e765a415f08aa049c2b2d2909783ab167ea1a8227b78a8",
+      "bounds_min": [
+        -9062.5,
+        -7581.25048828125,
+        -12081.25
+      ],
+      "bounds_max": [
+        8831.25,
+        9125.0,
+        21862.5
+      ],
+      "slots": [
+        "DOR_4cc9fab588c4fa09",
+        "DOR_aba1d63ef17f236f",
+        "DOR_6fffd8b58af37284",
+        "DOR_6127dd4c739d4805",
+        "DOR_4f5bc3cb771579d1"
+      ]
+    },
+    "SM_Dorado_rel_el_mountain_unique_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_mountain_unique_c_group.SM_Dorado_rel_el_mountain_unique_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "9c922396cf624d5a501d8f4308d0c70299439b79c0355be335314e1af1c3d196",
+      "bounds_min": [
+        -241800.0,
+        -63599.98046875,
+        -294400.0
+      ],
+      "bounds_max": [
+        -21712.5,
+        125000.0078125,
+        89700.0
+      ],
+      "slots": [
+        "DOR_9ab4c5771e25e6d3"
+      ]
+    },
+    "SM_Dorado_rel_el_island_small_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_island_small_a.SM_Dorado_rel_el_island_small_a",
+      "unresolved_slots": [],
+      "fbx_sha256": "f3e6c59258535b735c9ff650a1b70d8771ff43ac6b7d746914a1f3ce865e7648",
+      "bounds_min": [
+        -11150.0,
+        -13675.0,
+        -15887.5
+      ],
+      "bounds_max": [
+        11312.5,
+        13300.0,
+        15112.5
+      ],
+      "slots": [
+        "DOR_aa1dd8c2f5b08c77"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_f_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_f_group.SM_Dorado_rel_ed_vistamountains_clump_f_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "27cdd3ef18acfd665892c8403898c3e0e9a74fcc2a38dc5b5a19be6f6100cb36",
+      "bounds_min": [
+        -107000.0,
+        1557.8135986328125,
+        -111300.0
+      ],
+      "bounds_max": [
+        107300.0078125,
+        136400.0,
+        69250.0
+      ],
+      "slots": [
+        "DOR_4e11fc1fbe9b3cf2",
+        "DOR_b9fbe0849ef9e11a",
+        "DOR_92e011e60ffebd45",
+        "DOR_e0e0f54f932c08b5",
+        "DOR_9c0c75cbd862b246",
+        "DOR_4fdcd8224be59dbc"
+      ]
+    },
+    "SM_Dorado_rel_el_arenastartareawall_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_arenastartareawall_b_group.SM_Dorado_rel_el_arenastartareawall_b_group",
+      "unresolved_slots": [
+        "DOR_418d0d7f22ac76d1"
+      ],
+      "fbx_sha256": "7450b7209b50502db8f43047cee3ec6bdd1300129d9faf1bc7846d29f0cfb212",
+      "bounds_min": [
+        -4274.99951171875,
+        5490.625,
+        -1393.75
+      ],
+      "bounds_max": [
+        4275.0009765625,
+        11556.25,
+        1178.125
+      ],
+      "slots": [
+        "DOR_418d0d7f22ac76d1",
+        "DOR_6127dd4c739d4805",
+        "DOR_8e625c53e99a1f01",
+        "DOR_6fffd8b58af37284"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_c_group.SM_Dorado_rel_ed_vistamountains_clump_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "71d347b0333831acc2aa101ce716065a73c8f63e5a09c2a1c08e4e5f38eabb10",
+      "bounds_min": [
+        -168399.984375,
+        -233000.0,
+        -113900.0
+      ],
+      "bounds_max": [
+        97849.984375,
+        100100.015625,
+        141200.0
+      ],
+      "slots": [
+        "DOR_92e011e60ffebd45",
+        "DOR_9c0c75cbd862b246",
+        "DOR_4fdcd8224be59dbc",
+        "DOR_6ed17803740c317a",
+        "DOR_10fcd80998fc8996"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_d_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_d_group.SM_Dorado_rel_ed_vistamountains_clump_d_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "3c49c7527618e7047b1b22081964c269c6fe4969e7bb248b4ee2ace4944b9310",
+      "bounds_min": [
+        -28250.005859375,
+        -139100.0,
+        -202300.0
+      ],
+      "bounds_max": [
+        212000.0,
+        104599.984375,
+        78950.0
+      ],
+      "slots": [
+        "DOR_b9fbe0849ef9e11a",
+        "DOR_92e011e60ffebd45",
+        "DOR_e0e0f54f932c08b5",
+        "DOR_9c0c75cbd862b246",
+        "DOR_7794b7202a213e9a",
+        "DOR_4fdcd8224be59dbc",
+        "DOR_6ed17803740c317a",
+        "DOR_10fcd80998fc8996"
+      ]
+    },
+    "SM_Dorado_rel_el_temple_large": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_temple_large.SM_Dorado_rel_el_temple_large",
+      "unresolved_slots": [],
+      "fbx_sha256": "818e3ed1bdcd47c569caa3ca6b85de4bcf4f987d61044ce745089e46e192c028",
+      "bounds_min": [
+        -37475.0,
+        -44000.0,
+        -35775.0
+      ],
+      "bounds_max": [
+        40025.0,
+        47500.0,
+        36650.0
+      ],
+      "slots": [
+        "DOR_b99e49bdd32b0ca4",
+        "DOR_171d1829ca4260b2"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistamountains_clump_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistamountains_clump_a_group.SM_Dorado_rel_ed_vistamountains_clump_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "1aa30cd88a8cced208889ab45dd6b36fcea0fe29fb97ff95be15776cd35ca832",
+      "bounds_min": [
+        -479600.0,
+        -81599.96875,
+        -151400.0
+      ],
+      "bounds_max": [
+        57250.01953125,
+        381600.03125,
+        313600.0
+      ],
+      "slots": [
+        "DOR_4e11fc1fbe9b3cf2",
+        "DOR_92e011e60ffebd45",
+        "DOR_e0e0f54f932c08b5",
+        "DOR_9c0c75cbd862b246",
+        "DOR_6ed17803740c317a",
+        "DOR_10fcd80998fc8996"
+      ]
+    },
+    "SM_Dorado_rel_ed_treecards_clump_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_treecards_clump_a_group.SM_Dorado_rel_ed_treecards_clump_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "83858b022d6f7ab0d1393f55b0006a96db814daa6d0e9ab096bdbcb8793ea48a",
+      "bounds_min": [
+        -9431.25,
+        -3381.25,
+        -5368.75
+      ],
+      "bounds_max": [
+        9431.25,
+        3381.24951171875,
+        5368.75
+      ],
+      "slots": [
+        "DOR_41dc3ee7f3bcb8ef"
+      ]
+    },
+    "SM_Dorado_trmple_tree_02_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_trmple_tree_02_group.SM_Dorado_trmple_tree_02_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "e052064db47ae23aaea8a9fc497a0e5075f3dbe53843edb4f1f4fb0f19e4b3ab",
+      "bounds_min": [
+        -364.8437805175781,
+        -403.90618896484375,
+        -18.151899337768555
+      ],
+      "bounds_max": [
+        421.0938415527344,
+        758.9844360351562,
+        1023.4375
+      ],
+      "slots": [
+        "DOR_72a0de9a5c8d66d2",
+        "DOR_2ce8cbb123cfa7d1"
+      ]
+    },
+    "SM_Dorado_rel_ed_treecards_clump_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_treecards_clump_b_group.SM_Dorado_rel_ed_treecards_clump_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "8739b8ac3713ad4ca146ba7c2a16fec920b8a10dba767968dd6215fd0cc5db75",
+      "bounds_min": [
+        -19375.0,
+        -10237.501953125,
+        -7718.75
+      ],
+      "bounds_max": [
+        19375.0,
+        10237.5009765625,
+        7718.75
+      ],
+      "slots": [
+        "DOR_41dc3ee7f3bcb8ef"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud4": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud4.SM_Dorado_rel_el_vista_cloud4",
+      "unresolved_slots": [],
+      "fbx_sha256": "0c51c1932a0a5fda8793acf23184746cfef3887fee07951bec43eb4fe1fde036",
+      "bounds_min": [
+        -0.0005097565590403974,
+        -1255.4688720703125,
+        -313.8672180175781
+      ],
+      "bounds_max": [
+        0.0005097565590403974,
+        1255.4688720703125,
+        313.8672180175781
+      ],
+      "slots": [
+        "DOR_6cb0672a9e7ba019"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud.SM_Dorado_rel_el_vista_cloud",
+      "unresolved_slots": [],
+      "fbx_sha256": "86345fc5ac853db535326cc8f43e4693de3b58480faa361b582ca498e2766797",
+      "bounds_min": [
+        -0.002209756523370743,
+        -1255.4688720703125,
+        -313.8672180175781
+      ],
+      "bounds_max": [
+        0.002209756523370743,
+        1255.4688720703125,
+        313.8672180175781
+      ],
+      "slots": [
+        "DOR_6cb0672a9e7ba019"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistatrees_clump_b_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistatrees_clump_b_group.SM_Dorado_rel_ed_vistatrees_clump_b_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "cee69bcc1c08332a2f357b9a51cbd81a7d8b8dc4543cf181a92b71373dd0a347",
+      "bounds_min": [
+        43000.01171875,
+        -32775.01171875,
+        -12150.0
+      ],
+      "bounds_max": [
+        223400.015625,
+        131499.984375,
+        222400.0
+      ],
+      "slots": [
+        "DOR_e5f88da305b69b1e"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud3": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud3.SM_Dorado_rel_el_vista_cloud3",
+      "unresolved_slots": [],
+      "fbx_sha256": "807fcfb3f9b88d7b86adccc4f67553ebefc060eadb3ca7ebb0799498668b756f",
+      "bounds_min": [
+        -0.0005097565590403974,
+        -1255.4688720703125,
+        -313.8672180175781
+      ],
+      "bounds_max": [
+        0.0005097565590403974,
+        1255.4688720703125,
+        313.8672180175781
+      ],
+      "slots": [
+        "DOR_6cb0672a9e7ba019"
+      ]
+    },
+    "SM_Dorado_rel_el_plant_vine_curve_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_plant_vine_curve_b.SM_Dorado_rel_el_plant_vine_curve_b",
+      "unresolved_slots": [],
+      "fbx_sha256": "4e52e68eb20a8d1265e09a006bf617c7143f79cf53dbe3c93a64a38c6c214af5",
+      "bounds_min": [
+        -429.29693603515625,
+        -203.32025146484375,
+        -1806.25
+      ],
+      "bounds_max": [
+        64.69730377197266,
+        302.3438415527344,
+        59.96090316772461
+      ],
+      "slots": [
+        "DOR_dbedc1083ff0bf7f"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistatrees_clump_a_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistatrees_clump_a_group.SM_Dorado_rel_ed_vistatrees_clump_a_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "1a813499a594cc4de66cb3ff257725c79dea179d44fe87e39bc53ab3e41002e4",
+      "bounds_min": [
+        -35075.0078125,
+        -140300.0,
+        -24112.5
+      ],
+      "bounds_max": [
+        215399.984375,
+        -6162.5126953125,
+        82150.0
+      ],
+      "slots": [
+        "DOR_e5f88da305b69b1e"
+      ]
+    },
+    "SM_Dorado_rel_el_plant_vine_bundle_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_plant_vine_bundle_a.SM_Dorado_rel_el_plant_vine_bundle_a",
+      "unresolved_slots": [],
+      "fbx_sha256": "336b9bd8f91a4242a26491e69cf01af07515b6912e0eb380231b55cf33848d02",
+      "bounds_min": [
+        -1325.0,
+        -186.62107849121094,
+        -1422.6561279296875
+      ],
+      "bounds_max": [
+        1068.75,
+        113.67180633544922,
+        41.96780014038086
+      ],
+      "slots": [
+        "DOR_dbedc1083ff0bf7f"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud2": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud2.SM_Dorado_rel_el_vista_cloud2",
+      "unresolved_slots": [],
+      "fbx_sha256": "1cba0aaca495e500b15a67a475bd96fde8ad8c6fb2053b504ac6794b73bd8725",
+      "bounds_min": [
+        -6.901618326082826e-05,
+        -1255.4688720703125,
+        -313.8672180175781
+      ],
+      "bounds_max": [
+        0.0013902434147894382,
+        1255.4688720703125,
+        313.8672180175781
+      ],
+      "slots": [
+        "DOR_6cb0672a9e7ba019"
+      ]
+    },
+    "SM_Dorado_rel_el_plant_vine_bundle_b": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_plant_vine_bundle_b.SM_Dorado_rel_el_plant_vine_bundle_b",
+      "unresolved_slots": [],
+      "fbx_sha256": "6fa144b1e04fb1ebc76e52c4bd33e234b05c294a9ab11b35c4664e64f5cdeb4a",
+      "bounds_min": [
+        -340.23443603515625,
+        -398.6327819824219,
+        -2457.8125
+      ],
+      "bounds_max": [
+        418.35943603515625,
+        306.6405944824219,
+        109.08199310302734
+      ],
+      "slots": [
+        "DOR_dbedc1083ff0bf7f"
+      ]
+    },
+    "SM_Dorado_magnet_force_01_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_magnet_force_01_group.SM_Dorado_magnet_force_01_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "dc2290f7e067a7272918ac367d6357667fce25fdb3cddbb72c09d0b87121644c",
+      "bounds_min": [
+        -6000.0,
+        -570.7035522460938,
+        -5428.125
+      ],
+      "bounds_max": [
+        6000.0,
+        570.7035522460938,
+        6000.0
+      ],
+      "slots": [
+        "DOR_fb3e8e8478d21ba2",
+        "DOR_b3dc91a468ab1722"
+      ]
+    },
+    "SM_Dorado_rel_ed_hanging_vine_leafs_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_hanging_vine_leafs_a.SM_Dorado_rel_ed_hanging_vine_leafs_a",
+      "unresolved_slots": [],
+      "fbx_sha256": "7bdd6c55e45e204053ae3e848de139749e15f66f8a010afe4019a339ed8a55e3",
+      "bounds_min": [
+        -95.3125,
+        -6.106595516204834,
+        -129.5897979736328
+      ],
+      "bounds_max": [
+        95.3125,
+        42.7245979309082,
+        0.0
+      ],
+      "slots": [
+        "DOR_bcb19459a6263410"
+      ]
+    },
+    "SM_Dorado_rel_el_vine_card_a": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vine_card_a.SM_Dorado_rel_el_vine_card_a",
+      "unresolved_slots": [],
+      "fbx_sha256": "e76c0a3898e408fbaac0dfefbdcb82918ee98427731b736673c786f6db1a3380",
+      "bounds_min": [
+        -320.89837646484375,
+        -0.0597207136452198,
+        -415.23443603515625
+      ],
+      "bounds_max": [
+        255.2733917236328,
+        4.107699394226074,
+        6.036399841308594
+      ],
+      "slots": [
+        "DOR_679adb3a0482b218"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistatrees_clump_d_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistatrees_clump_d_group.SM_Dorado_rel_ed_vistatrees_clump_d_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "3bd4537caca455c6666132b3adf2548b4b170dae73b90e3145614a36dc7a998f",
+      "bounds_min": [
+        -137700.0,
+        -105499.9921875,
+        -23975.0
+      ],
+      "bounds_max": [
+        7143.748046875,
+        14137.5078125,
+        41275.0
+      ],
+      "slots": [
+        "DOR_e5f88da305b69b1e"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistatrees_clump_e_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistatrees_clump_e_group.SM_Dorado_rel_ed_vistatrees_clump_e_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "240031fd15ab25b85b3438cd03ec0b799c86c9f0b389ccb1d7f3ef3d43ca72ed",
+      "bounds_min": [
+        -239999.984375,
+        -18249.98828125,
+        -88050.0
+      ],
+      "bounds_max": [
+        -54349.9765625,
+        328600.0,
+        335000.0
+      ],
+      "slots": [
+        "DOR_e5f88da305b69b1e"
+      ]
+    },
+    "SM_Dorado_rel_ed_vistatrees_clump_c_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_ed_vistatrees_clump_c_group.SM_Dorado_rel_ed_vistatrees_clump_c_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2c79c7116d9a6027a86610eda1b33505291d506847c319f8d5457a4d219ad978",
+      "bounds_min": [
+        -60149.9921875,
+        15437.498046875,
+        -10887.5
+      ],
+      "bounds_max": [
+        42525.0078125,
+        80000.0,
+        70600.0
+      ],
+      "slots": [
+        "DOR_e5f88da305b69b1e"
+      ]
+    },
+    "SM_Dorado_rel_el_plant_vine_curve_c": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_plant_vine_curve_c.SM_Dorado_rel_el_plant_vine_curve_c",
+      "unresolved_slots": [],
+      "fbx_sha256": "2757f7209ac0029c11da81dfcb62e626d64d604c26f438b77714e3fc2ce0e915",
+      "bounds_min": [
+        -44.62890625,
+        -315.4297180175781,
+        -1648.4375
+      ],
+      "bounds_max": [
+        498.0469055175781,
+        43.82316207885742,
+        36.45020294189453
+      ],
+      "slots": [
+        "DOR_dbedc1083ff0bf7f"
+      ]
+    },
+    "SM_Dorado_rel_el_treecard_l4": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_treecard_l4.SM_Dorado_rel_el_treecard_l4",
+      "unresolved_slots": [],
+      "fbx_sha256": "5187b183de60afe5917e4c286f58efb17392e5b472f982faefb4fc57dea30101",
+      "bounds_min": [
+        -5040.625,
+        -50.82965850830078,
+        -724.2188110351562
+      ],
+      "bounds_max": [
+        5409.375,
+        51.17143630981445,
+        1821.875
+      ],
+      "slots": [
+        "DOR_1502e10faab2ccfa"
+      ]
+    },
+    "SM_Dorado_rel_el_treecard_l3": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_treecard_l3.SM_Dorado_rel_el_treecard_l3",
+      "unresolved_slots": [],
+      "fbx_sha256": "23065587e721217c371ac87f093a4a259b2388ef851ffc63d6a5a7fcb59a45f2",
+      "bounds_min": [
+        -2167.1875,
+        -58.251808166503906,
+        -1161.7188720703125
+      ],
+      "bounds_max": [
+        1286.7188720703125,
+        57.76359176635742,
+        1734.375
+      ],
+      "slots": [
+        "DOR_1502e10faab2ccfa"
+      ]
+    },
+    "SM_Dorado_rel_el_island_large": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_island_large.SM_Dorado_rel_el_island_large",
+      "unresolved_slots": [],
+      "fbx_sha256": "8edc89b984613a6a2a46cb9b56b6cd17f729a90059baad02150c153ce2bfe982",
+      "bounds_min": [
+        -128900.0,
+        -131200.0,
+        -161800.0
+      ],
+      "bounds_max": [
+        120599.9921875,
+        115800.0,
+        153600.0
+      ],
+      "slots": [
+        "DOR_527e9098c12d849d"
+      ]
+    },
+    "SM_Dorado_rel_el_treecard_l5": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_treecard_l5.SM_Dorado_rel_el_treecard_l5",
+      "unresolved_slots": [],
+      "fbx_sha256": "6503915736d0e38ec5bcffda11d903c8262fea66e252cdf7ee0861b12a705c78",
+      "bounds_min": [
+        -1221.875,
+        -54.68739318847656,
+        -318.75
+      ],
+      "bounds_max": [
+        1707.8125,
+        53.661949157714844,
+        2385.9375
+      ],
+      "slots": [
+        "DOR_1502e10faab2ccfa"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud5": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud5.SM_Dorado_rel_el_vista_cloud5",
+      "unresolved_slots": [],
+      "fbx_sha256": "826eecdd986e08d3d8b63ac2ede3c048c81363ec1529009d44cb37efb4985b84",
+      "bounds_min": [
+        -1385.1561279296875,
+        -631.640625,
+        -265.625
+      ],
+      "bounds_max": [
+        1396.0938720703125,
+        535.9375610351562,
+        265.625
+      ],
+      "slots": [
+        "DOR_f86bd261020618bc"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud7": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud7.SM_Dorado_rel_el_vista_cloud7",
+      "unresolved_slots": [],
+      "fbx_sha256": "d973b7f0f2cd2887bd469575522af6ba708fcb780d3a0826b8c04680187dffb6",
+      "bounds_min": [
+        -1275.7811279296875,
+        -678.9060668945312,
+        -256.4452819824219
+      ],
+      "bounds_max": [
+        1300.0,
+        435.1561584472656,
+        256.4452819824219
+      ],
+      "slots": [
+        "DOR_f86bd261020618bc"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud6": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud6.SM_Dorado_rel_el_vista_cloud6",
+      "unresolved_slots": [],
+      "fbx_sha256": "4133afcd4e7742f4ab60f4b81ee42c1a9a243c16772bc499631cce22a58d2191",
+      "bounds_min": [
+        -1233.5938720703125,
+        -295.3125915527344,
+        -224.80471801757812
+      ],
+      "bounds_max": [
+        1233.5938720703125,
+        317.1875305175781,
+        224.80471801757812
+      ],
+      "slots": [
+        "DOR_f86bd261020618bc"
+      ]
+    },
+    "SM_Dorado_rel_el_vista_cloud8": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_rel_el_vista_cloud8.SM_Dorado_rel_el_vista_cloud8",
+      "unresolved_slots": [],
+      "fbx_sha256": "7474d82467e630421b84060bf8e3e9e9d84d9bfd055512ada08ae169b1bf17ac",
+      "bounds_min": [
+        -1233.5938720703125,
+        -295.3125915527344,
+        -224.80471801757812
+      ],
+      "bounds_max": [
+        1233.5938720703125,
+        317.1875305175781,
+        224.80471801757812
+      ],
+      "slots": [
+        "DOR_f86bd261020618bc"
+      ]
+    },
+    "SM_Dorado_sm_waterfall_distance_mist_large_2_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_sm_waterfall_distance_mist_large_2_group.SM_Dorado_sm_waterfall_distance_mist_large_2_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "2b7cc942a5b023651276da1179fea82b59d63ee8f6383ba6e360de7f47fb4677",
+      "bounds_min": [
+        -11187.5,
+        -3106.2509765625,
+        -58950.0
+      ],
+      "bounds_max": [
+        11175.0,
+        -3106.2490234375,
+        3101.5625
+      ],
+      "slots": [
+        "DOR_fda669de79a0907a",
+        "DOR_92425e84dca999b0"
+      ]
+    },
+    "SM_Dorado_sm_waterfall_long_distance_group": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_sm_waterfall_long_distance_group.SM_Dorado_sm_waterfall_long_distance_group",
+      "unresolved_slots": [],
+      "fbx_sha256": "da6bc9ca21892d3a62b3f559f265d91e99cc36fcc49b6bebbc43eb94f02bfefc",
+      "bounds_min": [
+        -957.8128051757812,
+        -4081.25,
+        -33350.0
+      ],
+      "bounds_max": [
+        957.8123168945312,
+        4068.75,
+        192.67581176757812
+      ],
+      "slots": [
+        "DOR_3849d38258f9bd6b",
+        "DOR_af7c39069588efdb"
+      ]
+    },
+    "SM_Dorado_CentimeterCalibration": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_CentimeterCalibration.SM_Dorado_CentimeterCalibration",
+      "unresolved_slots": [
+        "Material_0"
+      ],
+      "bounds_min": [
+        -25.00001335144043,
+        -150.0,
+        -75.0
+      ],
+      "bounds_max": [
+        75.00000762939453,
+        50.000003814697266,
+        225.0
+      ],
+      "slots": [
+        "Material_0"
+      ]
+    },
+    "SM_Dorado_RingEnergy_Gap_01": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_RingEnergy_Gap_01.SM_Dorado_RingEnergy_Gap_01",
+      "unresolved_slots": [],
+      "fbx_sha256": "38e61d5031a3969e9a0bd739c488fa488846872bd1bec0c6fc4c7ca709a37bed",
+      "bounds_min": [
+        3408.419189453125,
+        -165.00039672851562,
+        1105.978271484375
+      ],
+      "bounds_max": [
+        4508.85595703125,
+        164.99969482421875,
+        2962.3427734375
+      ],
+      "slots": [
+        "DOR_fda735786260a530"
+      ]
+    },
+    "SM_Dorado_RingEnergy_Gap_02": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_RingEnergy_Gap_02.SM_Dorado_RingEnergy_Gap_02",
+      "unresolved_slots": [],
+      "fbx_sha256": "abdfb4f76bd64ed3db00bea4f4d8600143e7e7ff9a48eeebb30d475532828906",
+      "bounds_min": [
+        -2502.31103515625,
+        -164.99990844726562,
+        3725.427734375
+      ],
+      "bounds_max": [
+        -993.6535034179688,
+        165.00021362304688,
+        4537.8349609375
+      ],
+      "slots": [
+        "DOR_fda735786260a530"
+      ]
+    },
+    "SM_Dorado_RingEnergy_Gap_03": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_RingEnergy_Gap_03.SM_Dorado_RingEnergy_Gap_03",
+      "unresolved_slots": [],
+      "fbx_sha256": "4439b153282566b6fb5fe38dd3b9756dbaa255005004a0d3a5ffe7b02d6fd5ec",
+      "bounds_min": [
+        -4112.0625,
+        -164.999755859375,
+        -3669.922607421875
+      ],
+      "bounds_max": [
+        -2719.4990234375,
+        165.0003662109375,
+        -2073.749267578125
+      ],
+      "slots": [
+        "DOR_fda735786260a530"
+      ]
+    },
+    "SM_Dorado_RingEnergy_Gap_04": {
+      "path": "/BreakawayCore/Environments/Dorado/Meshes/SM_Dorado_RingEnergy_Gap_04.SM_Dorado_RingEnergy_Gap_04",
+      "unresolved_slots": [],
+      "fbx_sha256": "a149e910faba4836a9fc25a974211abb194c393c6ab9eee5cd403e8c35f20555",
+      "bounds_min": [
+        1510.77099609375,
+        -165.00030517578125,
+        -4376.33544921875
+      ],
+      "bounds_max": [
+        3433.647216796875,
+        164.99986267089844,
+        -2984.21630859375
+      ],
+      "slots": [
+        "DOR_fda735786260a530"
+      ]
+    }
+  },
+  "errors": []
+}

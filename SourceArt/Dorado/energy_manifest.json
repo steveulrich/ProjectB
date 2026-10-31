@@ -1,0 +1,342 @@
+{
+  "schema_version": 1,
+  "status": "source-ready; Unreal import and visual validation pending",
+  "blender_version": "5.2.3 LTS",
+  "blend": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Dorado_RingEnergy_Reconstructed.blend",
+  "assets": [
+    {
+      "id": "SM_Dorado_RingEnergy_Gap_01",
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_RingEnergy_Gap_01.fbx",
+      "exported": true,
+      "reconstructed": true,
+      "collision_role": "decorative",
+      "triangles": 144,
+      "vertices": 150,
+      "local_bounds_cm": {
+        "min": [
+          3408.419162502282,
+          -165.0,
+          1105.9782465455062
+        ],
+        "max": [
+          4508.856002281399,
+          165.0,
+          2962.34270663489
+        ]
+      },
+      "materials": [
+        {
+          "slot": 0,
+          "name": "DOR_fda735786260a530",
+          "material_id": "mag_ring_01_matgroup__1__mag_ring_02",
+          "source_mtl": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+          "source_index": 1
+        }
+      ],
+      "source_gap_degrees": {
+        "start_angle_degrees": 15.0,
+        "end_angle_degrees": 39.0,
+        "angular_span_degrees": 24.0
+      },
+      "source_hash_sha256": "38e61d5031a3969e9a0bd739c488fa488846872bd1bec0c6fc4c7ca709a37bed"
+    },
+    {
+      "id": "SM_Dorado_RingEnergy_Gap_02",
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_RingEnergy_Gap_02.fbx",
+      "exported": true,
+      "reconstructed": true,
+      "collision_role": "decorative",
+      "triangles": 144,
+      "vertices": 150,
+      "local_bounds_cm": {
+        "min": [
+          -2502.3110764096673,
+          -165.0,
+          3725.4276591065027
+        ],
+        "max": [
+          -993.6535211002504,
+          165.0,
+          4537.835069591692
+        ]
+      },
+      "materials": [
+        {
+          "slot": 0,
+          "name": "DOR_fda735786260a530",
+          "material_id": "mag_ring_01_matgroup__1__mag_ring_02",
+          "source_mtl": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+          "source_index": 1
+        }
+      ],
+      "source_gap_degrees": {
+        "start_angle_degrees": 103.5,
+        "end_angle_degrees": 122.0,
+        "angular_span_degrees": 18.5
+      },
+      "source_hash_sha256": "abdfb4f76bd64ed3db00bea4f4d8600143e7e7ff9a48eeebb30d475532828906"
+    },
+    {
+      "id": "SM_Dorado_RingEnergy_Gap_03",
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_RingEnergy_Gap_03.fbx",
+      "exported": true,
+      "reconstructed": true,
+      "collision_role": "decorative",
+      "triangles": 144,
+      "vertices": 150,
+      "local_bounds_cm": {
+        "min": [
+          -4112.062445565723,
+          -165.0,
+          -3669.922714343787
+        ],
+        "max": [
+          -2719.4991130291587,
+          165.0,
+          -2073.7492108196475
+        ]
+      },
+      "materials": [
+        {
+          "slot": 0,
+          "name": "DOR_fda735786260a530",
+          "material_id": "mag_ring_01_matgroup__1__mag_ring_02",
+          "source_mtl": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+          "source_index": 1
+        }
+      ],
+      "source_gap_degrees": {
+        "start_angle_degrees": 208.5,
+        "end_angle_degrees": 231.5,
+        "angular_span_degrees": 23.0
+      },
+      "source_hash_sha256": "4439b153282566b6fb5fe38dd3b9756dbaa255005004a0d3a5ffe7b02d6fd5ec"
+    },
+    {
+      "id": "SM_Dorado_RingEnergy_Gap_04",
+      "fbx": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Dorado\\Exports\\FBX\\SM_Dorado_RingEnergy_Gap_04.fbx",
+      "exported": true,
+      "reconstructed": true,
+      "collision_role": "decorative",
+      "triangles": 144,
+      "vertices": 150,
+      "local_bounds_cm": {
+        "min": [
+          1510.770957237933,
+          -165.0,
+          -4376.33531996768
+        ],
+        "max": [
+          3433.6471079184607,
+          165.0,
+          -2984.2162357326965
+        ]
+      },
+      "materials": [
+        {
+          "slot": 0,
+          "name": "DOR_fda735786260a530",
+          "material_id": "mag_ring_01_matgroup__1__mag_ring_02",
+          "source_mtl": "F:\\BreakawayConverted\\Unpacked\\objects-part0\\objects\\01_eldorado_a_temple\\geo_props\\mag_ring_01_matgroup.mtl",
+          "source_index": 1
+        }
+      ],
+      "source_gap_degrees": {
+        "start_angle_degrees": 290.5,
+        "end_angle_degrees": 317.0,
+        "angular_span_degrees": 26.5
+      },
+      "source_hash_sha256": "a149e910faba4836a9fc25a974211abb194c393c6ab9eee5cd403e8c35f20555"
+    }
+  ],
+  "instances": [
+    {
+      "id": "{2A4CC57C-030A-5779-8B98-C4D6C9F5A5C2}",
+      "asset_id": "SM_Dorado_RingEnergy_Gap_01",
+      "name": "D_Dorado_RingEnergy_Gap_01",
+      "layer": "Presentation/Energy",
+      "location_cm": [
+        1.00100000000225,
+        -0.6073261718768208,
+        -28.492343334961134
+      ],
+      "rotation_quat_xyzw": [
+        -7.5637018870367e-10,
+        0.1391732543706894,
+        -8.667157658237556e-08,
+        0.9902681112289429
+      ],
+      "scale": [
+        0.4999999701976776,
+        0.4999999403953552,
+        0.4999999701976776
+      ],
+      "source_position_m": [
+        514.0,
+        666.3099365234375,
+        73.10504913330078
+      ],
+      "source_rotation_wxyz": [
+        0.9902681112289429,
+        7.5637018870367e-10,
+        0.1391732543706894,
+        8.667157658237556e-08
+      ],
+      "source_scale": [
+        0.9999999403953552,
+        0.9999998807907104,
+        0.9999999403953552
+      ],
+      "collision_role": "decorative",
+      "reconstructed": true
+    },
+    {
+      "id": "{39FC0259-586A-54EC-A16F-15E0F298C556}",
+      "asset_id": "SM_Dorado_RingEnergy_Gap_02",
+      "name": "D_Dorado_RingEnergy_Gap_02",
+      "layer": "Presentation/Energy",
+      "location_cm": [
+        1.00100000000225,
+        -0.6073261718768208,
+        -28.492343334961134
+      ],
+      "rotation_quat_xyzw": [
+        -7.5637018870367e-10,
+        0.1391732543706894,
+        -8.667157658237556e-08,
+        0.9902681112289429
+      ],
+      "scale": [
+        0.4999999701976776,
+        0.4999999403953552,
+        0.4999999701976776
+      ],
+      "source_position_m": [
+        514.0,
+        666.3099365234375,
+        73.10504913330078
+      ],
+      "source_rotation_wxyz": [
+        0.9902681112289429,
+        7.5637018870367e-10,
+        0.1391732543706894,
+        8.667157658237556e-08
+      ],
+      "source_scale": [
+        0.9999999403953552,
+        0.9999998807907104,
+        0.9999999403953552
+      ],
+      "collision_role": "decorative",
+      "reconstructed": true
+    },
+    {
+      "id": "{25DE4310-A84B-559C-9E93-B6486FBA5F7F}",
+      "asset_id": "SM_Dorado_RingEnergy_Gap_03",
+      "name": "D_Dorado_RingEnergy_Gap_03",
+      "layer": "Presentation/Energy",
+      "location_cm": [
+        1.00100000000225,
+        -0.6073261718768208,
+        -28.492343334961134
+      ],
+      "rotation_quat_xyzw": [
+        -7.5637018870367e-10,
+        0.1391732543706894,
+        -8.667157658237556e-08,
+        0.9902681112289429
+      ],
+      "scale": [
+        0.4999999701976776,
+        0.4999999403953552,
+        0.4999999701976776
+      ],
+      "source_position_m": [
+        514.0,
+        666.3099365234375,
+        73.10504913330078
+      ],
+      "source_rotation_wxyz": [
+        0.9902681112289429,
+        7.5637018870367e-10,
+        0.1391732543706894,
+        8.667157658237556e-08
+      ],
+      "source_scale": [
+        0.9999999403953552,
+        0.9999998807907104,
+        0.9999999403953552
+      ],
+      "collision_role": "decorative",
+      "reconstructed": true
+    },
+    {
+      "id": "{104E4DBC-758A-59DC-947D-E82A396AEF9A}",
+      "asset_id": "SM_Dorado_RingEnergy_Gap_04",
+      "name": "D_Dorado_RingEnergy_Gap_04",
+      "layer": "Presentation/Energy",
+      "location_cm": [
+        1.00100000000225,
+        -0.6073261718768208,
+        -28.492343334961134
+      ],
+      "rotation_quat_xyzw": [
+        -7.5637018870367e-10,
+        0.1391732543706894,
+        -8.667157658237556e-08,
+        0.9902681112289429
+      ],
+      "scale": [
+        0.4999999701976776,
+        0.4999999403953552,
+        0.4999999701976776
+      ],
+      "source_position_m": [
+        514.0,
+        666.3099365234375,
+        73.10504913330078
+      ],
+      "source_rotation_wxyz": [
+        0.9902681112289429,
+        7.5637018870367e-10,
+        0.1391732543706894,
+        8.667157658237556e-08
+      ],
+      "source_scale": [
+        0.9999999403953552,
+        0.9999998807907104,
+        0.9999999403953552
+      ],
+      "collision_role": "decorative",
+      "reconstructed": true
+    }
+  ],
+  "failures": [],
+  "unresolved": [],
+  "source_center_m": [
+    513.97998,
+    666.29779,
+    73.674896
+  ],
+  "source_units_to_cm": 100.0,
+  "target_scale": 0.5,
+  "axis": "source X,Y,Z -> UE X,-Y,Z",
+  "construction": {
+    "radial_width_source_m": 2.4,
+    "radius_source_m": 45.37198772410865,
+    "axial_offsets_source_m": [
+      -1.65,
+      0,
+      1.65
+    ],
+    "segments_per_ribbon": 24,
+    "stone_overlap_degrees": 0.5
+  },
+  "source_analysis": "E:\\Unreal Projects\\ProjectB\\Saved\\Logs\\dorado-reconstruction-20261030\\ring-gap-analysis.json",
+  "material_notes": [
+    "Use native translucent unlit Energy parent with Mag_Ring_02 source diffuse/alpha and UV tiling.",
+    "BaseColor tint must feed Emissive for unlit energy. Black default EmissiveMap makes it invisible.",
+    "Multiply opacity by transverse UV edge fade; source flow alpha supplies streaks.",
+    "Disable collision and shadow casting. These are reconstructed effects, not recovered original meshes."
+  ]
+}
