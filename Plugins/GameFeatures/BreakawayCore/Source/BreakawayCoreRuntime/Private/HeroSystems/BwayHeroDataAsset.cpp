@@ -3,8 +3,10 @@
 #include "AbilitySystem/Abilities/LyraGameplayAbility.h"
 #include "Animation/AnimClassInterface.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 #include "Animation/Skeleton.h"
 #include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
 #include "HeroSystems/BwayHeroAbilityUILibrary.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "UI/BwayAbilityUISettings.h"
@@ -64,6 +66,32 @@ EDataValidationResult UBwayHeroDataAsset::IsDataValid(FDataValidationContext& Co
 		if (bRequireMultipleLODs && HeroMesh->GetLODNum() < 2)
 		{
 			Context.AddWarning(FText::FromString(TEXT("HeroMesh has fewer than 2 LODs (bRequireMultipleLODs is set).")));
+		}
+
+		if (!HeroEquipmentMesh.IsNull())
+		{
+			if (!HeroEquipmentMesh.LoadSynchronous())
+			{
+				Context.AddError(FText::FromString(TEXT("HeroEquipmentMesh is assigned but failed to load.")));
+				Result = EDataValidationResult::Invalid;
+			}
+			if (HeroEquipmentSocket.IsNone() || (!HeroMesh->FindSocket(HeroEquipmentSocket) && HeroMesh->GetRefSkeleton().FindBoneIndex(HeroEquipmentSocket) == INDEX_NONE))
+			{
+				Context.AddError(FText::Format(
+					NSLOCTEXT("BwayHeroDataAsset", "MissingEquipmentSocket", "HeroMesh is missing HeroEquipmentSocket '{0}'."),
+					FText::FromName(HeroEquipmentSocket)));
+				Result = EDataValidationResult::Invalid;
+			}
+		}
+
+		if (!PrimaryActionMontageOverride.IsNull())
+		{
+			const UAnimMontage* OverrideMontage = PrimaryActionMontageOverride.LoadSynchronous();
+			if (!OverrideMontage || !OverrideMontage->GetSkeleton() || !HeroMesh->GetSkeleton() || !OverrideMontage->GetSkeleton()->IsCompatibleMesh(HeroMesh))
+			{
+				Context.AddError(FText::FromString(TEXT("PrimaryActionMontageOverride is null or incompatible with HeroMesh skeleton.")));
+				Result = EDataValidationResult::Invalid;
+			}
 		}
 	}
 

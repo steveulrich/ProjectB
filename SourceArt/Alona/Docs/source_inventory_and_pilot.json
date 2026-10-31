@@ -1,0 +1,412 @@
+{
+  "animation_file_count": 205,
+  "animation_sample_files": [
+    "actions\\alo_victory_pose.caf",
+    "bspace\\alo-bspace_jumptorun_6clips.bspace",
+    "bspace\\alo-bspace_loot_jumptorun_6clips.bspace",
+    "bspace\\alo-bspace_loot_run_to_slide.bspace",
+    "bspace\\alo-bspace_loot_slidetorun_4clips.bspace",
+    "bspace\\alo-bspace_run_to_slide.bspace",
+    "bspace\\alo-bspace_slidetorun_4clips.bspace",
+    "charselect\\alo_cs_fidget_01.caf",
+    "charselect\\alo_cs_fidget_02.caf",
+    "charselect\\alo_cs_idle_01.caf",
+    "charselect\\alo_cs_ready_idle_01.caf",
+    "charselect\\alo_cs_to_idle_01.caf",
+    "charselect\\alo_idle_to_cs_01.caf",
+    "charselect\\alo_lvlup__idle_01.caf",
+    "charselect\\alo_sel_fidget_01.caf",
+    "charselect\\alo_sel_idle_a_01.caf",
+    "charselect\\alo_sel_selected_idle_a_01.caf",
+    "navigation\\1-way\\alo_fidget_a_01.caf",
+    "navigation\\1-way\\alo_fidget_a_02.caf",
+    "navigation\\1-way\\alo_idle_01.caf",
+    "navigation\\1-way\\alo_idle_a_01_to_run_01.caf",
+    "navigation\\1-way\\alo_idle_a_01_to_slide_01.caf",
+    "navigation\\1-way\\alo_idle_turn_l.caf",
+    "navigation\\1-way\\alo_idle_turn_r.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_01.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_b.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_b_l.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_b_r.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_f.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_l.caf",
+    "navigation\\1-way\\alo_jmp_a_end_01_to_run_r.caf",
+    "navigation\\1-way\\alo_jmp_a_end_hrd_01_to_run_01.caf",
+    "navigation\\1-way\\alo_run_01.caf",
+    "navigation\\1-way\\alo_run_01_to_idle_a_01.caf",
+    "navigation\\1-way\\alo_run_01_to_slide_01.caf",
+    "navigation\\1-way\\alo_run_01_to_slide_l_01.caf",
+    "navigation\\1-way\\alo_run_01_to_slide_r_01.caf",
+    "navigation\\1-way\\alo_run_b_01.caf",
+    "navigation\\1-way\\alo_run_b_l_01.caf",
+    "navigation\\1-way\\alo_run_b_r_01.caf"
+  ],
+  "pilot_mesh_conversions": {
+    "pilot_new_alona_opti.glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "aracters/alona/alona_diff.tif\n[WRN:MaterialTextureManager] Texture file not found: Objects/Characters/alona/alona_ddna.tif\n[WRN:MaterialTextureManager] Texture file not found: Objects/Characters/alona/alona_spec.tif\n[WRN:MaterialTextureManager] Texture file not found: Objects/Characters/alona/alona_diff.tif\n[WRN:MaterialTextureManager] Texture file not found: Objects/Characters/alona/alona_spec.tif\n[INF:new_alona_opti.skin] Saved: new_alona_opti.glb in E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "pilot_alona_cdf.glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "t\nOutput format set to glTF Binary (.glb)\nSource [Filesystem]: E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Sources\\RawCopies\\sunpriestess\nFound input: E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\alona.cdf\nNo corresponding input file exist: -outputfile\nNo corresponding input file exist: E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Exports\\Pilot\\pilot_alona_cdf.glb\n[INF:Program] [1/1 0.00%] E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\alona.cdf\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "pilot_alona_skel.glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "rceArt\\Alona\\Exports\\Pilot\\pilot_alona_skel.glb\n[INF:Program] [1/1 0.00%] E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\alona_skel.chr\n[INF:alona_skel.chr] Found following potential material files.  If you are not specifying a material file and the materials don't look right, trying one of the following files:\n[INF:alona_skel.chr]    dummyPlane_mat_group\n[INF:alona_skel.chr] Saved: alona_skel.glb in E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "pilot_staff_base_mesh.glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "0%] E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\weapons\\staff_base\\staff_base_mesh.skin\n[INF:staff_base_mesh.skin] Found following potential material files.  If you are not specifying a material file and the materials don't look right, trying one of the following files:\n[INF:staff_base_mesh.skin]    staff_epic_mat_matGroup\n[INF:staff_base_mesh.skin] Saved: staff_base_mesh.glb in E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\weapons\\staff_base\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "pilot_staff_base_cdf.glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "esystem]: E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Sources\\RawCopies\\sunpriestess\nFound input: E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\weapons\\staff_base\\staff_base.cdf\nNo corresponding input file exist: -outputfile\nNo corresponding input file exist: E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Exports\\Pilot\\pilot_staff_base_cdf.glb\n[INF:Program] [1/1 0.00%] E:\\unreal projects\\projectb\\sourceart\\alona\\sources\\rawcopies\\sunpriestess\\objects\\characters\\alona\\weapons\\staff_base\\staff_base.cdf\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "pilot_caf": {
+      "caf_name": "alo_cs_fidget_01.caf",
+      "returncode": 1,
+      "exists": false,
+      "size": 0,
+      "stdout_tail": "e)\n       at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)\n    --- End of stack trace from previous location ---\n       at System.Threading.ExecutionContext.RunFromThreadPoolDispatchLoop(Thread threadPoolThread, ExecutionContext executionContext, ContextCallback callback, Object state)\n       at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)\n[INF:Program] Finished. Rendered 0 file(s)\n[ERR:Program] Failed to convert 1 file(s).\n",
+      "stderr_tail": ""
+    }
+  },
+  "texture_recovery_checks": {
+    "alona_c1_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c1_diff.dds",
+      "part_count": 7,
+      "fourcc": "\u0000\u0000\u0000\u0000",
+      "dxgi_format": null,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_c1_ddna": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c1_ddna.dds",
+      "part_count": 16,
+      "fourcc": "DX10",
+      "dxgi_format": 84,
+      "mode": "RGB",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_ddna_rgb.png",
+      "alpha_preview": null,
+      "gloss": {
+        "size": [
+          2048,
+          2048
+        ],
+        "extrema": [
+          0,
+          255
+        ],
+        "preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_ddna_gloss.png"
+      }
+    },
+    "alona_c1_spec": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c1_spec.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_spec_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c1_spec_alpha.png",
+      "gloss": null
+    },
+    "alona_base_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_diff.dds",
+      "part_count": 9,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_base_ddna": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_ddna.dds",
+      "part_count": 17,
+      "fourcc": "DX10",
+      "dxgi_format": 84,
+      "mode": "RGB",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_ddna_rgb.png",
+      "alpha_preview": null,
+      "gloss": {
+        "size": [
+          2048,
+          2048
+        ],
+        "extrema": [
+          0,
+          255
+        ],
+        "preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_ddna_gloss.png"
+      }
+    },
+    "alona_base_spec": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_spec.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_spec_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_spec_alpha.png",
+      "gloss": null
+    },
+    "alona_base_emis": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_emis.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_emis_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_base_emis_alpha.png",
+      "gloss": null
+    },
+    "alona_c3_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c3_diff.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_c3_ddna": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c3_ddna.dds",
+      "part_count": 16,
+      "fourcc": "DX10",
+      "dxgi_format": 84,
+      "mode": "RGB",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_ddna_rgb.png",
+      "alpha_preview": null,
+      "gloss": {
+        "size": [
+          2048,
+          2048
+        ],
+        "extrema": [
+          0,
+          255
+        ],
+        "preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_ddna_gloss.png"
+      }
+    },
+    "alona_c3_spec": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\alona_c3_spec.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_spec_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_c3_spec_alpha.png",
+      "gloss": null
+    },
+    "alona_staff_standard_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_standard_diff.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_staff_standard_ddna": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_standard_ddna.dds",
+      "part_count": 14,
+      "fourcc": "DX10",
+      "dxgi_format": 84,
+      "mode": "RGB",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_ddna_rgb.png",
+      "alpha_preview": null,
+      "gloss": {
+        "size": [
+          1024,
+          1024
+        ],
+        "extrema": [
+          0,
+          255
+        ],
+        "preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_ddna_gloss.png"
+      }
+    },
+    "alona_staff_standard_spec": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_standard_spec.dds",
+      "part_count": 6,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_spec_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_standard_spec_alpha.png",
+      "gloss": null
+    },
+    "alona_staff_rare_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_rare_diff.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_rare_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_rare_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_staff_epic_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_epic_diff.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 72,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_epic_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_epic_diff_alpha.png",
+      "gloss": null
+    },
+    "alona_staff_legendary_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\sunpriestess_textures\\Objects\\Characters\\alona\\weapons\\staff_base\\alona_staff_legendary_diff.dds",
+      "part_count": 7,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_legendary_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Alona\\Textures\\SkinComparison\\alona_staff_legendary_diff_alpha.png",
+      "gloss": null
+    }
+  },
+  "missing_skin_variants_on_disk": [
+    "alona_c2_* (referenced by alona_skin_c2_matgroup.mtl, absent from sunpriestess_textures)",
+    "alona_c4_* (referenced by alona_skin_c4_matgroup.mtl, absent from sunpriestess_textures)"
+  ]
+}

@@ -10,6 +10,8 @@ class UAttributeSet;
 class UMediaSource;
 class UAnimBlueprint;
 class UAnimInstance;
+class UAnimMontage;
+class UStaticMesh;
 
 /**
  * Resolved display information for a single ability in UI widgets.
@@ -170,6 +172,25 @@ public:
      */
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh")
     FTransform HeroMeshRelativeTransform = FTransform(FRotator(0.0, -90.0, 0.0), FVector(0.0, 0.0, -88.0));
+
+    /** Optional static mesh attached to HeroMesh (e.g., Alona's Sun Staff). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    TSoftObjectPtr<UStaticMesh> HeroEquipmentMesh;
+
+    /** Socket or bone name on HeroMesh to attach HeroEquipmentMesh to (e.g., "staff_r"). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    FName HeroEquipmentSocket;
+
+    /** Relative transform applied to HeroEquipmentMesh on HeroEquipmentSocket. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    FTransform HeroEquipmentRelativeTransform = FTransform::Identity;
+
+    /**
+     * Optional hero-specific cosmetic primary action montage used when the shared cue's
+     * placeholder montage targets a different skeleton than HeroMesh.
+     */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Animation")
+    TSoftObjectPtr<UAnimMontage> PrimaryActionMontageOverride;
 
     /**
      * Optional expected skeleton. When set, IsDataValid fails if HeroMesh uses a different skeleton

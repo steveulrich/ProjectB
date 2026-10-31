@@ -14,6 +14,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "Engine/StaticMesh.h"
 #include "Relic/RelicActor.h"
 #include "Relic/RelicSettings.h"
 #include "Relic/BwayRelicRequestIndicatorComponent.h"
@@ -231,6 +234,26 @@ bool ABwayCharacterWithAbilities::PlayPrimaryActionMontage(UAnimMontage* Montage
 	}
 	UAnimInstance* Anim = ActionMesh ? ActionMesh->GetAnimInstance() : nullptr;
 	if (!IsValid(Anim) || ActionMesh->IsSimulatingPhysics()) return Reject(TEXT("animation-unavailable"));
+
+	if (const USkeletalMesh* ActiveMeshAsset = ActionMesh->GetSkeletalMeshAsset())
+	{
+		const USkeleton* ActiveSkeleton = ActiveMeshAsset->GetSkeleton();
+		if (ActiveSkeleton && Montage->GetSkeleton() && Montage->GetSkeleton() != ActiveSkeleton
+			&& HeroDataAsset && !HeroDataAsset->PrimaryActionMontageOverride.IsNull())
+		{
+			UAnimMontage* OverrideMontage = HeroDataAsset->PrimaryActionMontageOverride.LoadSynchronous();
+			if (!IsValid(OverrideMontage)
+				|| !FMath::IsFinite(OverrideMontage->RateScale) || OverrideMontage->RateScale <= 0.0f
+				|| !FMath::IsFinite(OverrideMontage->GetPlayLength()) || OverrideMontage->GetPlayLength() <= 0.0f
+				|| OverrideMontage->SlotAnimTracks.IsEmpty() || !OverrideMontage->bEnableAutoBlendOut
+				|| OverrideMontage->HasRootMotion() || OverrideMontage->bEnableRootMotionTranslation || OverrideMontage->bEnableRootMotionRotation
+				|| !OverrideMontage->GetSkeleton() || !OverrideMontage->GetSkeleton()->IsCompatibleMesh(ActiveMeshAsset))
+			{
+				return Reject(TEXT("invalid-override-montage"));
+			}
+			Montage = OverrideMontage;
+		}
+	}
 
 	const FName Group = Montage->GetGroupName();
 	const auto HasForeignMontageInGroup = [this, Group](const UAnimInstance* CandidateAnim)
@@ -801,6 +824,43 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 		else if (HeroData->HeroMesh)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationClass is null for %s — mesh may T-pose"), *GetNameSafe(HeroData));
+		}
+
+		UStaticMesh* EquipMesh = !HeroData->HeroEquipmentMesh.IsNull() ? HeroData->HeroEquipmentMesh.LoadSynchronous() : nullptr;
+		if (EquipMesh && !HeroData->HeroEquipmentSocket.IsNone())
+		{
+			if (!IsValid(HeroEquipmentMeshComponent))
+			{
+				HeroEquipmentMeshComponent = NewObject<UStaticMeshComponent>(this, TEXT("HeroEquipmentMeshComponent"), RF_Transient);
+				HeroEquipmentMeshComponent->SetIsReplicated(false);
+				HeroEquipmentMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				HeroEquipmentMeshComponent->SetGenerateOverlapEvents(false);
+				HeroEquipmentMeshComponent->SetCanEverAffectNavigation(false);
+				HeroEquipmentMeshComponent->SetupAttachment(MainMesh, HeroData->HeroEquipmentSocket);
+				HeroEquipmentMeshComponent->RegisterComponent();
+			}
+			else
+			{
+				HeroEquipmentMeshComponent->AttachToComponent(
+					MainMesh,
+					FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+					HeroData->HeroEquipmentSocket);
+			}
+			HeroEquipmentMeshComponent->SetStaticMesh(EquipMesh);
+			HeroEquipmentMeshComponent->SetRelativeTransform(HeroData->HeroEquipmentRelativeTransform);
+			HeroEquipmentMeshComponent->SetHiddenInGame(false);
+			HeroEquipmentMeshComponent->SetVisibility(true);
+		}
+		else if (IsValid(HeroEquipmentMeshComponent))
+		{
+			HeroEquipmentMeshComponent->SetStaticMesh(nullptr);
+			HeroEquipmentMeshComponent->SetHiddenInGame(true);
+			HeroEquipmentMeshComponent->SetVisibility(false);
+		}
+
+		if (!HeroData->PrimaryActionMontageOverride.IsNull())
+		{
+			HeroData->PrimaryActionMontageOverride.LoadSynchronous();
 		}
 	}
 	else

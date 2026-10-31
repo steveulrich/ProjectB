@@ -1,0 +1,66 @@
+{
+  "pipeline": "SourceArt/Alona/Scripts/prepare_alona_textures.py",
+  "character": {
+    "stats": {
+      "resolution": [
+        2048,
+        2048
+      ],
+      "gold_metal_coverage_pct": 15.68,
+      "asymmetric_tattoo_pixels": 42521,
+      "woven_cloth_restored_pct": 11.18,
+      "jade_calibrated_pct": 11.05,
+      "roughness_mean": 0.452
+    },
+    "outputs": {
+      "BaseColor": "Textures/Prepared/T_BW_Alona_BC.png (sRGB)",
+      "Normal": "Textures/Prepared/T_BW_Alona_N.png (Linear DirectX Y-)",
+      "ORM": "Textures/Prepared/T_BW_Alona_ORM.png (Linear R=AO, G=Roughness, B=Metallic)",
+      "Metallic": "Textures/Prepared/T_BW_Alona_M.png (Linear)",
+      "Roughness": "Textures/Prepared/T_BW_Alona_R.png (Linear)"
+    },
+    "provenance": {
+      "recovered_from_split_dds": [
+        "alona_diff.dds..7 (2048x2048 base feathers, hair, eyes, turquoise eye mask, forehead ring, jade stones, stepped pattern geometry)",
+        "alona_spec.dds..5 (512x512 gold metal F0 mask & specular reflectance)",
+        "alona_ddna.dds..6 + .1a..6a (2048x2048 DirectX Y- BC5 tangent normal + 2048x2048 gloss alpha)",
+        "alona_c1_diff.dds..5 (1024x1024 clean un-glowing skin AO shading + exact asymmetric left-side tattoo mask)",
+        "alona_c1_ddna.dds..6 + .1a..6a (2048x2048 feather/hair/stepped-embroidery gloss detail)"
+      ],
+      "converted_and_repaired": [
+        "CryEngine Specular/Glossiness -> UE 5.8 Metallic/Roughness PBR conversion (restoring black-diffuse gold crown, hanging plaques, collar, armbands, hip rims, and stacked anklets to Metallic=1 warm gold BaseColor)",
+        "Removed post-alpha symmetrical glowing lava lines from body/face skin using clean c1 skin luminance calibrated to base warm golden-brown skin tone + 2048 pore micro-detail, and composited exact asymmetric left-shoulder/back, left-arm, left-thigh, and left-ankle markings in eye-paint turquoise",
+        "Restored reworked orange woven cloth fill (crop top, rolled waist sash, two-tier skirt, front panel) to reference-sheet warm cream-and-gold woven textile while preserving sky-blue borders and 2048 stepped geometric embroidery lines",
+        "Restored eyeballs from post-alpha glowing red lava irises back to natural dark amber-brown irises from c1_diff, restored 4 bezel-set crown cabochons from red lava back to polished celadon/jade green, restored 8 crown chevron triangular inlays from red lava back to metallic gold, and calibrated feather tips toward fiery crimson-orange to marigold-gold",
+        "Restored beams_mat (u:[0.904, 0.948], v:[0.002, 0.329]) from dark additive stub to reference-sheet opaque warm amber-orange to golden-yellow ribbon gradient"
+      ]
+    }
+  },
+  "staff": {
+    "stats": {
+      "resolution": [
+        1024,
+        1024
+      ],
+      "gold_metal_coverage_pct": 54.27,
+      "roughness_mean": 0.381
+    },
+    "outputs": {
+      "BaseColor": "Textures/Prepared/T_BW_Alona_Staff_BC.png (sRGB)",
+      "Normal": "Textures/Prepared/T_BW_Alona_Staff_N.png (Linear DirectX Y-)",
+      "ORM": "Textures/Prepared/T_BW_Alona_Staff_ORM.png (Linear R=AO, G=Roughness, B=Metallic)",
+      "Metallic": "Textures/Prepared/T_BW_Alona_Staff_M.png (Linear)",
+      "Roughness": "Textures/Prepared/T_BW_Alona_Staff_R.png (Linear)"
+    },
+    "provenance": {
+      "recovered_from_split_dds": [
+        "alona_staff_standard_diff.dds..5 (1024x1024 jade shaft, brown wrapped leather grip, pointed teal stones)",
+        "alona_staff_standard_spec.dds..4 (512x512 gold sun-ring, collars, fittings, and pommel F0)",
+        "alona_staff_standard_ddna.dds..5 + .1a..5a (1024x1024 DirectX Y- BC5 tangent normal + 1024x1024 gloss alpha)"
+      ],
+      "converted_and_repaired": [
+        "Unsplit full mip chain (replacing previously broken black split-header stub) and converted Specular/Glossiness -> Metallic/Roughness PBR"
+      ]
+    }
+  }
+}

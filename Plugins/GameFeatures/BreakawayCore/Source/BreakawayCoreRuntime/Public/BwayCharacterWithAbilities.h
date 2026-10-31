@@ -11,6 +11,7 @@
 class UCameraShakeBase;
 class UAnimInstance;
 class UAnimMontage;
+class UStaticMeshComponent;
 class APlayerCameraManager;
 class APlayerController;
 class UBwayRelicRequestIndicatorComponent;
@@ -132,6 +133,9 @@ private:
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UAnimMontage> PrimaryActionMontage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> HeroEquipmentMeshComponent;
 
 	int32 PrimaryActionMontageInstanceId = INDEX_NONE;
 	bool bStartingPrimaryActionMontage = false;

@@ -7,6 +7,7 @@
 #include "BwayHeroPreviewActor.generated.h"
 
 class USkeletalMeshComponent;
+class UStaticMeshComponent;
 class UCameraComponent;
 class UPointLightComponent;
 class UBwayHeroDataAsset;
@@ -40,6 +41,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
 	TObjectPtr<USkeletalMeshComponent> PreviewMeshComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
+	TObjectPtr<UStaticMeshComponent> PreviewEquipmentComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
 	TObjectPtr<UCameraComponent> PreviewCameraComponent;
