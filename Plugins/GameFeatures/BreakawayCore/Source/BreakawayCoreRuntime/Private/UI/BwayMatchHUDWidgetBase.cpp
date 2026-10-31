@@ -247,6 +247,7 @@ FBwayPostRoundSummaryData UBwayMatchHUDWidgetBase::RemapPostRoundSummaryForDispl
 	{
 		Swap(DisplaySummary.Team0Score, DisplaySummary.Team1Score);
 		Swap(DisplaySummary.Team0Stats, DisplaySummary.Team1Stats);
+		Swap(DisplaySummary.Team0RoundWinConditions, DisplaySummary.Team1RoundWinConditions);
 	}
 
 	return DisplaySummary;

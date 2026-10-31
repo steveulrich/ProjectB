@@ -21,6 +21,8 @@
 #include "CommonActivatableWidget.h"
 #include "CommonLocalPlayer.h"
 #include "CommonUIExtensions.h"
+#include "PrimaryGameLayout.h"
+#include "Widgets/CommonActivatableWidgetContainer.h"
 #include "Development/BwayCheatManager.h"
 #include "Development/BwayCombatFixtureAbilities.h"
 #include "Combat/BwayCombatNumberPopComponent.h"
@@ -667,6 +669,32 @@ TSubclassOf<UUserWidget> ABwayPlayerController::ResolvePostRoundSummaryWidgetCla
 	return DefaultWidgetClass.LoadSynchronous();
 }
 
+void ABwayPlayerController::SetMatchHUDVisibleForPostRound(const bool bVisible)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+
+	if (UPrimaryGameLayout* Layout = UPrimaryGameLayout::GetPrimaryGameLayout(this))
+	{
+		const FGameplayTag GameLayerTag = FGameplayTag::RequestGameplayTag(FName("UI.Layer.Game"), false);
+		if (UCommonActivatableWidgetContainerBase* GameLayer = GameLayerTag.IsValid() ? Layout->GetLayerWidget(GameLayerTag) : nullptr)
+		{
+			GameLayer->SetVisibility(bVisible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Hidden);
+		}
+	}
+
+	if (RespawnHUDWidget)
+	{
+		RespawnHUDWidget->SetVisibility(bVisible ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+		if (bVisible)
+		{
+			RespawnHUDWidget->RefreshPlayerState();
+		}
+	}
+}
+
 void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData& SummaryData)
 {
 	// A late arrival must be able to finish choosing a hero while rounds continue.
@@ -682,6 +710,12 @@ void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData
 		return;
 	}
 
+	if (!bHidMatchHUDForPostRound)
+	{
+		SetMatchHUDVisibleForPostRound(false);
+		bHidMatchHUDForPostRound = true;
+	}
+
 	if (!PostRoundSummaryWidget)
 	{
 		PostRoundSummaryWidget = CreateWidget<UBwayPostRoundSummaryWidget>(this, WidgetClass);
@@ -690,7 +724,14 @@ void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData
 			return;
 		}
 
-		PostRoundSummaryWidget->AddToViewport(150);
+		if (GetLocalPlayer())
+		{
+			PostRoundSummaryWidget->AddToPlayerScreen(150);
+		}
+		else
+		{
+			PostRoundSummaryWidget->AddToViewport(150);
+		}
 	}
 
 	FBwayPostRoundSummaryData ResolvedSummary = SummaryData;
@@ -702,11 +743,34 @@ void ABwayPlayerController::ShowPostRoundSummary(const FBwayPostRoundSummaryData
 		}
 	}
 
-	ResolvedSummary = UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
-		this,
-		ResolvedSummary.CompletedRoundNumber,
-		ResolvedSummary.RoundWinningTeam,
-		ResolvedSummary.DisplayDurationSeconds);
+	if (ResolvedSummary.PointsToWin <= 0)
+	{
+		const uint8 PreservedWinCondition = ResolvedSummary.WinCondition;
+		const FString PreservedScorer = ResolvedSummary.ScoringPlayerName;
+		const TArray<uint8> PreservedTeam0Wins = ResolvedSummary.Team0RoundWinConditions;
+		const TArray<uint8> PreservedTeam1Wins = ResolvedSummary.Team1RoundWinConditions;
+		ResolvedSummary = UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
+			this,
+			ResolvedSummary.CompletedRoundNumber,
+			ResolvedSummary.RoundWinningTeam,
+			ResolvedSummary.DisplayDurationSeconds);
+		if (PreservedWinCondition != 0)
+		{
+			ResolvedSummary.WinCondition = PreservedWinCondition;
+		}
+		if (!PreservedScorer.IsEmpty())
+		{
+			ResolvedSummary.ScoringPlayerName = PreservedScorer;
+		}
+		if (ResolvedSummary.Team0RoundWinConditions.IsEmpty() && !PreservedTeam0Wins.IsEmpty())
+		{
+			ResolvedSummary.Team0RoundWinConditions = PreservedTeam0Wins;
+		}
+		if (ResolvedSummary.Team1RoundWinConditions.IsEmpty() && !PreservedTeam1Wins.IsEmpty())
+		{
+			ResolvedSummary.Team1RoundWinConditions = PreservedTeam1Wins;
+		}
+	}
 
 	PostRoundSummaryWidget->ApplySummaryData(ResolvedSummary);
 
@@ -720,6 +784,12 @@ void ABwayPlayerController::DismissPostRoundSummary()
 	{
 		PostRoundSummaryWidget->RemoveFromParent();
 		PostRoundSummaryWidget = nullptr;
+	}
+
+	if (bHidMatchHUDForPostRound)
+	{
+		bHidMatchHUDForPostRound = false;
+		SetMatchHUDVisibleForPostRound(true);
 	}
 }
 

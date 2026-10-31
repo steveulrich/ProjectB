@@ -1368,6 +1368,8 @@ void UBwayRoundManagementComponent::StartRound()
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Starting Round %d"), CurrentRoundNumber + 1);
 
 	bSuddenDeathWarningBroadcastThisRound = false;
+	LastRoundWinCondition = EBwayWinCondition::None;
+	LastRoundScoringPlayerName.Reset();
 
 	if (UBwayMidfieldDividerComponent* DividerComponent = BwayGS->MidfieldDividerComponent)
 	{
@@ -1449,6 +1451,10 @@ void UBwayRoundManagementComponent::BuildAndBroadcastPostRoundSummary(
 
 	ReplicatedPostRoundSummary = UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
 		this, CurrentRoundNumber, RoundWinningTeam, DisplayDurationSeconds);
+	ReplicatedPostRoundSummary.WinCondition = static_cast<uint8>(LastRoundWinCondition);
+	ReplicatedPostRoundSummary.ScoringPlayerName = LastRoundScoringPlayerName;
+	ReplicatedPostRoundSummary.Team0RoundWinConditions = Team0RoundWinHistory;
+	ReplicatedPostRoundSummary.Team1RoundWinConditions = Team1RoundWinHistory;
 	bHasActivePostRoundSummary = true;
 
 	NotifyPostRoundSummaryListeners();
@@ -1506,6 +1512,12 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 
 	RemovePassiveGoldIncome();
 
+	LastRoundWinCondition = WinCondition;
+	if (WinCondition != EBwayWinCondition::GoalScored)
+	{
+		LastRoundScoringPlayerName.Reset();
+	}
+
 	SetRoundState(ERoundState::RoundEnding);
 
 	// Award points via ScoringComponent
@@ -1516,6 +1528,15 @@ void UBwayRoundManagementComponent::EndRound(int32 WinningTeam, EBwayWinConditio
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("BwayRoundManagement: No ScoringComponent found! Cannot award score."));
+	}
+
+	if (WinningTeam == 0)
+	{
+		Team0RoundWinHistory.Add(static_cast<uint8>(WinCondition));
+	}
+	else if (WinningTeam == 1)
+	{
+		Team1RoundWinHistory.Add(static_cast<uint8>(WinCondition));
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Round ended! Team %d wins (round=%d condition=%d)"),
@@ -1677,6 +1698,11 @@ void UBwayRoundManagementComponent::ResetForNextMatch()
 	ResetRoundRespawnEscalation();
 	CurrentRoundNumber = 0;
 	bSuddenDeathWarningBroadcastThisRound = false;
+	LastRoundWinCondition = EBwayWinCondition::None;
+	LastRoundScoringPlayerName.Reset();
+	Team0RoundWinHistory.Reset();
+	Team1RoundWinHistory.Reset();
+	ClearActivePostRoundSummary();
 }
 
 // ========================================
@@ -1691,6 +1717,7 @@ void UBwayRoundManagementComponent::OnRelicScored(int32 ScoringTeam, ABwayPlayer
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("BwayRoundManagement: Goal! Team %d scored"), ScoringTeam + 1);
+	LastRoundScoringPlayerName = IsValid(Scorer) ? Scorer->GetPlayerName() : FString();
 
 	if (ABwayGameState* BwayGS = GetBwayGameState())
 	{

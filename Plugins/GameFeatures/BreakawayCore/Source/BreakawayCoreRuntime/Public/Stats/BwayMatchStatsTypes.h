@@ -104,6 +104,22 @@ struct BREAKAWAYCORERUNTIME_API FBwayPostRoundSummaryData
 	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
 	bool bLocalTeamWonRound = false;
 
+	/** Authoritative EBwayWinCondition cast to uint8 so UI displays exact win reason without race. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
+	uint8 WinCondition = 0;
+
+	/** Display name of the goal scorer when WinCondition == EBwayWinCondition::GoalScored. */
+	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
+	FString ScoringPlayerName;
+
+	/** Per-won-round EBwayWinCondition history (cast to uint8) for Team 0 (left/friendly after display remap). */
+	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
+	TArray<uint8> Team0RoundWinConditions;
+
+	/** Per-won-round EBwayWinCondition history (cast to uint8) for Team 1 (right/enemy after display remap). */
+	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
+	TArray<uint8> Team1RoundWinConditions;
+
 	UPROPERTY(BlueprintReadOnly, Category = "PostRound")
 	FBwayTeamStatAggregate Team0Stats;
 

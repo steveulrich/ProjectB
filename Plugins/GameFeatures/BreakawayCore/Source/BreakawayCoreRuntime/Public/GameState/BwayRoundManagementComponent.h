@@ -227,6 +227,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Breakaway|Match Flow")
 	FBwayPostRoundSummaryData GetActivePostRoundSummary() const { return ReplicatedPostRoundSummary; }
 
+	/** Authoritative per-round win conditions (as uint8 EBwayWinCondition) accumulated for TeamIndex (0 or 1). */
+	const TArray<uint8>& GetTeamRoundWinHistory(int32 TeamIndex) const
+	{
+		return (TeamIndex == 1) ? Team1RoundWinHistory : Team0RoundWinHistory;
+	}
+
 	// ========================================
 	// Configuration
 	// ========================================
@@ -581,4 +587,9 @@ protected:
 	TMap<TWeakObjectPtr<APlayerState>, FActiveGameplayEffectHandle> PassiveGoldEffectHandles;
 
 	bool bSuddenDeathWarningBroadcastThisRound = false;
+
+	EBwayWinCondition LastRoundWinCondition = EBwayWinCondition::None;
+	FString LastRoundScoringPlayerName;
+	TArray<uint8> Team0RoundWinHistory;
+	TArray<uint8> Team1RoundWinHistory;
 };

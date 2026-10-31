@@ -132,6 +132,8 @@ FBwayPostRoundSummaryData UBwayMatchStatsLibrary::BuildPostRoundSummaryData(
 	if (const UBwayRoundManagementComponent* RoundMgmt = GameState->FindComponentByClass<UBwayRoundManagementComponent>())
 	{
 		Summary.PointsToWin = RoundMgmt->PointsToWin;
+		Summary.Team0RoundWinConditions = RoundMgmt->GetTeamRoundWinHistory(0);
+		Summary.Team1RoundWinConditions = RoundMgmt->GetTeamRoundWinHistory(1);
 	}
 
 	Summary.Team0Stats = AggregateTeamRoundStatsForPostRoundSummary(WorldContextObject, 0);

@@ -214,6 +214,7 @@ private:
 
 	void ShowPostRoundSummary(const FBwayPostRoundSummaryData& SummaryData);
 	void DismissPostRoundSummary();
+	void SetMatchHUDVisibleForPostRound(bool bVisible);
 
 	TSubclassOf<UUserWidget> ResolvePostRoundSummaryWidgetClass() const;
 
@@ -227,6 +228,8 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UBwayPostRoundSummaryWidget> PostRoundSummaryWidget;
+
+	bool bHidMatchHUDForPostRound = false;
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<UBwayRoundManagementComponent> BoundRoundManagementComponent;
