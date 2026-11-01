@@ -9,13 +9,13 @@
 
 UBwayFrontendStateSubsystem::UBwayFrontendStateSubsystem()
 {
-	const FPrimaryAssetId DefaultMapId(FPrimaryAssetType(TEXT("Map")), FName(TEXT("L_BW_Dorado")));
+	const FPrimaryAssetId DefaultMapId(FPrimaryAssetType(TEXT("Map")), FName(TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado")));
 	const FPrimaryAssetId DefaultExpId(FPrimaryAssetType(TEXT("LyraExperienceDefinition")), FName(TEXT("B_BW_Experience_CaptureTheRelic")));
 
 	{
 		FBwayMapOptionEntry ShrineOfAuros;
 		ShrineOfAuros.MapAssetId = DefaultMapId;
-		ShrineOfAuros.MapPackagePath = TEXT("/BreakawayCore/Maps/L_BW_Dorado");
+		ShrineOfAuros.MapPackagePath = TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado");
 		ShrineOfAuros.ExperienceAssetId = DefaultExpId;
 		ShrineOfAuros.DisplayName = NSLOCTEXT("BreakawayLobby", "Map_ShrineOfAuros", "The Shrine of Auros");
 		ShrineOfAuros.Description = NSLOCTEXT("BreakawayLobby", "Map_ShrineOfAuros_Desc", "Ancient sun-drenched temple sanctuary of Auros.");
@@ -24,7 +24,7 @@ UBwayFrontendStateSubsystem::UBwayFrontendStateSubsystem()
 	{
 		FBwayMapOptionEntry StygianSea;
 		StygianSea.MapAssetId = DefaultMapId;
-		StygianSea.MapPackagePath = TEXT("/BreakawayCore/Maps/L_BW_Dorado");
+		StygianSea.MapPackagePath = TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado");
 		StygianSea.ExperienceAssetId = DefaultExpId;
 		StygianSea.DisplayName = NSLOCTEXT("BreakawayLobby", "Map_StygianSea", "The Stygian Sea");
 		StygianSea.Description = NSLOCTEXT("BreakawayLobby", "Map_StygianSea_Desc", "Storm-lashed fortress above the abyssal waters.");
@@ -33,7 +33,7 @@ UBwayFrontendStateSubsystem::UBwayFrontendStateSubsystem()
 	{
 		FBwayMapOptionEntry ElDorado;
 		ElDorado.MapAssetId = DefaultMapId;
-		ElDorado.MapPackagePath = TEXT("/BreakawayCore/Maps/L_BW_Dorado");
+		ElDorado.MapPackagePath = TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado");
 		ElDorado.ExperienceAssetId = DefaultExpId;
 		ElDorado.DisplayName = NSLOCTEXT("BreakawayLobby", "Map_ElDorado", "El Dorado");
 		ElDorado.Description = NSLOCTEXT("BreakawayLobby", "Map_ElDorado_Desc", "City of gold hidden deep within the jungle canopy.");
@@ -182,7 +182,7 @@ FString UBwayFrontendStateSubsystem::BuildMatchTravelUrl(bool bListenServer) con
 {
 	const FBwayMapOptionEntry MapEntry = GetSelectedMapEntry();
 	const FString MapPath = MapEntry.MapPackagePath.IsEmpty()
-		? TEXT("/BreakawayCore/Maps/L_BW_Dorado")
+		? TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado")
 		: MapEntry.MapPackagePath;
 	const FString ExpName = MapEntry.ExperienceAssetId.IsValid()
 		? MapEntry.ExperienceAssetId.PrimaryAssetName.ToString()

@@ -1187,9 +1187,9 @@ namespace BwayGoal5RuntimeAudit
 			}
 
 			// -----------------------------------------------------------------
-			// C. L_BW_Dorado In-Match Pause Menu & Focus Restoration Audit
+			// C. L_Dorado / L_BW_Dorado In-Match Pause Menu & Focus Restoration Audit
 			// -----------------------------------------------------------------
-			if (MapName.Contains(TEXT("L_BW_Dorado")))
+			if (MapName.Contains(TEXT("L_BW_Dorado")) || MapName.Contains(TEXT("L_Dorado")))
 			{
 				APlayerController* ClientPC = nullptr;
 				for (UWorld* W : GameWorlds)

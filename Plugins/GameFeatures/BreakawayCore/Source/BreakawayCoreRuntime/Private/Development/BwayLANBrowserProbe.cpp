@@ -225,7 +225,7 @@ struct FProbe
 		if (!PC || !PC->IsLocalController()) return true;
 		const bool IsFrontend = World->GetMapName().Contains(TEXT("L_LyraFrontEnd"));
 		const bool IsStaging = World->GetMapName().Contains(TEXT("L_BW_HeroSelect_Staging"));
-		const bool IsGameplay = World->GetMapName().Contains(TEXT("L_BW_Dorado"));
+		const bool IsGameplay = World->GetMapName().Contains(TEXT("L_BW_Dorado")) || World->GetMapName().Contains(TEXT("L_Dorado"));
 		auto* GS = World->GetGameState<ABwayGameState>();
 		auto* Round = GS ? GS->GetRoundManagement() : nullptr;
 		if (Step == 3 && IsGameplay && Round && Round->GetCurrentMatchPhase() == EBwayMatchPhase::Playing && !LoggedWaitingRoster)
@@ -599,7 +599,7 @@ struct FSelectionProbe : FProbe
 			}
 			return true;
 		}
-		if (World->GetMapName().Contains(TEXT("L_BW_Dorado")) && GS->GetRoundManagement()
+		if ((World->GetMapName().Contains(TEXT("L_BW_Dorado")) || World->GetMapName().Contains(TEXT("L_Dorado"))) && GS->GetRoundManagement()
 			&& GS->GetRoundManagement()->GetCurrentMatchPhase() == EBwayMatchPhase::Playing && GameplayStarted == 0.0)
 		{
 			if (GameplayObserved == 0.0) GameplayObserved = Now;

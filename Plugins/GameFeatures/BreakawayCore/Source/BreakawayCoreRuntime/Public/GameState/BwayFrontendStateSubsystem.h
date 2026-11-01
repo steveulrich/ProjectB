@@ -39,7 +39,7 @@ struct BREAKAWAYCORERUNTIME_API FBwayMapOptionEntry : public FTableRowBase
 	FPrimaryAssetId MapAssetId;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby|Map")
-	FString MapPackagePath = TEXT("/BreakawayCore/Maps/L_BW_Dorado");
+	FString MapPackagePath = TEXT("/BreakawayCore/Environments/Dorado/Maps/L_Dorado");
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Lobby|Map")
 	FPrimaryAssetId ExperienceAssetId;

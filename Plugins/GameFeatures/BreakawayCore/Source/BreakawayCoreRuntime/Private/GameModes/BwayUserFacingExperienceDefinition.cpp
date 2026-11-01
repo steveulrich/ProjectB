@@ -58,7 +58,7 @@ UCommonSession_HostSessionRequest* UBwayUserFacingExperienceDefinition::CreateHo
 	if (UAssetManager* AssetManager = UAssetManager::GetIfInitialized())
 	{
 		AssetManager->ScanPathsForPrimaryAssets(UAssetManager::MapType,
-			{TEXT("/BreakawayCore/Maps")}, UWorld::StaticClass(), false, false, true);
+			{TEXT("/BreakawayCore/Maps"), TEXT("/BreakawayCore/Environments/Dorado/Maps")}, UWorld::StaticClass(), false, false, true);
 	}
 
 	UCommonSession_HostSessionRequest* Result = ULyraUserFacingExperienceDefinition::CreateHostingRequest(WorldContextObject);

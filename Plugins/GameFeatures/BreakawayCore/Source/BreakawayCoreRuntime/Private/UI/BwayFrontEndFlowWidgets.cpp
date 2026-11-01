@@ -2246,7 +2246,7 @@ bool UBwayMatchLobbyWidget::HostConfiguredMatch(const TMap<FString, FString>& Ad
 	{
 		AssetManager->ScanPathsForPrimaryAssets(
 			UAssetManager::MapType,
-			{TEXT("/BreakawayCore/Maps")},
+			{TEXT("/BreakawayCore/Maps"), TEXT("/BreakawayCore/Environments/Dorado/Maps")},
 			UWorld::StaticClass(),
 			false,
 			false,
@@ -2278,6 +2278,12 @@ bool UBwayMatchLobbyWidget::HostConfiguredMatch(const TMap<FString, FString>& Ad
 
 		if (Subsystem)
 		{
+			const FBwayMapOptionEntry SelectedMap = Subsystem->GetSelectedMapEntry();
+			if (!SelectedMap.MapPackagePath.IsEmpty() && Request->ExtraArgs.Contains(TEXT("HeroSelectTargetMap")))
+			{
+				Request->ExtraArgs.Add(TEXT("HeroSelectTargetMap"), SelectedMap.MapPackagePath);
+			}
+
 			TMap<FString, FString> LobbyExtraArgs;
 			Subsystem->BuildMatchExtraArgs(LobbyExtraArgs);
 			for (const TPair<FString, FString>& Pair : LobbyExtraArgs)
@@ -2510,11 +2516,12 @@ namespace BwayFrontEndFlowHarness
 				return true;
 			}
 
-			// Step 4: Hero Selection Screen (W_HeroSelection) on L_BW_HeroSelect_Staging (or L_BW_Dorado)
+			// Step 4: Hero Selection Screen (W_HeroSelection) on L_BW_HeroSelect_Staging (or L_Dorado / L_BW_Dorado)
 			if (Step == 4)
 			{
 				const bool bOnSelectionMap = World->GetMapName().Contains(TEXT("L_BW_HeroSelect_Staging"))
-					|| World->GetMapName().Contains(TEXT("L_BW_Dorado"));
+					|| World->GetMapName().Contains(TEXT("L_BW_Dorado"))
+					|| World->GetMapName().Contains(TEXT("L_Dorado"));
 				if (!bOnSelectionMap)
 				{
 					return true;
@@ -2604,10 +2611,10 @@ namespace BwayFrontEndFlowHarness
 				return true;
 			}
 
-			// Step 5: Arena Intro Fly-Through Sequence on L_BW_Dorado -> Warmup
+			// Step 5: Arena Intro Fly-Through Sequence on L_Dorado / L_BW_Dorado -> Warmup
 			if (Step == 5)
 			{
-				if (!World->GetMapName().Contains(TEXT("L_BW_Dorado")))
+				if (!World->GetMapName().Contains(TEXT("L_BW_Dorado")) && !World->GetMapName().Contains(TEXT("L_Dorado")))
 				{
 					return true;
 				}
