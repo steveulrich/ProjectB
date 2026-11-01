@@ -1,0 +1,44 @@
+{
+  "hero": "Rawlins",
+  "codename": "Gunslinger",
+  "selected_source_definition": "Objects/Characters/Rawlins/new_rawlins.cdf (rawlins_skins.xml Skin='Default')",
+  "selected_body_mesh": "Objects/Characters/Rawlins/new_rawlins_opti_mesh.skin (LOD0..3, 20,919 verts, 223 bones)",
+  "selected_weapon": {
+    "entity_class": "Weapon_RWL_TombBreaker",
+    "mesh": "Objects/Characters/Rawlins/weapons/new_rawlins_base_weapon_mesh.skin (LOD0..3, 2,123 verts)",
+    "socket": "S_RAttachment",
+    "count": 1,
+    "handedness": "Right-handed default (Pistol_Left on S_LAttachment is Visible=false by default in rawlins_skins.xml; toggled transiently during Ability1 Double Down / Ultimate)"
+  },
+  "early_version_comparison": {
+    "early_cdf": "Objects/Characters/Rawlins/rawlins.cdf -> rawlins_optimesh.skin (14,105 verts, 155 bones, sheriff star badge + dual hip holsters) + Weapon_RWL_Python (python_mesh.skin)",
+    "reason_late_alpha_selected": "rawlins_skins.xml assigns ALL playable skins (including Default) to new_rawlins.cdf + Weapon_RWL_TombBreaker, which matches GFactory's Breakaway Rawlins weapon portfolio (wJowLV) and retains 100% intact 2048x2048 / 1024x1024 split DDS textures on disk (whereas early rawlins_diff.tif and python_diff.tif were removed from the build)."
+  },
+  "character_textures": {
+    "resolution": [
+      2048,
+      2048
+    ],
+    "metallic_mean": 0.0211,
+    "roughness_mean": 0.6441,
+    "emissive_max": 1.0,
+    "cape_mat_white_dds_bug_repaired": true
+  },
+  "weapon_textures": {
+    "resolution": [
+      1024,
+      1024
+    ],
+    "metallic_mean": 0.6787,
+    "roughness_mean": 0.4551,
+    "emissive_max": 1.0,
+    "unused_green_quadrant_masked": true
+  },
+  "repaired_items": [
+    "Recombined cross-pak split CryEngine DDS mip chains + .dds.*a gloss alpha streams via DDS-Unsplitter.exe --safe",
+    "Patched DX10 typeless BC1/BC3 headers and reconstructed unit-length DirectX Y- tangent normals from BC5 RG",
+    "Repaired rawlins_default_matgroup.mtl cape_mat Diffuse=white.dds oversight by binding cape_mat to T_BW_Rawlins_BC (restoring the poncho UVs matching c1/c2/efox skin MTLs)",
+    "Converted Specular/Glossiness to UE 5.8 Metallic/Roughness PBR and masked unused green UV filler quadrant on Tomb Breaker revolver textures"
+  ],
+  "generated_items": []
+}

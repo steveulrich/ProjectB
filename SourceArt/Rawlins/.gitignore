@@ -1,0 +1,11 @@
+# Regenerable conversion caches and local authoring backups.
+__pycache__/
+*.py[cod]
+*.blend[0-9]*
+Textures/RecoveredDDS/
+Sources/RawCopies/
+
+# Disposable early exploratory inspection dumps; canonical prepared PBR maps and exports are retained.
+Exports/Pilot/
+Textures/SkinComparison/
+Textures/Masks/

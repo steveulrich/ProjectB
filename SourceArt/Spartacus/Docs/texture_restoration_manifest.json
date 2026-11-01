@@ -1,0 +1,81 @@
+{
+  "hero": "Spartacus",
+  "internal_alias": "Magnus / Argus (DA_BW_HeroData_Argus retained per HERO_CODENAME_MAP.md)",
+  "selected_source_definition": "Objects/Characters/Spartacus/spartacus.cdf + weapons_magnus.xml WeaponDefinition='magCommSwords'",
+  "selected_body_mesh": "Objects/Characters/Spartacus/spartacus_opti_mesh.skin (LOD0..3, 21,291 verts, 216 bones; submaterials spart_main + spart_skin)",
+  "selected_weapons": [
+    {
+      "entity_class": "WeaponSpartacusSword1",
+      "mesh": "Objects/Characters/Spartacus/spartacus_sword_mesh.skin (LOD0..3, 929 verts)",
+      "socket": "S_LAttachment (via weaponattach in spartacus.cdf)",
+      "hand": "Left"
+    },
+    {
+      "entity_class": "WeaponSpartacusSword2",
+      "mesh": "Objects/Characters/Spartacus/sword2_mesh.skin (LOD0..3, 1,655 verts)",
+      "socket": "S_RAttachment (Weapon_2 in magnus_skins.xml)",
+      "hand": "Right"
+    }
+  ],
+  "missing_surface_evidence": "Searched all 57,987 archive files and inspected spartacus.blend; spartacus_diff/ddna/spec.tif, sparsword1_*, and sparsword2_* were removed when magnus_textures migrated to argus_*.dds, while UI/3/icons/skin_magnus_default.dds preserved the authentic in-engine original Spartacus color palette.",
+  "generated_items": [
+    "T_BW_Spartacus_{BC,N,ORM,M,R}.png (2048x2048 PBR maps baked from 3D Cycles AO + Pointiness curvature onto exact spartacus_opti_mesh.dae UV islands, matched to UI/3/icons/skin_magnus_default.dds and Simon Loche's original gladiator design)",
+    "T_BW_Spartacus_Sword1_{BC,N,ORM,M,R}.png (1024x1024 PBR maps baked from 3D Cycles AO + Pointiness curvature onto exact spartacus_sword_mesh.dae UV islands: forged steel blade + honed bevel edges, bronze guard/pommel, leather grip)",
+    "T_BW_Spartacus_Sword2_{BC,N,ORM,M,R}.png (1024x1024 PBR maps baked from 3D Cycles AO + Pointiness curvature onto exact sword2_mesh.dae UV islands: forged steel blade + honed bevel edges, ornate bronze hilt/pommel, wrapped leather grip)"
+  ],
+  "character_textures": {
+    "resolution": [
+      2048,
+      2048
+    ],
+    "ao_mean": 0.581,
+    "metallic_mean": 0.2483,
+    "roughness_mean": 0.4775,
+    "group_tri_counts": {
+      "skin": 10800,
+      "mouth": 626,
+      "eyeballs": 272,
+      "crest_hair_red": 401,
+      "crest_hair_white": 45,
+      "helmet_bronze": 1713,
+      "helmet_steel_trim": 122,
+      "pauldron_crimson": 1131,
+      "armor_bronze": 5134,
+      "armor_steel": 2236,
+      "leather_dark": 8335,
+      "leather_tan": 498,
+      "linen_wrap": 3276,
+      "pteruges_crimson": 144
+    }
+  },
+  "sword1_textures": {
+    "resolution": [
+      1024,
+      1024
+    ],
+    "ao_mean": 0.7096,
+    "metallic_mean": 0.8349,
+    "roughness_mean": 0.3137,
+    "group_tri_counts": {
+      "blade_steel": 302,
+      "blade_edge": 106,
+      "hilt_bronze": 658,
+      "grip_leather": 160
+    }
+  },
+  "sword2_textures": {
+    "resolution": [
+      1024,
+      1024
+    ],
+    "ao_mean": 0.7631,
+    "metallic_mean": 0.8543,
+    "roughness_mean": 0.2908,
+    "group_tri_counts": {
+      "blade_steel": 513,
+      "blade_edge": 416,
+      "hilt_bronze": 1110,
+      "grip_leather": 334
+    }
+  }
+}

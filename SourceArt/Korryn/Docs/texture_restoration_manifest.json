@@ -1,0 +1,48 @@
+{
+  "hero": "Korryn",
+  "internal_alias": "MorganLeFay / Morgan / Hexweaver",
+  "localization_evidence": "Unpacked/localization/en-us/text.xml maps ui_char_name_morganlefay -> 'Korryn'; audio/vignettes reference korryn and korryn_featherfall1.cgf.",
+  "archive_base_mesh_blocker": {
+    "status": "GFactory redesigned antler/forehead-skull/angular-shoulder Korryn base mesh (artstation.com/projects/lQnR5) is ABSENT from the F:\\BreakawayConverted Lumberyard archive.",
+    "proof": [
+      "Inspected all 57,987 files across F:\\BreakawayConverted, including all 6 .skin files in Unpacked/morganlefay/Objects/Characters/Morgan/ (new_morgan_opti_mesh.skin, morgan_opti_mesh.skin, morgan_mesh.skin, morgan.skin, morgan_cin_mesh.skin, morgan_multimesh.skin), character-select layer cs_morgan.lyr, and all 16 character paks.",
+      "All archive meshes and UI portraits (dashboard_portrait_lg_morganlefay.dds, skin_morganlefay_default.dds, deathscreen_morganlefay.dds) predate GFactory's late-production Korryn 3D model swap and depict the hooded raven-feather gown Morgan le Fay mesh.",
+      "Per project contingency instructions ('If the requested base mesh cannot be recovered, identify the exact blocker and deliver the usable pieces for that hero'), all usable archive Korryn/Morgan pieces (new_morgan_opti_mesh.skin LOD0..4, 332-bone rig, masked feather/lace material AlphaTest=0.76, luminous violet eyes, and left-hand WeaponStaffMLF staff_base_mesh.skin LOD0..3 on S_LAttachment) are delivered and integrated."
+    ]
+  },
+  "equipment_and_casting_analysis": {
+    "held": "WeaponStaffMLF (Objects/Characters/Morgan/weapons/staff_base/staff_base_mesh.skin LOD0..3) attached to weaponattach -> BoneName='S_LAttachment' (left hand) with Visible='true' in morganlefay_skins.xml.",
+    "worn": "Hooded gown, jewelry, and cutout feather/lace trim (morgan_transp AlphaTest=0.76) on new_morgan_opti_mesh.skin.",
+    "transient_or_effect": "Raven_Idle and Raven_Fly on bind_raven_attach are Visible='false' by default (toggled only during nav fidget in morganlefay_seqnav.lua); right-hand spell orbs, staff bind_wp_vfx1 magic, and featherfall (korryn_featherfall1.cgf) are spawned as runtime particle effects (MorganLeFayEntityEffects.xml / MLFWeaponEffects_default.xml)."
+  },
+  "character_textures": {
+    "resolution": [
+      2048,
+      2048
+    ],
+    "has_alpha_cutout": true,
+    "alpha_clip_threshold": 0.76,
+    "metallic_mean": 0.0271,
+    "roughness_mean": 0.7575,
+    "violet_eye_emissive_max": 1.0
+  },
+  "weapon_textures": {
+    "resolution": [
+      1024,
+      1024
+    ],
+    "shininess_121_calibrated": true,
+    "metallic_mean": 0.0163,
+    "roughness_mean": 0.5273,
+    "violet_emissive_max": 1.0
+  },
+  "repaired_items": [
+    "Recombined cross-pak split DDS mip chains + gloss alpha streams for morgan_{diff,ddna,spec} and morgan_staff_base_standard_{diff,ddna,spec,emis}",
+    "Preserved 2048x2048 RGBA cutout alpha channel in T_BW_Korryn_BC.png for BLEND_Masked (OpacityMaskClipValue=0.76) on morgan_transp",
+    "Calibrated flat 0.987 staff _ddna gloss channel using MTL Shininess=121/255 and specular reflectance so staff shaft is satin (~0.55 roughness) and metalwork is polished (~0.28 roughness)",
+    "Applied MTL violet Emittance tint (0.091, 0.001, 0.231) to T_BW_Korryn_Staff_E.png"
+  ],
+  "generated_items": [
+    "T_BW_Korryn_E.png (2048x2048 luminous violet iris emissive strictly masked to the 360 eyeball UV triangles at U=[0.0009, 0.0481], V=[0.8635, 0.9113])"
+  ]
+}

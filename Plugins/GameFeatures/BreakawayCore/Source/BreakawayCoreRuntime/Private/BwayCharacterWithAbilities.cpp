@@ -826,37 +826,58 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 			UE_LOG(LogTemp, Warning, TEXT("ApplyHeroVisuals: AnimationClass is null for %s — mesh may T-pose"), *GetNameSafe(HeroData));
 		}
 
-		UStaticMesh* EquipMesh = !HeroData->HeroEquipmentMesh.IsNull() ? HeroData->HeroEquipmentMesh.LoadSynchronous() : nullptr;
-		if (EquipMesh && !HeroData->HeroEquipmentSocket.IsNone())
+		const auto ApplyEquipmentSlot = [this, MainMesh](
+			TObjectPtr<UStaticMeshComponent>& OutComponent,
+			const TCHAR* ComponentName,
+			const TSoftObjectPtr<UStaticMesh>& EquipmentMeshSoft,
+			const FName& EquipmentSocket,
+			const FTransform& RelativeTransform)
 		{
-			if (!IsValid(HeroEquipmentMeshComponent))
+			UStaticMesh* EquipMesh = !EquipmentMeshSoft.IsNull() ? EquipmentMeshSoft.LoadSynchronous() : nullptr;
+			if (EquipMesh && !EquipmentSocket.IsNone())
 			{
-				HeroEquipmentMeshComponent = NewObject<UStaticMeshComponent>(this, TEXT("HeroEquipmentMeshComponent"), RF_Transient);
-				HeroEquipmentMeshComponent->SetIsReplicated(false);
-				HeroEquipmentMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-				HeroEquipmentMeshComponent->SetGenerateOverlapEvents(false);
-				HeroEquipmentMeshComponent->SetCanEverAffectNavigation(false);
-				HeroEquipmentMeshComponent->SetupAttachment(MainMesh, HeroData->HeroEquipmentSocket);
-				HeroEquipmentMeshComponent->RegisterComponent();
+				if (!IsValid(OutComponent))
+				{
+					OutComponent = NewObject<UStaticMeshComponent>(this, ComponentName, RF_Transient);
+					OutComponent->SetIsReplicated(false);
+					OutComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+					OutComponent->SetGenerateOverlapEvents(false);
+					OutComponent->SetCanEverAffectNavigation(false);
+					OutComponent->SetupAttachment(MainMesh, EquipmentSocket);
+					OutComponent->RegisterComponent();
+				}
+				else
+				{
+					OutComponent->AttachToComponent(
+						MainMesh,
+						FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+						EquipmentSocket);
+				}
+				OutComponent->SetStaticMesh(EquipMesh);
+				OutComponent->SetRelativeTransform(RelativeTransform);
+				OutComponent->SetHiddenInGame(bEquipmentHiddenForRelicCarry);
+				OutComponent->SetVisibility(!bEquipmentHiddenForRelicCarry);
 			}
-			else
+			else if (IsValid(OutComponent))
 			{
-				HeroEquipmentMeshComponent->AttachToComponent(
-					MainMesh,
-					FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-					HeroData->HeroEquipmentSocket);
+				OutComponent->SetStaticMesh(nullptr);
+				OutComponent->SetHiddenInGame(true);
+				OutComponent->SetVisibility(false);
 			}
-			HeroEquipmentMeshComponent->SetStaticMesh(EquipMesh);
-			HeroEquipmentMeshComponent->SetRelativeTransform(HeroData->HeroEquipmentRelativeTransform);
-			HeroEquipmentMeshComponent->SetHiddenInGame(false);
-			HeroEquipmentMeshComponent->SetVisibility(true);
-		}
-		else if (IsValid(HeroEquipmentMeshComponent))
-		{
-			HeroEquipmentMeshComponent->SetStaticMesh(nullptr);
-			HeroEquipmentMeshComponent->SetHiddenInGame(true);
-			HeroEquipmentMeshComponent->SetVisibility(false);
-		}
+		};
+
+		ApplyEquipmentSlot(
+			HeroEquipmentMeshComponent,
+			TEXT("HeroEquipmentMeshComponent"),
+			HeroData->HeroEquipmentMesh,
+			HeroData->HeroEquipmentSocket,
+			HeroData->HeroEquipmentRelativeTransform);
+		ApplyEquipmentSlot(
+			HeroSecondaryEquipmentMeshComponent,
+			TEXT("HeroSecondaryEquipmentMeshComponent"),
+			HeroData->HeroSecondaryEquipmentMesh,
+			HeroData->HeroSecondaryEquipmentSocket,
+			HeroData->HeroSecondaryEquipmentRelativeTransform);
 
 		if (!HeroData->PrimaryActionMontageOverride.IsNull())
 		{
@@ -879,6 +900,22 @@ void ABwayCharacterWithAbilities::ApplyHeroVisuals(const UBwayHeroDataAsset* Her
 				MoveComp->ApplyMovementFeelConfig(FeelConfig);
 			}
 		}
+	}
+}
+
+void ABwayCharacterWithAbilities::SetEquipmentHiddenForRelicCarry(bool bHideEquipment)
+{
+	bEquipmentHiddenForRelicCarry = bHideEquipment;
+	for (UStaticMeshComponent* Comp : { HeroEquipmentMeshComponent.Get(), HeroSecondaryEquipmentMeshComponent.Get() })
+	{
+		if (!IsValid(Comp))
+		{
+			continue;
+		}
+		const bool bHasMesh = Comp->GetStaticMesh() != nullptr;
+		const bool bShouldHide = bHideEquipment || !bHasMesh;
+		Comp->SetHiddenInGame(bShouldHide);
+		Comp->SetVisibility(!bShouldHide);
 	}
 }
 

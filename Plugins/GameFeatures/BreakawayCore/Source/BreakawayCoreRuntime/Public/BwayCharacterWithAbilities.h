@@ -55,6 +55,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat|Presentation")
 	bool PlayPrimaryActionMontage(UAnimMontage* Montage, float PlayRate = 1.0f);
 
+	/** Hide or restore held hero equipment meshes while carrying the Relic. */
+	UFUNCTION(BlueprintCallable, Category = "Relic|Presentation")
+	void SetEquipmentHiddenForRelicCarry(bool bHideEquipment);
+
+	UFUNCTION(BlueprintPure, Category = "Relic|Presentation")
+	bool IsEquipmentHiddenForRelicCarry() const { return bEquipmentHiddenForRelicCarry; }
+
+	UFUNCTION(BlueprintPure, Category = "Hero Data|Equipment")
+	UStaticMeshComponent* GetHeroEquipmentMeshComponent() const { return HeroEquipmentMeshComponent; }
+
+	UFUNCTION(BlueprintPure, Category = "Hero Data|Equipment")
+	UStaticMeshComponent* GetHeroSecondaryEquipmentMeshComponent() const { return HeroSecondaryEquipmentMeshComponent; }
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Hero Data")
 	TObjectPtr<const UBwayHeroDataAsset> HeroDataAsset;
 
@@ -136,6 +149,11 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<UStaticMeshComponent> HeroEquipmentMeshComponent;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UStaticMeshComponent> HeroSecondaryEquipmentMeshComponent;
+
+	bool bEquipmentHiddenForRelicCarry = false;
 
 	int32 PrimaryActionMontageInstanceId = INDEX_NONE;
 	bool bStartingPrimaryActionMontage = false;

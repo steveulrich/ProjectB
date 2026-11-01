@@ -1,0 +1,101 @@
+{
+  "mesh_pilots": {
+    "dae": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "path": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Exports\\Pilot\\pilot_new_rawlins_opti_mesh.dae",
+      "stdout_tail": "projectb\\sourceart\\rawlins\\sources\\rawcopies\\rawlins\\objects\\characters\\rawlins\\new_rawlins_opti_mesh.skin\n[INF:new_rawlins_opti_mesh.skin] Found following potential material files.  If you are not specifying a material file and the materials don't look right, trying one of the following files:\n[INF:new_rawlins_opti_mesh.skin]    rawlins_default_matGroup\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    },
+    "glb": {
+      "returncode": 0,
+      "exists": false,
+      "size": 0,
+      "path": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Exports\\Pilot\\pilot_new_rawlins_opti_mesh.glb",
+      "stdout_tail": "anager] Texture file not found: objects/characters/rawlins/rawlins_default_ddna.dds\n[WRN:MaterialTextureManager] Texture file not found: objects/characters/rawlins/rawlins_default_spec.dds\n[INF:new_rawlins_opti_mesh.skin] Saved: new_rawlins_opti_mesh.glb in E:\\unreal projects\\projectb\\sourceart\\rawlins\\sources\\rawcopies\\rawlins\\objects\\characters\\rawlins\n[INF:Program] Finished. Rendered 1 file(s)\n",
+      "stderr_tail": ""
+    }
+  },
+  "blender_5_2_import_verification": {
+    "error": "ct_pilot_meshes.py\", line 47, in <module>\n    \"dae\": check_import(\"dae\", r\"E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Exports\\Pilot\\pilot_new_rawlins_opti_mesh.dae\"),\n           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Exports\\Pilot\\inspect_pilot_meshes.py\", line 7, in check_import\n    bpy.ops.wm.collada_import(filepath=filepath)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\nAttributeError: Calling operator \"bpy.ops.wm.collada_import\" error, could not be found\n"
+  },
+  "single_material_pilot": {
+    "rawlins_default_diff": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\rawlins_textures-part0\\Objects\\Characters\\Rawlins\\rawlins_default_diff.dds",
+      "part_count": 8,
+      "fourcc": "DX10",
+      "dxgi_format": 72,
+      "mode": "RGBA",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_diff_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_diff_alpha.png",
+      "gloss": null
+    },
+    "rawlins_default_ddna": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\rawlins_textures-part0\\Objects\\Characters\\Rawlins\\rawlins_default_ddna.dds",
+      "part_count": 16,
+      "fourcc": "DX10",
+      "dxgi_format": 84,
+      "mode": "RGB",
+      "size": [
+        2048,
+        2048
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_ddna_rgb.png",
+      "alpha_preview": null,
+      "gloss": {
+        "size": [
+          2048,
+          2048
+        ],
+        "extrema": [
+          0,
+          255
+        ],
+        "preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_ddna_gloss.png"
+      }
+    },
+    "rawlins_default_spec": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\rawlins_textures-part0\\Objects\\Characters\\Rawlins\\rawlins_default_spec.dds",
+      "part_count": 6,
+      "fourcc": "DX10",
+      "dxgi_format": 71,
+      "mode": "RGBA",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": [
+        255,
+        255
+      ],
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_spec_rgb.png",
+      "alpha_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_spec_alpha.png",
+      "gloss": null
+    },
+    "rawlins_default_emis": {
+      "source": "F:\\BreakawayConverted\\Unpacked\\rawlins_textures-part0\\Objects\\Characters\\Rawlins\\rawlins_default_emis.dds",
+      "part_count": 6,
+      "fourcc": "\u0000\u0000\u0000\u0000",
+      "dxgi_format": null,
+      "mode": "RGB",
+      "size": [
+        512,
+        512
+      ],
+      "alpha_extrema": null,
+      "rgb_preview": "E:\\Unreal Projects\\ProjectB\\SourceArt\\Rawlins\\Textures\\SkinComparison\\rawlins_default_emis_rgb.png",
+      "alpha_preview": null,
+      "gloss": null
+    }
+  }
+}

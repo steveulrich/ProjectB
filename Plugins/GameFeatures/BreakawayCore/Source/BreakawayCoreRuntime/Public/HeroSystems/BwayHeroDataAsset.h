@@ -185,6 +185,18 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
     FTransform HeroEquipmentRelativeTransform = FTransform::Identity;
 
+    /** Optional secondary static mesh attached to HeroMesh (e.g., Spartacus's off-hand gladiator sword). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    TSoftObjectPtr<UStaticMesh> HeroSecondaryEquipmentMesh;
+
+    /** Socket or bone name on HeroMesh to attach HeroSecondaryEquipmentMesh to (e.g., "S_LAttachment"). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    FName HeroSecondaryEquipmentSocket;
+
+    /** Relative transform applied to HeroSecondaryEquipmentMesh on HeroSecondaryEquipmentSocket. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Mesh|Equipment")
+    FTransform HeroSecondaryEquipmentRelativeTransform = FTransform::Identity;
+
     /**
      * Optional hero-specific cosmetic primary action montage used when the shared cue's
      * placeholder montage targets a different skeleton than HeroMesh.

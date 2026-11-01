@@ -84,6 +84,22 @@ EDataValidationResult UBwayHeroDataAsset::IsDataValid(FDataValidationContext& Co
 			}
 		}
 
+		if (!HeroSecondaryEquipmentMesh.IsNull())
+		{
+			if (!HeroSecondaryEquipmentMesh.LoadSynchronous())
+			{
+				Context.AddError(FText::FromString(TEXT("HeroSecondaryEquipmentMesh is assigned but failed to load.")));
+				Result = EDataValidationResult::Invalid;
+			}
+			if (HeroSecondaryEquipmentSocket.IsNone() || (!HeroMesh->FindSocket(HeroSecondaryEquipmentSocket) && HeroMesh->GetRefSkeleton().FindBoneIndex(HeroSecondaryEquipmentSocket) == INDEX_NONE))
+			{
+				Context.AddError(FText::Format(
+					NSLOCTEXT("BwayHeroDataAsset", "MissingSecondaryEquipmentSocket", "HeroMesh is missing HeroSecondaryEquipmentSocket '{0}'."),
+					FText::FromName(HeroSecondaryEquipmentSocket)));
+				Result = EDataValidationResult::Invalid;
+			}
+		}
+
 		if (!PrimaryActionMontageOverride.IsNull())
 		{
 			const UAnimMontage* OverrideMontage = PrimaryActionMontageOverride.LoadSynchronous();

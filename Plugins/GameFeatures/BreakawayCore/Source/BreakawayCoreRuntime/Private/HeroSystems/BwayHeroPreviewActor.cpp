@@ -32,6 +32,13 @@ ABwayHeroPreviewActor::ABwayHeroPreviewActor()
 	PreviewEquipmentComponent->SetCanEverAffectNavigation(false);
 	PreviewEquipmentComponent->SetVisibility(false);
 
+	PreviewSecondaryEquipmentComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreviewSecondaryEquipmentComponent"));
+	PreviewSecondaryEquipmentComponent->SetupAttachment(PreviewMeshComponent);
+	PreviewSecondaryEquipmentComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PreviewSecondaryEquipmentComponent->SetGenerateOverlapEvents(false);
+	PreviewSecondaryEquipmentComponent->SetCanEverAffectNavigation(false);
+	PreviewSecondaryEquipmentComponent->SetVisibility(false);
+
 	PreviewCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("PreviewCameraComponent"));
 	PreviewCameraComponent->SetupAttachment(SceneRoot);
 	PreviewCameraComponent->SetRelativeLocation(FVector(0.0f, 0.0f, 10.0f));
@@ -56,10 +63,13 @@ void ABwayHeroPreviewActor::UpdatePreviewHero(UBwayHeroDataAsset* HeroData)
 	if (!HeroData || !HeroData->HeroMesh)
 	{
 		PreviewMeshComponent->SetSkeletalMesh(nullptr);
-		if (PreviewEquipmentComponent)
+		for (UStaticMeshComponent* Comp : { PreviewEquipmentComponent.Get(), PreviewSecondaryEquipmentComponent.Get() })
 		{
-			PreviewEquipmentComponent->SetStaticMesh(nullptr);
-			PreviewEquipmentComponent->SetVisibility(false);
+			if (Comp)
+			{
+				Comp->SetStaticMesh(nullptr);
+				Comp->SetVisibility(false);
+			}
 		}
 		return;
 	}
@@ -75,23 +85,42 @@ void ABwayHeroPreviewActor::UpdatePreviewHero(UBwayHeroDataAsset* HeroData)
 		}
 	}
 
-	if (PreviewEquipmentComponent)
+	const auto UpdatePreviewSlot = [this](
+		UStaticMeshComponent* EquipComp,
+		const TSoftObjectPtr<UStaticMesh>& EquipMeshSoft,
+		const FName& EquipSocket,
+		const FTransform& EquipRelativeTransform)
 	{
-		UStaticMesh* EquipMesh = !HeroData->HeroEquipmentMesh.IsNull() ? HeroData->HeroEquipmentMesh.LoadSynchronous() : nullptr;
-		if (EquipMesh && !HeroData->HeroEquipmentSocket.IsNone())
+		if (!EquipComp)
 		{
-			PreviewEquipmentComponent->AttachToComponent(
+			return;
+		}
+		UStaticMesh* EquipMesh = !EquipMeshSoft.IsNull() ? EquipMeshSoft.LoadSynchronous() : nullptr;
+		if (EquipMesh && !EquipSocket.IsNone())
+		{
+			EquipComp->AttachToComponent(
 				PreviewMeshComponent,
 				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				HeroData->HeroEquipmentSocket);
-			PreviewEquipmentComponent->SetStaticMesh(EquipMesh);
-			PreviewEquipmentComponent->SetRelativeTransform(HeroData->HeroEquipmentRelativeTransform);
-			PreviewEquipmentComponent->SetVisibility(true);
+				EquipSocket);
+			EquipComp->SetStaticMesh(EquipMesh);
+			EquipComp->SetRelativeTransform(EquipRelativeTransform);
+			EquipComp->SetVisibility(true);
 		}
 		else
 		{
-			PreviewEquipmentComponent->SetStaticMesh(nullptr);
-			PreviewEquipmentComponent->SetVisibility(false);
+			EquipComp->SetStaticMesh(nullptr);
+			EquipComp->SetVisibility(false);
 		}
-	}
+	};
+
+	UpdatePreviewSlot(
+		PreviewEquipmentComponent,
+		HeroData->HeroEquipmentMesh,
+		HeroData->HeroEquipmentSocket,
+		HeroData->HeroEquipmentRelativeTransform);
+	UpdatePreviewSlot(
+		PreviewSecondaryEquipmentComponent,
+		HeroData->HeroSecondaryEquipmentMesh,
+		HeroData->HeroSecondaryEquipmentSocket,
+		HeroData->HeroSecondaryEquipmentRelativeTransform);
 }

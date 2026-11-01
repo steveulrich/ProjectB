@@ -91,6 +91,10 @@ Scripts/Test/*
 !Scripts/setup-rawlins-21b-jail.mjs
 !Scripts/setup-rawlins-21c-parity.mjs
 !Scripts/lib/
+!Scripts/Editor/
+Scripts/Editor/*
+!Scripts/Editor/ImportRestoredHeroes.py
+!Scripts/Editor/blender_weapon_transforms.json
 
 # AI Planning probe / setup artifacts (keep markdown plans tracked)
 AI_Planning/*.json

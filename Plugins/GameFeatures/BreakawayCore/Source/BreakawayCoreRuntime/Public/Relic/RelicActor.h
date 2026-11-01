@@ -206,6 +206,10 @@ protected:
     UPROPERTY(Transient)
     TWeakObjectPtr<ABwayCharacterWithAbilities> LastDroppedCarrier;
 
+    /** Carrier whose held equipment meshes are currently hidden on this net role while attached. */
+    UPROPERTY(Transient)
+    TWeakObjectPtr<ABwayCharacterWithAbilities> VisualAttachedCarrier;
+
     double LastDropWorldTime = -1000.0;
 
     float AccumulatedCarrierDamage = 0.0f;

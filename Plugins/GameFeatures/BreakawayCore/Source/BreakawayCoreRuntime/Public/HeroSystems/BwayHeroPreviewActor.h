@@ -33,6 +33,12 @@ public:
 	USkeletalMeshComponent* GetPreviewMeshComponent() const { return PreviewMeshComponent; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection|Preview")
+	UStaticMeshComponent* GetPreviewEquipmentComponent() const { return PreviewEquipmentComponent; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection|Preview")
+	UStaticMeshComponent* GetPreviewSecondaryEquipmentComponent() const { return PreviewSecondaryEquipmentComponent; }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection|Preview")
 	UCameraComponent* GetPreviewCameraComponent() const { return PreviewCameraComponent; }
 
 protected:
@@ -44,6 +50,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
 	TObjectPtr<UStaticMeshComponent> PreviewEquipmentComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
+	TObjectPtr<UStaticMeshComponent> PreviewSecondaryEquipmentComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Hero Selection|Preview")
 	TObjectPtr<UCameraComponent> PreviewCameraComponent;

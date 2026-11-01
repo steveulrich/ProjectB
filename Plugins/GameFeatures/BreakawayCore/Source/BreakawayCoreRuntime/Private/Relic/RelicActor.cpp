@@ -364,6 +364,11 @@ void ARelicActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     RelicMesh->OnComponentHit.RemoveDynamic(this, &ARelicActor::HandleRelicMeshHit);
     UnbindCarrierCCTagListener();
+    if (ABwayCharacterWithAbilities* PrevVisualCarrier = VisualAttachedCarrier.Get())
+    {
+        PrevVisualCarrier->SetEquipmentHiddenForRelicCarry(false);
+    }
+    VisualAttachedCarrier.Reset();
     for (ERelicState State : {ERelicState::Neutral, ERelicState::Carried, ERelicState::Dropped, ERelicState::Scoring})
     {
         CleanupStateVFX(State);
@@ -1415,8 +1420,36 @@ void ARelicActor::AttachToCarrier(ABwayCharacterWithAbilities* Carrier)
     // Attach to the carrier's mesh
     if (USkeletalMeshComponent* CarrierMesh = Carrier->GetMesh())
     {
+        if (AttachSocketName.IsNone() || !CarrierMesh->DoesSocketExist(AttachSocketName))
+        {
+            static const FName FallbackSockets[] = {
+                FName(TEXT("relic_r")),
+                FName(TEXT("S_RAttachment")),
+                FName(TEXT("hand_r")),
+                FName(TEXT("bind_right_wrist")),
+                FName(TEXT("S_LAttachment"))
+            };
+            for (const FName& CandidateSocket : FallbackSockets)
+            {
+                if (CarrierMesh->DoesSocketExist(CandidateSocket))
+                {
+                    AttachSocketName = CandidateSocket;
+                    break;
+                }
+            }
+        }
         AttachToComponent(CarrierMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, AttachSocketName);
     }
+
+    if (ABwayCharacterWithAbilities* PrevVisualCarrier = VisualAttachedCarrier.Get())
+    {
+        if (PrevVisualCarrier != Carrier)
+        {
+            PrevVisualCarrier->SetEquipmentHiddenForRelicCarry(false);
+        }
+    }
+    VisualAttachedCarrier = Carrier;
+    Carrier->SetEquipmentHiddenForRelicCarry(true);
 
     if (HasAuthority())
     {
@@ -1485,6 +1518,16 @@ void ARelicActor::DetachFromCarrier(const FVector* InitialVelocity)
 
     // Detach from parent FIRST visually
     DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+    if (ABwayCharacterWithAbilities* PrevVisualCarrier = VisualAttachedCarrier.Get())
+    {
+        PrevVisualCarrier->SetEquipmentHiddenForRelicCarry(false);
+    }
+    VisualAttachedCarrier.Reset();
+    if (CurrentCarrier)
+    {
+        CurrentCarrier->SetEquipmentHiddenForRelicCarry(false);
+    }
 
     // Re-enable collision while keeping Pawn channel overlap so catches do not bounce off capsules
     RelicMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
