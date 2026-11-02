@@ -18,6 +18,38 @@ class BREAKAWAYCORERUNTIME_API UBwayMovementFeelConfig : public UPrimaryDataAsse
 public:
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 
+	/** Base speed value used for slide entry and slope scaling (cm/s). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "0.0", ForceUnits = "cm/s"))
+	float BaseSlideSpeed = 600.0f;
+
+	/** Factor multiplied by BaseSlideSpeed to determine maximum downhill slide speed. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "0.0"))
+	float SlideMaxSpeedFactor = 3.0f;
+
+	/** Factor multiplied by BaseSlideSpeed to determine downward slope acceleration magnitude. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "0.0"))
+	float SlideSlopeAccelerationFactor = 2.4f;
+
+	/** Base flat-ground friction factor (1/s) before slope power scaling. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "0.0"))
+	float SlideBaseFrictionFactor = 0.80f;
+
+	/** Exponent used in the slope-based friction calculation. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "0.1"))
+	float SlideFrictionPower = 4.0f;
+
+	/** Multiplier applied to SlideBaseFrictionFactor when sliding uphill against a slope. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide", meta = (ClampMin = "1.0"))
+	float SlideUphillFrictionMultiplier = 3.5f;
+
+	/** Maximum FOV offset added at peak slide speed (degrees). */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide|Juice", meta = (ClampMin = "0.0", ForceUnits = "degrees"))
+	float SlideFOVOffsetMax = 12.0f;
+
+	/** Interpolation speed for slide camera FOV offset. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide|Juice", meta = (ClampMin = "0.0"))
+	float SlideFOVInterpSpeed = 6.0f;
+
 	/** Multiplier applied to horizontal velocity when jumping out of a slide. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Slide Jump", meta = (ClampMin = "1.0"))
 	float SlideJumpMomentumBoost = 1.2f;

@@ -228,4 +228,343 @@ bool FBwaySlideOffGroundGravityRateTest::RunTest(const FString&)
 	}
 	return true;
 }
+
+namespace BwayDoradoRampBenchmark
+{
+constexpr float RampPitchDeg = 25.f;
+constexpr float L1_CrestY = -3150.f;
+constexpr float L2_MidwayY = -2840.f;
+constexpr float L3_BottomY = -2425.f;
+constexpr float L4_SeamY = -1705.f;
+constexpr float UpperTopZ = 330.f;
+
+struct FDoradoSplitResult
+{
+	float TimeL1 = 0.f;
+	float TimeL2 = -1.f;
+	float TimeL3 = -1.f;
+	float TimeL4 = -1.f;
+	float TimeReturnToRunSpeed = -1.f;
+	float SpeedAtL1 = 0.f;
+	float SpeedAtL2 = 0.f;
+	float MinSpeedMiddleLanding = 99999.f;
+	float PeakSpeedRamp1 = 0.f;
+	float PeakSpeedRamp2 = 0.f;
+	float PeakDownhillSpeed = 0.f;
+	float SpeedBeforeL3 = 0.f;
+	float SpeedAfterL3 = 0.f;
+	float VelZAfterL3 = 0.f;
+	float SpeedAtL4 = 0.f;
+	float MaxYReached = -99999.f;
+};
+
+class FDoradoRampFixture
+{
+public:
+	explicit FDoradoRampFixture(FAutomationTestBase& InTest) : Test(InTest) {}
+	~FDoradoRampFixture() { if (World) World->DestroyWorld(false); }
+
+	static void AddSegment(AActor* Owner, const FVector& TopStart, const FVector& TopEnd, float HalfWidth = 420.f, float HalfThickness = 40.f)
+	{
+		const FVector Delta = TopEnd - TopStart;
+		const float Length = Delta.Size();
+		const FVector Tangent = Delta / Length;
+		const FVector Normal = FVector(0.f, -Tangent.Z, Tangent.Y).GetSafeNormal();
+		const FMatrix Axes(FVector::ForwardVector, Tangent, Normal, FVector::ZeroVector);
+		UBoxComponent* Box = NewObject<UBoxComponent>(Owner);
+		Box->SetupAttachment(Owner->GetRootComponent());
+		Box->SetCollisionObjectType(ECC_WorldStatic);
+		Box->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Box->SetCollisionResponseToAllChannels(ECR_Block);
+		Box->SetBoxExtent(FVector(HalfWidth, Length * 0.5f, HalfThickness));
+		Box->SetWorldLocationAndRotation((TopStart + TopEnd) * 0.5f - Normal * HalfThickness, Axes.Rotator());
+		Box->RegisterComponent();
+	}
+
+	bool Setup()
+	{
+		const UWorld::InitializationValues Settings = UWorld::InitializationValues()
+			.AllowAudioPlayback(false).CreatePhysicsScene(true).CreateNavigation(false)
+			.CreateAISystem(false).ShouldSimulatePhysics(false).SetTransactional(false);
+		World = UWorld::CreateWorld(EWorldType::Game, false, NAME_None, nullptr, true, ERHIFeatureLevel::Num, &Settings);
+		if (!Test.TestNotNull(TEXT("Dorado benchmark world"), World)) return false;
+
+		AActor* RampActor = World->SpawnActor<AActor>();
+		USceneComponent* Root = NewObject<USceneComponent>(RampActor);
+		RampActor->SetRootComponent(Root);
+		Root->RegisterComponent();
+
+		const float TanPitch = FMath::Tan(FMath::DegreesToRadians(RampPitchDeg));
+		const float Ramp1EndY = -2965.f;
+		const float MiddleEndY = -2730.f;
+		const float MiddleZ = UpperTopZ - (Ramp1EndY - L1_CrestY) * TanPitch;
+		const float LowerZ = MiddleZ - (L3_BottomY - MiddleEndY) * TanPitch;
+		LowerFloorZ = LowerZ;
+
+		const FVector P0(0.f, -3650.f, UpperTopZ);
+		const FVector P1(0.f, L1_CrestY, UpperTopZ);
+		const FVector P2(0.f, Ramp1EndY, MiddleZ);
+		const FVector P3(0.f, MiddleEndY, MiddleZ);
+		const FVector P4(0.f, L3_BottomY, LowerZ);
+		const FVector P5(0.f, 500.f, LowerZ);
+
+		const FVector RampDownhillDir = (P2 - P1).GetSafeNormal();
+		AddSegment(RampActor, P0, P1);
+		AddSegment(RampActor, P1, P2 + RampDownhillDir * 25.f);
+		AddSegment(RampActor, P2 - FVector(0.f, 25.f, 0.f), P3);
+		AddSegment(RampActor, P3, P4 + RampDownhillDir * 25.f);
+		AddSegment(RampActor, P4 - FVector(0.f, 25.f, 0.f), P5);
+
+		UClass* PawnClass = StaticLoadClass(ABwayCharacterWithAbilities::StaticClass(), nullptr,
+			TEXT("/BreakawayCore/Characters/B_BW_Character_Humanoid.B_BW_Character_Humanoid_C"));
+		if (!PawnClass)
+		{
+			PawnClass = ABwayCharacterWithAbilities::StaticClass();
+		}
+
+		FActorSpawnParameters Spawn;
+		Spawn.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		Pawn = World->SpawnActor<ABwayCharacterWithAbilities>(PawnClass, FVector(0.f, L1_CrestY, UpperTopZ + 120.f), FRotator(0.f, 90.f, 0.f), Spawn);
+		if (!Test.TestNotNull(TEXT("Dorado benchmark pawn"), Pawn)) return false;
+		Movement = Pawn->GetBwayCharacterMovement();
+		if (!Test.TestNotNull(TEXT("Dorado benchmark CMC"), Movement)) return false;
+		Movement->bRunPhysicsWithNoController = true;
+		return true;
+	}
+
+	void PlaceOnSurfaceAtY(float Y, float SurfaceZ, float PitchDeg = 0.f)
+	{
+		const UCapsuleComponent* Capsule = Pawn->GetCapsuleComponent();
+		const float NormalZ = FMath::Cos(FMath::DegreesToRadians(PitchDeg));
+		const float Support = Capsule->GetScaledCapsuleRadius()
+			+ (Capsule->GetScaledCapsuleHalfHeight() - Capsule->GetScaledCapsuleRadius()) * NormalZ;
+		const FVector Loc(0.f, Y, SurfaceZ + (Support + 1.9f) / NormalZ);
+		Pawn->SetActorLocationAndRotation(Loc, FRotator(0.f, 90.f, 0.f), false, nullptr, ETeleportType::TeleportPhysics);
+		Movement->FindFloor(Pawn->GetActorLocation(), Movement->CurrentFloor, false);
+	}
+
+	FDoradoSplitResult RunDownhillSlide(bool bUseLegacyTuning)
+	{
+		FDoradoSplitResult Out;
+		if (bUseLegacyTuning)
+		{
+			Movement->BaseSlideSpeed = 500.f;
+			Movement->SlideMaxSpeedFactor = 3.5f;
+			Movement->SlideSlopeAccelerationFactor = 6.0f;
+			Movement->SlideBaseFrictionFactor = 4.0f;
+			Movement->SlideFrictionPower = 7.0f;
+		}
+		else
+		{
+			Movement->BaseSlideSpeed = 600.f;
+			Movement->SlideMaxSpeedFactor = 3.0f;
+			Movement->SlideSlopeAccelerationFactor = 2.4f;
+			Movement->SlideBaseFrictionFactor = 0.80f;
+			Movement->SlideFrictionPower = 4.0f;
+		}
+		Movement->MinSlideSpeed = 0.f;
+		Movement->SetMovementMode(MOVE_Walking);
+		PlaceOnSurfaceAtY(L1_CrestY + 2.f, UpperTopZ - 2.f * FMath::Tan(FMath::DegreesToRadians(RampPitchDeg)), RampPitchDeg);
+		Movement->SetMovementMode(MOVE_Custom, static_cast<uint8>(ECustomMovementMode::CMOVE_Slide));
+		PlaceOnSurfaceAtY(L1_CrestY + 2.f, UpperTopZ - 2.f * FMath::Tan(FMath::DegreesToRadians(RampPitchDeg)), RampPitchDeg);
+
+		const FVector RampDownhill(0.f, FMath::Cos(FMath::DegreesToRadians(RampPitchDeg)), -FMath::Sin(FMath::DegreesToRadians(RampPitchDeg)));
+		Movement->Velocity = RampDownhill * Movement->BaseSlideSpeed;
+		Out.SpeedAtL1 = Movement->Velocity.Size();
+
+		constexpr float Step = 1.f / 60.f;
+		float PrevY = Pawn->GetActorLocation().Y;
+		float PrevSpeed = Out.SpeedAtL1;
+		for (int32 Tick = 1; Tick <= 240; ++Tick)
+		{
+			const float PrevTime = (Tick - 1) * Step;
+			const float CurrTime = Tick * Step;
+			Movement->StartNewPhysics(Step, 0);
+			const float CurrY = Pawn->GetActorLocation().Y;
+			const float CurrSpeed = Movement->Velocity.Size();
+			Out.MaxYReached = FMath::Max(Out.MaxYReached, CurrY);
+
+			if (CurrY <= -2965.f)
+			{
+				Out.PeakSpeedRamp1 = FMath::Max(Out.PeakSpeedRamp1, CurrSpeed);
+			}
+			else if (CurrY > -2965.f && CurrY <= -2730.f)
+			{
+				Out.MinSpeedMiddleLanding = FMath::Min(Out.MinSpeedMiddleLanding, CurrSpeed);
+			}
+			else if (CurrY > -2730.f && CurrY <= L3_BottomY)
+			{
+				Out.PeakSpeedRamp2 = FMath::Max(Out.PeakSpeedRamp2, CurrSpeed);
+				Out.SpeedBeforeL3 = CurrSpeed;
+			}
+			Out.PeakDownhillSpeed = FMath::Max(Out.PeakDownhillSpeed, CurrSpeed);
+
+			auto InterpolateCrossTime = [&](float TargetY) -> float
+			{
+				const float Alpha = (CurrY > PrevY) ? FMath::Clamp((TargetY - PrevY) / (CurrY - PrevY), 0.f, 1.f) : 0.f;
+				return FMath::Lerp(PrevTime, CurrTime, Alpha);
+			};
+
+			if (Out.TimeL2 < 0.f && CurrY >= L2_MidwayY)
+			{
+				Out.TimeL2 = InterpolateCrossTime(L2_MidwayY);
+				Out.SpeedAtL2 = CurrSpeed;
+			}
+			if (Out.TimeL3 < 0.f && CurrY >= L3_BottomY)
+			{
+				Out.TimeL3 = InterpolateCrossTime(L3_BottomY);
+				Out.SpeedAfterL3 = CurrSpeed;
+				Out.VelZAfterL3 = Movement->Velocity.Z;
+			}
+			if (Out.TimeL4 < 0.f && CurrY >= L4_SeamY)
+			{
+				Out.TimeL4 = InterpolateCrossTime(L4_SeamY);
+				Out.SpeedAtL4 = CurrSpeed;
+			}
+			if (Out.TimeL3 > 0.f && Out.TimeReturnToRunSpeed < 0.f && CurrSpeed <= 600.f)
+			{
+				const float Alpha = (PrevSpeed > CurrSpeed) ? FMath::Clamp((PrevSpeed - 600.f) / (PrevSpeed - CurrSpeed), 0.f, 1.f) : 0.f;
+				Out.TimeReturnToRunSpeed = FMath::Lerp(PrevTime, CurrTime, Alpha);
+			}
+
+			PrevY = CurrY;
+			PrevSpeed = CurrSpeed;
+		}
+		return Out;
+	}
+
+	FAutomationTestBase& Test;
+	UWorld* World = nullptr;
+	ABwayCharacterWithAbilities* Pawn = nullptr;
+	UBwayCharacterMovementComponent* Movement = nullptr;
+	float LowerFloorZ = 0.f;
+};
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBwaySlideDoradoRampBenchmarkTest, "Breakaway.CombatPolish.Slide.Physics.DoradoRampBenchmark",
+	EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+bool FBwaySlideDoradoRampBenchmarkTest::RunTest(const FString&)
+{
+	using namespace BwayDoradoRampBenchmark;
+	FDoradoRampFixture Fixture(*this);
+	if (!Fixture.Setup()) return false;
+
+	// 1. Verify automatic upgrade of legacy Blueprint defaults on spawn
+	TestEqual(TEXT("Tuned BaseSlideSpeed"), Fixture.Movement->BaseSlideSpeed, 600.f);
+	TestEqual(TEXT("Tuned SlideMaxSpeedFactor"), Fixture.Movement->SlideMaxSpeedFactor, 3.0f);
+	TestEqual(TEXT("Tuned SlideSlopeAccelerationFactor"), Fixture.Movement->SlideSlopeAccelerationFactor, 2.4f);
+	TestEqual(TEXT("Tuned SlideBaseFrictionFactor"), Fixture.Movement->SlideBaseFrictionFactor, 0.80f);
+	TestEqual(TEXT("Tuned SlideFrictionPower"), Fixture.Movement->SlideFrictionPower, 4.0f);
+	TestEqual(TEXT("Tuned SlideUphillFrictionMultiplier"), Fixture.Movement->SlideUphillFrictionMultiplier, 3.5f);
+	TestEqual(TEXT("Tuned SlideFOVOffsetMax"), Fixture.Movement->SlideFOVOffsetMax, 12.0f);
+	TestEqual(TEXT("Tuned SlideFOVInterpSpeed"), Fixture.Movement->SlideFOVInterpSpeed, 6.0f);
+
+	// 2. Normal Run splits on L_BW_Dorado route (600 cm/s standard hero walk speed)
+	constexpr float NormalRunSpeed = 600.f;
+	const float RunT_L1_L2 = (L2_MidwayY - L1_CrestY) / NormalRunSpeed;
+	const float RunT_L2_L3 = (L3_BottomY - L2_MidwayY) / NormalRunSpeed;
+	const float RunT_L3_L4 = (L4_SeamY - L3_BottomY) / NormalRunSpeed;
+	const float RunT_Total = (L4_SeamY - L1_CrestY) / NormalRunSpeed;
+
+	// 3. Before vs. After Downhill Slide Benchmark on L_BW_Dorado double-flight ramp
+	const FDoradoSplitResult Before = Fixture.RunDownhillSlide(/*bUseLegacyTuning=*/true);
+	const FDoradoSplitResult After = Fixture.RunDownhillSlide(/*bUseLegacyTuning=*/false);
+
+	const float Before_S1 = Before.TimeL2 - Before.TimeL1;
+	const float Before_S2 = Before.TimeL3 - Before.TimeL2;
+	const float After_S1 = After.TimeL2 - After.TimeL1;
+	const float After_S2 = After.TimeL3 - After.TimeL2;
+	const float After_S3 = After.TimeL4 - After.TimeL3;
+	const float After_Total = After.TimeL4 - After.TimeL1;
+
+	AddInfo(FString::Printf(
+		TEXT("DoradoNormalRun: T_L1_L2=%.3fs T_L2_L3=%.3fs T_L3_L4=%.3fs Total=%.3fs (Speed=%.1f cm/s)"),
+		RunT_L1_L2, RunT_L2_L3, RunT_L3_L4, RunT_Total, NormalRunSpeed));
+	AddInfo(FString::Printf(
+		TEXT("DoradoSlideBEFORE: T_L1_L2=%.3fs T_L2_L3=%.3fs T_L3=%.3fs T_L4=%.3fs (MaxY=%.1f) SpeedL1=%.1f PeakRamp1=%.1f MinMid=%.1f PeakRamp2=%.1f SpeedAfterL3=%.1f VelZAfterL3=%.1f"),
+		Before_S1, Before_S2, Before.TimeL3, Before.TimeL4, Before.MaxYReached,
+		Before.SpeedAtL1, Before.PeakSpeedRamp1, Before.MinSpeedMiddleLanding, Before.PeakSpeedRamp2, Before.SpeedAfterL3, Before.VelZAfterL3));
+	AddInfo(FString::Printf(
+		TEXT("DoradoSlideAFTER: T_L1_L2=%.3fs (saved %.3fs) T_L2_L3=%.3fs (saved %.3fs) T_L3_L4=%.3fs (saved %.3fs) Total=%.3fs (saved %.3fs) SpeedL1=%.1f PeakRamp1=%.1f MinMid=%.1f PeakDownhill=%.1f SpeedAfterL3=%.1f VelZAfterL3=%.1f SpeedAtL4=%.1f ReturnToRunTime=%.3fs"),
+		After_S1, RunT_L1_L2 - After_S1,
+		After_S2, RunT_L2_L3 - After_S2,
+		After_S3, RunT_L3_L4 - After_S3,
+		After_Total, RunT_Total - After_Total,
+		After.SpeedAtL1, After.PeakSpeedRamp1, After.MinSpeedMiddleLanding, After.PeakDownhillSpeed,
+		After.SpeedAfterL3, After.VelZAfterL3, After.SpeedAtL4, After.TimeReturnToRunSpeed));
+
+	TestTrue(TEXT("Before-tuning slide stalled on flat runout before reaching L4"), Before.TimeL4 < 0.f && Before.MaxYReached < L4_SeamY);
+	TestTrue(TEXT("After-tuning slide reaches all 4 landmarks L1->L2->L3->L4"),
+		After.TimeL2 > 0.f && After.TimeL3 > After.TimeL2 && After.TimeL4 > After.TimeL3);
+	TestTrue(TEXT("After-tuning slide saves time on Section 1 (L1->L2)"), After_S1 < RunT_L1_L2);
+	TestTrue(TEXT("After-tuning slide saves time on Section 2 (L2->L3)"), After_S2 < RunT_L2_L3);
+	TestTrue(TEXT("After-tuning slide saves time on Section 3 (L3->L4)"), After_S3 < RunT_L3_L4);
+	TestTrue(TEXT("After-tuning peak downhill speed is in Breakaway reference band (1150..1500 cm/s)"),
+		After.PeakDownhillSpeed >= 1150.f && After.PeakDownhillSpeed <= 1500.f);
+	TestTrue(TEXT("After-tuning bottom transition retains >95% of ramp speed with zero vertical pop/hangover"),
+		After.SpeedAfterL3 >= After.SpeedBeforeL3 * 0.95f && FMath::Abs(After.VelZAfterL3) < 1.0f);
+	TestTrue(TEXT("After-tuning slide carries momentum past L4 above normal walk speed and decays back to 600 cm/s around 1.7..2.0s"),
+		After.SpeedAtL4 > NormalRunSpeed && After.TimeReturnToRunSpeed >= 1.65f && After.TimeReturnToRunSpeed <= 2.05f);
+
+	// 4. Flat-ground slide verification: smooth decay without acceleration
+	Fixture.Movement->SetMovementMode(MOVE_Walking);
+	Fixture.PlaceOnSurfaceAtY(-1500.f, Fixture.LowerFloorZ, 0.f);
+	Fixture.Movement->SetMovementMode(MOVE_Custom, static_cast<uint8>(ECustomMovementMode::CMOVE_Slide));
+	Fixture.PlaceOnSurfaceAtY(-1500.f, Fixture.LowerFloorZ, 0.f);
+	Fixture.Movement->Velocity = FVector(0.f, NormalRunSpeed, 0.f);
+	float PrevFlatSpeed = NormalRunSpeed;
+	for (int32 Tick = 0; Tick < 30; ++Tick)
+	{
+		Fixture.Movement->StartNewPhysics(1.f / 60.f, 0);
+		const float CurrFlatSpeed = Fixture.Movement->Velocity.Size2D();
+		TestTrue(TEXT("Flat slide speed monotonically decays without accelerating"), CurrFlatSpeed < PrevFlatSpeed);
+		PrevFlatSpeed = CurrFlatSpeed;
+	}
+	AddInfo(FString::Printf(TEXT("DoradoFlatSlide: StartSpeed=600.0 EndSpeedAfter0.5s=%.1f"), PrevFlatSpeed));
+
+	// 5. Uphill slide verification: quick decay (<0.35s) and zero backward runaway
+	Fixture.Movement->SetMovementMode(MOVE_Walking);
+	const float UphillStartY = -2460.f;
+	const float UphillStartZ = Fixture.LowerFloorZ + (L3_BottomY - UphillStartY) * FMath::Tan(FMath::DegreesToRadians(RampPitchDeg));
+	Fixture.PlaceOnSurfaceAtY(UphillStartY, UphillStartZ, RampPitchDeg);
+	Fixture.Movement->SetMovementMode(MOVE_Custom, static_cast<uint8>(ECustomMovementMode::CMOVE_Slide));
+	Fixture.PlaceOnSurfaceAtY(UphillStartY, UphillStartZ, RampPitchDeg);
+	const FVector RampUphill(0.f, -FMath::Cos(FMath::DegreesToRadians(RampPitchDeg)), FMath::Sin(FMath::DegreesToRadians(RampPitchDeg)));
+	Fixture.Movement->Velocity = RampUphill * NormalRunSpeed;
+	float UphillStopTime = -1.f;
+	float MinUphillY = UphillStartY;
+	for (int32 Tick = 1; Tick <= 30; ++Tick)
+	{
+		Fixture.Movement->StartNewPhysics(1.f / 60.f, 0);
+		MinUphillY = FMath::Min(MinUphillY, Fixture.Pawn->GetActorLocation().Y);
+		if (UphillStopTime < 0.f && Fixture.Movement->Velocity.SizeSquared() < 1.f)
+		{
+			UphillStopTime = Tick * (1.f / 60.f);
+		}
+	}
+	const float UphillTravel2D = UphillStartY - MinUphillY;
+	AddInfo(FString::Printf(TEXT("DoradoUphillSlide: StopTime=%.3fs UphillTravel2D=%.1fcm FinalVel=%s"),
+		UphillStopTime, UphillTravel2D, *Fixture.Movement->Velocity.ToString()));
+	TestTrue(TEXT("Uphill slide decays to stop in under 0.35s"), UphillStopTime > 0.f && UphillStopTime <= 0.35f);
+	TestTrue(TEXT("Uphill slide does not reverse-accelerate backward down the ramp"),
+		Fixture.Movement->Velocity.IsNearlyZero(0.1f) && Fixture.Pawn->GetActorLocation().Y <= MinUphillY + 1.f);
+
+	// 6. Slide-jump cancel verification: jumping mid-slide exits CMOVE_Slide into MOVE_Falling with momentum boost
+	Fixture.Movement->SetMovementMode(MOVE_Walking);
+	Fixture.PlaceOnSurfaceAtY(-2650.f, Fixture.LowerFloorZ + (L3_BottomY - (-2650.f)) * FMath::Tan(FMath::DegreesToRadians(RampPitchDeg)), RampPitchDeg);
+	Fixture.Movement->SetMovementMode(MOVE_Custom, static_cast<uint8>(ECustomMovementMode::CMOVE_Slide));
+	const FVector RampDownhill(0.f, FMath::Cos(FMath::DegreesToRadians(RampPitchDeg)), -FMath::Sin(FMath::DegreesToRadians(RampPitchDeg)));
+	Fixture.Movement->Velocity = RampDownhill * 1100.f;
+	const float PreJumpSpeed2D = Fixture.Movement->Velocity.Size2D();
+	const bool bJumped = static_cast<UCharacterMovementComponent*>(Fixture.Movement)->DoJump(false, 1.f / 60.f);
+	const float PostJumpSpeed2D = Fixture.Movement->Velocity.Size2D();
+	AddInfo(FString::Printf(TEXT("DoradoSlideJumpCancel: bJumped=%d PreSpeed2D=%.1f PostSpeed2D=%.1f PostVelZ=%.1f IsSlideJumping=%d"),
+		bJumped ? 1 : 0, PreJumpSpeed2D, PostJumpSpeed2D, Fixture.Movement->Velocity.Z, Fixture.Movement->IsSlideJumping() ? 1 : 0));
+	TestTrue(TEXT("DoJump succeeds from downhill slide and enters MOVE_Falling + SlideJumping"),
+		bJumped && Fixture.Movement->IsFalling() && !Fixture.Movement->IsSliding() && Fixture.Movement->IsSlideJumping());
+	TestTrue(TEXT("Slide-jump boosts horizontal speed by SlideJumpMomentumBoost"),
+		FMath::IsNearlyEqual(PostJumpSpeed2D, PreJumpSpeed2D * Fixture.Movement->SlideJumpMomentumBoost, 2.f));
+
+	return true;
+}
 #endif

@@ -77,13 +77,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="cm/s"))
 	float BaseSlideSpeed = 600.0f;
 
-	/** Factor multiplied by BaseSlideSpeed to determine maximum slide speed. Lua: 3.5 */
+	/** Factor multiplied by BaseSlideSpeed to determine maximum slide speed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
-	float SlideMaxSpeedFactor = 3.5f;
+	float SlideMaxSpeedFactor = 3.0f;
 
-	/** Factor multiplied by BaseSlideSpeed to determine slope acceleration magnitude. Lua: 9.0 */
+	/** Factor multiplied by BaseSlideSpeed to determine slope acceleration magnitude. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
-	float SlideSlopeAccelerationFactor = 9.0f;
+	float SlideSlopeAccelerationFactor = 2.4f;
 
 	/** Minimum slope angle required to apply downward slope acceleration. Lua: 1 degree */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ClampMax = "90.0", ForceUnits="degrees"))
@@ -93,17 +93,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="rad/s"))
 	float SlideSteerSpeed = 2.0f;
 
-	/** Rate at which the character mesh rotates to face the current velocity direction (degrees/sec). Lua: 10800 */
+	/** Rate at which the character mesh rotates to face the current velocity direction (degrees/sec). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="deg/s"))
-	float SlideCharacterRotationSpeed = 10800.0f;
+	float SlideCharacterRotationSpeed = 1000.0f;
 
-	/** Exponent used in the slope-based friction calculation (Higher = more sensitive to slope). Lua: 15.0 */
+	/** Exponent used in the slope-based friction calculation (Higher = more sensitive to slope). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.1"))
-	float SlideFrictionPower = 15.0f;
+	float SlideFrictionPower = 4.0f;
 
 	/** Base friction factor used in slope calculation. Adjusted by slope power curve. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
-	float SlideBaseFrictionFactor = 8.0f;
+	float SlideBaseFrictionFactor = 0.80f;
+
+	/** Multiplier applied to SlideBaseFrictionFactor when sliding uphill against a slope. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "1.0"))
+	float SlideUphillFrictionMultiplier = 3.5f;
 
 	/** High friction factor applied immediately upon hitting a wall during slide. Lua: 20.0 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0"))
@@ -119,7 +123,7 @@ public:
 
 	/** Minimum speed below which the character automatically stops sliding (cm/s). */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding", meta = (ClampMin = "0.0", ForceUnits="cm/s"))
-	float MinSlideSpeed = 100.0f;
+	float MinSlideSpeed = 0.0f;
 
 	/** Multiplier applied to horizontal velocity when landing from a slide-jump. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Slide Jump", meta = (ClampMin = "0.0", ClampMax = "1.0"))
@@ -152,11 +156,11 @@ public:
 	// --- Slide Juice (Camera) ---
 	/** Maximum FOV offset to add when sliding at maximum speed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice", meta = (ClampMin = "0.0", ForceUnits="degrees"))
-	float SlideFOVOffsetMax = 15.0f;
+	float SlideFOVOffsetMax = 12.0f;
 
 	/** Speed at which the FOV offset interpolates towards the target value. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice", meta = (ClampMin = "0.0"))
-	float SlideFOVInterpSpeed = 5.0f;
+	float SlideFOVInterpSpeed = 6.0f;
 
 	/** Camera shake to play during sliding. Intensity should be modulated by slide speed. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Character Movement: Sliding|Juice")
@@ -215,8 +219,12 @@ public:
 
 protected:
 	//~ Begin UObject Interface
+	virtual void PostLoad() override;
 	virtual void InitializeComponent() override;
 	//~ End UObject Interface
+
+	/** Upgrades legacy serialized Blueprint slide defaults to the tuned downhill slide curve. */
+	void UpgradeLegacySlideTuningDefaults();
 
 	//~ Begin UCharacterMovementComponent Interface
 	virtual void PhysSliding(float deltaTime, int32 Iterations);
@@ -253,6 +261,9 @@ protected:
 
 	/** Predicted slide-jump aerial state (carried via compressed move flags). */
 	bool bIsSlideJumping = false;
+
+	/** True when the current slide began or traveled uphill against a slope, preventing backward runaway on stall. */
+	bool bSlideWasMovingUphill = false;
 
 	/** Cached Ability System Component for tag checking. */
 	UPROPERTY(Transient)

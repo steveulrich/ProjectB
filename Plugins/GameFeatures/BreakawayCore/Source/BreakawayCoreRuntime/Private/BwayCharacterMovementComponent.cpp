@@ -43,9 +43,16 @@ UBwayCharacterMovementComponent::UBwayCharacterMovementComponent(const FObjectIn
 }
 
 // --- Initialization ---
+void UBwayCharacterMovementComponent::PostLoad()
+{
+	Super::PostLoad();
+	UpgradeLegacySlideTuningDefaults();
+}
+
 void UBwayCharacterMovementComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
+	UpgradeLegacySlideTuningDefaults();
 
 	if (GetCharacterOwner())
 	{
@@ -54,12 +61,53 @@ void UBwayCharacterMovementComponent::InitializeComponent()
 	DefaultGravityScale = GravityScale;
 }
 
+void UBwayCharacterMovementComponent::UpgradeLegacySlideTuningDefaults()
+{
+	if (FMath::IsNearlyEqual(BaseSlideSpeed, 500.0f))
+	{
+		BaseSlideSpeed = 600.0f;
+	}
+	if (FMath::IsNearlyEqual(SlideMaxSpeedFactor, 3.5f))
+	{
+		SlideMaxSpeedFactor = 3.0f;
+	}
+	if (FMath::IsNearlyEqual(SlideSlopeAccelerationFactor, 6.0f) || FMath::IsNearlyEqual(SlideSlopeAccelerationFactor, 9.0f))
+	{
+		SlideSlopeAccelerationFactor = 2.4f;
+	}
+	if (FMath::IsNearlyEqual(SlideBaseFrictionFactor, 4.0f) || FMath::IsNearlyEqual(SlideBaseFrictionFactor, 8.0f))
+	{
+		SlideBaseFrictionFactor = 0.80f;
+	}
+	if (FMath::IsNearlyEqual(SlideFrictionPower, 7.0f) || FMath::IsNearlyEqual(SlideFrictionPower, 15.0f))
+	{
+		SlideFrictionPower = 4.0f;
+	}
+	if (FMath::IsNearlyEqual(SlideFOVOffsetMax, 15.0f))
+	{
+		SlideFOVOffsetMax = 12.0f;
+	}
+	if (FMath::IsNearlyEqual(SlideFOVInterpSpeed, 5.0f))
+	{
+		SlideFOVInterpSpeed = 6.0f;
+	}
+}
+
 void UBwayCharacterMovementComponent::ApplyMovementFeelConfig(const UBwayMovementFeelConfig* Config)
 {
 	if (!Config)
 	{
 		return;
 	}
+
+	BaseSlideSpeed = Config->BaseSlideSpeed;
+	SlideMaxSpeedFactor = Config->SlideMaxSpeedFactor;
+	SlideSlopeAccelerationFactor = Config->SlideSlopeAccelerationFactor;
+	SlideBaseFrictionFactor = Config->SlideBaseFrictionFactor;
+	SlideFrictionPower = Config->SlideFrictionPower;
+	SlideUphillFrictionMultiplier = Config->SlideUphillFrictionMultiplier;
+	SlideFOVOffsetMax = Config->SlideFOVOffsetMax;
+	SlideFOVInterpSpeed = Config->SlideFOVInterpSpeed;
 
 	SlideJumpMomentumBoost = Config->SlideJumpMomentumBoost;
 	SlideJumpMinHorizontalSpeed = Config->SlideJumpMinHorizontalSpeed;
@@ -304,6 +352,28 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 
 	Acceleration = FVector::ZeroVector;
 
+	FVector DownSlopeDirection = FVector::ZeroVector;
+	float PreTickDownhillAlign2D = 0.0f;
+	if (bHasSlideGroundContact && SlopeAngleDegrees >= MinSlopeAngleForAccel)
+	{
+		const FVector RightVector = FVector::CrossProduct(StartFloorNormal, FVector::UpVector);
+		DownSlopeDirection = FVector::CrossProduct(StartFloorNormal, RightVector).GetSafeNormal();
+		const FVector VelDir2D = Velocity.GetSafeNormal2D();
+		const FVector DownSlopeDir2D = DownSlopeDirection.GetSafeNormal2D();
+		if (!VelDir2D.IsNearlyZero() && !DownSlopeDir2D.IsNearlyZero())
+		{
+			PreTickDownhillAlign2D = FVector::DotProduct(VelDir2D, DownSlopeDir2D);
+		}
+		if (PreTickDownhillAlign2D < -0.1f)
+		{
+			bSlideWasMovingUphill = true;
+		}
+	}
+	else
+	{
+		bSlideWasMovingUphill = false;
+	}
+
 	if (bHasSlideGroundContact)
 	{
 		ApplySlideSlopeAcceleration(deltaTime, SlopeAngleDegrees);
@@ -318,6 +388,12 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 		ApplySlideFriction(deltaTime, SlopeAngleDegrees);
 	}
 	ApplySlideSteering(deltaTime, InputAccelDir);
+
+	if (bSlideWasMovingUphill && bHasSlideGroundContact && !DownSlopeDirection.IsNearlyZero()
+		&& FVector::DotProduct(Velocity, DownSlopeDirection) >= 0.0f)
+	{
+		Velocity = FVector::ZeroVector;
+	}
 
 	Velocity = Velocity.GetClampedToMaxSize(GetMaxSpeed());
 
@@ -344,6 +420,7 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 	FVector Adjusted = Velocity * deltaTime;
 	SafeMoveUpdatedComponent(Adjusted, UpdatedComponent->GetComponentQuat(), true, Hit);
 
+	bool bHitFrontalWall = false;
 	if (Hit.Time < 1.f)
 	{
 		FBwaySlideContactContext Contacts;
@@ -409,7 +486,8 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 				}
 			}
 		}
-		if (Contacts.FrontalWallSeconds > 0.f)
+		bHitFrontalWall = Contacts.FrontalWallSeconds > 0.f;
+		if (bHitFrontalWall)
 		{
 			float CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier;
 			GetCurrentSlideModifiers(CurrentMaxSpeedFactor, SlopeAccelFactor, CurrentFrictionMultiplier);
@@ -442,9 +520,13 @@ void UBwayCharacterMovementComponent::PhysSliding(float deltaTime, int32 Iterati
 			FindFloor(UpdatedComponent->GetComponentLocation(), CurrentFloor, false);
 			bSteppedDown = true;
 		}
+		const bool bFlatterFloorTransition = StartFloorNormal.Z < 0.98f
+			&& CurrentFloor.HitResult.ImpactNormal.Z > StartFloorNormal.Z + 0.01f
+			&& FMath::IsFinite(PostFloorDist) && PostFloorDist <= MAX_FLOOR_DIST
+			&& !bHitFrontalWall;
 		if (CurrentFloor.bBlockingHit && CurrentFloor.HitResult.IsValidBlockingHit()
 			&& !CurrentFloor.HitResult.bStartPenetrating && CurrentFloor.HitResult.ImpactNormal.Z >= MinSlideFloorZ
-			&& (bSteppedDown || FVector::DotProduct(Velocity, CurrentFloor.HitResult.ImpactNormal) > KINDA_SMALL_NUMBER))
+			&& (bSteppedDown || bFlatterFloorTransition || FVector::DotProduct(Velocity, CurrentFloor.HitResult.ImpactNormal) > KINDA_SMALL_NUMBER))
 		{
 			const float CurrentSpeed = FMath::Max(Velocity.Size(), PreMoveSurfaceSpeed);
 			const FVector TangentDir = FVector::VectorPlaneProject(Velocity, CurrentFloor.HitResult.ImpactNormal).GetSafeNormal();
@@ -550,7 +632,25 @@ void UBwayCharacterMovementComponent::ApplySlideFriction(float DeltaTime, float 
 	const float ClampedSlopeFactor = FMath::Clamp(SlopeAngleDegrees / 90.0f, 0.0f, 1.0f);
 	const float SlopePowerFactor = FMath::Pow(1.0f - ClampedSlopeFactor, SlideFrictionPower);
 
-	float FrictionToApply = SlideBaseFrictionFactor * SlopePowerFactor * CurrentFrictionMultiplier;
+	float EffectiveSlopeFactor = SlopePowerFactor;
+	if (SlopeAngleDegrees >= MinSlopeAngleForAccel && Velocity.SizeSquared2D() > KINDA_SMALL_NUMBER)
+	{
+		const FVector FloorNormal = CurrentFloor.HitResult.ImpactNormal;
+		const FVector RightVector = FVector::CrossProduct(FloorNormal, FVector::UpVector);
+		const FVector DownSlopeDirection = FVector::CrossProduct(FloorNormal, RightVector).GetSafeNormal();
+		const FVector DownSlopeDir2D = DownSlopeDirection.GetSafeNormal2D();
+		if (!DownSlopeDir2D.IsNearlyZero())
+		{
+			const float DownhillAlign2D = FVector::DotProduct(Velocity.GetSafeNormal2D(), DownSlopeDir2D);
+			if (DownhillAlign2D < -0.1f)
+			{
+				const float UphillAlpha = FMath::Clamp(-DownhillAlign2D, 0.0f, 1.0f);
+				EffectiveSlopeFactor = FMath::Lerp(SlopePowerFactor, SlideUphillFrictionMultiplier, UphillAlpha);
+			}
+		}
+	}
+
+	float FrictionToApply = SlideBaseFrictionFactor * EffectiveSlopeFactor * CurrentFrictionMultiplier;
 
 	if (FrictionToApply > KINDA_SMALL_NUMBER && Velocity.SizeSquared() > KINDA_SMALL_NUMBER)
 	{
@@ -702,6 +802,7 @@ void UBwayCharacterMovementComponent::GetCurrentSlideModifiers(float& OutMaxSpee
 // --- Slide Start/End Helpers ---
 void UBwayCharacterMovementComponent::StartSlide()
 {
+	bSlideWasMovingUphill = false;
 	if (CharacterOwner)
 	{
 		CharacterOwner->Crouch(true);
@@ -710,6 +811,7 @@ void UBwayCharacterMovementComponent::StartSlide()
 
 void UBwayCharacterMovementComponent::EndSlide()
 {
+	bSlideWasMovingUphill = false;
 	if (CharacterOwner)
 	{
 		CharacterOwner->UnCrouch(true);
