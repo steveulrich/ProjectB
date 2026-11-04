@@ -94,6 +94,7 @@ Scripts/Test/*
 !Scripts/Editor/
 Scripts/Editor/*
 !Scripts/Editor/ImportRestoredHeroes.py
+!Scripts/Editor/ImportHeroSelectAssets.py
 !Scripts/Editor/blender_weapon_transforms.json
 
 # AI Planning probe / setup artifacts (keep markdown plans tracked)
