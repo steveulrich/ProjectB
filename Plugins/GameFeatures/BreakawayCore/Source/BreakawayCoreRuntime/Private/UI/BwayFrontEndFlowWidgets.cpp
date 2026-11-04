@@ -8,13 +8,21 @@
 #include "CommonUIExtensions.h"
 #include "CommonUserTypes.h"
 #include "Components/Border.h"
+#include "Components/Button.h"
+#include "Components/ButtonSlot.h"
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Components/CircularThrobber.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
+#include "Components/Image.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "Components/ScaleBox.h"
+#include "Components/ScaleBoxSlot.h"
 #include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
+#include "Components/SizeBoxSlot.h"
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -22,19 +30,42 @@
 #include "Containers/Ticker.h"
 #include "Engine/AssetManager.h"
 #include "Engine/Engine.h"
+#include "Engine/Font.h"
 #include "Engine/GameInstance.h"
+#include "Engine/GameViewportClient.h"
 #include "Engine/LocalPlayer.h"
+#include "Engine/Texture2D.h"
 #include "Engine/World.h"
+#include "Framework/Application/SlateApplication.h"
 #include "GameFramework/PlayerController.h"
 #include "GameModes/BwayExperienceLibrary.h"
 #include "GameModes/BwayUserFacingExperienceDefinition.h"
 #include "GameplayTagContainer.h"
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
+#include "ImageUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Layout/WidgetPath.h"
+#include "Misc/FileHelper.h"
 #include "Misc/PackageName.h"
+#include "Misc/Paths.h"
+#include "Modules/ModuleManager.h"
+#include "Slate/SceneViewport.h"
 #include "TimerManager.h"
 #include "UI/BwayCommonButton.h"
+#include "UnrealClient.h"
 #include "UObject/UObjectIterator.h"
+#include "Widgets/SViewport.h"
+#include "Widgets/SWindow.h"
+
+#if WITH_EDITOR
+#include "Engine/Blueprint.h"
+#include "Kismet2/BlueprintEditorUtils.h"
+#include "Kismet2/KismetEditorUtilities.h"
+#include "UObject/Package.h"
+#include "UObject/SavePackage.h"
+#endif
 
 #if !UE_BUILD_SHIPPING
 #include "AbilitySystem/LyraAbilitySystemComponent.h"
@@ -328,6 +359,92 @@ namespace BwayFrontEndUI
 // UBwayMainMenuWidget (W_MainMenu)
 // ============================================================================
 
+namespace BwayMainMenuArt
+{
+	static constexpr const TCHAR* FontHouseOfCardsBold = TEXT("/BreakawayCore/UI/Fonts/houseofcards_bold_Font.houseofcards_bold_Font");
+	static constexpr const TCHAR* FontRefrigeratorHeavy = TEXT("/BreakawayCore/UI/Fonts/refrigeratordeluxe-heavy_Font.refrigeratordeluxe-heavy_Font");
+	static constexpr const TCHAR* FontNimbusReg = TEXT("/BreakawayCore/UI/Fonts/nimbussan-reg_Font.nimbussan-reg_Font");
+	static constexpr const TCHAR* FontNeuzeitBold = TEXT("/BreakawayCore/UI/Fonts/neuzeitgro-bol_Font.neuzeitgro-bol_Font");
+
+	static constexpr const TCHAR* TexSplashArt = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_splash_art.frontend_splash_art");
+	static constexpr const TCHAR* TexLogoAlpha = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_logo_alpha.frontend_logo_alpha");
+	static constexpr const TCHAR* TexLeftGlass = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_left_glass_panel.frontend_left_glass_panel");
+	static constexpr const TCHAR* TexRightGlass = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_right_glass_panel.frontend_right_glass_panel");
+	static constexpr const TCHAR* TexHintbarSettings = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_hintbar_settings.frontend_hintbar_settings");
+	static constexpr const TCHAR* TexHintbarSettingsHover = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_hintbar_settings_hover.frontend_hintbar_settings_hover");
+	static constexpr const TCHAR* TexHintbarCoin = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_hintbar_coin.frontend_hintbar_coin");
+	static constexpr const TCHAR* TexPartyAvatarSlot = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_party_avatar_slot.frontend_party_avatar_slot");
+	static constexpr const TCHAR* TexPartyLeaderDot = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_party_leader_dot.frontend_party_leader_dot");
+	static constexpr const TCHAR* TexPartyInviteSlot = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_party_invite_slot.frontend_party_invite_slot");
+	static constexpr const TCHAR* TexQuickChatBalloon = TEXT("/BreakawayCore/UI/Art/FrontEnd/frontend_quick_chat_balloon.frontend_quick_chat_balloon");
+
+	UTexture2D* LoadTex(const TCHAR* Path)
+	{
+		return LoadObject<UTexture2D>(nullptr, Path);
+	}
+
+	const UObject* LoadFontAsset(const TCHAR* Path)
+	{
+		return LoadObject<UFont>(nullptr, Path);
+	}
+
+	FSlateFontInfo MakeMenuFont(const UObject* FontObj, int32 PointSize)
+	{
+		if (FontObj)
+		{
+			FSlateFontInfo Info(FontObj, PointSize);
+			Info.TypefaceFontName = FName(TEXT("Default"));
+			return Info;
+		}
+		return FCoreStyle::GetDefaultFontStyle("Bold", PointSize);
+	}
+
+	void ApplyBrushFromTex(UImage* Img, const TCHAR* TexPath, const FVector2D& Size, const FLinearColor& Tint = FLinearColor::White)
+	{
+		if (!Img)
+		{
+			return;
+		}
+		if (UTexture2D* Tex = LoadTex(TexPath))
+		{
+			FSlateBrush Brush;
+			Brush.SetResourceObject(Tex);
+			Brush.ImageSize = Size;
+			Brush.DrawAs = ESlateBrushDrawType::Image;
+			Brush.TintColor = FSlateColor(Tint);
+			Img->SetBrush(Brush);
+		}
+		else
+		{
+			FSlateBrush Fallback;
+			Fallback.DrawAs = ESlateBrushDrawType::Box;
+			Fallback.ImageSize = Size;
+			Fallback.TintColor = FSlateColor(Tint);
+			Img->SetBrush(Fallback);
+		}
+	}
+
+	void SetTransparentHitButtonStyle(UButton* Button)
+	{
+		if (!Button)
+		{
+			return;
+		}
+		FSlateBrush EmptyBrush;
+		EmptyBrush.DrawAs = ESlateBrushDrawType::NoDrawType;
+
+		FButtonStyle Style = Button->GetStyle();
+		Style.SetNormal(EmptyBrush);
+		Style.SetHovered(EmptyBrush);
+		Style.SetPressed(EmptyBrush);
+		Style.SetDisabled(EmptyBrush);
+		Style.SetNormalPadding(FMargin(0.f));
+		Style.SetPressedPadding(FMargin(0.f));
+		Button->SetStyle(Style);
+		Button->SetBackgroundColor(FLinearColor::Transparent);
+	}
+} // namespace BwayMainMenuArt
+
 UBwayMainMenuWidget::UBwayMainMenuWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
@@ -341,112 +458,661 @@ TOptional<FUIInputConfig> UBwayMainMenuWidget::GetDesiredInputConfig() const
 	return FUIInputConfig(ECommonInputMode::Menu, EMouseCaptureMode::NoCapture);
 }
 
+void UBwayMainMenuWidget::BuildOrBindWidgetHierarchy()
+{
+	if (!WidgetTree)
+	{
+		return;
+	}
+
+	// Check if already populated in W_MainMenu WidgetTree
+	PlayNavHitButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_NavPlay")));
+	WarriorsNavHitButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_NavWarriors")));
+	HelpNavHitButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_NavHelp")));
+	SettingsNavHitButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_NavSettings")));
+	QuitNavHitButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_NavQuit")));
+
+	PlayNavText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_NavPlay")));
+	WarriorsNavText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_NavWarriors")));
+	HelpNavText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_NavHelp")));
+	SettingsNavText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_NavSettings")));
+	QuitNavText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_NavQuit")));
+
+	HostLanMatchButton = Cast<UBwayCommonButton>(WidgetTree->FindWidget(TEXT("Button_HostLanMatch")));
+	FindLanMatchButton = Cast<UBwayCommonButton>(WidgetTree->FindWidget(TEXT("Button_FindLanMatch")));
+	DevPracticeButton = Cast<UBwayCommonButton>(WidgetTree->FindWidget(TEXT("Button_DevPractice")));
+	SettingsButton = Cast<UBwayCommonButton>(WidgetTree->FindWidget(TEXT("Button_Settings")));
+	QuitButton = Cast<UBwayCommonButton>(WidgetTree->FindWidget(TEXT("Button_Quit")));
+
+	PlaySubMenuBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("PlaySubMenuBorder")));
+	InfoSubPanelBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("InfoSubPanelBorder")));
+	InfoSubPanelTitleText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_InfoSubPanelTitle")));
+	InfoSubPanelBodyText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_InfoSubPanelBody")));
+
+	SoftCurrencyText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_SoftCurrency")));
+	BuildWatermarkText = Cast<UTextBlock>(WidgetTree->FindWidget(TEXT("Text_BuildWatermark")));
+	BottomSettingsButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_BottomSettings")));
+	BottomSettingsImage = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_BottomSettings")));
+
+	QuickChatButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_QuickChat")));
+	PartyLeaderSlotButton = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_PartySlot0")));
+	PartyInviteSlot1Button = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_PartySlot1")));
+	PartyInviteSlot2Button = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_PartySlot2")));
+	PartyInviteSlot3Button = Cast<UButton>(WidgetTree->FindWidget(TEXT("Button_PartySlot3")));
+
+	if (PlayNavHitButton && PlayNavText && HostLanMatchButton && SoftCurrencyText && BottomSettingsButton)
+	{
+		// Already populated in WidgetTree; ensure textures/brushes are resolved
+		if (UImage* SplashImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_SplashArt"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(SplashImg, BwayMainMenuArt::TexSplashArt, FVector2D(1920.f, 1080.f));
+		}
+		if (UImage* LeftGlass = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_GlassTopLeft"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(LeftGlass, BwayMainMenuArt::TexLeftGlass, FVector2D(96.f, 444.f));
+		}
+		if (UImage* RightGlass = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_GlassBottomRight"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(RightGlass, BwayMainMenuArt::TexRightGlass, FVector2D(96.f, 444.f));
+		}
+		if (UImage* LogoImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_BreakawayLogo"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(LogoImg, BwayMainMenuArt::TexLogoAlpha, FVector2D(645.f, 82.f));
+		}
+		if (UImage* CoinImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_CurrencyCoin"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(CoinImg, BwayMainMenuArt::TexHintbarCoin, FVector2D(52.f, 52.f));
+		}
+		if (BottomSettingsImage)
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(BottomSettingsImage, BwayMainMenuArt::TexHintbarSettings, FVector2D(52.f, 52.f));
+		}
+		if (UImage* AvImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_PartyLeaderAvatar"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(AvImg, BwayMainMenuArt::TexPartyAvatarSlot, FVector2D(66.f, 66.f));
+		}
+		if (UImage* DotImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_PartyLeaderDot"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(DotImg, BwayMainMenuArt::TexPartyLeaderDot, FVector2D(10.f, 10.f));
+		}
+		if (UImage* QcImg = Cast<UImage>(WidgetTree->FindWidget(TEXT("Image_QuickChatBalloon"))))
+		{
+			BwayMainMenuArt::ApplyBrushFromTex(QcImg, BwayMainMenuArt::TexQuickChatBalloon, FVector2D(42.f, 20.f));
+		}
+		for (int32 i = 1; i <= 3; ++i)
+		{
+			if (UImage* InvImg = Cast<UImage>(WidgetTree->FindWidget(*FString::Printf(TEXT("Image_PartyInviteSlot%d"), i))))
+			{
+				BwayMainMenuArt::ApplyBrushFromTex(InvImg, BwayMainMenuArt::TexPartyInviteSlot, FVector2D(66.f, 66.f));
+			}
+		}
+		if (HostLanMatchButton)
+		{
+			HostLanMatchButton->SetLabelText(NSLOCTEXT("BwayFE", "Nav_HostLanMatch", "Host LAN Match"));
+			HostLanMatchButton->SetJustification(ETextJustify::Left);
+		}
+		if (FindLanMatchButton)
+		{
+			FindLanMatchButton->SetLabelText(NSLOCTEXT("BwayFE", "Nav_FindLanMatch", "Find LAN Match"));
+			FindLanMatchButton->SetJustification(ETextJustify::Left);
+		}
+		if (DevPracticeButton)
+		{
+			DevPracticeButton->SetLabelText(NSLOCTEXT("BwayFE", "Nav_DevPractice", "Dev Practice / Bot Match"));
+			DevPracticeButton->SetJustification(ETextJustify::Left);
+		}
+		if (SettingsButton)
+		{
+			SettingsButton->SetLabelText(NSLOCTEXT("BwayFE", "Nav_Settings", "Settings"));
+			SettingsButton->SetRenderOpacity(0.0f);
+			SettingsButton->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		if (QuitButton)
+		{
+			QuitButton->SetLabelText(NSLOCTEXT("BwayFE", "Nav_Quit", "Quit"));
+			QuitButton->SetRenderOpacity(0.0f);
+			QuitButton->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		return;
+	}
+
+	const UObject* HouseOfCardsFont = BwayMainMenuArt::LoadFontAsset(BwayMainMenuArt::FontHouseOfCardsBold);
+	const UObject* RefrigeratorFont = BwayMainMenuArt::LoadFontAsset(BwayMainMenuArt::FontRefrigeratorHeavy);
+	const UObject* NimbusFont = BwayMainMenuArt::LoadFontAsset(BwayMainMenuArt::FontNimbusReg);
+	const UObject* NeuzeitFont = BwayMainMenuArt::LoadFontAsset(BwayMainMenuArt::FontNeuzeitBold);
+
+	UCanvasPanel* RootCanvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("RootCanvas"));
+	WidgetTree->RootWidget = RootCanvas;
+
+	// -------------------------------------------------------------------------
+	// 1. Fullscreen Splash Background (ScaleToFill so 16:9 is 1:1 and 16:10 fills cleanly)
+	// -------------------------------------------------------------------------
+	UScaleBox* SplashScaleBox = WidgetTree->ConstructWidget<UScaleBox>(UScaleBox::StaticClass(), TEXT("SplashScaleBox"));
+	SplashScaleBox->SetStretch(EStretch::ScaleToFill);
+	SplashScaleBox->SetStretchDirection(EStretchDirection::Both);
+	SplashScaleBox->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* SplashSlot = RootCanvas->AddChildToCanvas(SplashScaleBox))
+	{
+		SplashSlot->SetAnchors(FAnchors(0.f, 0.f, 1.f, 1.f));
+		SplashSlot->SetOffsets(FMargin(0.f, 0.f, 0.f, 0.f));
+		SplashSlot->SetZOrder(0);
+	}
+
+	UImage* SplashArtImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_SplashArt"));
+	BwayMainMenuArt::ApplyBrushFromTex(SplashArtImage, BwayMainMenuArt::TexSplashArt, FVector2D(1920.f, 1080.f));
+	SplashArtImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	SplashScaleBox->AddChild(SplashArtImage);
+
+	// -------------------------------------------------------------------------
+	// 2. Corner Glass Panels (Top-Left and Bottom-Right)
+	// -------------------------------------------------------------------------
+	UImage* LeftGlassImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_GlassTopLeft"));
+	BwayMainMenuArt::ApplyBrushFromTex(LeftGlassImage, BwayMainMenuArt::TexLeftGlass, FVector2D(96.f, 444.f));
+	LeftGlassImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* LeftGlassSlot = RootCanvas->AddChildToCanvas(LeftGlassImage))
+	{
+		LeftGlassSlot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		LeftGlassSlot->SetAlignment(FVector2D(0.f, 0.f));
+		LeftGlassSlot->SetPosition(FVector2D(0.f, 0.f));
+		LeftGlassSlot->SetSize(FVector2D(96.f, 444.f));
+		LeftGlassSlot->SetZOrder(2);
+	}
+
+	UImage* RightGlassImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_GlassBottomRight"));
+	BwayMainMenuArt::ApplyBrushFromTex(RightGlassImage, BwayMainMenuArt::TexRightGlass, FVector2D(96.f, 444.f));
+	RightGlassImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* RightGlassSlot = RootCanvas->AddChildToCanvas(RightGlassImage))
+	{
+		RightGlassSlot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+		RightGlassSlot->SetAlignment(FVector2D(1.f, 1.f));
+		RightGlassSlot->SetPosition(FVector2D(12.f, 33.f));
+		RightGlassSlot->SetSize(FVector2D(96.f, 444.f));
+		RightGlassSlot->SetZOrder(2);
+	}
+
+	// -------------------------------------------------------------------------
+	// 3. Breakaway Alpha Logo (Top-Left: 63, 79, size 645x82)
+	// -------------------------------------------------------------------------
+	UImage* LogoImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_BreakawayLogo"));
+	BwayMainMenuArt::ApplyBrushFromTex(LogoImage, BwayMainMenuArt::TexLogoAlpha, FVector2D(645.f, 82.f));
+	LogoImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* LogoSlot = RootCanvas->AddChildToCanvas(LogoImage))
+	{
+		LogoSlot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		LogoSlot->SetAlignment(FVector2D(0.f, 0.f));
+		LogoSlot->SetPosition(FVector2D(63.f, 79.f));
+		LogoSlot->SetSize(FVector2D(645.f, 82.f));
+		LogoSlot->SetZOrder(3);
+	}
+
+	// -------------------------------------------------------------------------
+	// 4. Left Navigation Stack (PLAY, WARRIORS, HELP, SETTINGS, QUIT)
+	//    Anchored Bottom-Left so it preserves position across aspect ratios.
+	//    At 1920x1080: top-left is (134, 560), bottom-left offset is (134, -182)
+	// -------------------------------------------------------------------------
+	UVerticalBox* NavStackBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("NavigationStackBox"));
+	if (UCanvasPanelSlot* NavSlot = RootCanvas->AddChildToCanvas(NavStackBox))
+	{
+		NavSlot->SetAnchors(FAnchors(0.f, 1.f, 0.f, 1.f));
+		NavSlot->SetAlignment(FVector2D(0.f, 1.f));
+		NavSlot->SetPosition(FVector2D(144.f, -180.f));
+		NavSlot->SetSize(FVector2D(360.f, 338.f));
+		NavSlot->SetZOrder(5);
+	}
+
+	auto AddSkewedNavRow = [&](FName BtnName, FName TextName, const FText& Label, int32 PointSize, float RowHeight, float BottomPad, TObjectPtr<UButton>& OutBtn, TObjectPtr<UTextBlock>& OutText)
+	{
+		USizeBox* RowSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		RowSize->SetWidthOverride(340.f);
+		RowSize->SetHeightOverride(RowHeight);
+
+		UButton* HitBtn = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), BtnName);
+		BwayMainMenuArt::SetTransparentHitButtonStyle(HitBtn);
+		HitBtn->SetCursor(EMouseCursor::Hand);
+
+		UTextBlock* Txt = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TextName);
+		Txt->SetText(Label);
+		Txt->SetFont(BwayMainMenuArt::MakeMenuFont(HouseOfCardsFont, PointSize));
+		Txt->SetColorAndOpacity(FSlateColor(FLinearColor(0.95f, 0.95f, 0.95f, 1.0f)));
+		Txt->SetShadowOffset(FVector2D(2.0f, 3.0f));
+		Txt->SetShadowColorAndOpacity(FLinearColor(0.0f, 0.0f, 0.0f, 0.78f));
+		Txt->SetJustification(ETextJustify::Left);
+		Txt->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		Txt->SetRenderTransformPivot(FVector2D(0.0f, 0.5f));
+		Txt->SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D::UnitVector, FVector2D(-15.0f, 0.0f), 0.0f));
+
+		if (UButtonSlot* BtnSlot = Cast<UButtonSlot>(HitBtn->AddChild(Txt)))
+		{
+			BtnSlot->SetHorizontalAlignment(HAlign_Left);
+			BtnSlot->SetVerticalAlignment(VAlign_Center);
+			BtnSlot->SetPadding(FMargin(0.f));
+		}
+		RowSize->AddChild(HitBtn);
+		if (UVerticalBoxSlot* VSlot = NavStackBox->AddChildToVerticalBox(RowSize))
+		{
+			VSlot->SetHorizontalAlignment(HAlign_Left);
+			VSlot->SetVerticalAlignment(VAlign_Center);
+			VSlot->SetPadding(FMargin(0.f, 0.f, 0.f, BottomPad));
+		}
+
+		OutBtn = HitBtn;
+		OutText = Txt;
+	};
+
+	AddSkewedNavRow(TEXT("Button_NavPlay"), TEXT("Text_NavPlay"), NSLOCTEXT("BwayFE", "Menu_Play", "PLAY"), 60, 68.f, 12.f, PlayNavHitButton, PlayNavText);
+	AddSkewedNavRow(TEXT("Button_NavWarriors"), TEXT("Text_NavWarriors"), NSLOCTEXT("BwayFE", "Menu_Warriors", "WARRIORS"), 45, 56.f, 8.f, WarriorsNavHitButton, WarriorsNavText);
+	AddSkewedNavRow(TEXT("Button_NavHelp"), TEXT("Text_NavHelp"), NSLOCTEXT("BwayFE", "Menu_Help", "HELP"), 45, 56.f, 8.f, HelpNavHitButton, HelpNavText);
+	AddSkewedNavRow(TEXT("Button_NavSettings"), TEXT("Text_NavSettings"), NSLOCTEXT("BwayFE", "Menu_Settings", "SETTINGS"), 45, 56.f, 8.f, SettingsNavHitButton, SettingsNavText);
+	AddSkewedNavRow(TEXT("Button_NavQuit"), TEXT("Text_NavQuit"), NSLOCTEXT("BwayFE", "Menu_Quit", "QUIT"), 45, 56.f, 0.f, QuitNavHitButton, QuitNavText);
+
+	// -------------------------------------------------------------------------
+	// 5. Play Mode Sub-Menu Drawer (Collapsed by default so initial screen
+	//    matches reference screenshot; expands on PLAY click to expose the
+	//    Breakaway vertical-slice match flows).
+	// -------------------------------------------------------------------------
+	PlaySubMenuBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PlaySubMenuBorder"));
+	PlaySubMenuBorder->SetBrushColor(FLinearColor(0.02f, 0.03f, 0.05f, 0.92f));
+	PlaySubMenuBorder->SetPadding(FMargin(18.f, 16.f));
+	PlaySubMenuBorder->SetVisibility(ESlateVisibility::Collapsed);
+	if (UCanvasPanelSlot* SubMenuSlot = RootCanvas->AddChildToCanvas(PlaySubMenuBorder))
+	{
+		SubMenuSlot->SetAnchors(FAnchors(0.f, 1.f, 0.f, 1.f));
+		SubMenuSlot->SetAlignment(FVector2D(0.f, 1.f));
+		SubMenuSlot->SetPosition(FVector2D(430.f, -210.f));
+		SubMenuSlot->SetSize(FVector2D(360.f, 224.f));
+		SubMenuSlot->SetZOrder(8);
+	}
+
+	UVerticalBox* SubMenuVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("PlaySubMenuVBox"));
+	PlaySubMenuBorder->AddChild(SubMenuVBox);
+
+	UTextBlock* SubMenuHeader = BwayFrontEndUI::MakeText(
+		WidgetTree,
+		NSLOCTEXT("BwayFE", "SelectPlayModeHeader", "SELECT PLAY MODE"),
+		14,
+		BwayFrontEndUI::GoldBright,
+		TEXT("Text_PlaySubMenuHeader"));
+	SubMenuVBox->AddChildToVerticalBox(SubMenuHeader)->SetPadding(FMargin(0.f, 0.f, 0.f, 10.f));
+
+	auto AddFlowButton = [&](FName Name, const FText& Label, bool bPrimary, const FLinearColor& Color, bool bCollapseVisual = false) -> UBwayCommonButton*
+	{
+		USizeBox* SBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		SBox->SetWidthOverride(320.f);
+		if (bCollapseVisual)
+		{
+			SBox->SetHeightOverride(0.f);
+			SBox->SetRenderOpacity(0.f);
+			SBox->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		UBwayCommonButton* Btn = BwayFrontEndUI::MakeCommonButton(
+			WidgetTree,
+			Name,
+			Label,
+			16,
+			bPrimary,
+			Color,
+			FMargin(16.f, 10.f));
+		Btn->SetJustification(ETextJustify::Left);
+		if (bCollapseVisual)
+		{
+			Btn->SetRenderOpacity(0.f);
+			Btn->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		SBox->AddChild(Btn);
+		SubMenuVBox->AddChildToVerticalBox(SBox)->SetPadding(FMargin(0.f, bCollapseVisual ? 0.f : 4.f));
+		return Btn;
+	};
+
+	HostLanMatchButton = AddFlowButton(
+		TEXT("Button_HostLanMatch"),
+		NSLOCTEXT("BwayFE", "Nav_HostLanMatch", "Host LAN Match"),
+		true,
+		FLinearColor::White);
+	FindLanMatchButton = AddFlowButton(
+		TEXT("Button_FindLanMatch"),
+		NSLOCTEXT("BwayFE", "Nav_FindLanMatch", "Find LAN Match"),
+		false,
+		BwayFrontEndUI::GoldBright);
+	DevPracticeButton = AddFlowButton(
+		TEXT("Button_DevPractice"),
+		NSLOCTEXT("BwayFE", "Nav_DevPractice", "Dev Practice / Bot Match"),
+		false,
+		BwayFrontEndUI::GoldBright);
+	SettingsButton = AddFlowButton(
+		TEXT("Button_Settings"),
+		NSLOCTEXT("BwayFE", "Nav_Settings", "Settings"),
+		false,
+		FLinearColor::White,
+		/*bCollapseVisual=*/true);
+	QuitButton = AddFlowButton(
+		TEXT("Button_Quit"),
+		NSLOCTEXT("BwayFE", "Nav_Quit", "Quit"),
+		false,
+		BwayFrontEndUI::MutedText,
+		/*bCollapseVisual=*/true);
+
+	// -------------------------------------------------------------------------
+	// 6. Warriors / Help Info Sub-Panel (Collapsed by default)
+	// -------------------------------------------------------------------------
+	InfoSubPanelBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("InfoSubPanelBorder"));
+	InfoSubPanelBorder->SetBrushColor(FLinearColor(0.02f, 0.03f, 0.05f, 0.92f));
+	InfoSubPanelBorder->SetPadding(FMargin(20.f, 18.f));
+	InfoSubPanelBorder->SetVisibility(ESlateVisibility::Collapsed);
+	if (UCanvasPanelSlot* InfoSlot = RootCanvas->AddChildToCanvas(InfoSubPanelBorder))
+	{
+		InfoSlot->SetAnchors(FAnchors(0.f, 1.f, 0.f, 1.f));
+		InfoSlot->SetAlignment(FVector2D(0.f, 1.f));
+		InfoSlot->SetPosition(FVector2D(430.f, -210.f));
+		InfoSlot->SetSize(FVector2D(440.f, 220.f));
+		InfoSlot->SetZOrder(8);
+	}
+
+	UVerticalBox* InfoVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("InfoSubPanelVBox"));
+	InfoSubPanelBorder->AddChild(InfoVBox);
+
+	InfoSubPanelTitleText = BwayFrontEndUI::MakeText(
+		WidgetTree,
+		NSLOCTEXT("BwayFE", "InfoTitleDefault", "WARRIORS"),
+		18,
+		BwayFrontEndUI::GoldBright,
+		TEXT("Text_InfoSubPanelTitle"));
+	InfoSubPanelTitleText->SetFont(BwayMainMenuArt::MakeMenuFont(NeuzeitFont, 18));
+	InfoVBox->AddChildToVerticalBox(InfoSubPanelTitleText)->SetPadding(FMargin(0.f, 0.f, 0.f, 8.f));
+
+	InfoSubPanelBodyText = BwayFrontEndUI::MakeText(
+		WidgetTree,
+		NSLOCTEXT("BwayFE", "InfoBodyDefault", "Select Spartacus, Morgana, Rawlins, Anne Bonny, Styx, or Valkyrie during Prematch Hero Selection."),
+		13,
+		FLinearColor(0.92f, 0.94f, 0.97f, 1.0f),
+		TEXT("Text_InfoSubPanelBody"));
+	InfoSubPanelBodyText->SetAutoWrapText(true);
+	InfoVBox->AddChildToVerticalBox(InfoSubPanelBodyText);
+
+	// -------------------------------------------------------------------------
+	// 7. Right-Side Party Social Bar (Top-Right: 4 circular slots + '...' pill)
+	//    Screen coordinates at 1080p:
+	//      Backing strip: x=1826..1920, y=180..484 (94x304)
+	//      Slot 0 avatar: x=1831, y=177 (66x66), orange dot: x=1859, y=234 (10x10)
+	//      QuickChat '...': x=1774, y=197 (42x37)
+	//      Slot 1..3 '+': x=1831, y=253 / 329 / 405 (66x66)
+	// -------------------------------------------------------------------------
+	UCanvasPanel* PartyCanvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("PartySocialCanvas"));
+	if (UCanvasPanelSlot* PartyRootSlot = RootCanvas->AddChildToCanvas(PartyCanvas))
+	{
+		PartyRootSlot->SetAnchors(FAnchors(1.f, 0.f, 1.f, 0.f));
+		PartyRootSlot->SetAlignment(FVector2D(1.f, 0.f));
+		PartyRootSlot->SetPosition(FVector2D(0.f, 175.f));
+		PartyRootSlot->SetSize(FVector2D(150.f, 312.f));
+		PartyRootSlot->SetZOrder(4);
+	}
+
+	UBorder* PartyBacking = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("PartyBackingBorder"));
+	PartyBacking->SetBrushColor(FLinearColor(0.02f, 0.02f, 0.02f, 0.55f));
+	PartyBacking->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* BackSlot = PartyCanvas->AddChildToCanvas(PartyBacking))
+	{
+		BackSlot->SetPosition(FVector2D(56.f, 5.f));
+		BackSlot->SetSize(FVector2D(94.f, 304.f));
+		BackSlot->SetZOrder(0);
+	}
+
+	// Slot 0: Local player avatar
+	PartyLeaderSlotButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("Button_PartySlot0"));
+	BwayMainMenuArt::SetTransparentHitButtonStyle(PartyLeaderSlotButton);
+	PartyLeaderSlotButton->SetCursor(EMouseCursor::Hand);
+	UImage* LeaderAvatarImg = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_PartyLeaderAvatar"));
+	BwayMainMenuArt::ApplyBrushFromTex(LeaderAvatarImg, BwayMainMenuArt::TexPartyAvatarSlot, FVector2D(66.f, 66.f));
+	LeaderAvatarImg->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	PartyLeaderSlotButton->AddChild(LeaderAvatarImg);
+	if (UCanvasPanelSlot* S0Slot = PartyCanvas->AddChildToCanvas(PartyLeaderSlotButton))
+	{
+		S0Slot->SetPosition(FVector2D(61.f, 2.f));
+		S0Slot->SetSize(FVector2D(66.f, 66.f));
+		S0Slot->SetZOrder(2);
+	}
+
+	// Orange leader indicator dot at bottom of Slot 0
+	UImage* LeaderDotImg = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_PartyLeaderDot"));
+	BwayMainMenuArt::ApplyBrushFromTex(LeaderDotImg, BwayMainMenuArt::TexPartyLeaderDot, FVector2D(10.f, 10.f));
+	LeaderDotImg->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* DotSlot = PartyCanvas->AddChildToCanvas(LeaderDotImg))
+	{
+		DotSlot->SetPosition(FVector2D(89.f, 59.f));
+		DotSlot->SetSize(FVector2D(10.f, 10.f));
+		DotSlot->SetZOrder(3);
+	}
+
+	// Quick-chat '...' balloon button to left of Slot 0
+	QuickChatButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("Button_QuickChat"));
+	BwayMainMenuArt::SetTransparentHitButtonStyle(QuickChatButton);
+	QuickChatButton->SetCursor(EMouseCursor::Hand);
+	UImage* QuickChatImg = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_QuickChatBalloon"));
+	BwayMainMenuArt::ApplyBrushFromTex(QuickChatImg, BwayMainMenuArt::TexQuickChatBalloon, FVector2D(42.f, 20.f));
+	QuickChatImg->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	QuickChatButton->AddChild(QuickChatImg);
+	if (UCanvasPanelSlot* QcSlot = PartyCanvas->AddChildToCanvas(QuickChatButton))
+	{
+		QcSlot->SetPosition(FVector2D(4.f, 22.f));
+		QcSlot->SetSize(FVector2D(42.f, 20.f));
+		QcSlot->SetZOrder(3);
+	}
+
+	// Slots 1..3: Party invite '+' buttons
+	TObjectPtr<UButton>* InviteBtnPtrs[3] = { &PartyInviteSlot1Button, &PartyInviteSlot2Button, &PartyInviteSlot3Button };
+	const float InviteSlotYs[3] = { 78.f, 154.f, 230.f };
+	for (int32 idx = 0; idx < 3; ++idx)
+	{
+		const int32 SlotNum = idx + 1;
+		UButton* InvBtn = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), *FString::Printf(TEXT("Button_PartySlot%d"), SlotNum));
+		BwayMainMenuArt::SetTransparentHitButtonStyle(InvBtn);
+		InvBtn->SetCursor(EMouseCursor::Hand);
+
+		UImage* InvImg = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), *FString::Printf(TEXT("Image_PartyInviteSlot%d"), SlotNum));
+		BwayMainMenuArt::ApplyBrushFromTex(InvImg, BwayMainMenuArt::TexPartyInviteSlot, FVector2D(66.f, 66.f));
+		InvImg->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		InvBtn->AddChild(InvImg);
+
+		if (UCanvasPanelSlot* InvSlot = PartyCanvas->AddChildToCanvas(InvBtn))
+		{
+			InvSlot->SetPosition(FVector2D(61.f, InviteSlotYs[idx]));
+			InvSlot->SetSize(FVector2D(66.f, 66.f));
+			InvSlot->SetZOrder(2);
+		}
+		*InviteBtnPtrs[idx] = InvBtn;
+	}
+
+	// -------------------------------------------------------------------------
+	// 8. Bottom Hint / Status Bar (Bottom-Stretch: y=1026..1080 at 1080p)
+	//    Includes:
+	//      - 80% black backing bar (height 54px)
+	//      - 2px top border rule rgb(135, 90, 13)
+	//      - Green build watermark "Breakaway Build # 0.0.0.0 218026"
+	//      - Soft currency text ("0", RefrigeratorHeavy 25pt, #FFA71C)
+	//      - Gold coin icon (52x52 at right offset -74)
+	//      - Settings gear button (52x52 at right offset -26)
+	// -------------------------------------------------------------------------
+	UCanvasPanel* BottomCanvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("BottomHintBarCanvas"));
+	if (UCanvasPanelSlot* BottomRootSlot = RootCanvas->AddChildToCanvas(BottomCanvas))
+	{
+		BottomRootSlot->SetAnchors(FAnchors(0.f, 1.f, 1.f, 1.f));
+		BottomRootSlot->SetAlignment(FVector2D(0.f, 1.f));
+		BottomRootSlot->SetOffsets(FMargin(0.f, 0.f, 0.f, 72.f));
+		BottomRootSlot->SetZOrder(6);
+	}
+
+	UBorder* BottomFill = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("BottomBarFillBorder"));
+	BottomFill->SetBrushColor(FLinearColor(0.0f, 0.0f, 0.0f, 0.80f));
+	BottomFill->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* FillSlot = BottomCanvas->AddChildToCanvas(BottomFill))
+	{
+		FillSlot->SetAnchors(FAnchors(0.f, 1.f, 1.f, 1.f));
+		FillSlot->SetAlignment(FVector2D(0.f, 1.f));
+		FillSlot->SetOffsets(FMargin(0.f, 0.f, 0.f, 54.f));
+		FillSlot->SetZOrder(0);
+	}
+
+	UBorder* BottomTopLine = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("BottomBarTopLine"));
+	BottomTopLine->SetBrushColor(FLinearColor::FromSRGBColor(FColor(135, 90, 13, 255)));
+	BottomTopLine->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* LineSlot = BottomCanvas->AddChildToCanvas(BottomTopLine))
+	{
+		LineSlot->SetAnchors(FAnchors(0.f, 1.f, 1.f, 1.f));
+		LineSlot->SetAlignment(FVector2D(0.f, 1.f));
+		LineSlot->SetOffsets(FMargin(0.f, -52.f, 0.f, 2.2f));
+		LineSlot->SetZOrder(1);
+	}
+
+	BuildWatermarkText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Text_BuildWatermark"));
+	BuildWatermarkText->SetText(FText::FromString(TEXT("Breakaway Build # 0.0.0.0 218026")));
+	BuildWatermarkText->SetFont(BwayMainMenuArt::MakeMenuFont(NimbusFont, 10));
+	BuildWatermarkText->SetColorAndOpacity(FSlateColor(FLinearColor::FromSRGBColor(FColor(45, 205, 45, 230))));
+	BuildWatermarkText->SetJustification(ETextJustify::Right);
+	BuildWatermarkText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* BuildSlot = BottomCanvas->AddChildToCanvas(BuildWatermarkText))
+	{
+		BuildSlot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+		BuildSlot->SetAlignment(FVector2D(1.f, 1.f));
+		BuildSlot->SetPosition(FVector2D(-54.f, -43.f));
+		BuildSlot->SetSize(FVector2D(340.f, 20.f));
+		BuildSlot->SetZOrder(3);
+	}
+
+	SoftCurrencyText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("Text_SoftCurrency"));
+	SoftCurrencyText->SetText(FText::AsNumber(CurrentSoftCurrency));
+	SoftCurrencyText->SetFont(BwayMainMenuArt::MakeMenuFont(RefrigeratorFont, 25));
+	SoftCurrencyText->SetColorAndOpacity(FSlateColor(FLinearColor::FromSRGBColor(FColor(255, 167, 28, 255))));
+	SoftCurrencyText->SetJustification(ETextJustify::Right);
+	SoftCurrencyText->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* CurrSlot = BottomCanvas->AddChildToCanvas(SoftCurrencyText))
+	{
+		CurrSlot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+		CurrSlot->SetAlignment(FVector2D(1.f, 1.f));
+		CurrSlot->SetPosition(FVector2D(-126.f, -7.f));
+		CurrSlot->SetSize(FVector2D(150.f, 40.f));
+		CurrSlot->SetZOrder(2);
+	}
+
+	UImage* CoinImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_CurrencyCoin"));
+	BwayMainMenuArt::ApplyBrushFromTex(CoinImage, BwayMainMenuArt::TexHintbarCoin, FVector2D(52.f, 52.f));
+	CoinImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (UCanvasPanelSlot* CoinSlot = BottomCanvas->AddChildToCanvas(CoinImage))
+	{
+		CoinSlot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+		CoinSlot->SetAlignment(FVector2D(1.f, 1.f));
+		CoinSlot->SetPosition(FVector2D(-72.f, -1.f));
+		CoinSlot->SetSize(FVector2D(52.f, 52.f));
+		CoinSlot->SetZOrder(2);
+	}
+
+	BottomSettingsButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("Button_BottomSettings"));
+	BwayMainMenuArt::SetTransparentHitButtonStyle(BottomSettingsButton);
+	BottomSettingsButton->SetCursor(EMouseCursor::Hand);
+	BottomSettingsImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("Image_BottomSettings"));
+	BwayMainMenuArt::ApplyBrushFromTex(BottomSettingsImage, BwayMainMenuArt::TexHintbarSettings, FVector2D(52.f, 52.f));
+	BottomSettingsImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	BottomSettingsButton->AddChild(BottomSettingsImage);
+	if (UCanvasPanelSlot* SetSlot = BottomCanvas->AddChildToCanvas(BottomSettingsButton))
+	{
+		SetSlot->SetAnchors(FAnchors(1.f, 1.f, 1.f, 1.f));
+		SetSlot->SetAlignment(FVector2D(1.f, 1.f));
+		SetSlot->SetPosition(FVector2D(-26.f, -1.f));
+		SetSlot->SetSize(FVector2D(52.f, 52.f));
+		SetSlot->SetZOrder(2);
+	}
+}
+
 TSharedRef<SWidget> UBwayMainMenuWidget::RebuildWidget()
 {
-	if (UOverlay* Root = BwayFrontEndUI::EnsureRootOverlay(WidgetTree))
-	{
-		UBorder* Backdrop = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("MainMenuBackdrop"));
-		Backdrop->SetBrushColor(FLinearColor(0.02f, 0.04f, 0.08f, 0.84f));
-		UOverlaySlot* BgSlot = Root->AddChildToOverlay(Backdrop);
-		BgSlot->SetHorizontalAlignment(HAlign_Fill);
-		BgSlot->SetVerticalAlignment(VAlign_Fill);
-
-		UHorizontalBox* PartyBar = BwayFrontEndUI::BuildPersistentPartyHeaderBar(WidgetTree, TEXT("Player1"), &ProfileNameText);
-		UOverlaySlot* TopRightSlot = Root->AddChildToOverlay(PartyBar);
-		TopRightSlot->SetHorizontalAlignment(HAlign_Right);
-		TopRightSlot->SetVerticalAlignment(VAlign_Top);
-		TopRightSlot->SetPadding(FMargin(0.f, 24.f, 36.f, 0.f));
-
-		UVerticalBox* LeftNavColumn = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("LeftNavColumn"));
-		UOverlaySlot* LeftSlot = Root->AddChildToOverlay(LeftNavColumn);
-		LeftSlot->SetHorizontalAlignment(HAlign_Left);
-		LeftSlot->SetVerticalAlignment(VAlign_Center);
-		LeftSlot->SetPadding(FMargin(72.f, 0.f, 0.f, 0.f));
-
-		UTextBlock* LogoTitle = BwayFrontEndUI::MakeText(
-			WidgetTree,
-			NSLOCTEXT("BwayFE", "BreakawayLogo", "BREAKAWAY"),
-			46,
-			BwayFrontEndUI::GoldBright,
-			TEXT("Text_LogoTitle"));
-		LeftNavColumn->AddChildToVerticalBox(LogoTitle)->SetPadding(FMargin(0.f, 0.f, 0.f, 4.f));
-
-		UTextBlock* Subtitle = BwayFrontEndUI::MakeText(
-			WidgetTree,
-			NSLOCTEXT("BwayFE", "BreakawaySubtitle", "MYTHIC 4v4 RELIC COMBAT  •  DORADO"),
-			14,
-			BwayFrontEndUI::CyanAccent,
-			TEXT("Text_LogoSubtitle"));
-		LeftNavColumn->AddChildToVerticalBox(Subtitle)->SetPadding(FMargin(0.f, 0.f, 0.f, 28.f));
-
-		auto AddNavButton = [this, LeftNavColumn](
-			FName Name,
-			const FText& Label,
-			int32 FontSize,
-			bool bPrimary,
-			const FLinearColor& TextColor) -> UBwayCommonButton*
-		{
-			USizeBox* SizeBox = WidgetTree->ConstructWidget<USizeBox>();
-			SizeBox->SetWidthOverride(340.f);
-			UBwayCommonButton* Btn = BwayFrontEndUI::MakeCommonButton(
-				WidgetTree,
-				Name,
-				Label,
-				FontSize,
-				bPrimary,
-				TextColor,
-				FMargin(22.f, 13.f));
-			Btn->SetJustification(ETextJustify::Left);
-			SizeBox->AddChild(Btn);
-			LeftNavColumn->AddChildToVerticalBox(SizeBox)->SetPadding(FMargin(0.f, 5.f));
-			return Btn;
-		};
-
-		HostLanMatchButton = AddNavButton(
-			TEXT("Button_HostLanMatch"),
-			NSLOCTEXT("BwayFE", "Nav_HostLanMatch", "Host LAN Match"),
-			20,
-			true,
-			FLinearColor::White);
-		FindLanMatchButton = AddNavButton(
-			TEXT("Button_FindLanMatch"),
-			NSLOCTEXT("BwayFE", "Nav_FindLanMatch", "Find LAN Match"),
-			19,
-			false,
-			BwayFrontEndUI::GoldBright);
-		DevPracticeButton = AddNavButton(
-			TEXT("Button_DevPractice"),
-			NSLOCTEXT("BwayFE", "Nav_DevPractice", "Dev Practice / Bot Match"),
-			18,
-			false,
-			BwayFrontEndUI::GoldBright);
-		SettingsButton = AddNavButton(
-			TEXT("Button_Settings"),
-			NSLOCTEXT("BwayFE", "Nav_Settings", "Settings"),
-			18,
-			false,
-			FLinearColor::White);
-		QuitButton = AddNavButton(
-			TEXT("Button_Quit"),
-			NSLOCTEXT("BwayFE", "Nav_Quit", "Quit"),
-			18,
-			false,
-			BwayFrontEndUI::MutedText);
-
-		StatusBannerText = BwayFrontEndUI::MakeText(
-			WidgetTree,
-			NSLOCTEXT("BwayFE", "MainMenuHint", "Host or discover a 4v4 LAN session, or practice offline with bots."),
-			13,
-			BwayFrontEndUI::MutedText,
-			TEXT("Text_StatusBanner"));
-		LeftNavColumn->AddChildToVerticalBox(StatusBannerText)->SetPadding(FMargin(0.f, 18.f, 0.f, 0.f));
-	}
+	BuildOrBindWidgetHierarchy();
 	return Super::RebuildWidget();
 }
 
 void UBwayMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	BuildOrBindWidgetHierarchy();
+
+	if (PlayNavHitButton)
+	{
+		PlayNavHitButton->OnClicked.RemoveAll(this);
+		PlayNavHitButton->OnHovered.RemoveAll(this);
+		PlayNavHitButton->OnUnhovered.RemoveAll(this);
+		PlayNavHitButton->OnClicked.AddDynamic(this, &ThisClass::HandlePlayClicked);
+		PlayNavHitButton->OnHovered.AddDynamic(this, &ThisClass::HandlePlayHovered);
+		PlayNavHitButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleNavUnhovered);
+	}
+	if (WarriorsNavHitButton)
+	{
+		WarriorsNavHitButton->OnClicked.RemoveAll(this);
+		WarriorsNavHitButton->OnHovered.RemoveAll(this);
+		WarriorsNavHitButton->OnUnhovered.RemoveAll(this);
+		WarriorsNavHitButton->OnClicked.AddDynamic(this, &ThisClass::ClickWarriors);
+		WarriorsNavHitButton->OnHovered.AddDynamic(this, &ThisClass::HandleWarriorsHovered);
+		WarriorsNavHitButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleNavUnhovered);
+	}
+	if (HelpNavHitButton)
+	{
+		HelpNavHitButton->OnClicked.RemoveAll(this);
+		HelpNavHitButton->OnHovered.RemoveAll(this);
+		HelpNavHitButton->OnUnhovered.RemoveAll(this);
+		HelpNavHitButton->OnClicked.AddDynamic(this, &ThisClass::ClickHelp);
+		HelpNavHitButton->OnHovered.AddDynamic(this, &ThisClass::HandleHelpHovered);
+		HelpNavHitButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleNavUnhovered);
+	}
+	if (SettingsNavHitButton)
+	{
+		SettingsNavHitButton->OnClicked.RemoveAll(this);
+		SettingsNavHitButton->OnHovered.RemoveAll(this);
+		SettingsNavHitButton->OnUnhovered.RemoveAll(this);
+		SettingsNavHitButton->OnClicked.AddDynamic(this, &ThisClass::ClickSettings);
+		SettingsNavHitButton->OnHovered.AddDynamic(this, &ThisClass::HandleSettingsHovered);
+		SettingsNavHitButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleNavUnhovered);
+	}
+	if (QuitNavHitButton)
+	{
+		QuitNavHitButton->OnClicked.RemoveAll(this);
+		QuitNavHitButton->OnHovered.RemoveAll(this);
+		QuitNavHitButton->OnUnhovered.RemoveAll(this);
+		QuitNavHitButton->OnClicked.AddDynamic(this, &ThisClass::ClickQuit);
+		QuitNavHitButton->OnHovered.AddDynamic(this, &ThisClass::HandleQuitHovered);
+		QuitNavHitButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleNavUnhovered);
+	}
+
+	if (BottomSettingsButton)
+	{
+		BottomSettingsButton->OnClicked.RemoveAll(this);
+		BottomSettingsButton->OnHovered.RemoveAll(this);
+		BottomSettingsButton->OnUnhovered.RemoveAll(this);
+		BottomSettingsButton->OnClicked.AddDynamic(this, &ThisClass::HandleBottomSettingsClicked);
+		BottomSettingsButton->OnHovered.AddDynamic(this, &ThisClass::HandleBottomSettingsHovered);
+		BottomSettingsButton->OnUnhovered.AddDynamic(this, &ThisClass::HandleBottomSettingsUnhovered);
+	}
+
+	if (QuickChatButton)
+	{
+		QuickChatButton->OnClicked.RemoveAll(this);
+		QuickChatButton->OnClicked.AddDynamic(this, &ThisClass::HandleQuickChatButtonClicked);
+	}
+	if (PartyLeaderSlotButton)
+	{
+		PartyLeaderSlotButton->OnClicked.RemoveAll(this);
+		PartyLeaderSlotButton->OnClicked.AddDynamic(this, &ThisClass::HandlePartySlot0Clicked);
+	}
+	if (PartyInviteSlot1Button)
+	{
+		PartyInviteSlot1Button->OnClicked.RemoveAll(this);
+		PartyInviteSlot1Button->OnClicked.AddDynamic(this, &ThisClass::HandlePartySlot1Clicked);
+	}
+	if (PartyInviteSlot2Button)
+	{
+		PartyInviteSlot2Button->OnClicked.RemoveAll(this);
+		PartyInviteSlot2Button->OnClicked.AddDynamic(this, &ThisClass::HandlePartySlot2Clicked);
+	}
+	if (PartyInviteSlot3Button)
+	{
+		PartyInviteSlot3Button->OnClicked.RemoveAll(this);
+		PartyInviteSlot3Button->OnClicked.AddDynamic(this, &ThisClass::HandlePartySlot3Clicked);
+	}
 
 	if (HostLanMatchButton)
 	{
@@ -473,21 +1139,19 @@ void UBwayMainMenuWidget::NativeConstruct()
 		QuitButton->OnClicked().RemoveAll(this);
 		QuitButton->OnClicked().AddUObject(this, &ThisClass::ClickQuit);
 	}
+
+	RefreshNavigationVisualState();
 }
 
 void UBwayMainMenuWidget::NativeOnActivated()
 {
 	Super::NativeOnActivated();
-	if (ULocalPlayer* LP = GetOwningLocalPlayer())
+	SetPlaySubMenuExpanded(false);
+	if (InfoSubPanelBorder)
 	{
-		if (UBwayFrontendStateSubsystem* FrontendState = LP->GetSubsystem<UBwayFrontendStateSubsystem>())
-		{
-			if (ProfileNameText)
-			{
-				ProfileNameText->SetText(FText::FromString(FString::Printf(TEXT("WARRIOR: %s"), *FrontendState->GetResolvedLocalPlayerName())));
-			}
-		}
+		InfoSubPanelBorder->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	SetActiveNavigationIndex(-1);
 	RequestRefreshFocus();
 }
 
@@ -495,6 +1159,142 @@ UWidget* UBwayMainMenuWidget::NativeGetDesiredFocusTarget() const
 {
 	return HostLanMatchButton ? static_cast<UWidget*>(HostLanMatchButton) : Super::NativeGetDesiredFocusTarget();
 }
+
+void UBwayMainMenuWidget::RefreshNavigationVisualState()
+{
+	UTextBlock* NavTexts[5] = { PlayNavText, WarriorsNavText, HelpNavText, SettingsNavText, QuitNavText };
+	for (int32 i = 0; i < 5; ++i)
+	{
+		if (!NavTexts[i])
+		{
+			continue;
+		}
+		const bool bHighlighted = (i == ActiveNavigationIndex) || (i == 0 && bPlaySubMenuExpanded);
+		const FLinearColor TargetColor = bHighlighted
+			? FLinearColor(1.0f, 0.72f, 0.12f, 1.0f)
+			: FLinearColor(0.95f, 0.95f, 0.95f, 1.0f);
+		const FVector2D TargetTrans = bHighlighted ? FVector2D(10.0f, 0.0f) : FVector2D::ZeroVector;
+		NavTexts[i]->SetColorAndOpacity(FSlateColor(TargetColor));
+		NavTexts[i]->SetRenderTransform(FWidgetTransform(TargetTrans, FVector2D::UnitVector, FVector2D(-15.0f, 0.0f), 0.0f));
+	}
+}
+
+void UBwayMainMenuWidget::SetActiveNavigationIndex(int32 NavIndex)
+{
+	ActiveNavigationIndex = NavIndex;
+	RefreshNavigationVisualState();
+}
+
+void UBwayMainMenuWidget::SetPlaySubMenuExpanded(bool bExpanded)
+{
+	bPlaySubMenuExpanded = bExpanded;
+	if (PlaySubMenuBorder)
+	{
+		PlaySubMenuBorder->SetVisibility(bExpanded ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+	}
+	if (bExpanded && InfoSubPanelBorder)
+	{
+		InfoSubPanelBorder->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	RefreshNavigationVisualState();
+}
+
+void UBwayMainMenuWidget::SetSoftCurrency(int32 NewAmount)
+{
+	CurrentSoftCurrency = FMath::Max(0, NewAmount);
+	if (SoftCurrencyText)
+	{
+		SoftCurrencyText->SetText(FText::AsNumber(CurrentSoftCurrency));
+	}
+	OnSoftCurrencyChanged.Broadcast(CurrentSoftCurrency);
+}
+
+void UBwayMainMenuWidget::SetBuildVersionText(const FText& NewBuildVersionText)
+{
+	if (BuildWatermarkText)
+	{
+		BuildWatermarkText->SetText(NewBuildVersionText);
+	}
+}
+
+UCommonActivatableWidget* UBwayMainMenuWidget::ClickPlay()
+{
+	if (!bPlaySubMenuExpanded)
+	{
+		SetPlaySubMenuExpanded(true);
+		return nullptr;
+	}
+	return ClickHostLanMatch();
+}
+
+void UBwayMainMenuWidget::ClickWarriors()
+{
+	SetPlaySubMenuExpanded(false);
+	SetActiveNavigationIndex(1);
+	if (InfoSubPanelBorder && InfoSubPanelTitleText && InfoSubPanelBodyText)
+	{
+		InfoSubPanelTitleText->SetText(NSLOCTEXT("BwayFE", "WarriorsPanelTitle", "WARRIORS ROSTER"));
+		InfoSubPanelBodyText->SetText(NSLOCTEXT("BwayFE", "WarriorsPanelBody", "Available Warriors: Spartacus (Gladiator), Morgana (Sorceress), Rawlins (Gunslinger), Anne Bonny (Buccaneer), Styx (Thrall), and Valkyrie (Shieldmaiden). Select your Warrior in Prematch Hero Selection."));
+		InfoSubPanelBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	OnWarriorsClicked.Broadcast();
+}
+
+void UBwayMainMenuWidget::ClickHelp()
+{
+	SetPlaySubMenuExpanded(false);
+	SetActiveNavigationIndex(2);
+	if (InfoSubPanelBorder && InfoSubPanelTitleText && InfoSubPanelBodyText)
+	{
+		InfoSubPanelTitleText->SetText(NSLOCTEXT("BwayFE", "HelpPanelTitle", "HOW TO PLAY BREAKAWAY"));
+		InfoSubPanelBodyText->SetText(NSLOCTEXT("BwayFE", "HelpPanelBody", "4v4 Mythic Relic Combat: Capture the central Relic and escort it into the enemy Sanctum OR eliminate all four enemy Warriors to score a round point. First team to 3 points wins the match."));
+		InfoSubPanelBorder->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	OnHelpClicked.Broadcast();
+}
+
+void UBwayMainMenuWidget::ClickQuickChat()
+{
+	OnQuickChatClicked.Broadcast();
+}
+
+void UBwayMainMenuWidget::ClickPartyInviteSlot(int32 SlotIndex)
+{
+	OnPartyInviteSlotClicked.Broadcast(SlotIndex);
+	if (SlotIndex >= 1)
+	{
+		SetPlaySubMenuExpanded(true);
+	}
+}
+
+void UBwayMainMenuWidget::HandlePlayClicked() { ClickPlay(); }
+void UBwayMainMenuWidget::HandlePlayHovered() { SetActiveNavigationIndex(0); }
+void UBwayMainMenuWidget::HandleWarriorsHovered() { SetActiveNavigationIndex(1); }
+void UBwayMainMenuWidget::HandleHelpHovered() { SetActiveNavigationIndex(2); }
+void UBwayMainMenuWidget::HandleSettingsHovered() { SetActiveNavigationIndex(3); }
+void UBwayMainMenuWidget::HandleQuitHovered() { SetActiveNavigationIndex(4); }
+void UBwayMainMenuWidget::HandleNavUnhovered() { SetActiveNavigationIndex(-1); }
+
+void UBwayMainMenuWidget::HandleBottomSettingsClicked()
+{
+	ClickSettings();
+}
+
+void UBwayMainMenuWidget::HandleBottomSettingsHovered()
+{
+	BwayMainMenuArt::ApplyBrushFromTex(BottomSettingsImage, BwayMainMenuArt::TexHintbarSettingsHover, FVector2D(52.f, 52.f));
+}
+
+void UBwayMainMenuWidget::HandleBottomSettingsUnhovered()
+{
+	BwayMainMenuArt::ApplyBrushFromTex(BottomSettingsImage, BwayMainMenuArt::TexHintbarSettings, FVector2D(52.f, 52.f));
+}
+
+void UBwayMainMenuWidget::HandleQuickChatButtonClicked() { ClickQuickChat(); }
+void UBwayMainMenuWidget::HandlePartySlot0Clicked() { ClickPartyInviteSlot(0); }
+void UBwayMainMenuWidget::HandlePartySlot1Clicked() { ClickPartyInviteSlot(1); }
+void UBwayMainMenuWidget::HandlePartySlot2Clicked() { ClickPartyInviteSlot(2); }
+void UBwayMainMenuWidget::HandlePartySlot3Clicked() { ClickPartyInviteSlot(3); }
 
 TArray<FString> UBwayMainMenuWidget::GetVisibleMenuButtonLabels() const
 {
@@ -511,6 +1311,26 @@ TArray<FString> UBwayMainMenuWidget::GetVisibleMenuButtonLabels() const
 		if (Btn && Btn->GetVisibility() != ESlateVisibility::Collapsed && Btn->GetVisibility() != ESlateVisibility::Hidden)
 		{
 			Labels.Add(Btn->GetLabelText().ToString());
+		}
+	}
+	return Labels;
+}
+
+TArray<FString> UBwayMainMenuWidget::GetVisibleNavigationLabels() const
+{
+	TArray<FString> Labels;
+	const UTextBlock* Texts[] = {
+		PlayNavText,
+		WarriorsNavText,
+		HelpNavText,
+		SettingsNavText,
+		QuitNavText
+	};
+	for (const UTextBlock* Txt : Texts)
+	{
+		if (Txt && Txt->GetVisibility() != ESlateVisibility::Collapsed && Txt->GetVisibility() != ESlateVisibility::Hidden)
+		{
+			Labels.Add(Txt->GetText().ToString());
 		}
 	}
 	return Labels;
@@ -2897,5 +3717,377 @@ namespace BwayFrontEndFlowHarness
 		TEXT("bway.Test.FrontEndToMatchFlowExit"),
 		TEXT("Executes and verifies the complete Breakaway Front-End to In-Match playable loop and exits in -game mode."),
 		FConsoleCommandDelegate::CreateLambda([]() { StartFlowProbe(true); }));
+
+	static FTSTicker::FDelegateHandle GMainMenuVerifyTicker;
+
+	static bool CaptureMainMenuViewportPng(UWorld* World, const FString& FileName, FIntPoint& OutSize)
+	{
+		OutSize = FIntPoint::ZeroValue;
+		if (!World || !FSlateApplication::IsInitialized())
+		{
+			return false;
+		}
+		APlayerController* PC = World->GetFirstPlayerController();
+		UGameViewportClient* ViewportClient = (PC && PC->GetLocalPlayer()) ? PC->GetLocalPlayer()->ViewportClient.Get() : World->GetGameViewport();
+		if (!ViewportClient || !ViewportClient->Viewport)
+		{
+			return false;
+		}
+
+		FSlateApplication& Slate = FSlateApplication::Get();
+		const TSharedPtr<SViewport> ViewWidget = ViewportClient->GetGameViewportWidget();
+		TSharedPtr<SWindow> Window = ViewportClient->GetWindow();
+		if (!Window.IsValid() && ViewWidget.IsValid())
+		{
+			Window = Slate.FindWidgetWindow(ViewWidget.ToSharedRef());
+		}
+		if (!Window.IsValid())
+		{
+			Window = Slate.GetActiveTopLevelWindow();
+		}
+		if (Window.IsValid())
+		{
+			Window->SlatePrepass(Window->GetDPIScaleFactor());
+		}
+		ViewportClient->Viewport->Draw(false);
+
+		TArray<FColor> Pixels;
+		FIntVector SlateSize = FIntVector::ZeroValue;
+		bool bCaptured = false;
+		if (ViewWidget.IsValid())
+		{
+			FWidgetPath ViewPath;
+			if (Slate.GeneratePathToWidgetUnchecked(ViewWidget.ToSharedRef(), ViewPath))
+			{
+				bCaptured = Slate.TakeScreenshot(ViewWidget.ToSharedRef(), Pixels, SlateSize);
+			}
+		}
+		if ((!bCaptured || SlateSize.X <= 0 || SlateSize.Y <= 0) && Window.IsValid())
+		{
+			Pixels.Reset();
+			bCaptured = Slate.TakeScreenshot(Window.ToSharedRef(), Pixels, SlateSize);
+		}
+		if (!bCaptured || SlateSize.X <= 0 || SlateSize.Y <= 0 || int64(SlateSize.X) * SlateSize.Y != Pixels.Num())
+		{
+			UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: TakeScreenshot failed bCaptured=%d size=%dx%d pixels=%d viewValid=%d winValid=%d"),
+				bCaptured ? 1 : 0, SlateSize.X, SlateSize.Y, Pixels.Num(), ViewWidget.IsValid() ? 1 : 0, Window.IsValid() ? 1 : 0);
+			return false;
+		}
+
+		for (FColor& Pixel : Pixels)
+		{
+			Pixel.A = 255;
+		}
+
+		TArray64<uint8> CompressedData;
+		FImageUtils::PNGCompressImageArray(
+			SlateSize.X,
+			SlateSize.Y,
+			TArrayView64<const FColor>(Pixels.GetData(), Pixels.Num()),
+			CompressedData);
+		if (CompressedData.IsEmpty())
+		{
+			return false;
+		}
+
+		const FString OutDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectSavedDir() / TEXT("Logs") / TEXT("mainmenu-ui-verify"));
+		IFileManager::Get().MakeDirectory(*OutDir, true);
+		const FString OutPath = OutDir / FileName;
+		if (!FFileHelper::SaveArrayToFile(CompressedData, *OutPath))
+		{
+			return false;
+		}
+		OutSize = FIntPoint(SlateSize.X, SlateSize.Y);
+		UE_LOG(LogTemp, Display, TEXT("BwayMainMenuVerify: SavedScreenshot path=%s size=%dx%d bytes=%lld"),
+			*OutPath, OutSize.X, OutSize.Y, static_cast<long long>(CompressedData.Num()));
+		return true;
+	}
+
+	static void ResizeMainMenuViewport(UWorld* World, int32 Width, int32 Height)
+	{
+		UGameViewportClient* GVC = World ? World->GetGameViewport() : nullptr;
+		if (!GVC)
+		{
+			return;
+		}
+		TSharedPtr<SWindow> Window = GVC->GetWindow();
+		if (!Window.IsValid() && FSlateApplication::IsInitialized() && GVC->GetGameViewportWidget().IsValid())
+		{
+			Window = FSlateApplication::Get().FindWidgetWindow(GVC->GetGameViewportWidget().ToSharedRef());
+		}
+		if (Window.IsValid())
+		{
+			Window->Resize(FVector2D(static_cast<float>(Width), static_cast<float>(Height)));
+		}
+	}
+
+	FAutoConsoleCommand VerifyMainMenuUICmd(
+		TEXT("bway.Test.VerifyMainMenuUI"),
+		TEXT("Dispatches guard=0 PIE verification of W_MainMenu at 1920x1080, 1024x576, 1280x800, and interactive states."),
+		FConsoleCommandDelegate::CreateLambda([]()
+		{
+			if (GMainMenuVerifyTicker.IsValid())
+			{
+				FTSTicker::GetCoreTicker().RemoveTicker(GMainMenuVerifyTicker);
+				GMainMenuVerifyTicker.Reset();
+			}
+
+			struct FMainMenuVerifyState
+			{
+				int32 Step = 0;
+				double StepStartTime = 0.0;
+				TWeakObjectPtr<UBwayMainMenuWidget> MainMenu;
+				TWeakObjectPtr<UCommonActivatableWidget> PushedSubScreen;
+			};
+
+			TSharedRef<FMainMenuVerifyState> State = MakeShared<FMainMenuVerifyState>();
+			State->StepStartTime = FPlatformTime::Seconds();
+
+			GMainMenuVerifyTicker = FTSTicker::GetCoreTicker().AddTicker(
+				FTickerDelegate::CreateLambda([State](float) -> bool
+				{
+					UWorld* World = BwayFrontEndUI::FindActiveRuntimeWorld();
+					if (!World)
+					{
+						UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=no_pie_world"));
+						return false;
+					}
+
+					APlayerController* PC = World->GetFirstPlayerController();
+					if (!PC)
+					{
+						return true;
+					}
+
+					const double Now = FPlatformTime::Seconds();
+
+					if (State->Step == 0)
+					{
+						UBwayMainMenuWidget* Menu = BwayFrontEndUI::FindActiveWidgetForPlayer<UBwayMainMenuWidget>(PC);
+						if (!Menu)
+						{
+							Menu = Cast<UBwayMainMenuWidget>(BwayFrontEndUI::PushBreakawayMainMenu(PC));
+						}
+						if (!Menu || !Menu->IsActivated())
+						{
+							if (Now - State->StepStartTime > 12.0)
+							{
+								UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=main_menu_not_active"));
+								return false;
+							}
+							return true;
+						}
+						State->MainMenu = Menu;
+						Menu->SetSoftCurrency(0);
+						Menu->SetPlaySubMenuExpanded(false);
+						Menu->SetActiveNavigationIndex(-1);
+						ResizeMainMenuViewport(World, 1920, 1080);
+						State->Step = 1;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 1)
+					{
+						if (Now - State->StepStartTime < 0.8)
+						{
+							return true;
+						}
+						FIntPoint CapSize;
+						if (!CaptureMainMenuViewportPng(World, TEXT("mainmenu-1080p-reference.png"), CapSize))
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=capture_1080p_reference_failed"));
+							return false;
+						}
+						ResizeMainMenuViewport(World, 1024, 576);
+						State->Step = 2;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 2)
+					{
+						if (Now - State->StepStartTime < 0.8)
+						{
+							return true;
+						}
+						FIntPoint CapSize;
+						if (!CaptureMainMenuViewportPng(World, TEXT("mainmenu-576p-reference.png"), CapSize))
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=capture_576p_reference_failed"));
+							return false;
+						}
+						ResizeMainMenuViewport(World, 1920, 1080);
+						if (UBwayMainMenuWidget* Menu = State->MainMenu.Get())
+						{
+							Menu->SetSoftCurrency(1250);
+							Menu->ClickPlay();
+						}
+						State->Step = 3;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 3)
+					{
+						if (Now - State->StepStartTime < 0.8)
+						{
+							return true;
+						}
+						UBwayMainMenuWidget* Menu = State->MainMenu.Get();
+						if (!Menu || Menu->GetSoftCurrency() != 1250 || !Menu->IsPlaySubMenuExpanded())
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=interaction_state_mismatch"));
+							return false;
+						}
+						FIntPoint CapSize;
+						if (!CaptureMainMenuViewportPng(World, TEXT("mainmenu-1080p-interaction.png"), CapSize))
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=capture_interaction_failed"));
+							return false;
+						}
+						Menu->SetSoftCurrency(0);
+						Menu->SetPlaySubMenuExpanded(false);
+						Menu->SetActiveNavigationIndex(-1);
+						ResizeMainMenuViewport(World, 1280, 800);
+						State->Step = 4;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 4)
+					{
+						if (Now - State->StepStartTime < 0.8)
+						{
+							return true;
+						}
+						FIntPoint CapSize;
+						if (!CaptureMainMenuViewportPng(World, TEXT("mainmenu-1280x800-aspect.png"), CapSize))
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=capture_1280x800_failed"));
+							return false;
+						}
+						ResizeMainMenuViewport(World, 1920, 1080);
+						if (UBwayMainMenuWidget* Menu = State->MainMenu.Get())
+						{
+							State->PushedSubScreen = Menu->ClickFindLanMatch();
+						}
+						State->Step = 5;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 5)
+					{
+						if (Now - State->StepStartTime < 0.5)
+						{
+							return true;
+						}
+						if (UCommonActivatableWidget* Sub = State->PushedSubScreen.Get())
+						{
+							Sub->DeactivateWidget();
+						}
+						State->Step = 6;
+						State->StepStartTime = Now;
+						return true;
+					}
+
+					if (State->Step == 6)
+					{
+						if (Now - State->StepStartTime < 0.5)
+						{
+							return true;
+						}
+						UBwayMainMenuWidget* Menu = State->MainMenu.Get();
+						if (!Menu || !Menu->IsActivated())
+						{
+							UE_LOG(LogTemp, Error, TEXT("BwayMainMenuVerify: FAIL reason=main_menu_not_reactivated_after_back"));
+							return false;
+						}
+						UE_LOG(LogTemp, Display, TEXT("BwayMainMenuVerify: PASS navCount=%d flowCount=%d currency=%d"),
+							Menu->GetVisibleNavigationLabels().Num(),
+							Menu->GetVisibleMenuButtonLabels().Num(),
+							Menu->GetSoftCurrency());
+						return false;
+					}
+
+					return false;
+				}),
+				0.1f);
+		}));
 } // namespace BwayFrontEndFlowHarness
+#endif
+
+#if WITH_EDITOR
+namespace BwayMainMenuEditorBuilder
+{
+	static FAutoConsoleCommand PopulateMainMenuWidgetBlueprintCmd(
+		TEXT("bway.Editor.PopulateMainMenuWidgetBlueprint"),
+		TEXT("Populates /BreakawayCore/UI/FrontEnd/W_MainMenu WidgetTree with the Breakaway Alpha Main Menu UMG hierarchy, compiles, and saves the asset."),
+		FConsoleCommandDelegate::CreateLambda([]()
+		{
+			const TCHAR* AssetPath = TEXT("/BreakawayCore/UI/FrontEnd/W_MainMenu.W_MainMenu");
+			UBlueprint* WBP = LoadObject<UBlueprint>(nullptr, AssetPath);
+			if (!WBP)
+			{
+				UE_LOG(LogTemp, Error, TEXT("BwayMainMenuEditorBuilder: Failed to load %s"), AssetPath);
+				return;
+			}
+
+			FObjectProperty* TreeProp = FindFProperty<FObjectProperty>(WBP->GetClass(), TEXT("WidgetTree"));
+			UWidgetTree* BpWidgetTree = TreeProp ? Cast<UWidgetTree>(TreeProp->GetObjectPropertyValue_InContainer(WBP)) : nullptr;
+			if (!BpWidgetTree)
+			{
+				UE_LOG(LogTemp, Error, TEXT("BwayMainMenuEditorBuilder: No WidgetTree property on %s"), AssetPath);
+				return;
+			}
+
+			WBP->Modify();
+			BpWidgetTree->Modify();
+
+			TArray<UWidget*> OldWidgets;
+			BpWidgetTree->GetAllWidgets(OldWidgets);
+			BpWidgetTree->RootWidget = nullptr;
+			for (UWidget* OldW : OldWidgets)
+			{
+				if (OldW)
+				{
+					OldW->Rename(nullptr, GetTransientPackage(), REN_DontCreateRedirectors | REN_NonTransactional);
+				}
+			}
+
+			UBwayMainMenuWidget* BuilderWidget = NewObject<UBwayMainMenuWidget>(GetTransientPackage(), UBwayMainMenuWidget::StaticClass(), NAME_None, RF_Transient);
+			BuilderWidget->WidgetTree = BpWidgetTree;
+			BuilderWidget->BuildOrBindWidgetHierarchy();
+			BuilderWidget->WidgetTree = nullptr;
+
+			TArray<UWidget*> NewWidgets;
+			BpWidgetTree->GetAllWidgets(NewWidgets);
+			for (UWidget* W : NewWidgets)
+			{
+				if (W)
+				{
+					W->bIsVariable = false;
+				}
+			}
+
+			FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WBP);
+			FKismetEditorUtilities::CompileBlueprint(WBP);
+
+			UPackage* Pkg = WBP->GetOutermost();
+			Pkg->MarkPackageDirty();
+			const FString PackageFileName = FPackageName::LongPackageNameToFilename(Pkg->GetName(), FPackageName::GetAssetPackageExtension());
+			FSavePackageArgs SaveArgs;
+			SaveArgs.TopLevelFlags = RF_Standalone;
+			SaveArgs.Error = GError;
+			const FSavePackageResultStruct SaveRes = UPackage::Save(Pkg, WBP, *PackageFileName, SaveArgs);
+
+			UE_LOG(LogTemp, Display, TEXT("BwayMainMenuEditorBuilder: PASS root=%s widgets=%d status=%d saved=%d path=%s"),
+				*GetNameSafe(BpWidgetTree->RootWidget),
+				NewWidgets.Num(),
+				int32(WBP->Status),
+				SaveRes.IsSuccessful() ? 1 : 0,
+				*PackageFileName);
+		}));
+} // namespace BwayMainMenuEditorBuilder
 #endif

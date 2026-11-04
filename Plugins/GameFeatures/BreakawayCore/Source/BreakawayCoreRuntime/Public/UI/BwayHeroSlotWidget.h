@@ -131,6 +131,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Slot")
 	FText GetStatusBadgeText() const;
 
+	/** Builds or binds the 97x143 skewed Breakaway Character Select portrait cell hierarchy */
+	void EnsureVisualTreeConstructed();
+
 	/** Delegate fired when this slot is clicked */
 	UPROPERTY(BlueprintAssignable, Category = "Hero Slot|Events")
 	FOnHeroSlotClicked OnHeroSlotClicked;
@@ -149,7 +152,6 @@ protected:
 	virtual void NativeOnRemovedFromFocusPath(const FFocusEvent& InFocusEvent) override;
 	//~ End UUserWidget / UCommonButtonBase Interface
 
-	void EnsureVisualTreeConstructed();
 	void RefreshInteractability();
 	void RefreshVisualPresentation();
 

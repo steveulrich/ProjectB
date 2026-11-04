@@ -23,6 +23,8 @@ class UHorizontalBox;
 class UScrollBox;
 class UImage;
 class UBorder;
+class UButton;
+class UCanvasPanel;
 
 // Delegate for when hero selection is confirmed (for dev tools)
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHeroConfirmedDelegate);
@@ -236,6 +238,29 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
 	void ToggleAbilitiesPanel();
 
+	/** Select one of the 6 ability preview icons (0..5; 5 = Signature Buildable) */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	void SelectAbilityPreviewSlot(int32 AbilitySlotIndex);
+
+	/** Get the currently active ability preview icon index (0..5) */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	int32 GetSelectedAbilityPreviewSlot() const { return SelectedAbilityPreviewSlot; }
+
+	/** Get the currently displayed ability title text on the right ability preview panel */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	FText GetSelectedAbilityTitleText() const;
+
+	/** Get the currently displayed ability description text on the right ability preview panel */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection")
+	FText GetSelectedAbilityDescriptionText() const;
+
+	/** Click the bottom-left LEAVE button to close/deactivate Hero Selection */
+	UFUNCTION(BlueprintCallable, Category = "Hero Selection")
+	void ClickLeaveButton();
+
+	/** Builds or binds the 1920x1080 Breakaway Character Select UMG hierarchy */
+	void BuildOrBindWidgetHierarchy();
+
 	/** Returns the spawned 3D character preview actor (if active) */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Hero Selection|Preview")
 	ABwayHeroPreviewActor* GetPreviewActor() const { return PreviewActor; }
@@ -360,10 +385,44 @@ private:
 	UFUNCTION()
 	void HandleHeroSlotFocusedOrHovered(FPrimaryAssetId HeroId);
 
+	UFUNCTION()
+	void HandleAbilitySlot0Clicked();
+
+	UFUNCTION()
+	void HandleAbilitySlot1Clicked();
+
+	UFUNCTION()
+	void HandleAbilitySlot2Clicked();
+
+	UFUNCTION()
+	void HandleAbilitySlot3Clicked();
+
+	UFUNCTION()
+	void HandleAbilitySlot4Clicked();
+
+	UFUNCTION()
+	void HandleAbilitySlot5Clicked();
+
+	UFUNCTION()
+	void HandleAbilityCollapseClicked();
+
+	UFUNCTION()
+	void HandleLeaveButtonClicked();
+
+	UFUNCTION()
+	void HandleBuyHeroButtonClicked();
+
+	UFUNCTION()
+	void HandleProgressionInfoClicked();
+
+	UFUNCTION()
+	void HandleBottomSettingsClicked();
+
 	void HandleLockInButtonClicked();
 
 	void UpdateSelectionTimer();
 	void RefreshHeroDetails();
+	void RefreshBreakawayAbilityPreviewPanel();
 	void RefreshGoal5HeroSelectLayout();
 	void RefreshTeamRosterSidebars();
 	void RefreshHeroRosterGrid();
@@ -377,6 +436,69 @@ private:
 
 	UPROPERTY(Transient)
 	TObjectPtr<ABwayHeroPreviewActor> PreviewActor;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> HeroBackdropImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> AbilityGradientImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> AbilityVideoFrameBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> AbilityVideoPreviewImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> SelectedAbilityTitleText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> SelectedAbilityDescText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> AbilityBarButtons[6];
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> AbilityBarOuterBorders[6];
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> AbilityBarInnerBorders[6];
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> AbilityBarIconImages[6];
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> AbilityCollapseButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> AbilityCollapseBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> LoadoutSkinImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> LoadoutTauntImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> LoadoutWeaponImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> BuyHeroButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> BuyHeroPriceText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> ProgressionInfoButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> LeaveButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> BottomSettingsButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UCommonTextBlock> SoftCurrencyText;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UCommonTextBlock> PhaseTitleText;
@@ -430,6 +552,9 @@ private:
 	TObjectPtr<UCommonTextBlock> SharedMovementText;
 
 	UPROPERTY(Transient)
+	TObjectPtr<UCanvasPanel> HeroGridCanvas;
+
+	UPROPERTY(Transient)
 	TObjectPtr<UHorizontalBox> HeroSlotsRow;
 
 	UPROPERTY(Transient)
@@ -443,6 +568,7 @@ private:
 
 	FPrimaryAssetId InspectedHeroId;
 
+	int32 SelectedAbilityPreviewSlot = 5;
 	bool bUsingGoal5Layout = false;
 	bool bAbilitiesPanelVisible = true;
 	bool bIsInitialized = false;

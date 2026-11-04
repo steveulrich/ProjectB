@@ -6,6 +6,8 @@
 #include "Blueprint/WidgetTree.h"
 #include "CommonTextBlock.h"
 #include "Components/Border.h"
+#include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
@@ -13,7 +15,9 @@
 #include "Components/Spacer.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Engine/Font.h"
 #include "Engine/Texture2D.h"
+#include "Styling/CoreStyle.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BwayHeroSlotWidget)
 
@@ -36,6 +40,37 @@ namespace
 		}
 		return FLinearColor(0.92f, 0.34f, 0.28f, 1.0f);
 	}
+
+	UTexture2D* ResolveCharSelectPortraitForHero(const FPrimaryAssetId& InHeroId, const FText& InDisplayName, UTexture2D* FallbackPortrait)
+	{
+		const FString Key = (InHeroId.PrimaryAssetName.ToString() + TEXT(" ") + InDisplayName.ToString()).ToLower();
+		const TCHAR* TexPath = nullptr;
+		if (Key.Contains(TEXT("spartacus")) || Key.Contains(TEXT("argus")) || Key.Contains(TEXT("magnus")))
+		{
+			TexPath = TEXT("/BreakawayCore/UI/Art/HeroSelect/charselectportraitmagnus.charselectportraitmagnus");
+		}
+		else if (Key.Contains(TEXT("rawlins")))
+		{
+			TexPath = TEXT("/BreakawayCore/UI/Art/HeroSelect/charselectportraitrawlins.charselectportraitrawlins");
+		}
+		else if (Key.Contains(TEXT("alona")) || Key.Contains(TEXT("sunpriestess")))
+		{
+			TexPath = TEXT("/BreakawayCore/UI/Art/HeroSelect/charselectportraitsunpriestess.charselectportraitsunpriestess");
+		}
+		else if (Key.Contains(TEXT("korryn")) || Key.Contains(TEXT("morgan")))
+		{
+			TexPath = TEXT("/BreakawayCore/UI/Art/HeroSelect/charselectportraitmorganlefay.charselectportraitmorganlefay");
+		}
+
+		if (TexPath)
+		{
+			if (UTexture2D* Loaded = LoadObject<UTexture2D>(nullptr, TexPath))
+			{
+				return Loaded;
+			}
+		}
+		return FallbackPortrait;
+	}
 }
 
 UBwayHeroSlotWidget::UBwayHeroSlotWidget(const FObjectInitializer& ObjectInitializer)
@@ -57,90 +92,129 @@ bool UBwayHeroSlotWidget::Initialize()
 
 void UBwayHeroSlotWidget::EnsureVisualTreeConstructed()
 {
-	if (Cast<UWidgetBlueprintGeneratedClass>(GetClass()) != nullptr)
-	{
-		return;
-	}
 	if (!WidgetTree)
 	{
 		WidgetTree = NewObject<UWidgetTree>(this, TEXT("WidgetTree"), RF_Transient);
 	}
+
+	if (UWidget* ExistingCellCanvas = WidgetTree->FindWidget(TEXT("SlotCellCanvas")))
+	{
+		(void)ExistingCellCanvas;
+		NativeOuterFocusBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("SlotOuterFocusBorder")));
+		NativeInnerCardBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("SlotInnerCardBorder")));
+		NativePortraitBackdropBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("SlotPortraitBackdrop")));
+		NativePortraitImage = Cast<UImage>(WidgetTree->FindWidget(TEXT("SlotPortraitImage")));
+		NativeStatusBadgeText = Cast<UCommonTextBlock>(WidgetTree->FindWidget(TEXT("SlotStatusBadgeText")));
+		NativeClassBadgeBorder = Cast<UBorder>(WidgetTree->FindWidget(TEXT("SlotClassBadgeBorder")));
+		NativeClassBadgeText = Cast<UCommonTextBlock>(WidgetTree->FindWidget(TEXT("SlotClassBadgeText")));
+		NativeHeroNameText = Cast<UCommonTextBlock>(WidgetTree->FindWidget(TEXT("SlotHeroNameText")));
+		bUsingNativeVisualTree = (NativeOuterFocusBorder && NativeInnerCardBorder && NativePortraitImage);
+		if (bUsingNativeVisualTree)
+		{
+			RefreshVisualPresentation();
+			return;
+		}
+	}
+
 	if (WidgetTree->RootWidget)
 	{
-		return;
+		TArray<UWidget*> OldWidgets;
+		WidgetTree->GetAllWidgets(OldWidgets);
+		for (UWidget* OldW : OldWidgets)
+		{
+			if (OldW)
+			{
+				WidgetTree->RemoveWidget(OldW);
+			}
+		}
+		WidgetTree->RootWidget = nullptr;
 	}
 
 	bUsingNativeVisualTree = true;
 
 	USizeBox* CardSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("SlotCardSize"));
-	CardSize->SetWidthOverride(158.f);
-	CardSize->SetHeightOverride(196.f);
+	CardSize->SetWidthOverride(97.f);
+	CardSize->SetHeightOverride(143.f);
 	WidgetTree->RootWidget = CardSize;
 
 	NativeOuterFocusBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotOuterFocusBorder"));
-	NativeOuterFocusBorder->SetPadding(FMargin(2.5f));
+	NativeOuterFocusBorder->SetPadding(FMargin(1.0f));
 	CardSize->AddChild(NativeOuterFocusBorder);
 
 	NativeInnerCardBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotInnerCardBorder"));
-	NativeInnerCardBorder->SetPadding(FMargin(8.f, 8.f));
+	NativeInnerCardBorder->SetPadding(FMargin(0.f));
+	NativeInnerCardBorder->SetClipping(EWidgetClipping::ClipToBounds);
 	NativeOuterFocusBorder->SetContent(NativeInnerCardBorder);
 
-	UVerticalBox* CardVBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("SlotCardVBox"));
-	NativeInnerCardBorder->SetContent(CardVBox);
+	UCanvasPanel* CellCanvas = WidgetTree->ConstructWidget<UCanvasPanel>(UCanvasPanel::StaticClass(), TEXT("SlotCellCanvas"));
+	CellCanvas->SetClipping(EWidgetClipping::ClipToBounds);
+	NativeInnerCardBorder->SetContent(CellCanvas);
 
-	// Top row: Class Badge + Player/Lock/Taken Status Badge
-	UHorizontalBox* TopBadgeRow = WidgetTree->ConstructWidget<UHorizontalBox>(UHorizontalBox::StaticClass(), TEXT("SlotTopBadgeRow"));
-	CardVBox->AddChildToVerticalBox(TopBadgeRow)->SetPadding(FMargin(0.f, 0.f, 0.f, 6.f));
-
-	NativeClassBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotClassBadgeBorder"));
-	NativeClassBadgeBorder->SetPadding(FMargin(6.f, 2.f));
-	NativeClassBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotClassBadgeText"));
+	// 1. Pre-counter-sheared (-15 deg baked) Character Select Portrait (97x143 filling the 97x143 skewed cell cleanly)
+	NativePortraitImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("SlotPortraitImage"));
+	NativePortraitImage->SetDesiredSizeOverride(FVector2D(97.f, 143.f));
+	NativePortraitImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+	NativePortraitImage->SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D::UnitVector, FVector2D::ZeroVector, 0.0f));
+	if (UCanvasPanelSlot* ImgSlot = CellCanvas->AddChildToCanvas(NativePortraitImage))
 	{
-		FSlateFontInfo Font = NativeClassBadgeText->GetFont();
-		Font.Size = 9;
-		NativeClassBadgeText->SetFont(Font);
-		NativeClassBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		ImgSlot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		ImgSlot->SetAlignment(FVector2D(0.f, 0.f));
+		ImgSlot->SetPosition(FVector2D(0.f, 0.f));
+		ImgSlot->SetSize(FVector2D(97.f, 143.f));
+		ImgSlot->SetZOrder(1);
 	}
-	NativeClassBadgeBorder->SetContent(NativeClassBadgeText);
-	TopBadgeRow->AddChildToHorizontalBox(NativeClassBadgeBorder)->SetVerticalAlignment(VAlign_Center);
 
-	USpacer* TopSpacer = WidgetTree->ConstructWidget<USpacer>(USpacer::StaticClass(), TEXT("SlotTopSpacer"));
-	TopBadgeRow->AddChildToHorizontalBox(TopSpacer)->SetSize(FSlateChildSize(ESlateSizeRule::Fill));
+	// 2. Top-Left 'P1' Selection Indicator Badge (26x22 at top-left corner, #EBEBEB border, #343434 inner fill)
+	NativePortraitBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotPortraitBackdrop"));
+	NativePortraitBackdropBorder->SetPadding(FMargin(0.f, 0.f, 2.f, 2.f));
+	NativePortraitBackdropBorder->SetBrushColor(FLinearColor::FromSRGBColor(FColor(235, 235, 235, 255)));
+	if (UCanvasPanelSlot* BadgeSlot = CellCanvas->AddChildToCanvas(NativePortraitBackdropBorder))
+	{
+		BadgeSlot->SetAnchors(FAnchors(0.f, 0.f, 0.f, 0.f));
+		BadgeSlot->SetAlignment(FVector2D(0.f, 0.f));
+		BadgeSlot->SetPosition(FVector2D(0.f, 0.f));
+		BadgeSlot->SetSize(FVector2D(26.f, 22.f));
+		BadgeSlot->SetZOrder(3);
+	}
 
+	UBorder* BadgeInnerFill = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotPlayerBadgeInner"));
+	BadgeInnerFill->SetPadding(FMargin(2.f, 1.f));
+	BadgeInnerFill->SetBrushColor(FLinearColor::FromSRGBColor(FColor(52, 52, 52, 255)));
+	NativePortraitBackdropBorder->SetContent(BadgeInnerFill);
+
+	const UObject* RefrigFont = LoadObject<UFont>(nullptr, TEXT("/BreakawayCore/UI/Fonts/refrigeratordeluxe-heavy_Font.refrigeratordeluxe-heavy_Font"));
 	NativeStatusBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotStatusBadgeText"));
 	{
-		FSlateFontInfo Font = NativeStatusBadgeText->GetFont();
-		Font.Size = 9;
+		FSlateFontInfo Font = RefrigFont ? FSlateFontInfo(RefrigFont, 12) : FCoreStyle::GetDefaultFontStyle("Bold", 12);
+		if (RefrigFont)
+		{
+			Font.TypefaceFontName = FName(TEXT("Default"));
+		}
 		NativeStatusBadgeText->SetFont(Font);
-		NativeStatusBadgeText->SetJustification(ETextJustify::Right);
+		NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+		NativeStatusBadgeText->SetJustification(ETextJustify::Center);
+		NativeStatusBadgeText->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		NativeStatusBadgeText->SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D::UnitVector, FVector2D(-15.0f, 0.0f), 0.0f));
 	}
-	TopBadgeRow->AddChildToHorizontalBox(NativeStatusBadgeText)->SetVerticalAlignment(VAlign_Center);
+	BadgeInnerFill->SetContent(NativeStatusBadgeText);
 
-	// Center Portrait Frame
-	USizeBox* PortraitSize = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass(), TEXT("SlotPortraitSize"));
-	PortraitSize->SetWidthOverride(112.f);
-	PortraitSize->SetHeightOverride(112.f);
-	UVerticalBoxSlot* PortraitSlot = CardVBox->AddChildToVerticalBox(PortraitSize);
-	PortraitSlot->SetHorizontalAlignment(HAlign_Center);
-	PortraitSlot->SetPadding(FMargin(0.f, 2.f, 0.f, 6.f));
-
-	NativePortraitBackdropBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotPortraitBackdrop"));
-	NativePortraitBackdropBorder->SetPadding(FMargin(2.f));
-	PortraitSize->AddChild(NativePortraitBackdropBorder);
-
-	NativePortraitImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass(), TEXT("SlotPortraitImage"));
-	NativePortraitImage->SetDesiredSizeOverride(FVector2D(108.f, 108.f));
-	NativePortraitBackdropBorder->SetContent(NativePortraitImage);
-
-	// Bottom Hero Display Name
-	NativeHeroNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotHeroNameText"));
+	// 3. Collapsed metadata widgets for data-binding & test contracts
+	UVerticalBox* HiddenMetaBox = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass(), TEXT("SlotHiddenMetaBox"));
+	HiddenMetaBox->SetVisibility(ESlateVisibility::Collapsed);
+	if (UCanvasPanelSlot* MetaSlot = CellCanvas->AddChildToCanvas(HiddenMetaBox))
 	{
-		FSlateFontInfo Font = NativeHeroNameText->GetFont();
-		Font.Size = 14;
-		NativeHeroNameText->SetFont(Font);
-		NativeHeroNameText->SetJustification(ETextJustify::Center);
+		MetaSlot->SetPosition(FVector2D(0.f, 0.f));
+		MetaSlot->SetSize(FVector2D(1.f, 1.f));
+		MetaSlot->SetZOrder(0);
 	}
-	CardVBox->AddChildToVerticalBox(NativeHeroNameText)->SetHorizontalAlignment(HAlign_Fill);
+
+	NativeClassBadgeBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass(), TEXT("SlotClassBadgeBorder"));
+	NativeClassBadgeText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotClassBadgeText"));
+	NativeClassBadgeBorder->SetContent(NativeClassBadgeText);
+	HiddenMetaBox->AddChildToVerticalBox(NativeClassBadgeBorder);
+
+	NativeHeroNameText = WidgetTree->ConstructWidget<UCommonTextBlock>(UCommonTextBlock::StaticClass(), TEXT("SlotHeroNameText"));
+	HiddenMetaBox->AddChildToVerticalBox(NativeHeroNameText);
 
 	RefreshVisualPresentation();
 }
@@ -295,31 +369,25 @@ void UBwayHeroSlotWidget::RefreshVisualPresentation()
 		NativeClassBadgeBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.45f, ClassAccent.G * 0.45f, ClassAccent.B * 0.45f, 0.95f));
 	}
 
+	const bool bShowPlayerBadge = bIsSelected || bIsInspected || (OwningPlayerIndex >= 0);
+	if (NativePortraitBackdropBorder)
+	{
+		NativePortraitBackdropBorder->SetVisibility(bShowPlayerBadge ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
+		NativePortraitBackdropBorder->SetBrushColor(FLinearColor::FromSRGBColor(FColor(235, 235, 235, 255)));
+	}
+
 	if (NativeStatusBadgeText)
 	{
-		if (bIsLocked && bIsSelected)
+		if (bShowPlayerBadge)
 		{
-			NativeStatusBadgeText->SetText(NSLOCTEXT("HeroSlot", "StatusLocked", "LOCKED"));
-			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.28f, 0.94f, 0.52f, 1.0f)));
-		}
-		else if (bIsSelected)
-		{
-			NativeStatusBadgeText->SetText(OwningPlayerIndex >= 0
-				? FText::FromString(FString::Printf(TEXT("P%d"), OwningPlayerIndex + 1))
-				: NSLOCTEXT("HeroSlot", "StatusSelected", "PICKED"));
-			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.98f, 0.84f, 0.32f, 1.0f)));
+			const int32 BadgeIndex = (OwningPlayerIndex >= 0) ? (OwningPlayerIndex + 1) : 1;
+			NativeStatusBadgeText->SetText(FText::FromString(FString::Printf(TEXT("P%d"), BadgeIndex)));
+			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor::White));
 		}
 		else if (!bIsAvailable)
 		{
-			NativeStatusBadgeText->SetText(OwningPlayerIndex >= 0
-				? FText::FromString(FString::Printf(TEXT("TAKEN P%d"), OwningPlayerIndex + 1))
-				: NSLOCTEXT("HeroSlot", "StatusTaken", "TAKEN"));
+			NativeStatusBadgeText->SetText(NSLOCTEXT("HeroSlot", "StatusTaken", "TAKEN"));
 			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.92f, 0.42f, 0.38f, 0.95f)));
-		}
-		else if (OwningPlayerIndex >= 0)
-		{
-			NativeStatusBadgeText->SetText(FText::FromString(FString::Printf(TEXT("P%d"), OwningPlayerIndex + 1)));
-			NativeStatusBadgeText->SetColorAndOpacity(FSlateColor(FLinearColor(0.75f, 0.84f, 0.95f, 0.95f)));
 		}
 		else
 		{
@@ -327,16 +395,24 @@ void UBwayHeroSlotWidget::RefreshVisualPresentation()
 		}
 	}
 
-	if (NativePortraitBackdropBorder)
-	{
-		NativePortraitBackdropBorder->SetBrushColor(FLinearColor(ClassAccent.R * 0.22f, ClassAccent.G * 0.22f, ClassAccent.B * 0.22f, 0.92f));
-	}
-
 	if (NativePortraitImage)
 	{
-		if (HeroPortrait)
+		NativePortraitImage->SetDesiredSizeOverride(FVector2D(97.f, 143.f));
+		NativePortraitImage->SetRenderTransform(FWidgetTransform(FVector2D::ZeroVector, FVector2D::UnitVector, FVector2D::ZeroVector, 0.0f));
+		if (UCanvasPanelSlot* ImgSlot = Cast<UCanvasPanelSlot>(NativePortraitImage->Slot))
 		{
-			NativePortraitImage->SetBrushFromTexture(HeroPortrait, false);
+			ImgSlot->SetPosition(FVector2D(0.f, 0.f));
+			ImgSlot->SetSize(FVector2D(97.f, 143.f));
+		}
+
+		UTexture2D* DisplayTex = ResolveCharSelectPortraitForHero(HeroId, HeroDisplayName, HeroPortrait);
+		if (DisplayTex)
+		{
+			FSlateBrush Brush;
+			Brush.SetResourceObject(DisplayTex);
+			Brush.ImageSize = FVector2D(97.f, 143.f);
+			Brush.DrawAs = ESlateBrushDrawType::Image;
+			NativePortraitImage->SetBrush(Brush);
 			NativePortraitImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			const float Opacity = (!bIsAvailable && !bIsSelected) ? 0.38f : 1.0f;
 			NativePortraitImage->SetColorAndOpacity(FLinearColor(Opacity, Opacity, Opacity, 1.0f));
@@ -351,40 +427,26 @@ void UBwayHeroSlotWidget::RefreshVisualPresentation()
 	if (NativeOuterFocusBorder && NativeInnerCardBorder)
 	{
 		const bool bHovered = IsHovered();
-		FLinearColor RingColor(0.18f, 0.28f, 0.42f, 0.85f);
-		FLinearColor CardBg(0.04f, 0.08f, 0.14f, 0.94f);
+		FLinearColor RingColor(1.0f, 1.0f, 1.0f, 0.06f);
+		FLinearColor CardBg(0.005f, 0.006f, 0.008f, 0.78f);
+		float BorderPad = 1.0f;
 
-		if (bIsLocked && bIsSelected)
+		if (bIsSelected || bIsInspected || bHasFocusVisual)
 		{
-			RingColor = FLinearColor(0.24f, 0.88f, 0.48f, 1.0f);
-			CardBg = FLinearColor(0.06f, 0.18f, 0.13f, 0.97f);
+			RingColor = FLinearColor::FromSRGBColor(FColor(235, 235, 235, 255));
+			BorderPad = 3.0f;
 		}
-		else if (bHasFocusVisual)
+		else if (bHovered)
 		{
-			RingColor = FLinearColor(0.98f, 0.84f, 0.30f, 1.0f);
-			CardBg = FLinearColor(0.10f, 0.20f, 0.34f, 0.98f);
-		}
-		else if (bIsSelected)
-		{
-			RingColor = FLinearColor(0.95f, 0.76f, 0.26f, 1.0f);
-			CardBg = FLinearColor(0.09f, 0.16f, 0.28f, 0.97f);
-		}
-		else if (bHovered || bIsInspected)
-		{
-			RingColor = FLinearColor(0.24f, 0.78f, 0.96f, 0.98f);
-			CardBg = FLinearColor(0.07f, 0.14f, 0.24f, 0.96f);
+			RingColor = FLinearColor::FromSRGBColor(FColor(255, 162, 0, 255));
+			BorderPad = 2.0f;
 		}
 		else if (!bIsAvailable)
 		{
 			RingColor = FLinearColor(0.32f, 0.18f, 0.18f, 0.70f);
-			CardBg = FLinearColor(0.04f, 0.05f, 0.08f, 0.80f);
-		}
-		else if (bLocalPhaseLocked)
-		{
-			RingColor = FLinearColor(0.14f, 0.18f, 0.24f, 0.60f);
-			CardBg = FLinearColor(0.03f, 0.05f, 0.09f, 0.75f);
 		}
 
+		NativeOuterFocusBorder->SetPadding(FMargin(BorderPad));
 		NativeOuterFocusBorder->SetBrushColor(RingColor);
 		NativeInnerCardBorder->SetBrushColor(CardBg);
 	}

@@ -9,16 +9,24 @@
 
 class UBorder;
 class UButton;
+class UCanvasPanel;
 class UCircularThrobber;
 class UCommonSession_SearchResult;
 class UCommonSession_SearchSessionRequest;
 class UHorizontalBox;
+class UImage;
 class UOverlay;
+class UScaleBox;
 class UScrollBox;
+class USizeBox;
 class UTextBlock;
 class UVerticalBox;
 class UBwayCommonButton;
 struct FOnlineResultInformation;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FBwayMainMenuSimpleEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBwayMainMenuPartySlotEvent, int32, SlotIndex);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBwayMainMenuCurrencyChangedEvent, int32, NewCurrencyAmount);
 
 /** Distinct UI states for the Breakaway LAN Server Browser. */
 UENUM(BlueprintType)
@@ -75,12 +83,12 @@ struct BREAKAWAYCORERUNTIME_API FBwayServerBrowserRowViewModel
 
 /**
  * Breakaway Front End Main Menu Screen (W_MainMenu)
- * Clean Breakaway-only navigation list:
- *   - Host LAN Match
- *   - Find LAN Match
- *   - Dev Practice / Bot Match
- *   - Settings
- *   - Quit
+ * Authentic Breakaway Alpha Main Menu recreation (1920x1080 design canvas) with:
+ *   - Fullscreen splash background, top-left / bottom-right glass panels, and Breakaway Alpha logo
+ *   - Left navigation stack: PLAY, WARRIORS, HELP, SETTINGS, QUIT (skewed -15deg, HouseOfCards Bold)
+ *   - Expandable Play sub-menu drawer routing into Host LAN Match, Find LAN Match, and Dev Practice / Bot Match
+ *   - Right-side 4-slot Party Social strip (local player avatar + quickchat balloon + 3 invite '+' slots)
+ *   - Bottom status/hint bar with orange-gold top rule, soft currency counter + coin icon, settings gear, and build watermark
  */
 UCLASS(BlueprintType, Blueprintable)
 class BREAKAWAYCORERUNTIME_API UBwayMainMenuWidget : public UCommonActivatableWidget
@@ -89,6 +97,9 @@ class BREAKAWAYCORERUNTIME_API UBwayMainMenuWidget : public UCommonActivatableWi
 
 public:
 	UBwayMainMenuWidget(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	/** Builds or refreshes the WidgetTree hierarchy (used by both runtime fallback and editor W_MainMenu population). */
+	void BuildOrBindWidgetHierarchy();
 
 	virtual TOptional<FUIInputConfig> GetDesiredInputConfig() const override;
 
@@ -114,9 +125,50 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
 	void ClickQuit();
 
-	/** Compatibility alias routing legacy Play callers into Host LAN Match. */
+	/** Primary PLAY navigation handler: expands the Play mode drawer or launches Host LAN Match. */
 	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
-	UCommonActivatableWidget* ClickPlay() { return ClickHostLanMatch(); }
+	UCommonActivatableWidget* ClickPlay();
+
+	/** WARRIORS navigation handler: broadcasts OnWarriorsClicked and toggles the Warriors roster preview overlay. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ClickWarriors();
+
+	/** HELP navigation handler: broadcasts OnHelpClicked and toggles the Breakaway controls/objectives help overlay. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ClickHelp();
+
+	/** Quick-chat ('...') button handler on the local player party slot. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ClickQuickChat();
+
+	/** Party invite ('+') slot click handler (SlotIndex 1..3, or 0 for local leader slot). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void ClickPartyInviteSlot(int32 SlotIndex);
+
+	/** Updates the displayed soft-currency (gold coins) value in the bottom status bar. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void SetSoftCurrency(int32 NewAmount);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	int32 GetSoftCurrency() const { return CurrentSoftCurrency; }
+
+	/** Updates the green build watermark string in the bottom-right corner. */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void SetBuildVersionText(const FText& NewBuildVersionText);
+
+	/** Expands or collapses the Play Mode sub-menu drawer (Host LAN Match / Find LAN Match / Dev Practice). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void SetPlaySubMenuExpanded(bool bExpanded);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	bool IsPlaySubMenuExpanded() const { return bPlaySubMenuExpanded; }
+
+	/** Highlights a specific navigation item (0=PLAY, 1=WARRIORS, 2=HELP, 3=SETTINGS, 4=QUIT, -1=none). */
+	UFUNCTION(BlueprintCallable, Category = "Breakaway|FrontEnd")
+	void SetActiveNavigationIndex(int32 NavIndex);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	int32 GetActiveNavigationIndex() const { return ActiveNavigationIndex; }
 
 	UBwayCommonButton* GetHostLanMatchButton() const { return HostLanMatchButton; }
 	UBwayCommonButton* GetFindLanMatchButton() const { return FindLanMatchButton; }
@@ -124,9 +176,28 @@ public:
 	UBwayCommonButton* GetSettingsButton() const { return SettingsButton; }
 	UBwayCommonButton* GetQuitButton() const { return QuitButton; }
 
-	/** Returns the exact visible menu flow button labels in top-to-bottom order. */
+	/** Returns the 5 underlying playable flow labels (Host LAN Match, Find LAN Match, Dev Practice / Bot Match, Settings, Quit). */
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
 	TArray<FString> GetVisibleMenuButtonLabels() const;
+
+	/** Returns the 5 visible primary navigation labels displayed on the Main Menu (PLAY, WARRIORS, HELP, SETTINGS, QUIT). */
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Breakaway|FrontEnd")
+	TArray<FString> GetVisibleNavigationLabels() const;
+
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|FrontEnd|Events")
+	FBwayMainMenuSimpleEvent OnWarriorsClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|FrontEnd|Events")
+	FBwayMainMenuSimpleEvent OnHelpClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|FrontEnd|Events")
+	FBwayMainMenuSimpleEvent OnQuickChatClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|FrontEnd|Events")
+	FBwayMainMenuPartySlotEvent OnPartyInviteSlotClicked;
+
+	UPROPERTY(BlueprintAssignable, Category = "Breakaway|FrontEnd|Events")
+	FBwayMainMenuCurrencyChangedEvent OnSoftCurrencyChanged;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Breakaway|FrontEnd")
 	TSoftClassPtr<UCommonActivatableWidget> ModeSelectionWidgetClass;
@@ -147,6 +218,38 @@ protected:
 	virtual UWidget* NativeGetDesiredFocusTarget() const override;
 
 	UCommonActivatableWidget* PushLobbyWithOnlineMode(bool bIsLanMatch, bool bForceBotsOn);
+	void RefreshNavigationVisualState();
+
+	UFUNCTION()
+	void HandlePlayClicked();
+	UFUNCTION()
+	void HandlePlayHovered();
+	UFUNCTION()
+	void HandleWarriorsHovered();
+	UFUNCTION()
+	void HandleHelpHovered();
+	UFUNCTION()
+	void HandleSettingsHovered();
+	UFUNCTION()
+	void HandleQuitHovered();
+	UFUNCTION()
+	void HandleNavUnhovered();
+	UFUNCTION()
+	void HandleBottomSettingsClicked();
+	UFUNCTION()
+	void HandleBottomSettingsHovered();
+	UFUNCTION()
+	void HandleBottomSettingsUnhovered();
+	UFUNCTION()
+	void HandleQuickChatButtonClicked();
+	UFUNCTION()
+	void HandlePartySlot0Clicked();
+	UFUNCTION()
+	void HandlePartySlot1Clicked();
+	UFUNCTION()
+	void HandlePartySlot2Clicked();
+	UFUNCTION()
+	void HandlePartySlot3Clicked();
 
 	UPROPERTY(Transient)
 	TObjectPtr<UBwayCommonButton> HostLanMatchButton;
@@ -164,10 +267,83 @@ protected:
 	TObjectPtr<UBwayCommonButton> QuitButton;
 
 	UPROPERTY(Transient)
+	TObjectPtr<UButton> PlayNavHitButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> WarriorsNavHitButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> HelpNavHitButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> SettingsNavHitButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> QuitNavHitButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> PlayNavText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> WarriorsNavText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> HelpNavText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> SettingsNavText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> QuitNavText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> PlaySubMenuBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UBorder> InfoSubPanelBorder;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> InfoSubPanelTitleText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> InfoSubPanelBodyText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> SoftCurrencyText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UTextBlock> BuildWatermarkText;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> BottomSettingsButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UImage> BottomSettingsImage;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> QuickChatButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> PartyLeaderSlotButton;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> PartyInviteSlot1Button;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> PartyInviteSlot2Button;
+
+	UPROPERTY(Transient)
+	TObjectPtr<UButton> PartyInviteSlot3Button;
+
+	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> ProfileNameText;
 
 	UPROPERTY(Transient)
 	TObjectPtr<UTextBlock> StatusBannerText;
+
+	int32 CurrentSoftCurrency = 0;
+	int32 ActiveNavigationIndex = -1;
+	bool bPlaySubMenuExpanded = false;
 };
 
 /**
